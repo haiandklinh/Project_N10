@@ -1,0 +1,366 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App General -->
+    <string name="app_name">Time Tracking Management</string>
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_confirm">Confirm</string>
+    <string name="action_close">Close</string>
+    <string name="action_search">Search</string>
+    <string name="action_filter">Filter</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_retry">Retry</string>
+    <string name="action_done">Done</string>
+
+    <!-- Employee Bottom Navigation Titles -->
+    <string name="home">Home</string>
+    <string name="history">History</string>
+    <string name="schedule">Schedule</string>
+    <string name="check_in">Check-in</string>
+    <string name="profile">Profile</string>
+
+    <!-- Manager Bottom Navigation Titles -->
+    <string name="nav_manager_dashboard">Dashboard</string>
+    <string name="nav_manager_approvals">Approvals</string>
+    <string name="nav_manager_schedule">Schedule</string>
+    <string name="nav_manager_employees">Employees</string>
+
+    <!-- Navigation / Bottom Bar -->
+    <string name="nav_home">Home</string>
+    <string name="nav_attendance">Attendance</string>
+    <string name="nav_history">History</string>
+    <string name="nav_requests">Requests</string>
+    <string name="nav_profile">Account</string>
+
+    <!-- Authentication / Login & Register -->
+    <string name="login_welcome_title">Start your workday!</string>
+    <string name="login_welcome_subtitle">Log in to start working</string>
+    <string name="auth_login_title">Log In</string>
+    <string name="auth_email_hint">Email</string>
+    <string name="auth_employee_code_hint">Employee Code</string>
+    <string name="auth_password_hint">Password</string>
+    <string name="auth_forgot_password">Forgot password?</string>
+    <string name="auth_login_button">Log In</string>
+    <string name="login_or_continue_with">or continue with</string>
+    <string name="login_dont_have_account">Don\'t have an account? </string>
+    <string name="login_sign_up_now">Sign up now</string>
+    <string name="auth_register_title">Register Manager Account</string>
+    <string name="auth_register_subtitle">Create an account to manage your enterprise</string>
+    <string name="auth_step1_title">Personal Information</string>
+    <string name="auth_step1_subtitle">Enter your basic information</string>
+    <string name="auth_step2_title">Contact Verification</string>
+    <string name="auth_step2_subtitle">Verify your contact information</string>
+    <string name="auth_step3_title">Set Password</string>
+    <string name="auth_step3_subtitle">Set a secure password</string>
+
+    <string name="auth_step_1_desc">Step 1: Personal Information</string>
+    <string name="auth_step_2_desc">Step 2: Contact Verification</string>
+    <string name="auth_step_3_desc">Step 3: Set Password</string>
+    <string name="auth_company_name_hint">Company / Enterprise Name</string>
+    <string name="auth_full_name_hint">Full Name</string>
+    <string name="auth_role_hint">Role</string>
+    <string name="auth_register_button">Register Account</string>
+    <string name="auth_already_have_account">Already have an account? </string>
+    <string name="auth_already_have_code_prefix">Already have a company code? </string>
+    <string name="auth_join_company_link">Join company</string>
+    <string name="auth_register_success">Registration successful! Please log in.</string>
+    <string name="auth_password_helper">Minimum 6 characters</string>
+    <string name="auth_accept_terms">I agree to the Terms of Service and Privacy Policy</string>
+    <string name="auth_error_manager_only">This app is for registered Managers only.</string>
+
+    <string name="auth_otp_title">Verify Phone Number</string>
+    <string name="auth_otp_invalid">Incorrect OTP code, please try again</string>
+    <string name="auth_resend_otp">Resend code</string>
+
+    <string name="auth_phone_hint">Phone Number</string>
+    <string name="auth_otp_hint">OTP Verification Code</string>
+    <string name="auth_send_otp">Send OTP Code</string>
+    <string name="auth_verify_otp">Confirm</string>
+    <string name="auth_otp_not_received">Didn\'t receive code?</string>
+    <string name="auth_confirm_password_hint">Confirm Password</string>
+
+    <string name="login_desc_google">Sign in with Google</string>
+    <string name="login_desc_facebook">Sign in with Facebook</string>
+    <string name="login_desc_guest">Continue as Guest</string>
+    <string name="auth_login_error">Incorrect employee code or password</string>
+    <string name="auth_logout">Log Out</string>
+    <string name="auth_logout_confirm_msg">Are you sure you want to log out of your account?</string>
+
+    <!-- Forgot Password -->
+    <string name="forgot_password_title">Password Recovery</string>
+    <string name="forgot_password_subtitle">Please follow the steps below</string>
+    <string name="forgot_password_step_1_title">Step 1: Account Verification</string>
+    <string name="forgot_password_step_1_desc">Enter your registered Email or Employee Code/Phone Number to receive recovery OTP.</string>
+    <string name="forgot_password_account_hint">Email / Phone Number</string>
+    <string name="forgot_password_send_otp">Send Verification Code</string>
+
+    <string name="forgot_password_step_2_title">Step 2: Enter OTP Code</string>
+    <string name="forgot_password_step_2_desc">A 6-digit OTP code has been sent to your email/phone number.</string>
+    <string name="forgot_password_verify_otp">Verify OTP Code</string>
+    <string name="forgot_password_no_otp">Didn\'t receive code? </string>
+    <string name="forgot_password_resend_otp">Resend</string>
+
+    <string name="forgot_password_step_3_title">Step 3: Create New Password</string>
+    <string name="forgot_password_step_3_desc">Password must contain at least 6 characters.</string>
+    <string name="forgot_password_new_hint">New Password</string>
+    <string name="forgot_password_confirm_hint">Confirm New Password</string>
+    <string name="forgot_password_done">Complete &amp; Log In</string>
+
+    <string name="forgot_password_contact_help">Need help? </string>
+    <string name="forgot_password_contact_support">Contact Support</string>
+
+    <!-- Home Screen -->
+    <string name="home_greeting_morning">Good morning,</string>
+    <string name="home_greeting_afternoon">Good afternoon,</string>
+    <string name="home_greeting_evening">Good evening,</string>
+    <string name="home_shift_info">Today\'s Shift</string>
+    <string name="home_working_hours">Working hours: %1$s - %2$s</string>
+    <string name="home_today_status">Today\'s Status</string>
+    <string name="home_check_in_time">Check-in: %s</string>
+    <string name="home_check_out_time">Check-out: %s</string>
+    <string name="home_not_checked_in">Not checked in</string>
+
+    <!-- Attendance Action -->
+    <string name="attendance_title">Attendance</string>
+    <string name="attendance_btn_check_in">CHECK IN</string>
+    <string name="attendance_btn_check_out">CHECK OUT</string>
+    <string name="attendance_method_wifi">Company Wi-Fi</string>
+    <string name="attendance_method_gps">GPS Location</string>
+    <string name="attendance_method_face">Face Recognition</string>
+    <string name="attendance_method_qr">Scan QR Code</string>
+
+    <!-- Verification -->
+    <string name="verify_locating">Locating...</string>
+    <string name="verify_location_success">Valid location verified</string>
+    <string name="verify_location_failed">You are outside the attendance zone</string>
+    <string name="verify_wifi_failed">Please connect to company Wi-Fi to check in</string>
+    <string name="verify_face_instruction">Please position your face within the frame</string>
+
+    <!-- Attendance Status -->
+    <string name="status_on_time">On time</string>
+    <string name="status_late">Late</string>
+    <string name="status_early_leave">Early leave</string>
+    <string name="status_absent">Absent</string>
+    <string name="status_leave">Leave</string>
+    <string name="status_holiday">Holiday</string>
+    <string name="status_overtime">Overtime (OT)</string>
+
+    <!-- History & Timesheet -->
+    <string name="history_select_month">Select month</string>
+    <string name="history_total_working_days">Total working days: %s days</string>
+    <string name="history_total_late">Times late: %s</string>
+    <string name="history_total_early">Early leaves: %s</string>
+    <string name="history_total_ot">OT hours: %s hrs</string>
+    <string name="history_empty">No attendance data for this month</string>
+
+    <!-- Leave Requests -->
+    <string name="request_title">Request Management</string>
+    <string name="request_create_leave">Create Leave Request</string>
+    <string name="request_create_overtime">Create Overtime Request</string>
+    <string name="request_create_attendance_compensation">Attendance Explanation Request</string>
+    <string name="request_type">Request Type</string>
+    <string name="request_start_date">From Date</string>
+    <string name="request_end_date">To Date</string>
+    <string name="request_reason_hint">Enter reason...</string>
+    <string name="request_submit">Submit Request</string>
+
+    <!-- Request Status -->
+    <string name="request_status_pending">Pending</string>
+    <string name="request_status_approved">Approved</string>
+    <string name="request_status_rejected">Rejected</string>
+
+    <!-- Profile & Settings -->
+    <string name="profile_title">Personal Profile</string>
+
+    <!-- Payroll -->
+    <string name="payroll_title">Payslip</string>
+    <string name="payroll_total_expected">Estimated Net Salary</string>
+    <string name="payroll_month_format">Month %s</string>
+    <string name="payroll_working_days">Working Days</string>
+    <string name="payroll_working_hours">Working Hours</string>
+    <string name="payroll_working_days_format">%1$d/%2$d days</string>
+    <string name="payroll_working_hours_format">%s hours</string>
+    <string name="payroll_total_hours_value_format">%s hours</string>
+    <string name="payroll_details_label">Salary Breakdown</string>
+    <string name="payroll_basic_salary">Base Salary</string>
+    <string name="payroll_hourly_rate">Hourly Rate</string>
+    <string name="payroll_total_hours">Total Hours</string>
+    <string name="payroll_allowance">Allowance</string>
+    <string name="payroll_bonus">Bonus</string>
+    <string name="payroll_deductions">Deductions</string>
+
+    <!-- Dialogs & Toast Notifications -->
+    <string name="msg_check_in_success">Check-in successful!</string>
+    <string name="msg_check_out_success">Check-out successful!</string>
+    <string name="msg_request_success">Request submitted successfully, awaiting approval</string>
+    <string name="msg_permission_location_required">Location permission is required for attendance tracking</string>
+    <string name="msg_permission_camera_required">Camera permission is required to scan face/QR code</string>
+    <string name="msg_network_error">No network connection, please check again</string>
+
+    <!-- Onboarding 1 -->
+    <string name="onboarding_1_title">Fast Check-In</string>
+    <string name="onboarding_1_desc">Perform attendance check-in and shift start with just one tap right on your phone.</string>
+
+    <!-- Onboarding 2 -->
+    <string name="onboarding_2_title">Easy Request &amp; Explanation Submission</string>
+    <string name="onboarding_2_desc">Create leave, late arrival, early leave, or missed check-in explanation requests instantly.</string>
+
+    <!-- Onboarding 3 -->
+    <string name="onboarding_3_title">Track Personal Timesheet</string>
+    <string name="onboarding_3_desc">View detailed attendance history, total working hours, and track actual monthly working days.</string>
+
+    <!-- Onboarding 4 -->
+    <string name="onboarding_4_title">Automatic Attendance Reminders</string>
+    <string name="onboarding_4_desc">Receive notification reminders before shift start and end times so you never miss a check-in.</string>
+
+    <string name="action_get_started">Get Started</string>
+    <string name="action_next">Continue</string>
+
+    <string name="mapbox_access_token">pk.eyJ1Ijoic29uYmFuZGExMSIsImEiOiJjbW51MThxejIwdHRyMnBwd2p2OHhvMzFxIn0.XsxPqOqD9upAvTzh5iI3ZA</string>
+    <string name="auth_otp_resend_label">Didn\'t receive code? Resend OTP</string>
+    <string name="action_back">Back</string>
+
+    <!-- Check In -->
+    <string name="checkin_locating">Locating...</string>
+    <string name="checkin_determining_distance">Determining distance...</string>
+    <string name="checkin_determining_location">Determining location...</string>
+    <string name="checkin_distance_meters">%.0fm from office</string>
+    <string name="checkin_distance_kilometers">%.2fkm from office</string>
+    <string name="checkin_current_location">Current Location</string>
+    <string name="checkin_location_valid">Valid</string>
+    <string name="checkin_location_invalid">Out of range</string>
+    <string name="checkin_permission_denied">Location permission not granted</string>
+    <string name="checkin_enable_location">Enable location permission to check in</string>
+    <string name="checkin_not_determined">Not determined</string>
+    <string name="checkin_enable_gps">Please turn on GPS location to check in</string>
+    <string name="checkin_determining_your_location">Determining your location</string>
+    <string name="checkin_outside_allowed_area">You are outside the allowed attendance area</string>
+    <string name="checkin_check_network">Please check your network connection to check in</string>
+    <string name="checkin_conditions_not_met">Conditions not met for check-in</string>
+    <string name="checkin_btn_check_in">CHECK IN</string>
+    <string name="checkin_btn_check_out">CHECK OUT</string>
+    <string name="checkin_completed_today">COMPLETED TODAY</string>
+
+    <!-- Profile -->
+    <string name="profile_attendance_summary">This Month\'s Attendance</string>
+    <string name="profile_attendance_rate">95%</string>
+    <string name="profile_attendance_description">punctuality rate · view details in History</string>
+    <string name="profile_edit_profile">Edit Profile</string>
+    <string name="profile_change_password">Change Password</string>
+    <string name="profile_notifications">Notifications</string>
+    <string name="profile_language">Language</string>
+    <string name="profile_theme">Theme</string>
+    <string name="profile_help_support">Help &amp; Support</string>
+    <string name="profile_about_app">About App</string>
+    <string name="profile_dark_mode">Dark Mode</string>
+    <string name="theme_avocado">Avocado</string>
+    <string name="theme_watermelon">Watermelon</string>
+    <string name="theme_orange">Orange</string>
+    <string name="profile_select_language">Select Language / Chọn ngôn ngữ</string>
+    <string name="profile_logout_title">Log Out</string>
+    <string name="profile_logout_message">Are you sure you want to log out of this account?</string>
+    <string name="profile_language_vietnamese">Tiếng Việt</string>
+    <string name="profile_language_english">English</string>
+
+    <!-- Forgot Password Error Messages -->
+    <string name="error_enter_email_or_phone">Please enter Email or Phone Number!</string>
+    <string name="msg_otp_sent_success">OTP code sent successfully!</string>
+    <string name="error_enter_6_digits">Please enter all 6 digits of the OTP!</string>
+    <string name="msg_otp_verified_success">OTP verification successful!</string>
+    <string name="msg_otp_resend_success">A new OTP code has been sent!</string>
+    <string name="error_enter_new_password">Please enter a new password!</string>
+    <string name="error_password_min_length">Password must be at least 6 characters long!</string>
+    <string name="error_password_not_match">Confirmation password does not match!</string>
+    <string name="msg_password_reset_success">Password reset successfully! Please log in again.</string>
+
+
+    <string name="auth_phone_verified_format">%1$s verified</string>
+    <string name="auth_otp_subtitle_format">Enter the OTP sent to %1$s</string>
+    <string name="auth_resend_otp_countdown_format">Resend code in %1$ds</string>
+    <string name="auth_error_full_name_required">Please enter your full name</string>
+    <string name="auth_error_company_required">Please enter your company name</string>
+    <string name="auth_error_phone_required">Please enter your phone number</string>
+    <string name="auth_error_phone_invalid">Invalid phone number</string>
+    <string name="auth_error_password_min">Minimum 6 characters</string>
+    <string name="auth_error_password_mismatch">Passwords do not match</string>
+    <string name="auth_error_accept_terms">Please agree to the terms of service</string>
+
+    <!-- Adjustment -->
+    <string name="adjustment_title">Attendance Adjustment</string>
+    <string name="adjustment_type_missing_checkin">Missing Check-in</string>
+    <string name="adjustment_type_missing_checkout">Missing Check-out</string>
+    <string name="adjustment_type_late_early">Late Arrival / Early Leave</string>
+    <string name="adjustment_type_add_working_day">Add Working Day</string>
+    <string name="adjustment_create_request">Create Request</string>
+    <string name="error_fill_required_fields">Please fill in all required fields (*)</string>
+    <string name="msg_adjustment_sent_success">Adjustment request sent successfully!</string>
+    <string name="adjustment_tab_pending">Pending (%d)</string>
+    <string name="adjustment_tab_approved">Approved (%d)</string>
+    <string name="adjustment_tab_rejected">Rejected (%d)</string>
+
+    <!-- Schedule -->
+    <string name="schedule_title">Work Schedule</string>
+    <string name="schedule_month_format">Month %d, %d</string>
+    <string name="schedule_day_mon">Mon</string>
+    <string name="schedule_day_tue">Tue</string>
+    <string name="schedule_day_wed">Wed</string>
+    <string name="schedule_day_thu">Thu</string>
+    <string name="schedule_day_fri">Fri</string>
+    <string name="schedule_day_sat">Sat</string>
+    <string name="schedule_day_sun">Sun</string>
+
+    <!-- Theme Selection -->
+    <string name="theme_select_title">Select App Theme</string>
+    <string name="dark_mode_label">Dark Mode</string>
+
+    <!-- Dialog Success -->
+    <string name="dialog_success_title">Success!</string>
+    <string name="dialog_success_message">Your action has been recorded.</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_skip">Skip</string>
+
+    <!-- Check In Layout -->
+    <string name="checkin_current_location_label">Current Location</string>
+    <string name="checkin_gps_enabled">GPS location enabled</string>
+    <string name="checkin_within_range">Within allowed radius (50m)</string>
+    <string name="checkin_network_stable">Stable network connection</string>
+    <string name="checkin_today_summary">Today</string>
+    <string name="checkin_check_in_time">Check-in Time</string>
+    <string name="checkin_check_out_time">Check-out Time</string>
+    <string name="checkin_warning_out_of_range">You are outside the allowed attendance area</string>
+
+    <!-- Notification -->
+    <string name="notification_mark_all_read">Mark all as read</string>
+
+    <!-- Profile Layout -->
+    <string name="profile_user_name">John Doe</string>
+    <string name="profile_user_position">Sales Representative · Sales Dept</string>
+    <string name="profile_section_account">Account</string>
+    <string name="profile_section_app">App</string>
+    <string name="profile_logout_button">Log Out</string>
+    <string name="profile_version">Version 1.0.0</string>
+    <string name="profile_summary_title">This Month\'s Attendance</string>
+    <string name="profile_summary_rate">95%</string>
+    <string name="profile_summary_description">punctuality rate · view details in History</string>
+
+    <!-- History -->
+    <string name="history_title">Attendance History</string>
+    <string name="history_month_format">October 2026</string>
+    <string name="history_status_on_time">On time</string>
+    <string name="history_status_late">Late</string>
+    <string name="history_status_absent">Absent</string>
+    <string name="history_status_early_leave">Early leave</string>
+    <string name="history_total_working_hours">Total Working Hours</string>
+    <string name="history_filter_all">All</string>
+    <string name="history_filter_present">On time</string>
+    <string name="history_filter_late">Late</string>
+    <string name="history_filter_absent">Absent</string>
+    <string name="history_filter_early">Early leave</string>
+    <string name="history_status_leave">Leave</string>
+    <string name="history_status_not_checked">Not checked in</string>
+
+    <!-- Profile Editing Strings -->
+    <string name="title_change_request_history">Change Request History</string>
+</resources>

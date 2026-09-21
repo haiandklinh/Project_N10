@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?android:attr/colorBackground">
+
+    <!-- TOOLBAR -->
+    <com.example.attendanceapp.core.utils.ToolbarApp
+        android:id="@+id/toolbar_app"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- TAB LAYOUT THỐNG KÊ (CHỜ DUYỆT / ĐÃ DUYỆT / TỪ CHỐI) -->
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tab_layout_stats"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorSurface"
+        app:layout_constraintTop_toBottomOf="@id/toolbar_app"
+        app:tabGravity="fill"
+        app:tabIndicatorColor="?attr/colorPrimary"
+        app:tabIndicatorHeight="3dp"
+        app:tabMode="fixed"
+        app:tabSelectedTextColor="?attr/colorPrimary"
+        app:tabTextColor="?attr/colorOnSurfaceVariant">
+
+        <!-- Tab 1: Chờ duyệt -->
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/adjustment_tab_pending" />
+
+        <!-- Tab 2: Đã duyệt -->
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/adjustment_tab_approved" />
+
+        <!-- Tab 3: Từ chối -->
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/adjustment_tab_rejected" />
+
+    </com.google.android.material.tabs.TabLayout>
+
+    <!-- 1. CHẾ ĐỘ VIEW: DANH SÁCH YÊU CẦU -->
+    <FrameLayout
+        android:id="@+id/layout_list_view"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tab_layout_stats">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_adjustments"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingBottom="88dp"
+            tools:listitem="@layout/item_attendance_adjustment" />
+
+        <include
+            android:id="@+id/include_empty_state"
+            layout="@layout/layout_empty_state"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <!-- 2. CHẾ ĐỘ VIEW: TẠO YÊU CẦU ĐIỀU CHỈNH -->
+    <FrameLayout
+        android:id="@+id/layout_create_view"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbar_app">
+
+        <include
+            android:id="@+id/include_create_adjustment"
+            layout="@layout/layout_create_adjustment" />
+    </FrameLayout>
+
+    <!-- NÚT FAB NỔI CÓ CẢ ICON VÀ CHỮ TẠO YÊU CẦU -->
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/fab_create_adjustment"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/button_height_m"
+        android:layout_marginEnd="@dimen/spacing_l"
+        android:layout_marginBottom="@dimen/spacing_3xl"
+        android:text="@string/adjustment_create_request"
+        android:textColor="?attr/colorOnPrimary"
+        android:textStyle="bold"
+        app:backgroundTint="?attr/colorPrimary"
+        app:icon="@drawable/ic_add"
+        app:iconTint="?attr/colorOnPrimary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

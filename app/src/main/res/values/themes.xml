@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- BASE THEME: Chứa cấu hình dùng chung (Chấm công, Error, Status Bar) -->
+    <style name="Base.Theme.AttendanceApp" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Status bar configuration -->
+        <item name="android:statusBarColor">?android:attr/colorBackground</item>
+        <item name="android:windowLightStatusBar">true</item>
+
+        <!-- Outline & Error (Dùng chung) -->
+        <item name="colorError">@color/md_theme_light_error</item>
+        <item name="colorOnError">@color/md_theme_light_onError</item>
+        <item name="colorErrorContainer">@color/md_theme_light_errorContainer</item>
+        <item name="colorOnErrorContainer">@color/md_theme_light_onErrorContainer</item>
+
+        <!-- ==================== ATTENDANCE STATUS (DÙNG CHUNG) ==================== -->
+        <item name="colorAttendancePresent">@color/attendance_present</item>
+        <item name="colorAttendancePresentContainer">@color/attendance_present_container</item>
+
+        <item name="colorAttendanceLate">@color/attendance_late</item>
+        <item name="colorAttendanceLateContainer">@color/attendance_late_container</item>
+
+        <item name="colorAttendanceAbsent">@color/attendance_absent</item>
+        <item name="colorAttendanceAbsentContainer">@color/attendance_absent_container</item>
+
+        <item name="colorAttendanceLeave">@color/attendance_leave</item>
+        <item name="colorAttendanceLeaveContainer">@color/attendance_leave_container</item>
+
+        <item name="colorAttendanceNotChecked">@color/attendance_not_checked</item>
+        <item name="colorAttendanceNotCheckedContainer">@color/attendance_not_checked_container</item>
+
+        <item name="colorAttendanceWeekend">@color/attendance_weekend</item>
+        <item name="colorAttendanceWeekendContainer">@color/attendance_weekend_container</item>
+
+        <item name="colorAttendanceEarlyLeave">@color/attendance_early_leave</item>
+        <item name="colorAttendanceEarlyLeaveContainer">@color/attendance_early_leave_container</item>
+
+        <!-- Card Background Colors -->
+        <item name="colorAttendancePresentCard">@color/attendance_present_card</item>
+        <item name="colorAttendanceLateCard">@color/attendance_late_card</item>
+        <item name="colorAttendanceAbsentCard">@color/attendance_absent_card</item>
+        <item name="colorAttendanceLeaveCard">@color/attendance_leave_card</item>
+        <item name="colorAttendanceNotCheckedCard">@color/attendance_not_checked_card</item>
+        <item name="colorAttendanceWeekendCard">@color/attendance_weekend_card</item>
+        <item name="colorAttendanceEarlyLeaveCard">@color/attendance_early_leave_card</item>
+    </style>
+
+    <!-- ==================== 1. THEME MÀU BƠ (AVOCADO) ==================== -->
+    <style name="Theme.AttendanceApp.Avocado" parent="Base.Theme.AttendanceApp">
+        <item name="colorPrimary">@color/md_theme_light_primary</item>
+        <item name="colorOnPrimary">@color/md_theme_light_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/md_theme_light_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/md_theme_light_onPrimaryContainer</item>
+
+        <item name="colorSecondary">@color/md_theme_light_secondary</item>
+        <item name="colorOnSecondary">@color/md_theme_light_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/md_theme_light_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/md_theme_light_onSecondaryContainer</item>
+
+        <item name="android:colorBackground">@color/md_theme_light_background</item>
+        <item name="colorOnBackground">@color/md_theme_light_onBackground</item>
+        <item name="colorSurface">@color/md_theme_light_surface</item>
+        <item name="colorOnSurface">@color/md_theme_light_onSurface</item>
+        <item name="colorSurfaceVariant">@color/md_theme_light_surfaceVariant</item>
+        <item name="colorOnSurfaceVariant">@color/md_theme_light_onSurfaceVariant</item>
+        <item name="colorOutline">@color/md_theme_light_outline</item>
+        <item name="colorOutlineVariant">@color/md_theme_light_outlineVariant</item>
+    </style>
+
+    <!-- ==================== 2. THEME MÀU DƯA HẤU (WATERMELON) ==================== -->
+    <style name="Theme.AttendanceApp.Watermelon" parent="Base.Theme.AttendanceApp">
+        <item name="colorPrimary">@color/watermelon_light_primary</item>
+        <item name="colorOnPrimary">@color/watermelon_light_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/watermelon_light_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/watermelon_light_onPrimaryContainer</item>
+
+        <item name="colorSecondary">@color/watermelon_light_secondary</item>
+        <item name="colorOnSecondary">@color/watermelon_light_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/watermelon_light_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/watermelon_light_onSecondaryContainer</item>
+
+        <item name="android:colorBackground">@color/watermelon_light_background</item>
+        <item name="colorOnBackground">@color/watermelon_light_onBackground</item>
+        <item name="colorSurface">@color/watermelon_light_surface</item>
+        <item name="colorOnSurface">@color/watermelon_light_onSurface</item>
+        <item name="colorSurfaceVariant">@color/watermelon_light_surfaceVariant</item>
+        <item name="colorOnSurfaceVariant">@color/watermelon_light_onSurfaceVariant</item>
+        <item name="colorOutline">@color/watermelon_light_outline</item>
+        <item name="colorOutlineVariant">@color/watermelon_light_outlineVariant</item>
+    </style>
+
+    <!-- ==================== 3. THEME MÀU QUẢ CAM (ORANGE) ==================== -->
+    <style name="Theme.AttendanceApp.Orange" parent="Base.Theme.AttendanceApp">
+        <item name="colorPrimary">@color/orange_light_primary</item>
+        <item name="colorOnPrimary">@color/orange_light_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/orange_light_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/orange_light_onPrimaryContainer</item>
+
+        <item name="colorSecondary">@color/orange_light_secondary</item>
+        <item name="colorOnSecondary">@color/orange_light_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/orange_light_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/orange_light_onSecondaryContainer</item>
+
+        <item name="android:colorBackground">@color/orange_light_background</item>
+        <item name="colorOnBackground">@color/orange_light_onBackground</item>
+        <item name="colorSurface">@color/orange_light_surface</item>
+        <item name="colorOnSurface">@color/orange_light_onSurface</item>
+        <item name="colorSurfaceVariant">@color/orange_light_surfaceVariant</item>
+        <item name="colorOnSurfaceVariant">@color/orange_light_onSurfaceVariant</item>
+        <item name="colorOutline">@color/orange_light_outline</item>
+        <item name="colorOutlineVariant">@color/orange_light_outlineVariant</item>
+    </style>
+
+    <!-- THEME MẶC ĐỊNH (Kế thừa từ Theme Bơ) -->
+    <style name="Theme.AttendanceApp" parent="Theme.AttendanceApp.Avocado" />
+
+</resources>

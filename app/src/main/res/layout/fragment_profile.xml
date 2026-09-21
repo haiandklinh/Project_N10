@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?android:attr/colorBackground"
+    android:fillViewport="true"
+    android:overScrollMode="never"
+    tools:context=".ui.employee.profile.ProfileFragment">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!-- ==================== PROFILE HEADER ================== -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/layout_profile_header"
+            android:layout_width="match_parent"
+            android:layout_height="240dp"
+            android:paddingHorizontal="@dimen/spacing_l"
+            android:background="@drawable/bg_login_header"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <!-- AVATAR -->
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/iv_avatar"
+                android:layout_width="88dp"
+                android:layout_height="88dp"
+                android:contentDescription="Ảnh đại diện"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_avatar"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:shapeAppearanceOverlay="@style/ImageCircleStyle"
+                app:strokeColor="?attr/colorOutlineVariant"
+                app:strokeWidth="1dp" />
+
+            <!-- USER NAME -->
+            <TextView
+                android:id="@+id/tv_user_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_s"
+                android:text="@string/profile_user_name"
+                android:textColor="?attr/colorOnPrimary"
+                android:textSize="@dimen/text_size_title_medium"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/iv_avatar" />
+
+            <!-- POSITION -->
+            <TextView
+                android:id="@+id/tv_user_position"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:alpha="0.8"
+                android:text="@string/profile_user_position"
+                android:textColor="?attr/colorOnPrimary"
+                android:textSize="@dimen/text_size_body_small"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_user_name" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- ================= PROFILE CONTENT =================== -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/layout_profile_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?android:attr/colorBackground"
+            android:paddingStart="@dimen/spacing_l"
+            android:paddingTop="50dp"
+            android:paddingEnd="@dimen/spacing_l"
+            android:paddingBottom="@dimen/spacing_xl"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/layout_profile_header">
+
+            <!-- =================== TÀI KHOẢN ==================== -->
+            <TextView
+                android:id="@+id/tv_group_account"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_m"
+                android:text="@string/profile_section_account"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="@dimen/text_size_label_medium"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- ACCOUNT SETTINGS CARD -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_account_settings"
+                style="@style/MainCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_s"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_group_account">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <!-- EDIT PROFILE -->
+                    <include
+                        android:id="@+id/row_edit_profile"
+                        layout="@layout/item_profile_menu_row" />
+
+                    <View style="@style/DividerStyle" />
+
+                    <!-- CHANGE PASSWORD -->
+                    <include
+                        android:id="@+id/row_change_password"
+                        layout="@layout/item_profile_menu_row" />
+
+                    <View style="@style/DividerStyle" />
+
+                    <!-- NOTIFICATION -->
+                    <include
+                        android:id="@+id/row_notification_settings"
+                        layout="@layout/item_profile_menu_row" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ==================== ỨNG DỤNG ==================== -->
+            <TextView
+                android:id="@+id/tv_group_app"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_xl"
+                android:text="@string/profile_section_app"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="@dimen/text_size_label_medium"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/card_account_settings" />
+
+            <!-- APP SETTINGS CARD -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_app_settings"
+                style="@style/MainCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_s"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_group_app">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <!-- LANGUAGE -->
+                    <include
+                        android:id="@+id/row_language"
+                        layout="@layout/item_profile_menu_row" />
+
+                    <View style="@style/DividerStyle" />
+
+                    <!-- THEMES -->
+                    <include
+                        android:id="@+id/row_themes"
+                        layout="@layout/item_profile_menu_row" />
+
+                    <View style="@style/DividerStyle" />
+
+                    <!-- DARK MODE -->
+                    <include
+                        android:id="@+id/row_dark_mode"
+                        layout="@layout/item_profile_switch_row" />
+
+                    <View style="@style/DividerStyle" />
+
+                    <!-- HELP -->
+                    <include
+                        android:id="@+id/row_help_support"
+                        layout="@layout/item_profile_menu_row" />
+
+                    <View style="@style/DividerStyle" />
+
+                    <!-- ABOUT -->
+                    <include
+                        android:id="@+id/row_about_app"
+                        layout="@layout/item_profile_menu_row" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ==================== LOGOUT ====================== -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_logout"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="@dimen/spacing_3xl"
+                android:text="@string/profile_logout_button"
+                android:textColor="@color/md_theme_light_error"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/card_app_settings"
+                app:strokeColor="@color/md_theme_light_error"
+                app:strokeWidth="1dp" />
+
+            <!-- ===================== VERSION ==================== -->
+            <TextView
+                android:id="@+id/tv_app_version"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_l"
+                android:text="@string/profile_version"
+                android:layout_marginBottom="100dp"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="@dimen/text_size_label_small"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/btn_logout" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- ============ TÓM TẮT CHUYÊN CẦN (CỐ ĐỊNH CHÍNH GIỮA) ================== -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_attendance_summary"
+            style="@style/CategoryCard"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_l"
+            android:layout_marginEnd="@dimen/spacing_l"
+            android:elevation="4dp"
+            app:layout_constraintBottom_toTopOf="@id/layout_profile_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/layout_profile_header">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="@dimen/spacing_m">
+
+                <!-- TITLE -->
+                <TextView
+                    android:id="@+id/tv_summary_title"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/profile_summary_title"
+                    android:textColor="?attr/colorOnPrimaryContainer"
+                    android:textSize="@dimen/text_size_body_medium"
+                    android:textStyle="bold"
+                    app:layout_constraintEnd_toStartOf="@id/iv_summary_arrow"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <!-- ARROW -->
+                <ImageView
+                    android:id="@+id/iv_summary_arrow"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:contentDescription="Xem lịch sử"
+                    android:src="@drawable/ic_chevron_right"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:tint="?attr/colorOnPrimaryContainer" />
+
+                <!-- RATE -->
+                <TextView
+                    android:id="@+id/tv_summary_rate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_s"
+                    android:text="@string/profile_summary_rate"
+                    android:textColor="?attr/colorOnPrimaryContainer"
+                    android:textSize="@dimen/text_size_title_large"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tv_summary_title" />
+
+                <!-- DESCRIPTION -->
+                <TextView
+                    android:id="@+id/tv_summary_description"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/spacing_2xs"
+                    android:text="@string/profile_summary_description"
+                    android:textColor="?attr/colorOnPrimaryContainer"
+                    android:textSize="@dimen/text_size_body_small"
+                    app:layout_constraintBottom_toBottomOf="@id/tv_summary_rate"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/tv_summary_rate"
+                    app:layout_constraintTop_toTopOf="@id/tv_summary_rate" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.core.widget.NestedScrollView>

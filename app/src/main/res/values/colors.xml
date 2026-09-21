@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- =================================================================== -->
+    <!-- CHỦ ĐỀ 1: THEME QUẢ BƠ (AVOCADO THEME - MẶC ĐỊNH)                   -->
+    <!-- =================================================================== -->
+
+    <!-- LIGHT THEME COLORS (AVOCADO) -->
+    <!-- Primary: Xanh bơ đậm chủ đạo (dành cho Button, FAB, Icon chính) -->
+    <color name="md_theme_light_primary">#4A8905</color>
+    <color name="md_theme_light_onPrimary">#FFFFFF</color>
+    <color name="md_theme_light_primaryContainer">#E2F0D3</color>
+    <color name="md_theme_light_onPrimaryContainer">#14240B</color>
+
+    <!-- Secondary: Xanh bơ nhạt tươi sáng (dành cho Badge, Selected State, Chip) -->
+    <color name="md_theme_light_secondary">#7CB342</color>
+    <color name="md_theme_light_onSecondary">#FFFFFF</color>
+    <color name="md_theme_light_secondaryContainer">#F1F8E9</color>
+    <color name="md_theme_light_onSecondaryContainer">#254106</color>
+
+    <!-- Background & Surface: Phong cách màu Vàng Bơ (Butter Yellow) -->
+    <!-- 1. Background chính của app (nhẹ hơn surface để làm nổi các Card) -->
+    <color name="md_theme_light_background">#FFFDF5</color>
+    <color name="md_theme_light_onBackground">#1C1C16</color>
+
+    <!-- 2. Nền của các Card, Sheet, AppBar (Màu Vàng Bơ chủ đạo) -->
+    <color name="md_theme_light_surface">#FFFBEA</color>
+    <color name="md_theme_light_onSurface">#1C1C16</color>
+
+    <!-- 3. Nền cho Chip, SearchBar, ô Input hoặc Card phụ (Vàng bơ đậm hơn một chút để phân cấp) -->
+    <color name="md_theme_light_surfaceVariant">#FFF4D1</color>
+    <color name="md_theme_light_onSurfaceVariant">#4C4739</color>
+
+    <!-- Border & Divider -->
+    <color name="md_theme_light_outline">#D0C7B8</color>
+    <color name="md_theme_light_outlineVariant">#EBE1D1</color>
+
+    <!-- Error -->
+    <color name="md_theme_light_error">#BA1A1A</color>
+    <color name="md_theme_light_onError">#FFFFFF</color>
+    <color name="md_theme_light_errorContainer">#FFDAD6</color>
+    <color name="md_theme_light_onErrorContainer">#410002</color>
+
+    <!-- DARK THEME (AVOCADO STYLE) -->
+    <!-- Primary: Xanh bơ pastel sáng (Lấy từ tone thịt quả bơ & chữ nổi) -->
+    <color name="md_theme_dark_primary">#A1C2BD</color>
+    <color name="md_theme_dark_onPrimary">#122724</color>
+    <color name="md_theme_dark_primaryContainer">#3D786C</color>
+    <color name="md_theme_dark_onPrimaryContainer">#E0F2EF</color>
+
+    <!-- Secondary: Xanh bơ rêu dịu (Lấy từ tone vỏ quả bơ & nút bấm) -->
+    <color name="md_theme_dark_secondary">#789C94</color>
+    <color name="md_theme_dark_onSecondary">#10221E</color>
+    <color name="md_theme_dark_secondaryContainer">#2A4742</color>
+    <color name="md_theme_dark_onSecondaryContainer">#D1E6E1</color>
+
+    <!-- Background & Surface: Nền xanh đen rêu (Trích xuất chuẩn từ background trong ảnh) -->
+    <color name="md_theme_dark_background">#172321</color>
+    <color name="md_theme_dark_onBackground">#E2ECE9</color>
+
+    <!-- Surface & Card: Lớp bề mặt Card/Sheet (Sáng hơn nền một chút) -->
+    <color name="md_theme_dark_surface">#1E2C2A</color>
+    <color name="md_theme_dark_onSurface">#E2ECE9</color>
+
+    <!-- Surface Variant: Ô Input, Chip, Divider nhẹ -->
+    <color name="md_theme_dark_surfaceVariant">#2E403D</color>
+    <color name="md_theme_dark_onSurfaceVariant">#B8C9C5</color>
+
+    <!-- Border & Divider -->
+    <color name="md_theme_dark_outline">#5B736E</color>
+    <color name="md_theme_dark_outlineVariant">#3F4947</color>
+
+    <!-- Error: Đỏ hồng pastel dịu mắt hợp với tone nền tối -->
+    <color name="md_theme_dark_error">#FFB4AB</color>
+    <color name="md_theme_dark_onError">#690005</color>
+    <color name="md_theme_dark_errorContainer">#93000A</color>
+    <color name="md_theme_dark_onErrorContainer">#FFDAD6</color>
+
+
+    <!-- =================================================================== -->
+    <!-- CHỦ ĐỀ 2: THEME QUẢ DƯA HẤU (WATERMELON THEME)                     -->
+    <!-- =================================================================== -->
+
+    <!-- LIGHT THEME COLORS (WATERMELON) -->
+    <color name="watermelon_light_primary">#E53935</color>
+    <color name="watermelon_light_onPrimary">#FFFFFF</color>
+    <color name="watermelon_light_primaryContainer">#FFDAD6</color>
+    <color name="watermelon_light_onPrimaryContainer">#410002</color>
+
+    <color name="watermelon_light_secondary">#2E7D32</color>
+    <color name="watermelon_light_onSecondary">#FFFFFF</color>
+    <color name="watermelon_light_secondaryContainer">#C8E6C9</color>
+    <color name="watermelon_light_onSecondaryContainer">#002105</color>
+
+    <color name="watermelon_light_background">#FFF8F8</color>
+    <color name="watermelon_light_onBackground">#201A1A</color>
+    <color name="watermelon_light_surface">#FFFFFF</color>
+    <color name="watermelon_light_onSurface">#201A1A</color>
+    <color name="watermelon_light_surfaceVariant">#F4DDDD</color>
+    <color name="watermelon_light_onSurfaceVariant">#534343</color>
+    <color name="watermelon_light_outline">#857373</color>
+    <color name="watermelon_light_outlineVariant">#D8C2C2</color>
+
+    <!-- DARK THEME COLORS (WATERMELON) -->
+    <color name="watermelon_dark_primary">#FFB4AB</color>
+    <color name="watermelon_dark_onPrimary">#690005</color>
+    <color name="watermelon_dark_primaryContainer">#93000A</color>
+    <color name="watermelon_dark_onPrimaryContainer">#FFDAD6</color>
+
+    <color name="watermelon_dark_secondary">#81C784</color>
+    <color name="watermelon_dark_onSecondary">#00390F</color>
+    <color name="watermelon_dark_secondaryContainer">#00531A</color>
+    <color name="watermelon_dark_onSecondaryContainer">#C8E6C9</color>
+
+    <color name="watermelon_dark_background">#1A1111</color>
+    <color name="watermelon_dark_onBackground">#F1DFDF</color>
+    <color name="watermelon_dark_surface">#201A1A</color>
+    <color name="watermelon_dark_onSurface">#F1DFDF</color>
+    <color name="watermelon_dark_surfaceVariant">#534343</color>
+    <color name="watermelon_dark_onSurfaceVariant">#D8C2C2</color>
+    <color name="watermelon_dark_outline">#857373</color>
+    <color name="watermelon_dark_outlineVariant">#443838</color>
+
+
+    <!-- =================================================================== -->
+    <!-- CHỦ ĐỀ 3: THEME QUẢ CAM (ORANGE THEME)                             -->
+    <!-- =================================================================== -->
+
+    <!-- LIGHT THEME COLORS (ORANGE) -->
+    <color name="orange_light_primary">#F57C00</color>
+    <color name="orange_light_onPrimary">#FFFFFF</color>
+    <color name="orange_light_primaryContainer">#FFE0B2</color>
+    <color name="orange_light_onPrimaryContainer">#311300</color>
+
+    <color name="orange_light_secondary">#E65100</color>
+    <color name="orange_light_onSecondary">#FFFFFF</color>
+    <color name="orange_light_secondaryContainer">#FFCC80</color>
+    <color name="orange_light_onSecondaryContainer">#2B0B00</color>
+
+    <color name="orange_light_background">#FFFBF7</color>
+    <color name="orange_light_onBackground">#241A14</color>
+    <color name="orange_light_surface">#FFFFFF</color>
+    <color name="orange_light_onSurface">#241A14</color>
+    <color name="orange_light_surfaceVariant">#FBE9E7</color>
+    <color name="orange_light_onSurfaceVariant">#53433F</color>
+    <color name="orange_light_outline">#85736E</color>
+    <color name="orange_light_outlineVariant">#D8C2BC</color>
+
+    <!-- DARK THEME COLORS (ORANGE) -->
+    <color name="orange_dark_primary">#FFB74D</color>
+    <color name="orange_dark_onPrimary">#451D00</color>
+    <color name="orange_dark_primaryContainer">#662D00</color>
+    <color name="orange_dark_onPrimaryContainer">#FFE0B2</color>
+
+    <color name="orange_dark_secondary">#FF9800</color>
+    <color name="orange_dark_onSecondary">#411B00</color>
+    <color name="orange_dark_secondaryContainer">#612B00</color>
+    <color name="orange_dark_onSecondaryContainer">#FFCC80</color>
+
+    <color name="orange_dark_background">#1F140E</color>
+    <color name="orange_dark_onBackground">#F5E0D6</color>
+    <color name="orange_dark_surface">#261912</color>
+    <color name="orange_dark_onSurface">#F5E0D6</color>
+    <color name="orange_dark_surfaceVariant">#53433F</color>
+    <color name="orange_dark_onSurfaceVariant">#D8C2BC</color>
+    <color name="orange_dark_outline">#85736E</color>
+    <color name="orange_dark_outlineVariant">#3E312D</color>
+
+
+    <!-- =================================================================== -->
+    <!-- MÀU TRẠNG THÁI CHẤM CÔNG (ATTENDANCE STATUS - LIGHT)                 -->
+    <!-- =================================================================== -->
+
+    <!-- PRESENT (Có mặt): Xanh lá bơ tươi đậm -->
+    <color name="attendance_present">#1B5E20</color>
+    <color name="attendance_present_container">#E6FFD2</color>
+
+    <!-- LATE (Đi muộn): Cam vàng ấm (dịu hơn màu cam gắt) -->
+    <color name="attendance_late">#E67E22</color>
+    <color name="attendance_late_container">#FFEDD7</color>
+
+    <!-- ABSENT (Vắng mặt): Đỏ san hô nhạt/dịu (không bị gắt mắt) -->
+    <color name="attendance_absent">#C0392B</color>
+    <color name="attendance_absent_container">#FFE0DA</color>
+
+    <!-- LEAVE (Nghỉ phép): Tím ánh hồng, khác biệt rõ với 3 trạng thái còn lại -->
+    <color name="attendance_leave">#8E24AA</color>
+    <color name="attendance_leave_container">#FDEBFF</color>
+
+    <!-- NOT CHECKED (Chưa chấm): Xám đậm hơn chút, đủ để nhắc nhở cần theo dõi -->
+    <color name="attendance_not_checked">#5D6D7E</color>
+    <color name="attendance_not_checked_container">#F2F4F4</color>
+
+    <!-- WEEKEND (Cuối tuần): Xanh dương RẤT nhạt, gần như trung tính - không cần chú ý -->
+    <color name="attendance_weekend">#A9C6D9</color>
+    <color name="attendance_weekend_container">#EEF6FB</color>
+
+    <!-- LIGHT MODE: Xanh lam chàm dịu (Khác biệt hoàn toàn với màu Cam của LATE) -->
+    <color name="attendance_early_leave">#2980B9</color>
+    <color name="attendance_early_leave_container">#EBF5FB</color>
+
+    <!-- CARD BACKGROUND COLORS (LIGHT) - Nền card cho từng trạng thái -->
+    <color name="attendance_present_card">#F0F9E6</color>
+    <color name="attendance_late_card">#FFF5EB</color>
+    <color name="attendance_absent_card">#FFF0EE</color>
+    <color name="attendance_leave_card">#FAF5FC</color>
+    <color name="attendance_not_checked_card">#F7F8F8</color>
+    <color name="attendance_weekend_card">#F4F8FB</color>
+    <color name="attendance_early_leave_card">#F2F8FC</color>
+
+
+    <!-- =================================================================== -->
+    <!-- MÀU TRẠNG THÁI CHẤM CÔNG (ATTENDANCE STATUS - DARK)                  -->
+    <!-- =================================================================== -->
+
+    <!-- PRESENT (Có mặt) -->
+    <color name="attendance_present_dark">#0CF012</color> <!-- Xanh lá sáng rõ trên nền tối -->
+    <color name="attendance_present_container_dark">#1B3317</color>
+
+    <!-- LATE (Đi muộn) -->
+    <color name="attendance_late_dark">#F0A15C</color>
+    <color name="attendance_late_container_dark">#4A3018</color>
+
+    <!-- ABSENT (Vắng mặt) -->
+    <color name="attendance_absent_dark">#E8897E</color>
+    <color name="attendance_absent_container_dark">#4A211C</color>
+
+    <!-- LEAVE (Nghỉ phép) -->
+    <color name="attendance_leave_dark">#D48CE0</color>
+    <color name="attendance_leave_container_dark">#40284A</color>
+
+    <!-- NOT CHECKED (Chưa chấm) -->
+    <color name="attendance_not_checked_dark">#AEBBC4</color>
+    <color name="attendance_not_checked_container_dark">#37403F</color>
+
+    <!-- WEEKEND (Cuối tuần) -->
+    <color name="attendance_weekend_dark">#7FA9C4</color>
+    <color name="attendance_weekend_container_dark">#213640</color>
+
+    <!-- DARK MODE: Tăng sáng cho chữ/icon, container tối hài hòa nền #1E2C2A -->
+    <color name="attendance_early_leave_dark">#64B5F6</color>
+    <color name="attendance_early_leave_container_dark">#1B3B54</color>
+
+    <!-- CARD BACKGROUND COLORS (DARK) - Nền card cho từng trạng thái -->
+    <color name="attendance_present_card_dark">#253A1E</color>
+    <color name="attendance_late_card_dark">#3D2A1A</color>
+    <color name="attendance_absent_card_dark">#3D1E1C</color>
+    <color name="attendance_leave_card_dark">#35253D</color>
+    <color name="attendance_not_checked_card_dark">#2A3230</color>
+    <color name="attendance_weekend_card_dark">#233038</color>
+    <color name="attendance_early_leave_card_dark">#183247</color>
+
+    <!-- MÀU CHỦ ĐẠO CHUNG KHÁC -->
+    <color name="white">#FFFFFF</color>
+</resources>

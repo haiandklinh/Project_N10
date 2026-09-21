@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_manager"
+    app:startDestination="@id/managerDashboardFragment">
+
+    <!-- ================================================================= -->
+    <!-- 1. NHÓM MÀN HÌNH CHÍNH (BOTTOM NAVIGATION DESTINATIONS)          -->
+    <!-- ================================================================= -->
+
+    <!-- Tab 1: Trang chủ / Tổng quan (Dashboard) -->
+    <fragment
+        android:id="@+id/managerDashboardFragment"
+        android:name="com.example.attendanceapp.ui.manager.dashboard.ManagerDashboardFragment"
+        android:label="@string/nav_manager_dashboard"
+        tools:layout="@layout/fragment_manager_dashboard">
+
+<!--        &lt;!&ndash; Chuyển sang chi tiết đơn từ nhanh &ndash;&gt;-->
+<!--        <action-->
+<!--            android:id="@+id/action_managerDashboardFragment_to_approvalListFragment"-->
+<!--            app:destination="@id/approvalListFragment" />-->
+
+<!--        &lt;!&ndash; Chuyển sang màn hình Cài đặt công ty &ndash;&gt;-->
+<!--        <action-->
+<!--            android:id="@+id/action_managerDashboardFragment_to_companySettingsFragment"-->
+<!--            app:destination="@id/companySettingsFragment" />-->
+    </fragment>
+
+    <!-- Tab 2: Phê duyệt (Approvals) -->
+    <fragment
+        android:id="@+id/approvalListFragment"
+        android:name="com.example.attendanceapp.ui.manager.approval.ApprovalListFragment"
+        android:label="@string/nav_manager_approvals"
+        tools:layout="@layout/fragment_approval_list">
+
+<!--        &lt;!&ndash; Xem chi tiết 1 đơn cần duyệt &ndash;&gt;-->
+<!--        <action-->
+<!--            android:id="@+id/action_approvalListFragment_to_approvalDetailFragment"-->
+<!--            app:destination="@id/approvalDetailFragment" />-->
+    </fragment>
+
+    <!-- Tab 3: Lịch trình & Quản lý ca làm (Shift Management) -->
+    <fragment
+        android:id="@+id/shiftManagementFragment"
+        android:name="com.example.attendanceapp.ui.manager.schedule.ShiftManagementFragment"
+        android:label="@string/nav_manager_schedule"
+        tools:layout="@layout/fragment_shift_management">
+
+        <!-- Tạo hoặc chỉnh sửa ca làm việc mới -->
+<!--        <action-->
+<!--            android:id="@+id/action_shiftManagementFragment_to_createShiftFragment"-->
+<!--            app:destination="@id/createShiftFragment" />-->
+    </fragment>
+
+    <!-- Tab 4: Nhân sự (Employee Management) -->
+    <fragment
+        android:id="@+id/employeeListFragment"
+        android:name="com.example.attendanceapp.ui.manager.employee.EmployeeListFragment"
+        android:label="@string/nav_manager_employees"
+        tools:layout="@layout/fragment_employee_list">
+
+        <!-- Xem hồ sơ chi tiết của 1 nhân viên -->
+<!--        <action-->
+<!--            android:id="@+id/action_employeeListFragment_to_employeeDetailFragment"-->
+<!--            app:destination="@id/employeeDetailFragment" />-->
+    </fragment>
+
+
+    <!-- ================================================================= -->
+    <!-- 2. NHÓM MÀN HÌNH CHI TIẾT & CHỨC NĂNG PHỤ (FULLSCREEN DESTINATIONS) -->
+    <!-- ================================================================= -->
+
+    <!-- Chi tiết đơn phê duyệt (Đơn nghỉ phép, OT, Giải trình) -->
+<!--    <fragment-->
+<!--        android:id="@+id/approvalDetailFragment"-->
+<!--        android:name="com.example.attendanceapp.ui.manager.approval.ApprovalDetailFragment"-->
+<!--        android:label="Chi tiết phê duyệt"-->
+<!--        tools:layout="@layout/fragment_approval_detail" />-->
+
+<!--    &lt;!&ndash; Tạo/Chỉnh sửa ca làm việc &ndash;&gt;-->
+<!--    <fragment-->
+<!--        android:id="@+id/createShiftFragment"-->
+<!--        android:name="com.example.attendanceapp.ui.manager.schedule.CreateShiftFragment"-->
+<!--        android:label="Tạo ca làm việc"-->
+<!--        tools:layout="@layout/fragment_create_shift" />-->
+
+<!--    &lt;!&ndash; Hồ sơ thông tin chi tiết nhân viên &ndash;&gt;-->
+<!--    <fragment-->
+<!--        android:id="@+id/employeeDetailFragment"-->
+<!--        android:name="com.example.attendanceapp.ui.manager.employee.EmployeeDetailFragment"-->
+<!--        android:label="Thông tin nhân viên"-->
+<!--        tools:layout="@layout/fragment_employee_detail" />-->
+
+<!--    &lt;!&ndash; Cấu hình công ty (Vị trí GPS, Wi-Fi hợp lệ, Cấu hình ca) &ndash;&gt;-->
+<!--    <fragment-->
+<!--        android:id="@+id/companySettingsFragment"-->
+<!--        android:name="com.example.attendanceapp.ui.manager.settings.CompanySettingsFragment"-->
+<!--        android:label="Cài đặt doanh nghiệp"-->
+<!--        tools:layout="@layout/fragment_company_settings" />-->
+
+</navigation>

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- BASE DARK THEME: Cấu hình dùng chung cho Dark Mode -->
+    <style name="Base.Theme.AttendanceApp" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Status bar configuration -->
+        <item name="android:statusBarColor">?android:attr/colorBackground</item>
+        <item name="android:windowLightStatusBar">false</item>
+
+        <!-- Outline & Error -->
+        <item name="colorOutline">@color/md_theme_dark_outline</item>
+        <item name="colorError">@color/md_theme_dark_error</item>
+        <item name="colorOnError">@color/md_theme_dark_onError</item>
+        <item name="colorErrorContainer">@color/md_theme_dark_errorContainer</item>
+        <item name="colorOnErrorContainer">@color/md_theme_dark_onErrorContainer</item>
+
+        <!-- ==================== ATTENDANCE STATUS (DARK DÙNG CHUNG) ==================== -->
+        <item name="colorAttendancePresent">@color/attendance_present_dark</item>
+        <item name="colorAttendancePresentContainer">@color/attendance_present_container_dark</item>
+
+        <item name="colorAttendanceLate">@color/attendance_late_dark</item>
+        <item name="colorAttendanceLateContainer">@color/attendance_late_container_dark</item>
+
+        <item name="colorAttendanceAbsent">@color/attendance_absent_dark</item>
+        <item name="colorAttendanceAbsentContainer">@color/attendance_absent_container_dark</item>
+
+        <item name="colorAttendanceLeave">@color/attendance_leave_dark</item>
+        <item name="colorAttendanceLeaveContainer">@color/attendance_leave_container_dark</item>
+
+        <item name="colorAttendanceNotChecked">@color/attendance_not_checked_dark</item>
+        <item name="colorAttendanceNotCheckedContainer">@color/attendance_not_checked_container_dark</item>
+
+        <item name="colorAttendanceWeekend">@color/attendance_weekend_dark</item>
+        <item name="colorAttendanceWeekendContainer">@color/attendance_weekend_container_dark</item>
+
+        <item name="colorAttendanceEarlyLeave">@color/attendance_early_leave_dark</item>
+        <item name="colorAttendanceEarlyLeaveContainer">@color/attendance_early_leave_container_dark</item>
+
+        <!-- Card Background Colors -->
+        <item name="colorAttendancePresentCard">@color/attendance_present_card_dark</item>
+        <item name="colorAttendanceLateCard">@color/attendance_late_card_dark</item>
+        <item name="colorAttendanceAbsentCard">@color/attendance_absent_card_dark</item>
+        <item name="colorAttendanceLeaveCard">@color/attendance_leave_card_dark</item>
+        <item name="colorAttendanceNotCheckedCard">@color/attendance_not_checked_card_dark</item>
+        <item name="colorAttendanceWeekendCard">@color/attendance_weekend_card_dark</item>
+        <item name="colorAttendanceEarlyLeaveCard">@color/attendance_early_leave_card_dark</item>
+    </style>
+
+    <!-- ==================== 1. THEME MÀU BƠ (AVOCADO DARK) ==================== -->
+    <style name="Theme.AttendanceApp.Avocado" parent="Base.Theme.AttendanceApp">
+        <item name="colorPrimary">@color/md_theme_dark_primary</item>
+        <item name="colorOnPrimary">@color/md_theme_dark_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/md_theme_dark_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/md_theme_dark_onPrimaryContainer</item>
+
+        <item name="colorSecondary">@color/md_theme_dark_secondary</item>
+        <item name="colorOnSecondary">@color/md_theme_dark_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/md_theme_dark_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/md_theme_dark_onSecondaryContainer</item>
+
+        <item name="android:colorBackground">@color/md_theme_dark_background</item>
+        <item name="colorOnBackground">@color/md_theme_dark_onBackground</item>
+        <item name="colorSurface">@color/md_theme_dark_surface</item>
+        <item name="colorOnSurface">@color/md_theme_dark_onSurface</item>
+        <item name="colorSurfaceVariant">@color/md_theme_dark_surfaceVariant</item>
+        <item name="colorOnSurfaceVariant">@color/md_theme_dark_onSurfaceVariant</item>
+        <item name="colorOutlineVariant">@color/md_theme_dark_outlineVariant</item>
+    </style>
+
+    <!-- ==================== 2. THEME MÀU DƯA HẤU (WATERMELON DARK) ==================== -->
+    <style name="Theme.AttendanceApp.Watermelon" parent="Base.Theme.AttendanceApp">
+        <item name="colorPrimary">@color/watermelon_dark_primary</item>
+        <item name="colorOnPrimary">@color/watermelon_dark_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/watermelon_dark_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/watermelon_dark_onPrimaryContainer</item>
+
+        <item name="colorSecondary">@color/watermelon_dark_secondary</item>
+        <item name="colorOnSecondary">@color/watermelon_dark_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/watermelon_dark_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/watermelon_dark_onSecondaryContainer</item>
+
+        <item name="android:colorBackground">@color/watermelon_dark_background</item>
+        <item name="colorOnBackground">@color/watermelon_dark_onBackground</item>
+        <item name="colorSurface">@color/watermelon_dark_surface</item>
+        <item name="colorOnSurface">@color/watermelon_dark_onSurface</item>
+        <item name="colorSurfaceVariant">@color/watermelon_dark_surfaceVariant</item>
+        <item name="colorOnSurfaceVariant">@color/watermelon_dark_onSurfaceVariant</item>
+        <item name="colorOutlineVariant">@color/watermelon_dark_outlineVariant</item>
+    </style>
+
+    <!-- ==================== 3. THEME MÀU QUẢ CAM (ORANGE DARK) ==================== -->
+    <style name="Theme.AttendanceApp.Orange" parent="Base.Theme.AttendanceApp">
+        <item name="colorPrimary">@color/orange_dark_primary</item>
+        <item name="colorOnPrimary">@color/orange_dark_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/orange_dark_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/orange_dark_onPrimaryContainer</item>
+
+        <item name="colorSecondary">@color/orange_dark_secondary</item>
+        <item name="colorOnSecondary">@color/orange_dark_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/orange_dark_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/orange_dark_onSecondaryContainer</item>
+
+        <item name="android:colorBackground">@color/orange_dark_background</item>
+        <item name="colorOnBackground">@color/orange_dark_onBackground</item>
+        <item name="colorSurface">@color/orange_dark_surface</item>
+        <item name="colorOnSurface">@color/orange_dark_onSurface</item>
+        <item name="colorSurfaceVariant">@color/orange_dark_surfaceVariant</item>
+        <item name="colorOnSurfaceVariant">@color/orange_dark_onSurfaceVariant</item>
+        <item name="colorOutlineVariant">@color/orange_dark_outlineVariant</item>
+    </style>
+
+    <!-- THEME MẶC ĐỊNH DARK MODE (Default sang Avocado) -->
+    <style name="Theme.AttendanceApp" parent="Theme.AttendanceApp.Avocado" />
+
+</resources>

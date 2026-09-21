@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- 1. Trang tổng quan (Dashboard) -->
+    <item
+        android:id="@+id/managerDashboardFragment"
+        android:icon="@drawable/ic_home"
+        android:title="Dashboard" />
+
+    <!-- 2. Duyệt đơn (Approvals: Đơn nghỉ phép, giải trình, OT) -->
+    <item
+        android:id="@+id/approvalListFragment"
+        android:icon="@drawable/ic_approval"
+        android:title="Approvals" />
+
+    <!-- 3. Quản lý ca làm / Lịch trình (Schedule Management) -->
+    <item
+        android:id="@+id/shiftManagementFragment"
+        android:icon="@drawable/ic_calendar"
+        android:title="Schedule" />
+
+    <!-- 4. Quản lý nhân sự (Employees) -->
+    <item
+        android:id="@+id/employeeListFragment"
+        android:icon="@drawable/ic_profile"
+        android:title="Employees" />
+
+</menu>

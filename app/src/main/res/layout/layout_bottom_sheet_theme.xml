@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_bottom_sheet"
+    android:orientation="vertical"
+    android:paddingHorizontal="@dimen/spacing_xl"
+    android:paddingTop="@dimen/spacing_l"
+    android:paddingBottom="@dimen/spacing_3xl">
+
+    <!-- Thanh kéo kẹp top (Drag Handle) -->
+    <View
+        android:layout_width="32dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:background="?attr/colorOutlineVariant" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_m"
+        android:text="@string/theme_select_title"
+        android:textColor="?attr/colorOnSurface"
+        android:textSize="@dimen/text_size_title_medium"
+        android:textStyle="bold" />
+
+    <!-- Danh sách các theme xếp hàng ngang -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_l"
+        android:baselineAligned="false"
+        android:orientation="horizontal">
+
+        <!-- Theme 1: Bơ -->
+        <include
+            android:id="@+id/theme_avocado"
+            layout="@layout/item_theme_option" />
+
+        <!-- Theme 2: Dưa hấu -->
+        <include
+            android:id="@+id/theme_watermelon"
+            layout="@layout/item_theme_option" />
+
+        <!-- Theme 3: Quả cam -->
+        <include
+            android:id="@+id/theme_orange"
+            layout="@layout/item_theme_option" />
+
+    </LinearLayout>
+
+</LinearLayout>

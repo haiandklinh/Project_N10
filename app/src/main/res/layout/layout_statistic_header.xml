@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layout_header"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_card_gradient"
+    android:paddingVertical="@dimen/spacing_xl"
+    android:paddingHorizontal="@dimen/spacing_m">
+
+    <!-- Title -->
+    <TextView
+        android:id="@+id/tv_screen_title"
+        style="@style/TitleTextLargeStyle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Thống kê"
+        android:textColor="?attr/colorOnPrimary"
+        app:layout_constraintEnd_toStartOf="@id/toggle_group_time"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Subtitle Tháng/Năm với Navigation -->
+    <ImageView
+        android:id="@+id/btn_prev_month"
+        android:layout_width="@dimen/icon_size_xl"
+        android:layout_height="@dimen/icon_size_xl"
+        android:layout_marginTop="@dimen/spacing_s"
+        android:background="@drawable/bg_time_chip"
+        android:clickable="true"
+        android:contentDescription="Tháng trước"
+        android:focusable="true"
+        android:padding="@dimen/spacing_xs"
+        android:src="@drawable/ic_chevron_left"
+        app:layout_constraintBottom_toBottomOf="@+id/tv_header_subtitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_screen_title"
+        app:tint="?attr/colorOnPrimary" />
+
+    <TextView
+        android:id="@+id/tv_header_subtitle"
+        style="@style/BodyTextMediumStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_s"
+        android:text="Tháng 9/2026"
+        android:textColor="?attr/colorOnPrimary"
+        app:layout_constraintEnd_toStartOf="@id/btn_next_month"
+        app:layout_constraintStart_toEndOf="@id/btn_prev_month"
+        app:layout_constraintTop_toBottomOf="@id/tv_screen_title" />
+
+    <ImageView
+        android:id="@+id/btn_next_month"
+        android:layout_width="@dimen/icon_size_xl"
+        android:layout_height="@dimen/icon_size_xl"
+        android:layout_marginTop="@dimen/spacing_s"
+        android:background="@drawable/bg_time_chip"
+        android:layout_marginEnd="60dp"
+        android:clickable="true"
+        android:contentDescription="Tháng sau"
+        android:focusable="true"
+        android:padding="@dimen/spacing_xs"
+        android:src="@drawable/ic_chevron_right"
+        app:layout_constraintBottom_toBottomOf="@+id/tv_header_subtitle"
+        app:layout_constraintEnd_toStartOf="@id/toggle_group_time"
+        app:layout_constraintTop_toBottomOf="@id/tv_screen_title"
+        app:tint="?attr/colorOnPrimary" />
+
+    <!-- Toggle Button Tuần / Tháng -->
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/toggle_group_time"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/button_height_m"
+        app:checkedButton="@id/btn_mode_month"
+        app:layout_constraintBottom_toBottomOf="@+id/tv_header_subtitle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:selectionRequired="true"
+        app:singleSelection="true">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_mode_week"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="50dp"
+            android:layout_height="match_parent"
+            android:paddingHorizontal="@dimen/spacing_3xs"
+            android:text="Tuần"
+            android:textColor="?attr/colorOnPrimary"
+            android:textSize="@dimen/text_size_label_medium" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_mode_month"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="50dp"
+            android:layout_height="match_parent"
+            android:paddingHorizontal="@dimen/spacing_3xs"
+            android:text="Tháng"
+            android:textColor="?attr/colorPrimary"
+            android:textSize="@dimen/text_size_label_medium" />
+    </com.google.android.material.button.MaterialButtonToggleGroup>
+
+    <!-- 3 TOP STATS CARD (NGÀY CÔNG / TỔNG GIỜ / CHUYÊN CẦN) -->
+    <LinearLayout
+        android:id="@+id/layout_stats_grid"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_s"
+        android:baselineAligned="false"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@id/tv_header_subtitle">
+
+        <!-- Stat 1: Ngày công -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/WaterCard"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/spacing_s"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingVertical="@dimen/spacing_s">
+
+                <TextView
+                    android:id="@+id/tv_header_work_days"
+                    style="@style/TitleTextLargeStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="12"
+                    android:textColor="?attr/colorSurface" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_3xs"
+                    android:text="Ngày công"
+                    android:textColor="?attr/colorSurface"
+                    android:textSize="@dimen/text_size_body_small" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Stat 2: Tổng giờ -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/WaterCard"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/spacing_s"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingVertical="@dimen/spacing_s">
+
+                <TextView
+                    android:id="@+id/tv_header_total_hours"
+                    style="@style/TitleTextLargeStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="98h"
+                    android:textColor="?attr/colorAttendanceEarlyLeave" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_3xs"
+                    android:text="Tổng giờ"
+                    android:textColor="?attr/colorAttendanceEarlyLeave"
+                    android:textSize="@dimen/text_size_body_small" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Stat 3: Chuyên cần -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/WaterCard"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingVertical="@dimen/spacing_s">
+
+                <TextView
+                    android:id="@+id/tv_header_attendance_rate"
+                    style="@style/TitleTextLargeStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="55%"
+                    android:textColor="?attr/colorAttendanceLate" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_3xs"
+                    android:text="Chuyên cần"
+                    android:textColor="?attr/colorAttendanceLate"
+                    android:textSize="@dimen/text_size_body_small" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
