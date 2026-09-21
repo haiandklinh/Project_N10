@@ -29,12 +29,19 @@ public class LoginUseCase {
         // TODO: Goi API dang nhap that su qua AuthRepository, vi du:
         // authRepository.login(companyCode, phone, password, callback);
 
-        // Tam thoi mock du lieu tra ve
+        // Giả lập phân biệt Role dựa vào số điện thoại hoặc mã công ty, hoặc mặc định cho phép test Manager
+        // Ví dụ: Nếu số điện thoại kết thúc bằng '0' hoặc nhập mã quản lý, hoặc mặc định cấp quyền MANAGER để bạn kiểm tra luồng Manager.
+        UserRole mockRole = UserRole.MANAGER; // Đổi mặc định từ EMPLOYEE sang MANAGER để test luồng quản lý
+        if (phone != null && phone.endsWith("1")) {
+            mockRole = UserRole.EMPLOYEE;
+        }
+
+        // Tam thoi mock du lieu tra ve với role tương ứng
         callback.onSuccess(new UserAccount(
                 "mock-user-id",
                 phone,
                 phone,
-                UserRole.EMPLOYEE,
+                mockRole,
                 false,
                 true,
                 Instant.now()

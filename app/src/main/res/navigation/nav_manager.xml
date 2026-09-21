@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_manager"
-    app:startDestination="@id/managerDashboardFragment">
+    app:startDestination="@id/managerHomeFragment">
 
     <!-- ================================================================= -->
     <!-- 1. NHÓM MÀN HÌNH CHÍNH (BOTTOM NAVIGATION DESTINATIONS)          -->
@@ -11,15 +11,15 @@
 
     <!-- Tab 1: Trang chủ / Tổng quan (Dashboard) -->
     <fragment
-        android:id="@+id/managerDashboardFragment"
-        android:name="com.example.attendanceapp.ui.manager.dashboard.ManagerDashboardFragment"
+        android:id="@+id/managerHomeFragment"
+        android:name="com.example.attendanceapp.ui.manager.home.ManagerHomeFragment"
         android:label="@string/nav_manager_dashboard"
-        tools:layout="@layout/fragment_manager_dashboard">
+        tools:layout="@layout/fragment_manager_home">
 
 <!--        &lt;!&ndash; Chuyển sang chi tiết đơn từ nhanh &ndash;&gt;-->
 <!--        <action-->
 <!--            android:id="@+id/action_managerDashboardFragment_to_approvalListFragment"-->
-<!--            app:destination="@id/approvalListFragment" />-->
+<!--            app:destination="@id/managerApprovalFragment" />-->
 
 <!--        &lt;!&ndash; Chuyển sang màn hình Cài đặt công ty &ndash;&gt;-->
 <!--        <action-->
@@ -29,10 +29,10 @@
 
     <!-- Tab 2: Phê duyệt (Approvals) -->
     <fragment
-        android:id="@+id/approvalListFragment"
-        android:name="com.example.attendanceapp.ui.manager.approval.ApprovalListFragment"
+        android:id="@+id/managerApprovalFragment"
+        android:name="com.example.attendanceapp.ui.manager.approval.ManagerApprovalFragment"
         android:label="@string/nav_manager_approvals"
-        tools:layout="@layout/fragment_approval_list">
+        tools:layout="@layout/fragment_manager_approval">
 
 <!--        &lt;!&ndash; Xem chi tiết 1 đơn cần duyệt &ndash;&gt;-->
 <!--        <action-->
@@ -42,10 +42,10 @@
 
     <!-- Tab 3: Lịch trình & Quản lý ca làm (Shift Management) -->
     <fragment
-        android:id="@+id/shiftManagementFragment"
-        android:name="com.example.attendanceapp.ui.manager.schedule.ShiftManagementFragment"
+        android:id="@+id/managerScheduleFragment"
+        android:name="com.example.attendanceapp.ui.manager.schedule.ManagerScheduleFragment"
         android:label="@string/nav_manager_schedule"
-        tools:layout="@layout/fragment_shift_management">
+        tools:layout="@layout/fragment_manager_schedule">
 
         <!-- Tạo hoặc chỉnh sửa ca làm việc mới -->
 <!--        <action-->
@@ -55,10 +55,10 @@
 
     <!-- Tab 4: Nhân sự (Employee Management) -->
     <fragment
-        android:id="@+id/employeeListFragment"
-        android:name="com.example.attendanceapp.ui.manager.employee.EmployeeListFragment"
+        android:id="@+id/managerHumanFragment"
+        android:name="com.example.attendanceapp.ui.manager.human.ManagerHumanFragment"
         android:label="@string/nav_manager_employees"
-        tools:layout="@layout/fragment_employee_list">
+        tools:layout="@layout/fragment_manager_human">
 
         <!-- Xem hồ sơ chi tiết của 1 nhân viên -->
 <!--        <action-->

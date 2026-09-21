@@ -251,6 +251,12 @@
         <item name="cornerSize">50%</item>
     </style>
 
+    <!-- Style bo tròn nền viên thuốc chọn -->
+    <style name="CustomActiveIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:drawable">@drawable/bg_bottom_item_selected</item>
+        <item name="android:width">80dp</item>
+        <item name="android:height">54dp</item>
+    </style>
 
     <!-- ==================== EXTRA COMMON STYLES ==================== -->
     <style name="ChipFilterStyle" parent="Widget.Material3.Chip.Filter">

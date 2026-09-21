@@ -16,7 +16,7 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.example.attendanceapp.R;
 import com.example.attendanceapp.databinding.ActivityEmployeeMainBinding;
-import com.example.attendanceapp.ui.employee.profile.DarkModeAnimationHelper;
+import com.example.attendanceapp.core.utils.DarkModeAnimationHelper;
 
 import javax.inject.Inject;
 
@@ -34,12 +34,15 @@ public class EmployeeMainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Đọc theme trực tiếp từ SharedPreferences TRƯỚC super.onCreate() để setTheme có tác dụng
+        android.content.SharedPreferences pref = getSharedPreferences("SHARE_PREFERENCES_APP", MODE_PRIVATE);
+        String theme = pref.getString("app_theme", "avocado");
+        applyAppTheme(theme);
+
         super.onCreate(savedInstanceState);
+        
         // 1. Khởi tạo ViewModel
         viewModel = new ViewModelProvider(this).get(EmployeeMainViewModel.class);
-
-        // 2. Apply Theme từ ViewModel trước super.onCreate()
-        applyAppTheme(viewModel.getCurrentTheme().getValue());
 
         // 3. UI Setup
         EdgeToEdge.enable(this);
@@ -98,8 +101,8 @@ public class EmployeeMainActivity extends AppCompatActivity {
         // Xử lý chuyển tab khi đang ở CheckIn
         binding.bottomNavigation.setOnItemSelectedListener(item -> {
             if (navController.getCurrentDestination() != null
-                    && navController.getCurrentDestination().getId() == R.id.checkInFragment) {
-                navController.popBackStack(R.id.homeFragment, false);
+                    && navController.getCurrentDestination().getId() == R.id.employeeCheckInFragment) {
+                navController.popBackStack(R.id.employeeHomeFragment, false);
                 navController.navigate(item.getItemId());
                 return true;
             }
@@ -124,11 +127,11 @@ public class EmployeeMainActivity extends AppCompatActivity {
             if (navController == null) return;
 
             if (navController.getCurrentDestination() != null
-                    && navController.getCurrentDestination().getId() == R.id.checkInFragment) {
+                    && navController.getCurrentDestination().getId() == R.id.employeeCheckInFragment) {
                 return;
             }
 
-            navController.navigate(R.id.checkInFragment);
+            navController.navigate(R.id.employeeCheckInFragment);
         });
     }
 
