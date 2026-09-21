@@ -1,0 +1,35 @@
+import uuid
+from datetime import datetime
+
+from sqlalchemy import ForeignKey, String, DateTime
+from sqlalchemy.orm import Mapped, mapped_column
+
+
+
+class RefreshToken(Base):
+    __tablename__ = "refresh_tokens"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        primary_key=True,
+        default=uuid.uuid4,
+    )
+
+    id_account: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("accounts.id"),
+        nullable=False
+    )
+
+    token: Mapped[str] = mapped_column(
+        String,
+        nullable=False
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        nullable=False
+    )
+
+    expired_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        nullable=False
+    )
