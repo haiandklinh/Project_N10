@@ -1,0 +1,46 @@
+import datetime
+import uuid
+
+from sqlalchemy import  Float, ForeignKey, Integer, String, DateTime
+from sqlalchemy.orm import Mapped, mapped_column
+
+from backend.db.base import Base
+
+
+class Payroll(Base):
+    __tablename__ = "payrolls"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        primary_key=True,
+        default=uuid.uuid4
+    )
+
+    id_employee: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("employees.id"),
+        nullable=False
+    )
+
+    time: Mapped[datetime] = mapped_column(
+        DateTime,
+        nullable=False
+    )
+
+    base_salary: Mapped[float] = mapped_column(
+        Float,
+        nullable=False
+    )
+
+    number_of_work_shifts: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False
+    )
+
+    total_salary: Mapped[float] = mapped_column(
+        Float,
+        nullable=False
+    )
+
+    status: Mapped[str] = mapped_column(
+        String,
+        nullable=False
+    )
