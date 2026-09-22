@@ -43,7 +43,6 @@ public class LoginSavedAccountFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         viewModel = new ViewModelProvider(this).get(LoginSavedAccountViewModel.class);
 
-        setupBottomSheet();
         setupViews();
         observeViewModel();
 
@@ -82,11 +81,6 @@ public class LoginSavedAccountFragment extends Fragment {
         });
     }
 
-    private void setupBottomSheet() {
-        BottomSheetBehavior<View> behavior = BottomSheetBehavior.from(binding.bottomSheet);
-        behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-        behavior.setSkipCollapsed(true);
-    }
 
     private void setupViews() {
         binding.btnLogin.setOnClickListener(v -> performPasswordLogin());

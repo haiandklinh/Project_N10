@@ -1,28 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_login_header"
+    android:fillViewport="true"
+    android:overScrollMode="never"
     tools:context=".ui.main.auth.login.LoginSavedAccountFragment">
 
-    <!-- HEADER: LOGO VÀ TIÊU ĐỀ NỀN XANH -->
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/headerLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content">
 
+        <!-- 1. HEADER LAYOUT (Nằm vùng không gian phía trên Form) -->
         <LinearLayout
+            android:id="@+id/headerLayout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="72dp"
+            android:layout_height="0dp"
             android:gravity="center"
             android:orientation="vertical"
-            android:paddingHorizontal="@dimen/spacing_xl"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:layout_editor_absoluteX="0dp">
+            android:paddingHorizontal="@dimen/spacing_s"
+            app:layout_constraintBottom_toTopOf="@+id/bottomSheet"
+            app:layout_constraintTop_toTopOf="parent">
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardLogo"
@@ -64,28 +64,19 @@
                 android:textSize="@dimen/text_size_body_medium" />
 
         </LinearLayout>
-    </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- BOTTOM SHEET: THÔNG TIN TÀI KHOẢN ĐÃ LƯU & MẬT KHẨU -->
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/bottomSheet"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/bg_bottom_sheet"
-        android:elevation="8dp"
-        android:overScrollMode="never"
-        app:behavior_fitToContents="true"
-        app:behavior_hideable="false"
-        app:behavior_peekHeight="490dp"
-        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
-
+        <!-- 2. FORM NỘI DUNG (Nền trắng bo góc, ghim xuống đáy) -->
         <LinearLayout
+            android:id="@+id/bottomSheet"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@drawable/bg_bottom_sheet"
+            android:elevation="8dp"
             android:orientation="vertical"
             android:paddingHorizontal="@dimen/spacing_xl"
             android:paddingTop="@dimen/spacing_2xl"
-            android:paddingBottom="@dimen/spacing_xl">
+            android:paddingBottom="@dimen/spacing_xl"
+            app:layout_constraintBottom_toBottomOf="parent">
 
             <!-- Card hiển thị User Profile đã lưu -->
             <com.google.android.material.card.MaterialCardView
@@ -143,7 +134,6 @@
                             android:textSize="@dimen/text_size_body_small"
                             tools:text="Cty ABC" />
 
-                        <!-- TextView SĐT đã mã hóa -->
                         <TextView
                             android:id="@+id/tvMaskedPhone"
                             android:layout_width="wrap_content"
@@ -198,7 +188,7 @@
                 android:textSize="@dimen/text_size_label_large"
                 android:textStyle="bold" />
 
-            <!-- Action Buttons (Đăng nhập & Vân tay) -->
+            <!-- Action Buttons -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -236,7 +226,7 @@
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
 
-            <!-- diver -->
+            <!-- Divider -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -296,14 +286,14 @@
                     android:textStyle="bold" />
             </LinearLayout>
 
-            <!-- Nút Hỗ trợ CSKH (Được chuyển xuống vị trí dưới cùng) -->
+            <!-- Nút Hỗ trợ CSKH -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/btnContactSupport"
                 style="@style/ItemCard"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="@dimen/spacing_xl"
+                android:layout_marginTop="@dimen/spacing_3xl"
                 app:cardBackgroundColor="?attr/colorSurfaceVariant"
                 app:cardCornerRadius="@dimen/radius_full"
                 app:cardElevation="0dp"
@@ -335,25 +325,31 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_3xs"
                         android:text="@string/forgot_password_contact_support"
                         android:textColor="?attr/colorPrimary"
-                        android:layout_marginStart="@dimen/spacing_3xs"
                         android:textSize="@dimen/text_size_body_small"
                         android:textStyle="bold" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
 
-    <!-- Progress Indicator -->
-    <com.google.android.material.progressindicator.CircularProgressIndicator
-        android:id="@+id/progressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:indeterminate="true"
-        android:visibility="gone"
-        app:indicatorColor="?attr/colorOnPrimary" />
+        <!-- 3. PROGRESS INDICATOR (Căn giữa toàn bộ màn hình) -->
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:indeterminate="true"
+            android:indeterminateTint="?attr/colorPrimary"
+            android:indeterminateTintMode="src_in"
+            android:visibility="gone"
+            android:elevation="10dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView>

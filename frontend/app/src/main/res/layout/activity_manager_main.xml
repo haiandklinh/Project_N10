@@ -170,7 +170,7 @@
             android:id="@+id/tab_employee"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:paddingVertical="10dp"
+            android:paddingVertical="@dimen/spacing_m"
             android:clickable="true"
             android:focusable="true"
             android:background="@drawable/bg_bottom_item_selected"

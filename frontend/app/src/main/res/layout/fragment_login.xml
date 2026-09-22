@@ -8,79 +8,91 @@
     android:background="@drawable/bg_login_header"
     tools:context=".ui.main.auth.login.LoginFragment">
 
-    <!-- HEADER LAYOUT -->
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/headerLayout"
+    <!-- 1. APP BAR LAYOUT (Trong suốt hoàn toàn để lộ bg_login_header) -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:paddingTop="50dp"
+        android:background="@android:color/transparent"
+        app:elevation="0dp"
+        app:statusBarForeground="@android:color/transparent">
 
-        <!-- KHỐI HEADER CĂN GIỮA NỬA TRÊN -->
-        <LinearLayout
-            android:id="@+id/loginHeader"
+        <com.google.android.material.appbar.CollapsingToolbarLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="44dp"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:paddingHorizontal="@dimen/spacing_xl"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            android:background="@android:color/transparent"
+            app:contentScrim="@android:color/transparent"
+            app:statusBarScrim="@android:color/transparent"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed|snap">
 
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardLogo"
-                android:layout_width="@dimen/login_logo_size"
-                android:layout_height="@dimen/login_logo_size"
-                app:cardCornerRadius="@dimen/radius_full"
-                app:cardElevation="@dimen/elevation_none"
-                app:strokeWidth="@dimen/border_none">
-
-                <ImageView
-                    android:id="@+id/ivLogo"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:contentDescription="@string/app_name"
-                    android:padding="@dimen/spacing_l"
-                    android:src="@drawable/ic_logo" />
-            </com.google.android.material.card.MaterialCardView>
-
-            <TextView
-                android:id="@+id/tvWelcome"
-                android:layout_width="wrap_content"
+            <!-- KHỐI HEADER -->
+            <LinearLayout
+                android:id="@+id/loginHeader"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_m"
-                android:fontFamily="sans-serif-black"
                 android:gravity="center"
-                android:text="@string/login_welcome_title"
-                android:textColor="?attr/colorOnPrimary"
-                android:textSize="@dimen/text_size_headline_medium" />
+                android:orientation="vertical"
+                android:paddingHorizontal="@dimen/spacing_xl"
+                android:paddingVertical="@dimen/spacing_5xl"
+                app:layout_collapseMode="parallax"
+                app:layout_collapseParallaxMultiplier="0.5">
 
-            <TextView
-                android:id="@+id/tvSubtitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_2xs"
-                android:alpha="0.8"
-                android:gravity="center"
-                android:text="@string/login_welcome_subtitle"
-                android:textColor="?attr/colorOnPrimary"
-                android:textSize="@dimen/text_size_body_medium" />
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardLogo"
+                    android:layout_width="@dimen/login_logo_size"
+                    android:layout_height="@dimen/login_logo_size"
+                    app:cardCornerRadius="@dimen/radius_full"
+                    app:cardElevation="@dimen/elevation_none"
+                    app:strokeWidth="@dimen/border_none">
 
-        </LinearLayout>
-    </androidx.constraintlayout.widget.ConstraintLayout>
+                    <ImageView
+                        android:id="@+id/ivLogo"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:contentDescription="@string/app_name"
+                        android:padding="@dimen/spacing_l"
+                        android:src="@drawable/ic_logo" />
+                </com.google.android.material.card.MaterialCardView>
 
-    <!-- BOTTOM SHEET: FORM ĐĂNG NHẬP -->
+                <TextView
+                    android:id="@+id/tvWelcome"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_m"
+                    android:fontFamily="sans-serif-black"
+                    android:gravity="center"
+                    android:text="@string/login_welcome_title"
+                    android:textColor="?attr/colorOnPrimary"
+                    android:textSize="@dimen/text_size_headline_medium" />
+
+                <TextView
+                    android:id="@+id/tvSubtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_2xs"
+                    android:alpha="0.8"
+                    android:gravity="center"
+                    android:text="@string/login_welcome_subtitle"
+                    android:textColor="?attr/colorOnPrimary"
+                    android:textSize="@dimen/text_size_body_medium" />
+
+            </LinearLayout>
+
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- 2. FORM ĐĂNG NHẬP -->
     <androidx.core.widget.NestedScrollView
         android:id="@+id/bottomSheet"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:background="@drawable/bg_bottom_sheet"
         android:elevation="8dp"
+        android:fillViewport="true"
         android:overScrollMode="never"
-        app:behavior_fitToContents="true"
-        app:behavior_hideable="false"
-        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -106,7 +118,7 @@
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="@dimen/text_size_body_medium" />
 
-            <!-- ============ FIELD 2: SỐ ĐIỆN THOẠI ============ -->
+            <!-- SỐ ĐIỆN THOẠI -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilPhone"
                 style="@style/AppTextInputLayout"
@@ -124,11 +136,11 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="phone"
-                    android:maxLength="10"
+                    android:maxLength="12"
                     android:maxLines="1" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- ============ FIELD 3: MẬT KHẨU ============ -->
+            <!-- MẬT KHẨU -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilPassword"
                 style="@style/AppTextInputLayout"
@@ -246,9 +258,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="@dimen/spacing_m"
                 app:cardBackgroundColor="?attr/colorSurfaceVariant"
                 app:cardCornerRadius="@dimen/radius_full"
+                android:layout_marginTop="@dimen/spacing_xl"
                 app:cardElevation="0dp"
                 app:strokeWidth="0dp">
 
@@ -284,6 +296,48 @@
                         android:textStyle="bold" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
+
+            <!-- Lò xo đẩy phần thông tin bảo mật xuống đáy -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <!-- KHỐI BẢO MẬT & BẢN QUYỀN -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_2xl"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="🔒 Hệ thống bảo mật dữ liệu điểm danh Doanh nghiệp"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textSize="@dimen/text_size_label_small" />
+
+                <TextView
+                    android:id="@+id/tvTerms"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_3xs"
+                    android:gravity="center"
+                    android:text="Điều khoản dịch vụ • Chính sách bảo mật"
+                    android:textColor="?attr/colorPrimary"
+                    android:textSize="@dimen/text_size_label_small" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_2xs"
+                    android:alpha="0.6"
+                    android:text="Phiên bản 1.0.0"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textSize="@dimen/text_size_label_small" />
+            </LinearLayout>
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
