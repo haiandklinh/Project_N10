@@ -80,7 +80,6 @@
         android:overScrollMode="never"
         app:behavior_fitToContents="true"
         app:behavior_hideable="false"
-        app:behavior_peekHeight="500dp"
         app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
         <LinearLayout
@@ -88,8 +87,8 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingHorizontal="@dimen/spacing_xl"
-            android:paddingTop="@dimen/spacing_3xl"
-            android:paddingBottom="@dimen/spacing_3xl">
+            android:paddingTop="@dimen/spacing_2xl"
+            android:paddingBottom="@dimen/spacing_xl">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -102,59 +101,21 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_s"
+                android:layout_marginTop="@dimen/spacing_2xs"
                 android:text="Nhập thông tin tài khoản của bạn"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="@dimen/text_size_body_medium" />
 
-            <!-- ============ FIELD 1: MÃ CÔNG TY ============ -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_l"
-                android:text="Mã công ty"
-                android:textColor="?attr/colorOnSurface"
-                android:textSize="@dimen/text_size_body_small"
-                android:textStyle="bold" />
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/tilCompanyCode"
-                style="@style/AppTextInputLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_xs"
-                app:endIconMode="clear_text"
-                app:hintEnabled="false"
-                app:startIconDrawable="@drawable/ic_card_company">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/edtCompanyCode"
-                    style="@style/AppTextInputEditText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="VD: ACME, FPT-HN"
-                    android:inputType="textCapCharacters"
-                    android:maxLines="1" />
-            </com.google.android.material.textfield.TextInputLayout>
-
             <!-- ============ FIELD 2: SỐ ĐIỆN THOẠI ============ -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_s"
-                android:text="Số điện thoại"
-                android:textColor="?attr/colorOnSurface"
-                android:textSize="@dimen/text_size_body_small"
-                android:textStyle="bold" />
-
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilPhone"
                 style="@style/AppTextInputLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_xs"
+                android:layout_marginTop="@dimen/spacing_2xs"
+                android:hint="Số điện thoại"
                 app:endIconMode="clear_text"
-                app:hintEnabled="false"
+                app:errorEnabled="true"
                 app:startIconDrawable="@drawable/ic_phone">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -162,30 +123,21 @@
                     style="@style/AppTextInputEditText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="VD: 0912345678"
                     android:inputType="phone"
                     android:maxLength="10"
                     android:maxLines="1" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- ============ FIELD 3: MẬT KHẨU ============ -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_s"
-                android:text="Mật khẩu"
-                android:textColor="?attr/colorOnSurface"
-                android:textSize="@dimen/text_size_body_small"
-                android:textStyle="bold" />
-
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilPassword"
                 style="@style/AppTextInputLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_xs"
+                android:layout_marginTop="@dimen/spacing_2xs"
+                android:hint="Mật khẩu"
                 app:endIconMode="password_toggle"
-                app:hintEnabled="false"
+                app:errorEnabled="true"
                 app:startIconDrawable="@drawable/ic_lock">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -193,7 +145,6 @@
                     style="@style/AppTextInputEditText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Nhập mật khẩu"
                     android:inputType="textPassword"
                     android:maxLines="1" />
             </com.google.android.material.textfield.TextInputLayout>
@@ -204,7 +155,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
-                android:layout_marginTop="@dimen/spacing_xs"
                 android:background="?attr/selectableItemBackground"
                 android:padding="@dimen/spacing_2xs"
                 android:text="@string/auth_forgot_password"
@@ -216,7 +166,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_l"
+                android:layout_marginTop="@dimen/spacing_m"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
@@ -229,6 +179,35 @@
                     android:text="@string/auth_login_button"
                     app:cornerRadius="@dimen/radius_full" />
 
+            </LinearLayout>
+
+            <!-- DIVIDER -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_l"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1"
+                    android:background="?attr/colorOutlineVariant" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="@dimen/spacing_m"
+                    android:text="HOẶC"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textSize="@dimen/text_size_label_medium" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1"
+                    android:background="?attr/colorOutlineVariant" />
             </LinearLayout>
 
             <!-- Footer Đăng ký -->
@@ -267,7 +246,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="@dimen/spacing_l"
+                android:layout_marginTop="@dimen/spacing_m"
                 app:cardBackgroundColor="?attr/colorSurfaceVariant"
                 app:cardCornerRadius="@dimen/radius_full"
                 app:cardElevation="0dp"

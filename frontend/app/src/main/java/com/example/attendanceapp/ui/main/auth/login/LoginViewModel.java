@@ -31,9 +31,9 @@ public class LoginViewModel extends ViewModel {
         return isLoading;
     }
 
-    public void login(String companyCode, String phone, String password) {
+    public void login(String phone, String password) {
         isLoading.setValue(true);
-        loginUseCase.execute(companyCode, phone, password, new LoginUseCase.AuthCallback<UserAccount>() {
+        loginUseCase.execute(phone, password, new LoginUseCase.AuthCallback<UserAccount>() {
             @Override
             public void onSuccess(UserAccount result) {
                 loginUseCase.setLoggedIn(true);

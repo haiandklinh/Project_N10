@@ -60,7 +60,7 @@
     <string name="auth_company_name_hint">Company / Enterprise Name</string>
     <string name="auth_full_name_hint">Full Name</string>
     <string name="auth_role_hint">Role</string>
-    <string name="auth_register_button">Register Account</string>
+    <string name="auth_register_button">Register</string>
     <string name="auth_already_have_account">Already have an account? </string>
     <string name="auth_already_have_code_prefix">Already have a company code? </string>
     <string name="auth_join_company_link">Join company</string>

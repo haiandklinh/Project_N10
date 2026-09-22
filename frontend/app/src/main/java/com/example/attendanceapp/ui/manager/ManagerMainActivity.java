@@ -62,6 +62,15 @@ public class ManagerMainActivity extends AppCompatActivity {
             case "orange":
                 setTheme(R.style.Theme_AttendanceApp_Orange);
                 break;
+            case "pink":
+                setTheme(R.style.Theme_AttendanceApp_Pink);
+                break;
+            case "blueberry":
+                setTheme(R.style.Theme_AttendanceApp_Blueberry);
+                break;
+            case "chocolate":
+                setTheme(R.style.Theme_AttendanceApp_Chocolate);
+                break;
             default:
                 setTheme(R.style.Theme_AttendanceApp_Avocado);
                 break;

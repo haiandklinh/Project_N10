@@ -6,23 +6,23 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_login_header"
-    tools:context=".ui.login.LoginSavedAccountFragment">
+    tools:context=".ui.main.auth.login.LoginSavedAccountFragment">
 
     <!-- HEADER: LOGO VÀ TIÊU ĐỀ NỀN XANH -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/headerLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:paddingBottom="320dp">
+        android:layout_height="match_parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="72dp"
             android:gravity="center"
             android:orientation="vertical"
             android:paddingHorizontal="@dimen/spacing_xl"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toTopOf="parent"
+            tools:layout_editor_absoluteX="0dp">
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardLogo"
@@ -48,7 +48,7 @@
                 android:layout_marginTop="@dimen/spacing_m"
                 android:fontFamily="sans-serif-black"
                 android:gravity="center"
-                android:text="@string/login_welcome_title"
+                android:text="Chào mừng quay trở lại"
                 android:textColor="?attr/colorOnPrimary"
                 android:textSize="@dimen/text_size_headline_medium" />
 
@@ -76,7 +76,7 @@
         android:overScrollMode="never"
         app:behavior_fitToContents="true"
         app:behavior_hideable="false"
-        app:behavior_peekHeight="460dp"
+        app:behavior_peekHeight="490dp"
         app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
         <LinearLayout
@@ -84,7 +84,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingHorizontal="@dimen/spacing_xl"
-            android:paddingTop="@dimen/spacing_3xl"
+            android:paddingTop="@dimen/spacing_2xl"
             android:paddingBottom="@dimen/spacing_xl">
 
             <!-- Card hiển thị User Profile đã lưu -->
@@ -105,8 +105,8 @@
 
                     <com.google.android.material.imageview.ShapeableImageView
                         android:id="@+id/ivUserAvatar"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
+                        android:layout_width="54dp"
+                        android:layout_height="54dp"
                         android:contentDescription="Ảnh người dùng"
                         android:padding="@dimen/border_width_s"
                         android:src="@drawable/ic_avatar"
@@ -134,15 +134,26 @@
                             tools:text="Nguyễn Viết Sơn" />
 
                         <TextView
-                            android:id="@+id/tvCompanyAndCode"
+                            android:id="@+id/tvCompany"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
                             android:ellipsize="end"
                             android:maxLines="1"
                             android:textColor="?attr/colorOnSurfaceVariant"
                             android:textSize="@dimen/text_size_body_small"
-                            tools:text="Cty ABC Mua 1 con gà" />
+                            tools:text="Cty ABC" />
+
+                        <!-- TextView SĐT đã mã hóa -->
+                        <TextView
+                            android:id="@+id/tvMaskedPhone"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            android:textColor="?attr/colorPrimary"
+                            android:textSize="@dimen/text_size_body_medium"
+                            android:textStyle="bold"
+                            tools:text="098* *** *89" />
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -151,7 +162,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_l"
+                android:layout_marginTop="@dimen/spacing_m"
                 android:text="Mật khẩu"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="@dimen/text_size_body_small"
@@ -191,7 +202,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_l"
+                android:layout_marginTop="@dimen/spacing_m"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
@@ -225,20 +236,49 @@
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
 
+            <!-- diver -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_l"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1"
+                    android:background="?attr/colorOutlineVariant" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="@dimen/spacing_m"
+                    android:text="HOẶC"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textSize="@dimen/text_size_label_medium" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1"
+                    android:background="?attr/colorOutlineVariant" />
+            </LinearLayout>
+
             <!-- Nút Đổi tài khoản -->
             <LinearLayout
                 android:id="@+id/btnSwitchAccount"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="@dimen/spacing_l"
+                android:layout_marginTop="@dimen/spacing_m"
                 android:background="?attr/selectableItemBackground"
                 android:clickable="true"
                 android:focusable="true"
                 android:gravity="center"
                 android:orientation="horizontal"
                 android:paddingHorizontal="@dimen/spacing_m"
-                android:paddingVertical="@dimen/spacing_2xs">
+                android:paddingVertical="@dimen/spacing_s">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -256,14 +296,14 @@
                     android:textStyle="bold" />
             </LinearLayout>
 
-            <!-- Nút Hỗ trợ CSKH -->
+            <!-- Nút Hỗ trợ CSKH (Được chuyển xuống vị trí dưới cùng) -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/btnContactSupport"
                 style="@style/ItemCard"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="@dimen/spacing_l"
+                android:layout_marginTop="@dimen/spacing_xl"
                 app:cardBackgroundColor="?attr/colorSurfaceVariant"
                 app:cardCornerRadius="@dimen/radius_full"
                 app:cardElevation="0dp"
@@ -282,7 +322,7 @@
                         android:layout_height="@dimen/icon_size_s"
                         android:layout_marginEnd="@dimen/spacing_2xs"
                         android:importantForAccessibility="no"
-                        android:src="@drawable/ic_help"
+                        android:src="@drawable/ic_phone"
                         app:tint="?attr/colorPrimary" />
 
                     <TextView
@@ -297,6 +337,7 @@
                         android:layout_height="wrap_content"
                         android:text="@string/forgot_password_contact_support"
                         android:textColor="?attr/colorPrimary"
+                        android:layout_marginStart="@dimen/spacing_3xs"
                         android:textSize="@dimen/text_size_body_small"
                         android:textStyle="bold" />
                 </LinearLayout>

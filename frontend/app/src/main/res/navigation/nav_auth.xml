@@ -69,7 +69,7 @@
         android:id="@+id/loginSavedAccountFragment"
         android:name="com.example.attendanceapp.ui.main.auth.login.LoginSavedAccountFragment"
         android:label="Đăng nhập tài khoản đã lưu"
-        tools:layout="@layout/fragment_saved_account_login">
+        tools:layout="@layout/fragment_login_saved">
 
         <action
             android:id="@+id/action_loginSavedAccountFragment_to_forgotPasswordFragment"

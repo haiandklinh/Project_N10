@@ -11,11 +11,11 @@
 
     <!-- Drag handle -->
     <View
-        android:layout_width="@dimen/spacing_4xl"
-        android:layout_height="@dimen/spacing_3xs"
+        android:layout_width="30dp"
+        android:layout_height="4dp"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="@dimen/spacing_s"
-        android:background="?attr/colorOutline" />
+        android:background="@drawable/bg_handle" />
 
     <!-- Tieu de -->
     <TextView

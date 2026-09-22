@@ -16,7 +16,7 @@ import androidx.navigation.Navigation;
 
 
 import com.example.attendanceapp.R;
-import com.example.attendanceapp.databinding.FragmentSavedAccountLoginBinding;
+import com.example.attendanceapp.databinding.FragmentLoginSavedBinding;
 import com.example.attendanceapp.domain.model.UserAccount;
 import com.example.attendanceapp.domain.model.UserRole;
 import com.example.attendanceapp.ui.employee.EmployeeMainActivity;
@@ -28,13 +28,13 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class LoginSavedAccountFragment extends Fragment {
 
-    private FragmentSavedAccountLoginBinding binding;
+    private FragmentLoginSavedBinding binding;
     private LoginSavedAccountViewModel viewModel;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        binding = FragmentSavedAccountLoginBinding.inflate(inflater, container, false);
+        binding = FragmentLoginSavedBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
@@ -75,9 +75,9 @@ public class LoginSavedAccountFragment extends Fragment {
         viewModel.getSavedAccountData().observe(getViewLifecycleOwner(), data -> {
             if (data != null) {
                 binding.tvUserName.setText(data.fullName);
-                binding.tvCompanyAndCode.setText(data.companyName);
+                binding.tvCompany.setText(data.companyName);
                 // Hiển thị số điện thoại đã che 1 phần
-                binding.tvForgotPassword.setText(maskPhone(data.phone));
+                binding.tvMaskedPhone.setText(maskPhone(data.phone));
             }
         });
     }

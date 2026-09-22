@@ -109,6 +109,74 @@
         <item name="colorOutlineVariant">@color/orange_dark_outlineVariant</item>
     </style>
 
+
+    <!-- ==================== 4. THEME MÀU HỒNG CÁNH SEN (PINK LOTUS DARK) ==================== -->
+    <style name="Theme.AttendanceApp.Pink" parent="Base.Theme.AttendanceApp">
+        <item name="colorPrimary">@color/pink_dark_primary</item>
+        <item name="colorOnPrimary">@color/pink_dark_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/pink_dark_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/pink_dark_onPrimaryContainer</item>
+
+        <item name="colorSecondary">@color/pink_dark_secondary</item>
+        <item name="colorOnSecondary">@color/pink_dark_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/pink_dark_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/pink_dark_onSecondaryContainer</item>
+
+        <item name="android:colorBackground">@color/pink_dark_background</item>
+        <item name="colorOnBackground">@color/pink_dark_onBackground</item>
+        <item name="colorSurface">@color/pink_dark_surface</item>
+        <item name="colorOnSurface">@color/pink_dark_onSurface</item>
+        <item name="colorSurfaceVariant">@color/pink_dark_surfaceVariant</item>
+        <item name="colorOnSurfaceVariant">@color/pink_dark_onSurfaceVariant</item>
+        <item name="colorOutline">@color/pink_dark_outline</item>
+        <item name="colorOutlineVariant">@color/pink_dark_outlineVariant</item>
+    </style>
+
+
+    <!-- ==================== 5. THEME MÀU QUẢ VIỆT QUẤT (BLUEBERRY DARK) ==================== -->
+    <style name="Theme.AttendanceApp.Blueberry" parent="Base.Theme.AttendanceApp">
+        <item name="colorPrimary">@color/blueberry_dark_primary</item>
+        <item name="colorOnPrimary">@color/blueberry_dark_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/blueberry_dark_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/blueberry_dark_onPrimaryContainer</item>
+
+        <item name="colorSecondary">@color/blueberry_dark_secondary</item>
+        <item name="colorOnSecondary">@color/blueberry_dark_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/blueberry_dark_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/blueberry_dark_onSecondaryContainer</item>
+
+        <item name="android:colorBackground">@color/blueberry_dark_background</item>
+        <item name="colorOnBackground">@color/blueberry_dark_onBackground</item>
+        <item name="colorSurface">@color/blueberry_dark_surface</item>
+        <item name="colorOnSurface">@color/blueberry_dark_onSurface</item>
+        <item name="colorSurfaceVariant">@color/blueberry_dark_surfaceVariant</item>
+        <item name="colorOnSurfaceVariant">@color/blueberry_dark_onSurfaceVariant</item>
+        <item name="colorOutline">@color/blueberry_dark_outline</item>
+        <item name="colorOutlineVariant">@color/blueberry_dark_outlineVariant</item>
+    </style>
+
+    <!-- ==================== 6. THEME MÀU CHOCOLATE (DARK) ==================== -->
+    <style name="Theme.AttendanceApp.Chocolate" parent="Base.Theme.AttendanceApp">
+        <item name="colorPrimary">@color/chocolate_dark_primary</item>
+        <item name="colorOnPrimary">@color/chocolate_dark_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/chocolate_dark_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/chocolate_dark_onPrimaryContainer</item>
+
+        <item name="colorSecondary">@color/chocolate_dark_secondary</item>
+        <item name="colorOnSecondary">@color/chocolate_dark_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/chocolate_dark_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/chocolate_dark_onSecondaryContainer</item>
+
+        <item name="android:colorBackground">@color/chocolate_dark_background</item>
+        <item name="colorOnBackground">@color/chocolate_dark_onBackground</item>
+        <item name="colorSurface">@color/chocolate_dark_surface</item>
+        <item name="colorOnSurface">@color/chocolate_dark_onSurface</item>
+        <item name="colorSurfaceVariant">@color/chocolate_dark_surfaceVariant</item>
+        <item name="colorOnSurfaceVariant">@color/chocolate_dark_onSurfaceVariant</item>
+        <item name="colorOutline">@color/chocolate_dark_outline</item>
+        <item name="colorOutlineVariant">@color/chocolate_dark_outlineVariant</item>
+    </style>
+
     <!-- THEME MẶC ĐỊNH DARK MODE (Default sang Avocado) -->
     <style name="Theme.AttendanceApp" parent="Theme.AttendanceApp.Avocado" />
 

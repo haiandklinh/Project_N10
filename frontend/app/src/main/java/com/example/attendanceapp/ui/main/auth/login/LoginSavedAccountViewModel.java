@@ -41,7 +41,7 @@ public class LoginSavedAccountViewModel extends ViewModel {
         // TODO: Load that tu SharedPreferences
         savedAccountData.setValue(new SavedAccountData(
                 "Nguyễn Văn A",
-                "Công ty ABC",
+                "Công ty TNHH Free Fire",
                 "ACME",
                 "0912345678"
         ));
@@ -57,7 +57,7 @@ public class LoginSavedAccountViewModel extends ViewModel {
             return;
         }
 
-        loginUseCase.execute(saved.companyCode, saved.phone, password,
+        loginUseCase.execute(saved.phone, password,
                 new LoginUseCase.AuthCallback<UserAccount>() {
                     @Override
                     public void onSuccess(UserAccount result) {

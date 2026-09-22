@@ -24,7 +24,7 @@ public class LoginUseCase {
      * companyCode dung de backend xac dinh dung tenant truoc khi kiem tra tai khoan,
      * vi cung 1 so dien thoai co the ton tai o nhieu cong ty khac nhau.
      */
-    public void execute(String companyCode, String phone, String password,
+    public void execute(String phone, String password,
                         AuthCallback<UserAccount> callback) {
         // TODO: Goi API dang nhap that su qua AuthRepository, vi du:
         // authRepository.login(companyCode, phone, password, callback);

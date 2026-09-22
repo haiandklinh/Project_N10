@@ -167,6 +167,18 @@ public class EmployeeProfileFragment extends Fragment {
         setupThemeItem(sheetBinding.themeOrange, "Quả Cam", 0xFFFFB74D, R.drawable.ic_orange,
                 v -> applyNewTheme(pref, dialog, "orange"));
 
+        // 4. Theme Hồng Cánh Sen (Tone hồng mận / hoa sen)
+        setupThemeItem(sheetBinding.themePink, "Hồng Sen", 0xFFD81B60, R.drawable.ic_lotus,
+                v -> applyNewTheme(pref, dialog, "pink"));
+
+        // 5. Theme Quả Việt Quất (Tone xanh tím việt quất)
+        setupThemeItem(sheetBinding.themeBlueberry, "Việt Quất", 0xFF3F51B5, R.drawable.ic_blueberry,
+                v -> applyNewTheme(pref, dialog, "blueberry"));
+
+        // 6. Theme Chocolate
+        setupThemeItem(sheetBinding.themeChocolate, "Chocolate", 0xFF6D4C41, R.drawable.ic_chocolate,
+                v -> applyNewTheme(pref, dialog, "chocolate"));
+
         dialog.show();
     }
 

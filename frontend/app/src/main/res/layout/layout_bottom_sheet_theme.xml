@@ -15,7 +15,7 @@
         android:layout_width="32dp"
         android:layout_height="4dp"
         android:layout_gravity="center_horizontal"
-        android:background="?attr/colorOutlineVariant" />
+        android:background="@drawable/bg_handle" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -26,29 +26,52 @@
         android:textSize="@dimen/text_size_title_medium"
         android:textStyle="bold" />
 
-    <!-- Danh sách các theme xếp hàng ngang -->
-    <LinearLayout
+    <!-- Thanh cuộn ngang hỗ trợ danh sách theme mở rộng -->
+    <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/spacing_l"
-        android:baselineAligned="false"
-        android:orientation="horizontal">
+        android:clipToPadding="false"
+        android:overScrollMode="never"
+        android:scrollbars="none">
 
-        <!-- Theme 1: Bơ -->
-        <include
-            android:id="@+id/theme_avocado"
-            layout="@layout/item_theme_option" />
+        <!-- Danh sách các theme xếp hàng ngang -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:baselineAligned="false"
+            android:orientation="horizontal">
 
-        <!-- Theme 2: Dưa hấu -->
-        <include
-            android:id="@+id/theme_watermelon"
-            layout="@layout/item_theme_option" />
+            <!-- Theme 1: Bơ -->
+            <include
+                android:id="@+id/theme_avocado"
+                layout="@layout/item_theme_option" />
 
-        <!-- Theme 3: Quả cam -->
-        <include
-            android:id="@+id/theme_orange"
-            layout="@layout/item_theme_option" />
+            <!-- Theme 2: Dưa hấu -->
+            <include
+                android:id="@+id/theme_watermelon"
+                layout="@layout/item_theme_option" />
 
-    </LinearLayout>
+            <!-- Theme 3: Quả cam -->
+            <include
+                android:id="@+id/theme_orange"
+                layout="@layout/item_theme_option" />
+
+            <!-- Theme 4: Hồng Cánh Sen -->
+            <include
+                android:id="@+id/theme_pink"
+                layout="@layout/item_theme_option" />
+
+            <!-- Theme 5: Quả Việt Quất -->
+            <include
+                android:id="@+id/theme_blueberry"
+                layout="@layout/item_theme_option" />
+            <!-- Theme 6: Chocolate -->
+            <include
+                android:id="@+id/theme_chocolate"
+                layout="@layout/item_theme_option" />
+
+        </LinearLayout>
+    </HorizontalScrollView>
 
 </LinearLayout>

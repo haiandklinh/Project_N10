@@ -249,6 +249,182 @@
     <color name="attendance_weekend_card_dark">#233038</color>
     <color name="attendance_early_leave_card_dark">#183247</color>
 
+    <!-- =================================================================== -->
+    <!-- CHỦ ĐỀ 4: THEME HỒNG CÁNH SEN (PINK LOTUS THEME)                    -->
+    <!-- =================================================================== -->
+
+    <!-- LIGHT THEME COLORS (PINK LOTUS) -->
+    <!-- Primary: Hồng cánh sen đậm chủ đạo (Button, FAB, Icon chính) -->
+    <color name="pink_light_primary">#D81B60</color>
+    <color name="pink_light_onPrimary">#FFFFFF</color>
+    <color name="pink_light_primaryContainer">#FFD8E4</color>
+    <color name="pink_light_onPrimaryContainer">#3D001D</color>
+
+    <!-- Secondary: Hồng tím/Hồng pastel dịu (Badge, Selected State, Chip) -->
+    <color name="pink_light_secondary">#AD1457</color>
+    <color name="pink_light_onSecondary">#FFFFFF</color>
+    <color name="pink_light_secondaryContainer">#F8BBD0</color>
+    <color name="pink_light_onSecondaryContainer">#310017</color>
+
+    <!-- Background & Surface: Phong cách nền hồng phấn siêu nhạt (Tạo cảm giác mịn, không bị chói mắt) -->
+    <color name="pink_light_background">#FFF8FA</color>
+    <color name="pink_light_onBackground">#201A1C</color>
+
+    <!-- Surface & Card: Nền Card/Sheet trắng hồng mềm mại -->
+    <color name="pink_light_surface">#FFFFFF</color>
+    <color name="pink_light_onSurface">#201A1C</color>
+
+    <!-- Surface Variant: Ô Input, Chip, Card phụ (Tông hồng kem nhạt) -->
+    <color name="pink_light_surfaceVariant">#F4DDCE</color>
+    <color name="pink_light_onSurfaceVariant">#524347</color>
+
+    <!-- Border & Divider -->
+    <color name="pink_light_outline">#857377</color>
+    <color name="pink_light_outlineVariant">#D8C2C7</color>
+
+
+    <!-- DARK THEME COLORS (PINK LOTUS) -->
+    <!-- Primary: Hồng cánh sen sáng pastel nổi bật trên nền tối -->
+    <color name="pink_dark_primary">#FFB1C8</color>
+    <color name="pink_dark_onPrimary">#5E002B</color>
+    <color name="pink_dark_primaryContainer">#83003F</color>
+    <color name="pink_dark_onPrimaryContainer">#FFD8E4</color>
+
+    <!-- Secondary: Hồng san hô dịu -->
+    <color name="pink_dark_secondary">#F48FB1</color>
+    <color name="pink_dark_onSecondary">#4A0023</color>
+    <color name="pink_dark_secondaryContainer">#6A0034</color>
+    <color name="pink_dark_onSecondaryContainer">#F8BBD0</color>
+
+    <!-- Background & Surface: Tông tím đen/hồng mận sẫm cá tính -->
+    <color name="pink_dark_background">#1F1216</color>
+    <color name="pink_dark_onBackground">#F2DFE3</color>
+
+    <!-- Surface & Card: Lớp bề mặt sẫm hơn nền một chút -->
+    <color name="pink_dark_surface">#26171B</color>
+    <color name="pink_dark_onSurface">#F2DFE3</color>
+
+    <!-- Surface Variant: Ô Input, Chip, Divider nhẹ trong Dark Mode -->
+    <color name="pink_dark_surfaceVariant">#524347</color>
+    <color name="pink_dark_onSurfaceVariant">#D8C2C7</color>
+
+    <!-- Border & Divider -->
+    <color name="pink_dark_outline">#9F8C91</color>
+    <color name="pink_dark_outlineVariant">#392C30</color>
+
+
+    <!-- =================================================================== -->
+    <!-- CHỦ ĐỀ 5: THEME QUẢ VIỆT QUẤT (BLUEBERRY THEME)                    -->
+    <!-- =================================================================== -->
+
+    <!-- LIGHT THEME COLORS (BLUEBERRY) -->
+    <!-- Primary: Xanh tím việt quất đậm chủ đạo (Button, FAB, Icon chính) -->
+    <color name="blueberry_light_primary">#3F51B5</color>
+    <color name="blueberry_light_onPrimary">#FFFFFF</color>
+    <color name="blueberry_light_primaryContainer">#E0E0FF</color>
+    <color name="blueberry_light_onPrimaryContainer">#000B5B</color>
+
+    <!-- Secondary: Xanh việt quất mờ/Indigo dịu (Badge, Selected State, Chip) -->
+    <color name="blueberry_light_secondary">#5C6BC0</color>
+    <color name="blueberry_light_onSecondary">#FFFFFF</color>
+    <color name="blueberry_light_secondaryContainer">#E8EAF6</color>
+    <color name="blueberry_light_onSecondaryContainer">#1A237E</color>
+
+    <!-- Background & Surface: Phong cách nền xanh xám băng siêu nhạt -->
+    <color name="blueberry_light_background">#F8F9FF</color>
+    <color name="blueberry_light_onBackground">#191B23</color>
+
+    <!-- Surface & Card: Nền Card/Sheet trắng ánh xanh mềm mại -->
+    <color name="blueberry_light_surface">#FFFFFF</color>
+    <color name="blueberry_light_onSurface">#191B23</color>
+
+    <!-- Surface Variant: Ô Input, Chip, Card phụ (Tông xám xanh nhạt) -->
+    <color name="blueberry_light_surfaceVariant">#E1E2EC</color>
+    <color name="blueberry_light_onSurfaceVariant">#44454F</color>
+
+    <!-- Border & Divider -->
+    <color name="blueberry_light_outline">#757580</color>
+    <color name="blueberry_light_outlineVariant">#C5C6D0</color>
+
+
+    <!-- DARK THEME COLORS (BLUEBERRY) -->
+    <!-- Primary: Xanh tím lavender pastel nổi bật trên nền tối -->
+    <color name="blueberry_dark_primary">#BFC2FF</color>
+    <color name="blueberry_dark_onPrimary">#001170</color>
+    <color name="blueberry_dark_primaryContainer">#253599</color>
+    <color name="blueberry_dark_onPrimaryContainer">#E0E0FF</color>
+
+    <!-- Secondary: Xanh lam chàm dịu -->
+    <color name="blueberry_dark_secondary">#9FA8DA</color>
+    <color name="blueberry_dark_onSecondary">#121858</color>
+    <color name="blueberry_dark_secondaryContainer">#283593</color>
+    <color name="blueberry_dark_onSecondaryContainer">#E8EAF6</color>
+
+    <!-- Background & Surface: Tông xanh tím đêm/Navy sẫm sang trọng -->
+    <color name="blueberry_dark_background">#11131B</color>
+    <color name="blueberry_dark_onBackground">#E2E2EB</color>
+
+    <!-- Surface & Card: Lớp bề mặt sẫm hơn nền một chút -->
+    <color name="blueberry_dark_surface">#191B23</color>
+    <color name="blueberry_dark_onSurface">#E2E2EB</color>
+
+    <!-- Surface Variant: Ô Input, Chip, Divider nhẹ trong Dark Mode -->
+    <color name="blueberry_dark_surfaceVariant">#44454F</color>
+    <color name="blueberry_dark_onSurfaceVariant">#C5C6D0</color>
+
+    <!-- Border & Divider -->
+    <color name="blueberry_dark_outline">#8E909A</color>
+    <color name="blueberry_dark_outlineVariant">#2F3038</color>
+
+
+
+    <!-- =================================================================== -->
+    <!-- CHỦ ĐỀ 6: THEME CHOCOLATE (CHOCOLATE THEME)                        -->
+    <!-- =================================================================== -->
+
+    <!-- LIGHT THEME COLORS (CHOCOLATE) -->
+    <color name="chocolate_light_primary">#6D4C41</color>
+    <color name="chocolate_light_onPrimary">#FFFFFF</color>
+    <color name="chocolate_light_primaryContainer">#D7CCC8</color>
+    <color name="chocolate_light_onPrimaryContainer">#25150F</color>
+
+    <color name="chocolate_light_secondary">#8D6E63</color>
+    <color name="chocolate_light_onSecondary">#FFFFFF</color>
+    <color name="chocolate_light_secondaryContainer">#EFEBE9</color>
+    <color name="chocolate_light_onSecondaryContainer">#3E2723</color>
+
+    <color name="chocolate_light_background">#FCF9F8</color>
+    <color name="chocolate_light_onBackground">#1F1B19</color>
+    <color name="chocolate_light_surface">#FFFFFF</color>
+    <color name="chocolate_light_onSurface">#1F1B19</color>
+    <color name="chocolate_light_surfaceVariant">#F0EAE8</color>
+    <color name="chocolate_light_onSurfaceVariant">#4D4542</color>
+    <color name="chocolate_light_outline">#7F7572</color>
+    <color name="chocolate_light_outlineVariant">#D3C4C0</color>
+
+    <!-- DARK THEME COLORS (CHOCOLATE) -->
+    <color name="chocolate_dark_primary">#D7CCC8</color>
+    <color name="chocolate_dark_onPrimary">#3E2723</color>
+    <color name="chocolate_dark_primaryContainer">#5D4037</color>
+    <color name="chocolate_dark_onPrimaryContainer">#F5F5F5</color>
+
+    <color name="chocolate_dark_secondary">#BCAAA4</color>
+    <color name="chocolate_dark_onSecondary">#2C1D18</color>
+    <color name="chocolate_dark_secondaryContainer">#4E342E</color>
+    <color name="chocolate_dark_onSecondaryContainer">#D7CCC8</color>
+
+    <color name="chocolate_dark_background">#1A1412</color>
+    <color name="chocolate_dark_onBackground">#EDE0DC</color>
+    <color name="chocolate_dark_surface">#221B18</color>
+    <color name="chocolate_dark_onSurface">#EDE0DC</color>
+    <color name="chocolate_dark_surfaceVariant">#4D4542</color>
+    <color name="chocolate_dark_onSurfaceVariant">#D3C4C0</color>
+    <color name="chocolate_dark_outline">#9C8E8A</color>
+    <color name="chocolate_dark_outlineVariant">#362D2A</color>
+
+
+
+
     <!-- MÀU CHỦ ĐẠO CHUNG KHÁC -->
     <color name="white">#FFFFFF</color>
 </resources>

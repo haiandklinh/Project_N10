@@ -63,7 +63,7 @@
     <string name="auth_company_name_hint">Tên công ty / Doanh nghiệp</string>
     <string name="auth_full_name_hint">Họ và tên</string>
     <string name="auth_role_hint">Vai trò</string>
-    <string name="auth_register_button">Đăng ký tài khoản</string>
+    <string name="auth_register_button">Đăng ký</string>
     <string name="auth_already_have_account">Đã có tài khoản? </string>
     <string name="auth_already_have_code_prefix">Đã có mã công ty? </string>
     <string name="auth_join_company_link">Gia nhập công ty</string>
