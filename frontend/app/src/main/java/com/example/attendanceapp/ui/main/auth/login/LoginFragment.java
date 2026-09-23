@@ -21,6 +21,7 @@ import com.example.attendanceapp.R;
 import com.example.attendanceapp.databinding.FragmentLoginBinding;
 import com.example.attendanceapp.domain.model.UserAccount;
 import com.example.attendanceapp.domain.model.UserRole;
+import com.example.attendanceapp.domain.usecase.auth.AuthCallback;
 import com.example.attendanceapp.ui.employee.EmployeeMainActivity;
 import com.example.attendanceapp.ui.manager.ManagerMainActivity;
 import com.google.android.material.textfield.TextInputLayout;
@@ -91,14 +92,32 @@ public class LoginFragment extends Fragment {
 
                         if (role == UserRole.MANAGER) {
                             String companyName = result.getString(RoleSelectionDialog.BUNDLE_KEY_COMPANY_NAME, "");
-                            // Quản lý tạo công ty thành công -> Vào thẳng ManagerHome
-                            navigateToRoleHome(UserRole.MANAGER);
+                            // Gọi ViewModel để xử lý chọn role và tạo công ty
+                            viewModel.handleManagerRoleSelection(companyName, new AuthCallback<Void>() {
+                                @Override
+                                public void onSuccess(Void result) {
+                                    navigateToRoleHome(UserRole.MANAGER);
+                                }
+
+                                @Override
+                                public void onError(String errorMessage) {
+                                    Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show();
+                                }
+                            });
                         } else if (role == UserRole.EMPLOYEE) {
                             String invitationCode = result.getString(RoleSelectionDialog.BUNDLE_KEY_INVITATION_CODE, "");
-                            String companyName = "Công ty Công nghệ ABC"; // Giả lập lấy từ API
+                            // Gọi ViewModel để xử lý chọn role và tham gia công ty
+                            viewModel.handleEmployeeRoleSelection(invitationCode, new AuthCallback<String>() {
+                                @Override
+                                public void onSuccess(String companyName) {
+                                    navigateToPendingApproval(invitationCode, companyName);
+                                }
 
-                            // Nhân viên nhập mã mời -> Chuyển sang màn hình Chờ phê duyệt
-                            navigateToPendingApproval(invitationCode, companyName);
+                                @Override
+                                public void onError(String errorMessage) {
+                                    Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show();
+                                }
+                            });
                         }
                     }
                 }

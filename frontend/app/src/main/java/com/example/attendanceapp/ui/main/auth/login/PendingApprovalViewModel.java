@@ -58,9 +58,19 @@ public class PendingApprovalViewModel extends ViewModel {
 
     /** Đăng xuất tài khoản */
     public void logout() {
-        authRepository.logout();
-    }
+        authRepository.logout(new AuthRepository.DataCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                // TODO: điều hướng về màn hình Login sau khi logout thành công
+            }
 
+            @Override
+            public void onError(String errorMessage) {
+                // Session local đã được clear trong AuthRepositoryImpl dù lỗi,
+                // nên vẫn có thể điều hướng về Login ở đây nếu muốn
+            }
+        });
+    }
     // --- State Classes ---
     public static abstract class ApprovalStatusState {
         public static class Approved extends ApprovalStatusState {}

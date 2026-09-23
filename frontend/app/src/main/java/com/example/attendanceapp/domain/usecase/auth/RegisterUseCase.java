@@ -17,18 +17,35 @@ public class RegisterUseCase {
     }
 
     /**
-     * Gửi mã OTP về Số điện thoại
+     * Kiểm tra số điện thoại đã tồn tại chưa
      */
-    public void sendOtp(String phoneNumber, AuthCallback<Void> callback) {
-        authRepository.sendOtp(phoneNumber, new AuthRepository.OtpCallback() {
+    public void checkPhoneExists(String phoneNumber, AuthCallback<Boolean> callback) {
+        authRepository.checkPhoneExists(phoneNumber, new AuthRepository.DataCallback<Boolean>() {
             @Override
-            public void onSuccess() {
-                callback.onSuccess(null);
+            public void onSuccess(Boolean result) {
+                callback.onSuccess(result);
             }
 
             @Override
-            public void onError(String error) {
-                callback.onError(error);
+            public void onError(String errorMessage) {
+                callback.onError(errorMessage);
+            }
+        });
+    }
+
+    /**
+     * Gửi mã OTP về Số điện thoại
+     */
+    public void sendOtp(String phoneNumber, AuthCallback<Void> callback) {
+        authRepository.sendOtp(phoneNumber, new AuthRepository.DataCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                callback.onSuccess(result);
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                callback.onError(errorMessage);
             }
         });
     }
@@ -37,15 +54,15 @@ public class RegisterUseCase {
      * Xác thực mã OTP
      */
     public void verifyOtp(String phoneNumber, String otp, AuthCallback<Void> callback) {
-        authRepository.verifyOtp(phoneNumber, otp, new AuthRepository.OtpCallback() {
+        authRepository.verifyOtp(phoneNumber, otp, new AuthRepository.DataCallback<Void>() {
             @Override
-            public void onSuccess() {
-                callback.onSuccess(null);
+            public void onSuccess(Void result) {
+                callback.onSuccess(result);
             }
 
             @Override
-            public void onError(String error) {
-                callback.onError(error);
+            public void onError(String errorMessage) {
+                callback.onError(errorMessage);
             }
         });
     }
@@ -54,25 +71,20 @@ public class RegisterUseCase {
      * Đăng ký tài khoản cơ bản (Chỉ còn Họ tên, SĐT, Mật khẩu)
      */
     public void execute(String fullName, String phoneNumber, String password, AuthCallback<UserAccount> callback) {
-        authRepository.register(fullName, phoneNumber, password, new AuthRepository.RegisterCallback() {
+        authRepository.register(fullName, phoneNumber, password, new AuthRepository.DataCallback<UserAccount>() {
             @Override
             public void onSuccess(UserAccount user) {
                 callback.onSuccess(user);
             }
 
             @Override
-            public void onError(String error) {
-                callback.onError(error);
+            public void onError(String errorMessage) {
+                callback.onError(errorMessage);
             }
         });
     }
 
     public void saveAccountSaved() {
         appStateRepository.setAccountSaved(true);
-    }
-
-    public interface AuthCallback<T> {
-        void onSuccess(T result);
-        void onError(String error);
     }
 }

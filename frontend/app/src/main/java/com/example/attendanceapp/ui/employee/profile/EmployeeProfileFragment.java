@@ -25,6 +25,7 @@ import com.example.attendanceapp.databinding.ItemProfileMenuRowBinding;
 import com.example.attendanceapp.databinding.ItemProfileSwitchRowBinding;
 import com.example.attendanceapp.databinding.ItemThemeOptionBinding;
 import com.example.attendanceapp.databinding.LayoutBottomSheetThemeBinding;
+import com.example.attendanceapp.domain.usecase.auth.AuthCallback;
 import com.example.attendanceapp.domain.usecase.auth.LogoutUseCase;
 import com.example.attendanceapp.ui.main.auth.AuthActivity;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
@@ -253,17 +254,29 @@ public class EmployeeProfileFragment extends Fragment {
     }
 
     private void performLogout() {
-        // 1. Clear Data Session trong ViewModel / Repository / Preferences
         if (logoutUseCase != null) {
-            logoutUseCase.execute();
-        }
+            logoutUseCase.execute(new AuthCallback<Void>() {
+                @Override
+                public void onSuccess(Void result) {
+                    navigateToLoginAndFinish();
+                }
 
-        // 2. Chuyển hướng về Activity chứa Login Flow (AuthActivity)
+                @Override
+                public void onError(String errorMessage) {
+                    // Session local đã được clear trong AuthRepositoryImpl dù có lỗi
+                    // (ví dụ lỗi gọi API invalidate token), nên vẫn điều hướng về Login
+                    navigateToLoginAndFinish();
+                }
+            });
+        } else {
+            navigateToLoginAndFinish();
+        }
+    }
+
+    private void navigateToLoginAndFinish() {
         Intent intent = new Intent(requireContext(), AuthActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
-
-        // 3. Đóng Activity hiện tại
         requireActivity().finish();
     }
 

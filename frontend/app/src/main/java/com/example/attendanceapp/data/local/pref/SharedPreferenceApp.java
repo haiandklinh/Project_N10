@@ -3,6 +3,8 @@ package com.example.attendanceapp.data.local.pref;
 import android.content.SharedPreferences;
 
 import com.example.attendanceapp.domain.model.UserAccount;
+import com.example.attendanceapp.domain.model.UserRole;
+import com.example.attendanceapp.domain.model.UserStatus;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -17,6 +19,7 @@ public class SharedPreferenceApp {
     private static final String KEY_USER_ROLE = "user_role";
     private static final String KEY_USER_STATUS = "user_status";
     private static final String KEY_USER_ID = "user_id";
+    private static final String KEY_USERNAME = "username";
     private static final String KEY_PHONE = "phone";
     private static final String KEY_PASSWORD = "password";
 
@@ -79,10 +82,55 @@ public class SharedPreferenceApp {
     }
 
     public void saveUserInfo(UserAccount user){
-        sharedPreferences.edit().putString(KEY_USER_ID, user.getUserId()).apply();
+        sharedPreferences.edit()
+                .putString(KEY_USER_ID, user.getUserId())
+                .putString(KEY_USERNAME, user.getUsername())
+                .apply();
     }
     public String getUserId(){
         return sharedPreferences.getString(KEY_USER_ID, null);
+    }
+    public void saveUsername(String username){
+        sharedPreferences.edit().putString(KEY_USERNAME, username).apply();
+    }
+    public String getUsername(){
+        return sharedPreferences.getString(KEY_USERNAME, null);
+    }
+    public UserAccount getUserInfo(){
+        String userId = getUserId();
+        String username = getUsername();
+        String phone = getPhone();
+        String roleStr = getUserRole();
+        String statusStr = getUserStatus();
+        
+        if (userId == null && username == null && phone == null) {
+            return null;
+        }
+        
+        UserRole role = UserRole.EMPLOYEE;
+        try {
+            if (roleStr != null) {
+                role = UserRole.valueOf(roleStr);
+            }
+        } catch (Exception ignored) {}
+        
+        UserStatus status = UserStatus.NEEDS_ROLE_SELECTION;
+        try {
+            if (statusStr != null) {
+                status = UserStatus.valueOf(statusStr);
+            }
+        } catch (Exception ignored) {}
+        
+        return new UserAccount(
+                userId != null ? userId : "",
+                username != null ? username : "",
+                phone != null ? phone : "",
+                role,
+                false,
+                true,
+                null,
+                status
+        );
     }
 
     public void savePhone(String phone){
@@ -110,6 +158,7 @@ public class SharedPreferenceApp {
                 .remove(KEY_AUTH_TOKEN)
                 .remove(KEY_USER_STATUS)
                 .remove(KEY_USER_ID)
+                .remove(KEY_USERNAME)
                 .remove(KEY_PHONE)
                 .remove(KEY_PASSWORD)
                 .apply();

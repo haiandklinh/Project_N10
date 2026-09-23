@@ -96,7 +96,7 @@ dependencies {
     // (Tùy chọn) Logging Interceptor giúp bạn xem log request/response ở Logcat khi debug
     implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
 
-
+    // Mã hóa dữ liệu lưu trữ SharedPreferences / File bảo mật
     implementation("androidx.security:security-crypto:1.1.0")
 
 }

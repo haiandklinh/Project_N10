@@ -3,54 +3,54 @@ package com.example.attendanceapp.domain.repository;
 import com.example.attendanceapp.domain.model.UserAccount;
 import com.example.attendanceapp.domain.model.UserRole;
 
+/**
+ * Chỉ chịu trách nhiệm XÁC THỰC (gọi Database/API).
+ * Không lưu trữ session local — việc đó do UserRepository đảm nhiệm.
+ */
 public interface AuthRepository {
-    // 1. Đăng ký chỉ cần Họ tên, SĐT, Mật khẩu (Chưa có role)
-    void register(String fullName, String phoneNumber, String password, RegisterCallback callback);
 
-    // 2. Đăng nhập
-    void login(String phoneNumber, String password, LoginCallback callback);
-
-    // 3. Hàm chọn/cập nhật vai trò sau khi đăng nhập thành công
-    void selectRole(UserRole role, RoleCallback callback);
-
-    // 4. Các hàm xử lý công ty theo vai trò
-    void createCompany(String companyName, CompanyCallback callback);
-    void joinCompanyWithCode(String invitationCode, CompanyCallback callback);
-
-    // 5. OTP & Quên mật khẩu
-    void sendOtp(String phoneNumber, OtpCallback callback);
-    void verifyOtp(String phoneNumber, String otp, OtpCallback callback);
-    void resetPassword(String phoneNumber, String newPassword, ResetPasswordCallback callback);
-    void logout();
-
-    // --- Callbacks ---
-    interface RegisterCallback {
-        void onSuccess(UserAccount user);
-        void onError(String error);
+    // =========================================================
+    // CALLBACK DÙNG CHUNG CHO MỌI THAO TÁC BẤT ĐỒNG BỘ
+    // =========================================================
+    interface DataCallback<T> {
+        void onSuccess(T result);
+        void onError(String errorMessage);
     }
 
-    interface LoginCallback {
-        void onSuccess(UserAccount user);
-        void onError(String error);
-    }
+    // =========================================================
+    // ĐĂNG KÝ / ĐĂNG NHẬP
+    // =========================================================
 
-    interface RoleCallback {
-        void onSuccess();
-        void onError(String error);
-    }
+    /** 1. Đăng ký chỉ cần Họ tên, SĐT, Mật khẩu (chưa có role) */
+    void register(String fullName, String phoneNumber, String password, DataCallback<UserAccount> callback);
 
-    interface CompanyCallback {
-        void onSuccess(String companyName);
-        void onError(String error);
-    }
+    /** Kiểm tra số điện thoại đã tồn tại hay chưa (dùng khi đăng ký) */
+    void checkPhoneExists(String phoneNumber, DataCallback<Boolean> callback);
 
-    interface OtpCallback {
-        void onSuccess();
-        void onError(String error);
-    }
+    /** 2. Đăng nhập */
+    void login(String phoneNumber, String password, DataCallback<UserAccount> callback);
 
-    interface ResetPasswordCallback {
-        void onSuccess();
-        void onError(String error);
-    }
+    /** 3. Chọn/cập nhật vai trò sau khi đăng nhập/đăng ký thành công */
+    void selectRole(UserRole role, DataCallback<Void> callback);
+
+    // =========================================================
+    // XỬ LÝ CÔNG TY THEO VAI TRÒ
+    // =========================================================
+
+    void createCompany(String companyName, DataCallback<String> callback);
+
+    void joinCompanyWithCode(String invitationCode, DataCallback<String> callback);
+
+    // =========================================================
+    // OTP & QUÊN MẬT KHẨU
+    // =========================================================
+
+    void sendOtp(String phoneNumber, DataCallback<Void> callback);
+
+    void verifyOtp(String phoneNumber, String otp, DataCallback<Void> callback);
+
+    void resetPassword(String phoneNumber, String newPassword, DataCallback<Void> callback);
+
+    /** Đăng xuất - có callback để gọi API invalidate token nếu cần */
+    void logout(DataCallback<Void> callback);
 }

@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.example.attendanceapp.domain.model.UserAccount;
+import com.example.attendanceapp.domain.usecase.auth.AuthCallback;
 import com.example.attendanceapp.domain.usecase.auth.RegisterUseCase;
 
 import javax.inject.Inject;
@@ -36,16 +37,40 @@ public class RegisterViewModel extends ViewModel {
         return otpState;
     }
 
-    /** Gọi API gửi OTP đến số điện thoại */
-    public void sendOtp(String phone) {
-        if (phone == null || phone.length() < 10) {
-            otpState.setValue(new OtpState.Error("Số điện thoại không hợp lệ"));
+    /** BỔ SUNG: Kiểm tra SĐT đã đăng ký chưa trước khi gửi OTP */
+    public void checkPhoneAndSendOtp(String phone) {
+        if (phone == null || phone.length() < 9) {
+            otpState.setValue(new OtpState.Error("Số điện thoại không hợp lệ!"));
             return;
         }
 
         isLoading.setValue(true);
-        // Gọi UseCase/Repository gửi OTP thực tế (hoặc qua callback)
-        registerUseCase.sendOtp(phone, new RegisterUseCase.AuthCallback<Void>() {
+
+        // Gọi UseCase kiểm tra SĐT trong Room/API
+        registerUseCase.checkPhoneExists(phone, new AuthCallback<Boolean>() {
+            @Override
+            public void onSuccess(Boolean isExists) {
+                if (isExists) {
+                    isLoading.setValue(false);
+                    // Báo lỗi trùng SĐT ngay lập tức
+                    otpState.setValue(new OtpState.Error("Số điện thoại này đã được đăng ký!"));
+                } else {
+                    // Nếu CHƯA tồn tại -> Tiến hành gửi OTP
+                    sendOtpInternal(phone);
+                }
+            }
+
+            @Override
+            public void onError(String error) {
+                isLoading.setValue(false);
+                otpState.setValue(new OtpState.Error(error));
+            }
+        });
+    }
+
+    /** Hàm gửi OTP thực tế sau khi đã kiểm tra trùng */
+    private void sendOtpInternal(String phone) {
+        registerUseCase.sendOtp(phone, new AuthCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
                 isLoading.setValue(false);
@@ -60,10 +85,10 @@ public class RegisterViewModel extends ViewModel {
         });
     }
 
-    /** Xác thực OTP giả lập/thực tế */
+    /** Xác thực OTP */
     public void verifyOtp(String phone, String otp) {
         isLoading.setValue(true);
-        registerUseCase.verifyOtp(phone, otp, new RegisterUseCase.AuthCallback<Void>() {
+        registerUseCase.verifyOtp(phone, otp, new AuthCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
                 isLoading.setValue(false);
@@ -78,13 +103,12 @@ public class RegisterViewModel extends ViewModel {
         });
     }
 
-    /** Đăng ký tài khoản - Chỉ còn Họ tên, SĐT, Mật khẩu */
+    /** Đăng ký tài khoản */
     public void register(String fullName, String phone, String password) {
         isLoading.setValue(true);
 
-        // Gọi UseCase đăng ký (Đã bỏ tham số role)
         registerUseCase.execute(fullName, phone, password,
-                new RegisterUseCase.AuthCallback<UserAccount>() {
+                new AuthCallback<UserAccount>() {
                     @Override
                     public void onSuccess(UserAccount result) {
                         registerUseCase.saveAccountSaved();

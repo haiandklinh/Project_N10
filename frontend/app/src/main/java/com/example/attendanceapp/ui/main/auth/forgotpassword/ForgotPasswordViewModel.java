@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.example.attendanceapp.domain.usecase.auth.AuthCallback;
 import com.example.attendanceapp.domain.usecase.auth.ForgotPasswordUseCase;
 
 import javax.inject.Inject;
@@ -42,7 +43,7 @@ public class ForgotPasswordViewModel extends ViewModel {
         currentAccount = account.trim();
         isLoading.setValue(true);
 
-        forgotPasswordUseCase.sendOtp(currentAccount, new ForgotPasswordUseCase.AuthCallback<Void>() {
+        forgotPasswordUseCase.sendOtp(currentAccount, new AuthCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
                 isLoading.setValue(false);
@@ -65,7 +66,7 @@ public class ForgotPasswordViewModel extends ViewModel {
 
         isLoading.setValue(true);
 
-        forgotPasswordUseCase.verifyOtp(currentAccount, otp, new ForgotPasswordUseCase.AuthCallback<Void>() {
+        forgotPasswordUseCase.verifyOtp(currentAccount, otp, new AuthCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
                 isLoading.setValue(false);
@@ -98,7 +99,7 @@ public class ForgotPasswordViewModel extends ViewModel {
 
         isLoading.setValue(true);
 
-        forgotPasswordUseCase.resetPassword(currentAccount, newPassword, new ForgotPasswordUseCase.AuthCallback<Void>() {
+        forgotPasswordUseCase.resetPassword(currentAccount, newPassword, new AuthCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
                 isLoading.setValue(false);
@@ -116,7 +117,7 @@ public class ForgotPasswordViewModel extends ViewModel {
     public void resendOtp() {
         isLoading.setValue(true);
 
-        forgotPasswordUseCase.sendOtp(currentAccount, new ForgotPasswordUseCase.AuthCallback<Void>() {
+        forgotPasswordUseCase.sendOtp(currentAccount, new AuthCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
                 isLoading.setValue(false);

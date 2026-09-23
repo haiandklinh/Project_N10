@@ -1,7 +1,6 @@
 package com.example.attendanceapp.data.repository;
 
-import android.content.SharedPreferences;
-
+import com.example.attendanceapp.data.local.pref.SharedPreferenceApp;
 import com.example.attendanceapp.domain.model.UserAccount;
 import com.example.attendanceapp.domain.model.UserRole;
 import com.example.attendanceapp.domain.repository.UserRepository;
@@ -12,75 +11,68 @@ import javax.inject.Singleton;
 @Singleton
 public class UserRepositoryImpl implements UserRepository {
 
-    private static final String KEY_USER_ROLE = "user_role";
-    private static final String KEY_IS_LOGGED_IN = "is_logged_in";
-    private static final String KEY_USER_ID = "user_id";
-    private static final String KEY_USERNAME = "username";
-    private static final String KEY_PHONE = "phoneNumber";
-
-    private final SharedPreferences sharedPreferences;
+    private final SharedPreferenceApp sharedPreferenceApp;
 
     @Inject
-    public UserRepositoryImpl(SharedPreferences sharedPreferences) {
-        this.sharedPreferences = sharedPreferences;
+    public UserRepositoryImpl(SharedPreferenceApp sharedPreferenceApp) {
+        this.sharedPreferenceApp = sharedPreferenceApp;
     }
+
+    // =========================================================
+    // SESSION & PREFERENCES MANAGEMENT
+    // =========================================================
 
     @Override
     public UserRole getSavedUserRole() {
-        String roleStr = sharedPreferences.getString(KEY_USER_ROLE, UserRole.EMPLOYEE.name());
+        String roleStr = sharedPreferenceApp.getUserRole();
         try {
             return UserRole.valueOf(roleStr);
         } catch (Exception e) {
-            return UserRole.EMPLOYEE; // Mặc định trả về EMPLOYEE nếu lỗi
+            return UserRole.EMPLOYEE;
         }
     }
 
     @Override
     public void saveUserRole(UserRole role) {
         if (role == null) return;
-        sharedPreferences.edit()
-                .putString(KEY_USER_ROLE, role.name())
-                .apply();
+        sharedPreferenceApp.setUserRole(role.name());
     }
 
     @Override
     public UserAccount getCurrentUser() {
         if (!isLoggedIn()) return null;
-
-        String userId = sharedPreferences.getString(KEY_USER_ID, "");
-        String username = sharedPreferences.getString(KEY_USERNAME, "");
-        String phoneNumber = sharedPreferences.getString(KEY_PHONE, "");
-        UserRole role = getSavedUserRole();
-
-        return new UserAccount(userId, username, phoneNumber, role, false, true, null);
+        return sharedPreferenceApp.getUserInfo();
     }
 
     @Override
     public void saveUserSession(UserAccount userAccount, boolean isLoggedIn) {
         if (userAccount == null) return;
+        
+        sharedPreferenceApp.setLoggedIn(isLoggedIn);
+        sharedPreferenceApp.saveUserInfo(userAccount);
+        sharedPreferenceApp.savePhone(userAccount.getPhoneNumber());
+        if (userAccount.getRole() != null) {
+            sharedPreferenceApp.setUserRole(userAccount.getRole().name());
+        }
+    }
 
-        sharedPreferences.edit()
-                .putBoolean(KEY_IS_LOGGED_IN, isLoggedIn)
-                .putString(KEY_USER_ID, userAccount.getUserId())
-                .putString(KEY_USERNAME, userAccount.getUsername())
-                .putString(KEY_PHONE, userAccount.getPhoneNumber())
-                .putString(KEY_USER_ROLE, userAccount.getRole().name())
-                .apply();
+    @Override
+    public void saveUserStatus(String status) {
+        sharedPreferenceApp.saveUserStatus(status);
+    }
+
+    @Override
+    public String getUserStatus() {
+        return sharedPreferenceApp.getUserStatus();
     }
 
     @Override
     public boolean isLoggedIn() {
-        return sharedPreferences.getBoolean(KEY_IS_LOGGED_IN, false);
+        return sharedPreferenceApp.isLoggedIn();
     }
 
     @Override
     public void clearUserSession() {
-        sharedPreferences.edit()
-                .remove(KEY_IS_LOGGED_IN)
-                .remove(KEY_USER_ROLE)
-                .remove(KEY_USER_ID)
-                .remove(KEY_USERNAME)
-                .remove(KEY_PHONE)
-                .apply();
+        sharedPreferenceApp.clearSession();
     }
 }

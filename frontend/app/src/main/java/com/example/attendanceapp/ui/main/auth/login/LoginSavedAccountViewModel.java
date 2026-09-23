@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel;
 
 import com.example.attendanceapp.domain.model.SavedAccountData;
 import com.example.attendanceapp.domain.model.UserAccount;
+import com.example.attendanceapp.domain.usecase.auth.AuthCallback;
 import com.example.attendanceapp.domain.usecase.auth.LoginUseCase;
 
 import javax.inject.Inject;
@@ -57,7 +58,7 @@ public class LoginSavedAccountViewModel extends ViewModel {
         }
 
         loginUseCase.execute(saved.phone, password,
-                new LoginUseCase.AuthCallback<UserAccount>() {
+                new AuthCallback<UserAccount>() {
                     @Override
                     public void onSuccess(UserAccount result) {
                         loginUseCase.setLoggedIn(true);

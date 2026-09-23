@@ -40,7 +40,6 @@ public class RegisterFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        // Khởi tạo ViewModel theo scope của Fragment này
         viewModel = new ViewModelProvider(this).get(RegisterViewModel.class);
 
         observeViewModel();
@@ -53,6 +52,7 @@ public class RegisterFragment extends Fragment {
         viewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
             binding.progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
             binding.layoutStep3.btnRegisterFinal.setEnabled(!isLoading);
+            binding.layoutStep2.btnContinueStep2.setEnabled(!isLoading);
         });
 
         viewModel.getRegisterState().observe(getViewLifecycleOwner(), state -> {
@@ -66,18 +66,21 @@ public class RegisterFragment extends Fragment {
             }
         });
 
-        // Observe OTP state cho trường hợp kiểm tra SĐT
+        // BỔ SUNG: Observe OTP state (Lắng nghe kết quả gửi OTP và lỗi kiểm tra SĐT)
         viewModel.getOtpState().observe(getViewLifecycleOwner(), state -> {
-            if (state instanceof RegisterViewModel.OtpState.Error) {
+            if (state instanceof RegisterViewModel.OtpState.Sent) {
+                // SĐT hợp lệ và không trùng -> Tiến hành mở BottomSheet OTP
+                String phone = ((RegisterViewModel.OtpState.Sent) state).phone;
+                openOtpBottomSheet(phone);
+            } else if (state instanceof RegisterViewModel.OtpState.Error) {
+                // Trùng SĐT hoặc lỗi gửi OTP -> Hiển thị lỗi ngay Step 2
                 String error = ((RegisterViewModel.OtpState.Error) state).message;
                 showErrorOnStep2(error);
             }
         });
     }
 
-    /** Lắng nghe kết quả xác thực OTP trả về từ OtpBottomSheetFragment */
     private void setupOtpResultListener() {
-        // ĐỔI THÀNH getChildFragmentManager() để khớp với BottomSheet con
         getChildFragmentManager().setFragmentResultListener(
                 OTP_REQUEST_KEY,
                 getViewLifecycleOwner(),
@@ -104,7 +107,6 @@ public class RegisterFragment extends Fragment {
         binding.layoutStep2.tvBackStep1.setOnClickListener(v -> showStep(1));
         binding.layoutStep2.btnContinueStep2.setOnClickListener(v -> handleContinueStep2());
 
-        // Nếu sửa lại SĐT sau khi đã xác thực -> reset trạng thái
         binding.layoutStep2.edtPhone.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -133,16 +135,16 @@ public class RegisterFragment extends Fragment {
         if (!isPhoneVerified) {
             if (!validateStep2()) return;
             String phone = binding.layoutStep2.edtPhone.getText().toString().trim();
-            sendOtpAndOpenBottomSheet(phone);
+
+            // ĐỔI: Gọi hàm kiểm tra trùng SĐT trước khi gửi OTP
+            viewModel.checkPhoneAndSendOtp(phone);
         } else {
             showStep(3);
         }
     }
 
-    private void sendOtpAndOpenBottomSheet(String phone) {
-        viewModel.sendOtp(phone);
+    private void openOtpBottomSheet(String phone) {
         OtpBottomSheetFragment bottomSheet = OtpBottomSheetFragment.newInstance(phone, OTP_REQUEST_KEY);
-        // ĐỔI THÀNH getChildFragmentManager()
         bottomSheet.show(getChildFragmentManager(), OtpBottomSheetFragment.TAG);
     }
 
@@ -154,7 +156,6 @@ public class RegisterFragment extends Fragment {
         );
         binding.layoutStep2.edtPhone.setEnabled(false);
 
-        // Tự động chuyển luôn sang Step 3 sau khi xác thực OTP thành công
         showStep(3);
     }
 
@@ -248,14 +249,14 @@ public class RegisterFragment extends Fragment {
 
     private void showErrorOnInput(String errorMsg) {
         clearAllErrors();
-        
+
         if (errorMsg.contains("Họ tên") || errorMsg.contains("tên")) {
             showStep(1);
             binding.layoutStep1.tilFullName.setError(errorMsg);
             if (binding.layoutStep1.tilFullName.getEditText() != null) {
                 binding.layoutStep1.tilFullName.getEditText().requestFocus();
             }
-        } else if (errorMsg.contains("Số điện thoại") || errorMsg.contains("phone")) {
+        } else if (errorMsg.contains("Số điện thoại") || errorMsg.contains("phone") || errorMsg.contains("đăng ký")) {
             showStep(2);
             binding.layoutStep2.tilPhone.setError(errorMsg);
             if (binding.layoutStep2.tilPhone.getEditText() != null) {

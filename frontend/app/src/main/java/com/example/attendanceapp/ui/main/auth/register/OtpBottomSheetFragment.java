@@ -186,7 +186,7 @@ public class OtpBottomSheetFragment extends BottomSheetDialogFragment {
 
     private void setupResendButton() {
         binding.tvResendOtp.setOnClickListener(v -> {
-            viewModel.sendOtp(phone);
+            viewModel.checkPhoneAndSendOtp(phone);
             clearOtpBoxes();
             startResendCountdown();
             Toast.makeText(requireContext(), "Đã gửi lại mã OTP", Toast.LENGTH_SHORT).show();

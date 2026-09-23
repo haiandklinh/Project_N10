@@ -10,9 +10,10 @@ public class UserAccount {
     private final boolean isFirstLogin;
     private final boolean isActive;
     private final Instant lastLoginTime;
+    private final UserStatus status;     // APPROVED, PENDING_APPROVAL, NEEDS_ROLE_SELECTION
 
     public UserAccount(String userId, String username, String phoneNumber, UserRole role,
-                       boolean isFirstLogin, boolean isActive, Instant lastLoginTime) {
+                       boolean isFirstLogin, boolean isActive, Instant lastLoginTime, UserStatus status) {
         this.userId = userId;
         this.username = username;
         this.phoneNumber = phoneNumber;
@@ -20,6 +21,7 @@ public class UserAccount {
         this.isFirstLogin = isFirstLogin;
         this.isActive = isActive;
         this.lastLoginTime = lastLoginTime;
+        this.status = status;
     }
 
     public String getUserId() { return userId; }
@@ -29,4 +31,5 @@ public class UserAccount {
     public boolean isFirstLogin() { return isFirstLogin; }
     public boolean isActive() { return isActive; }
     public Instant getLastLoginTime() { return lastLoginTime; }
+    public UserStatus getStatus() { return status; }
 }
