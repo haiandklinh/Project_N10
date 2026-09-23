@@ -149,18 +149,15 @@ public class SharedPreferenceApp {
 
     /**
      * Xóa sạch trạng thái phiên làm việc khi người dùng Đăng xuất
+     * KHÔNG xóa KEY_IS_ACCOUNT_SAVED để giữ tài khoản đã lưu cho lần đăng nhập sau
+     * KHÔNG xóa thông tin tài khoản (userId, username, phone, password) để hiển thị trên LoginSavedAccountFragment
      */
     public void clearSession() {
         sharedPreferences.edit()
                 .putBoolean(KEY_IS_LOGGED_IN, false)
-                .putBoolean(KEY_IS_ACCOUNT_SAVED, false)
                 .remove(KEY_USER_ROLE)
                 .remove(KEY_AUTH_TOKEN)
                 .remove(KEY_USER_STATUS)
-                .remove(KEY_USER_ID)
-                .remove(KEY_USERNAME)
-                .remove(KEY_PHONE)
-                .remove(KEY_PASSWORD)
                 .apply();
     }
 

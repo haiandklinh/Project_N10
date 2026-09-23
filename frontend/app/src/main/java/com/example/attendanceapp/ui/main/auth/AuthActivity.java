@@ -32,6 +32,8 @@ public class AuthActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         binding = ActivityAuthBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        // Navigation được xử lý bởi SplashFragment (start destination)
     }
 
     private void applyAppTheme(String theme) {

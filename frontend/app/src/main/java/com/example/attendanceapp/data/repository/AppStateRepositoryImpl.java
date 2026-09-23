@@ -84,16 +84,19 @@ public class AppStateRepositoryImpl implements AppStateRepository {
     @Override
     public SavedAccountData getSavedAccountData() {
         String userId = sharedPreferenceApp.getUserId();
-        if (userId == null) {
+        String username = sharedPreferenceApp.getUsername();
+        String phone = sharedPreferenceApp.getPhone();
+
+        if (userId == null || phone == null) {
             return null;
         }
 
-        // Đọc dữ liệu tài khoản đã lưu từ SharedPreferences (hoặc trả về mock data để test UI)
+        // Đọc dữ liệu tài khoản đã lưu từ SharedPreferences
         return new SavedAccountData(
-                "Nguyễn Viết Sơn",
-                "Công ty Công nghệ ABC",
-                "ABC_CODE",
-                "0987654321"
+                username != null ? username : "Người dùng",
+                "Công ty", // TODO: Lưu tên công ty vào SharedPreferences khi tạo công ty
+                "CODE", // TODO: Lưu mã công ty vào SharedPreferences khi tham gia công ty
+                phone
         );
     }
 
