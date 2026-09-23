@@ -7,7 +7,11 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from backend.core.config import SessionLocal
 from backend.core.security import decode_token
 from backend.repositories.account_repository import AccountRepository
+from backend.repositories.manager_repository import ManagerRepository
+from backend.repositories.staff_repository import StaffRepository
 from backend.services.account_service import AccountService
+from backend.services.manager_service import ManagerService
+from backend.services.staff_service import StaffService
 
 security = HTTPBearer()
 
@@ -22,6 +26,18 @@ def get_account_service(
 
     return AccountService(repository)
 
+
+def get_staff_service(
+    db = Depends(get_db)
+):
+    repository = StaffRepository(db)
+    return StaffService(repository)
+
+def get_manager_service(
+    db = Depends(get_db)
+):
+    repository = ManagerRepository(db)
+    return ManagerService(repository)
 def get_current_account(
     credentials: HTTPAuthorizationCredentials = Depends(security)
 ) :
@@ -57,3 +73,4 @@ def get_current_account(
             status_code=401,
             detail="Token không hợp lệ hoặc bị làm giả!"
         )
+

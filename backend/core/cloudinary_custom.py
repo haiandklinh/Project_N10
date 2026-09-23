@@ -12,7 +12,7 @@ class CloudinaryService:
             api_secret=settings.CLOUDINARY_API_SECRET,
         )
 
-    def upload_image_room(self, file, is_thumbnail):
+    def upload_image(self, file):
         result = uploader.upload(
             file.file,
             folder="rental_app/rooms"
@@ -21,7 +21,6 @@ class CloudinaryService:
         return {
             "url": result["secure_url"],
             "public_id": result["public_id"],
-            "is_thumbnail" :is_thumbnail
         }
 
     def delete_image(self, public_id: str):
@@ -31,3 +30,5 @@ class CloudinaryService:
         )
 
         return result
+
+cloud_service = CloudinaryService()

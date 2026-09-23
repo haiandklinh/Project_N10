@@ -1,7 +1,7 @@
 from pydantic_settings import BaseSettings
 from sqlalchemy.ext.asyncio import AsyncSession ,async_sessionmaker
 from sqlalchemy.ext.asyncio import create_async_engine
-from backend.core.cloudinary_custom import CloudinaryService
+
 
 
 class Settings(BaseSettings):
@@ -35,5 +35,5 @@ SessionLocal = async_sessionmaker(
     expire_on_commit=False,
 )
 
-cloud_service = CloudinaryService()
+
 

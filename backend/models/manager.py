@@ -37,7 +37,7 @@ class Manager(Base):
 
     status: Mapped[str] = mapped_column(
         String,
-        nullable=False
+        default="active"
     )
 
     avatar: Mapped[str] = mapped_column(
@@ -45,7 +45,3 @@ class Manager(Base):
         nullable=True
     )
 
-    refresh_token: Mapped[str] = mapped_column(
-        String,
-        nullable=True
-    )

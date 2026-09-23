@@ -1,4 +1,6 @@
-from sqlalchemy import select
+from datetime import datetime
+
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from backend.core.security import create_token, hash_token, get_password_hash
@@ -29,12 +31,11 @@ class AccountRepository :
         await self.db.commit()
         await self.db.refresh(refresh_token)
 
-    async def create_account(self,phone_number , password, role):
+    async def create_account(self,phone_number , password):
         new_account = Account(
             phone_number = phone_number ,
-            password = get_password_hash(password) ,
-            role = role  ,
-            state = 'ok'
+            password = get_password_hash(password)  ,
+            created_at =datetime.now()
         )
         try:
             self.db.add(new_account)
@@ -57,3 +58,25 @@ class AccountRepository :
         await self.db.refresh(account)
 
         return account
+
+    async def get_rf_token_by_token(self,refresh_token):
+        result = await self.db.execute(
+            select(RefreshToken)
+            .where(RefreshToken.token == hash_token(refresh_token))
+        )
+        return result.scalar_one_or_none()
+    async def revoked_refresh_token(self, refresh_token):
+        rf_token = await self.get_rf_token_by_token(refresh_token)
+        if rf_token is None:
+            return None
+        rf_token.is_revoked =True
+        await self.db.commit()
+
+    async def revoke_all_refresh_tokens(self, account_id):
+        await self.db.execute(
+            update(RefreshToken)
+            .where(RefreshToken.id_account == account_id)
+            .values(is_revoked=True)
+        )
+
+        await self.db.commit()

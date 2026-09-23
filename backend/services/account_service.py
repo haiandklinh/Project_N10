@@ -73,35 +73,84 @@ class AccountService:
             message="Register Success"
         )
 
-    async def reset_password(self,request:ResetPasswordRequest)->MessageResponse:
-        account = self.repository.update_account(request.phone_number,request.password)
-        if account is  None :
+    async def reset_password(self, request: ResetPasswordRequest) -> MessageResponse:
+        account = await self.repository.update_account(request.phone_number, request.password)
+        if account is None:
             return MessageResponse(
-                message= "Reset Fail"
+                message="Reset Fail"
             )
+        await self.repository.revoke_all_refresh_tokens(account.id)
         return MessageResponse(
             message="Reset Success"
         )
 
-    async def refresh_token(self,request:RefreshRequest)->RefreshResponse:
+    async def refresh_token(
+            self,
+            request: RefreshRequest
+    ) -> RefreshResponse:
+
         try:
+            # 1. Decode và kiểm tra JWT
             payload = decode_token(request.refresh_token)
-            if payload.get('type') != "refresh_token":
-                raise HTTPException(401, "Refresh token required")
-            account_id = payload.get('sub')
+
+            # 2. Đây phải là refresh token
+            if payload.get("type") != "refresh_token":
+                raise HTTPException(
+                    status_code=401,
+                    detail="Refresh token required"
+                )
+
+            # 3. Lấy account_id
+            account_id = payload.get("sub")
+
             if account_id is None:
-                raise HTTPException(401, "Invalid refresh token")
-            new_access_token = create_token(account_id, "access_token")
-            return RefreshResponse(
-                access_token = new_access_token ,
+                raise HTTPException(
+                    status_code=401,
+                    detail="Invalid refresh token"
+                )
+
+            # 4. Kiểm tra refresh token trong DB
+            result = await self.repository.get_rf_token_by_token(
+                request.refresh_token
             )
+
+            if result is None:
+                raise HTTPException(
+                    status_code=401,
+                    detail="Refresh token not found"
+                )
+
+            # 5. Kiểm tra token đã bị revoke chưa
+            if result.is_revoked:
+                raise HTTPException(
+                    status_code=401,
+                    detail="Refresh token has been revoked"
+                )
+
+            # 6. Tạo access token mới
+            new_access_token = create_token(
+                account_id,
+                "access_token"
+            )
+
+            return RefreshResponse(
+                access_token=new_access_token
+            )
+
         except ExpiredSignatureError:
             raise HTTPException(
                 status_code=401,
                 detail="Refresh token expired"
             )
+
         except InvalidTokenError:
             raise HTTPException(
                 status_code=401,
                 detail="Invalid refresh token"
             )
+
+    async def logout(self, request: RefreshRequest) -> MessageResponse:
+        await self.repository.revoked_refresh_token(request.refresh_token)
+        MessageResponse(
+            message="Logout Success"
+        )

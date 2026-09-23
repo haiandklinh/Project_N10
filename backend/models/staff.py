@@ -37,7 +37,7 @@ class Staff(Base):
 
     status: Mapped[str] = mapped_column(
         String,
-        nullable=False
+        default="active" ,
     )
 
     avatar: Mapped[str] = mapped_column(

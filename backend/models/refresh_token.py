@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import ForeignKey, String, DateTime
+from sqlalchemy import ForeignKey, String, DateTime, Boolean
 from sqlalchemy.orm import Mapped, mapped_column
 
 from backend.db.base import Base
@@ -24,13 +24,7 @@ class RefreshToken(Base):
         String,
         nullable=False
     )
-
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime,
-        nullable=False
-    )
-
-    expired_at: Mapped[datetime] = mapped_column(
-        DateTime,
-        nullable=False
+    is_revoked :Mapped[bool] = mapped_column(
+        Boolean ,
+        default=False
     )
