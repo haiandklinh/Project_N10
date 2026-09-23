@@ -16,7 +16,7 @@ public class UserRepositoryImpl implements UserRepository {
     private static final String KEY_IS_LOGGED_IN = "is_logged_in";
     private static final String KEY_USER_ID = "user_id";
     private static final String KEY_USERNAME = "username";
-    private static final String KEY_EMAIL = "email";
+    private static final String KEY_PHONE = "phoneNumber";
 
     private final SharedPreferences sharedPreferences;
 
@@ -49,10 +49,10 @@ public class UserRepositoryImpl implements UserRepository {
 
         String userId = sharedPreferences.getString(KEY_USER_ID, "");
         String username = sharedPreferences.getString(KEY_USERNAME, "");
-        String email = sharedPreferences.getString(KEY_EMAIL, "");
+        String phoneNumber = sharedPreferences.getString(KEY_PHONE, "");
         UserRole role = getSavedUserRole();
 
-        return new UserAccount(userId, username, email, role, false, true, null);
+        return new UserAccount(userId, username, phoneNumber, role, false, true, null);
     }
 
     @Override
@@ -63,7 +63,7 @@ public class UserRepositoryImpl implements UserRepository {
                 .putBoolean(KEY_IS_LOGGED_IN, isLoggedIn)
                 .putString(KEY_USER_ID, userAccount.getUserId())
                 .putString(KEY_USERNAME, userAccount.getUsername())
-                .putString(KEY_EMAIL, userAccount.getEmail())
+                .putString(KEY_PHONE, userAccount.getPhoneNumber())
                 .putString(KEY_USER_ROLE, userAccount.getRole().name())
                 .apply();
     }
@@ -80,7 +80,7 @@ public class UserRepositoryImpl implements UserRepository {
                 .remove(KEY_USER_ROLE)
                 .remove(KEY_USER_ID)
                 .remove(KEY_USERNAME)
-                .remove(KEY_EMAIL)
+                .remove(KEY_PHONE)
                 .apply();
     }
 }

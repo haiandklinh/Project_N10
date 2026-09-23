@@ -1,7 +1,9 @@
 package com.example.attendanceapp.ui.main.auth.login;
 
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,24 +14,22 @@ import androidx.annotation.Nullable;
 import com.example.attendanceapp.databinding.BottomSheetInvitationCodeBinding;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
 public class EnterInvitationCodeBottomSheet extends BottomSheetDialogFragment {
 
+    public static final String TAG = "EnterInvitationCodeBottomSheet";
+    public static final String REQUEST_KEY = "invitation_code_request_key";
+    public static final String RESULT_ACTION = "result_action"; // SUBMITTED / CANCELED
+    public static final String ACTION_SUBMITTED = "action_submitted";
+    public static final String ACTION_CANCELED = "action_canceled";
+    public static final String BUNDLE_KEY_CODE = "bundle_key_code";
+
     private BottomSheetInvitationCodeBinding binding;
-    private OnInvitationCodeListener listener;
 
-    public interface OnInvitationCodeListener {
-        void onInvitationCodeSubmitted(String code);
-        void onCanceled();
-    }
-
-    public static EnterInvitationCodeBottomSheet newInstance(OnInvitationCodeListener listener) {
-        EnterInvitationCodeBottomSheet bottomSheet = new EnterInvitationCodeBottomSheet();
-        bottomSheet.setListener(listener);
-        return bottomSheet;
-    }
-
-    public void setListener(OnInvitationCodeListener listener) {
-        this.listener = listener;
+    public static EnterInvitationCodeBottomSheet newInstance() {
+        return new EnterInvitationCodeBottomSheet();
     }
 
     @Nullable
@@ -48,33 +48,37 @@ public class EnterInvitationCodeBottomSheet extends BottomSheetDialogFragment {
     private void setupViews() {
         binding.btnSubmit.setOnClickListener(v -> {
             String code = binding.edtInvitationCode.getText().toString().trim();
-            
+
             if (TextUtils.isEmpty(code)) {
                 binding.tilInvitationCode.setError("Vui lòng nhập mã mời");
                 return;
             }
-            
+
             if (code.length() < 6) {
                 binding.tilInvitationCode.setError("Mã mời phải có ít nhất 6 ký tự");
                 return;
             }
-            
-            binding.tilInvitationCode.setError(null);
-            
-            if (listener != null) {
-                listener.onInvitationCodeSubmitted(code);
-                dismiss();
-            }
-        });
 
-        binding.btnCancel.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onCanceled();
-            }
+            binding.tilInvitationCode.setError(null);
+
+            // Gửi kết quả về Fragment cha qua FragmentResultListener
+            Bundle result = new Bundle();
+            result.putString(RESULT_ACTION, ACTION_SUBMITTED);
+            result.putString(BUNDLE_KEY_CODE, code);
+            getParentFragmentManager().setFragmentResult(REQUEST_KEY, result);
+
             dismiss();
         });
 
-        binding.edtInvitationCode.addTextChangedListener(new android.text.TextWatcher() {
+        binding.btnCancel.setOnClickListener(v -> {
+            Bundle result = new Bundle();
+            result.putString(RESULT_ACTION, ACTION_CANCELED);
+            getParentFragmentManager().setFragmentResult(REQUEST_KEY, result);
+
+            dismiss();
+        });
+
+        binding.edtInvitationCode.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
@@ -84,7 +88,7 @@ public class EnterInvitationCodeBottomSheet extends BottomSheetDialogFragment {
             }
 
             @Override
-            public void afterTextChanged(android.text.Editable s) {}
+            public void afterTextChanged(Editable s) {}
         });
     }
 

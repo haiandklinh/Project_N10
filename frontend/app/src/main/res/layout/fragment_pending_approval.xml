@@ -165,7 +165,7 @@
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:layout_marginTop="@dimen/spacing_s"
-            android:text="@string/profile_logout_button"
+            android:text="Hủy yêu cầu"
             android:textColor="@color/md_theme_light_error"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -173,5 +173,17 @@
             app:strokeColor="@color/md_theme_light_error"
             app:strokeWidth="1dp" />
     </LinearLayout>
+
+    <com.google.android.material.progressindicator.CircularProgressIndicator
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:indeterminate="true"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:visibility="visible" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

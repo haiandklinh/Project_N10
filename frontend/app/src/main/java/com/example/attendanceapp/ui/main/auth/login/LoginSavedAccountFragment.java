@@ -14,14 +14,12 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 
-
 import com.example.attendanceapp.R;
 import com.example.attendanceapp.databinding.FragmentLoginSavedBinding;
 import com.example.attendanceapp.domain.model.UserAccount;
 import com.example.attendanceapp.domain.model.UserRole;
 import com.example.attendanceapp.ui.employee.EmployeeMainActivity;
 import com.example.attendanceapp.ui.manager.ManagerMainActivity;
-import com.google.android.material.bottomsheet.BottomSheetBehavior;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -62,7 +60,7 @@ public class LoginSavedAccountFragment extends Fragment {
                 UserAccount user = ((LoginState.Success) state).user;
                 Toast.makeText(requireContext(), "Đăng nhập thành công", Toast.LENGTH_SHORT).show();
 
-                // Điều hướng sang Activity tương ứng với Role của User
+                // Điều hướng sang Activity tương ứng
                 navigateToRoleHome(user.getRole());
 
             } else if (state instanceof LoginState.Error) {
@@ -75,12 +73,10 @@ public class LoginSavedAccountFragment extends Fragment {
             if (data != null) {
                 binding.tvUserName.setText(data.fullName);
                 binding.tvCompany.setText(data.companyName);
-                // Hiển thị số điện thoại đã che 1 phần
                 binding.tvMaskedPhone.setText(maskPhone(data.phone));
             }
         });
     }
-
 
     private void setupViews() {
         binding.btnLogin.setOnClickListener(v -> performPasswordLogin());
@@ -104,7 +100,7 @@ public class LoginSavedAccountFragment extends Fragment {
         String password = binding.edtPassword.getText().toString();
 
         if (TextUtils.isEmpty(password)) {
-            binding.tilPassword.setError("Nhập mật khẩu");
+            binding.tilPassword.setError("Vui lòng nhập mật khẩu");
             return;
         }
         binding.tilPassword.setError(null);
@@ -113,12 +109,12 @@ public class LoginSavedAccountFragment extends Fragment {
     }
 
     private void performBiometricLogin() {
-        // TODO: Xử lý xác thực sinh trắc học
+        // TODO: Xử lý xác thực sinh trắc học (BiometricPrompt)
         Toast.makeText(requireContext(), "Tính năng sinh trắc học đang phát triển", Toast.LENGTH_SHORT).show();
     }
 
     /**
-     * Điều hướng sang Activity tương ứng với vai trò và xóa sạch luồng Auth ra khỏi BackStack
+     * Điều hướng sang Activity tương ứng với vai trò và xóa sạch luồng Auth khỏi BackStack
      */
     private void navigateToRoleHome(UserRole role) {
         Intent intent;

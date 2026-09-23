@@ -92,6 +92,7 @@
         android:orientation="vertical"
         android:paddingHorizontal="@dimen/spacing_xl">
 
+        <!-- Input Mật khẩu -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilPassword"
             style="@style/AppTextInputLayout"
@@ -100,8 +101,6 @@
             android:hint="@string/auth_password_hint"
             app:endIconMode="password_toggle"
             app:errorEnabled="true"
-            app:helperText="@string/auth_password_helper"
-            app:helperTextEnabled="true"
             app:startIconDrawable="@drawable/ic_lock">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -110,12 +109,13 @@
                 android:inputType="textPassword" />
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- Input Nhập lại mật khẩu -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilConfirmPassword"
             style="@style/AppTextInputLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_m"
+            android:layout_marginTop="@dimen/spacing_s"
             android:hint="@string/auth_confirm_password_hint"
             app:endIconMode="password_toggle"
             app:errorEnabled="true"
@@ -127,12 +127,74 @@
                 android:inputType="textPassword" />
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- CARD HIỂN THỊ YÊU CẦU MẬT KHẨU -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardPasswordRequirements"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            app:cardBackgroundColor="?attr/colorSurfaceVariant"
+            app:cardCornerRadius="@dimen/radius_m"
+            app:cardElevation="0dp"
+            app:strokeWidth="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_m">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Mật khẩu phải bao gồm:"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="@dimen/text_size_body_small"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvRequirementLength"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_xs"
+                    android:text="• Tối thiểu 8 ký tự"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textSize="@dimen/text_size_body_small" />
+
+                <TextView
+                    android:id="@+id/tvRequirementUppercase"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_3xs"
+                    android:text="• Có ít nhất 1 chữ cái viết hoa (A-Z)"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textSize="@dimen/text_size_body_small" />
+
+                <TextView
+                    android:id="@+id/tvRequirementNumber"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_3xs"
+                    android:text="• Có ít nhất 1 chữ số (0-9)"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textSize="@dimen/text_size_body_small" />
+
+                <TextView
+                    android:id="@+id/tvRequirementSpecial"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_3xs"
+                    android:text="• Có ít nhất 1 ký tự đặc biệt (@, #, $, ...)"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textSize="@dimen/text_size_body_small" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
         <!-- Đồng ý điều khoản: bắt buộc tick mới bật được nút Đăng ký -->
         <com.google.android.material.checkbox.MaterialCheckBox
             android:id="@+id/cbAcceptTerms"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_l"
             android:text="@string/auth_accept_terms"
             android:textColor="?attr/colorOnSurfaceVariant"
             android:textSize="@dimen/text_size_body_small" />
@@ -148,8 +210,8 @@
                 style="@style/ButtonOutlinedSmallStyle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:layout_marginEnd="@dimen/spacing_xl"
+                android:layout_weight="1"
                 android:text="@string/action_back"
                 app:strokeColor="?attr/colorPrimary" />
 
@@ -165,13 +227,15 @@
         </LinearLayout>
 
         <!-- Loading khi đang gọi API đăng ký -->
-        <com.google.android.material.progressindicator.CircularProgressIndicator
+        <ProgressBar
             android:id="@+id/progressRegister"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="@dimen/spacing_m"
             android:indeterminate="true"
+            android:indeterminateTint="?attr/colorPrimary"
+            android:indeterminateTintMode="src_in"
             android:visibility="gone" />
     </LinearLayout>
 </LinearLayout>

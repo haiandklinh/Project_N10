@@ -38,13 +38,12 @@ public class LoginSavedAccountViewModel extends ViewModel {
     }
 
     public void loadSavedAccount() {
-        // TODO: Load that tu SharedPreferences
-        savedAccountData.setValue(new SavedAccountData(
-                "Nguyễn Văn A",
-                "Công ty TNHH Free Fire",
-                "ACME",
-                "0912345678"
-        ));
+        SavedAccountData data = loginUseCase.getSavedAccount();
+        if (data != null) {
+            savedAccountData.setValue(data);
+        } else {
+            loginState.setValue(new LoginState.Error("Không tìm thấy thông tin tài khoản đã lưu"));
+        }
     }
 
     public void loginWithPassword(String password) {

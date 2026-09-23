@@ -13,4 +13,20 @@ public class SavedAccountData {
         this.companyCode = companyCode;
         this.phone = phone;
     }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public String getCompanyName() {
+        return companyName;
+    }
+
+    public String getCompanyCode() {
+        return companyCode;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
 }

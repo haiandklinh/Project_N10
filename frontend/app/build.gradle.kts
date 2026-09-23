@@ -88,4 +88,15 @@ dependencies {
 
     implementation("androidx.core:core-splashscreen:1.0.1")
 
+
+    // Retrofit cho việc gọi API
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    // Gson Converter để chuyển JSON sang Java Object tự động
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    // (Tùy chọn) Logging Interceptor giúp bạn xem log request/response ở Logcat khi debug
+    implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
+
+
+    implementation("androidx.security:security-crypto:1.1.0")
+
 }

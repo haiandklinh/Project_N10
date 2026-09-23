@@ -1,11 +1,8 @@
 package com.example.attendanceapp.domain.usecase.auth;
 
 import com.example.attendanceapp.domain.model.UserAccount;
-import com.example.attendanceapp.domain.model.UserRole;
 import com.example.attendanceapp.domain.repository.AppStateRepository;
 import com.example.attendanceapp.domain.repository.AuthRepository;
-
-import java.time.Instant;
 
 import javax.inject.Inject;
 
@@ -20,25 +17,54 @@ public class RegisterUseCase {
     }
 
     /**
-     * Dang ky tai khoan Admin/nguoi dai dien cong ty.
-     * Khong con role/contact/isEmail: nguoi dang ky qua flow nay luon la ADMIN,
-     * lien he chi con so dien thoai (phone).
+     * Gửi mã OTP về Số điện thoại
      */
-    public void execute(String fullName, String companyName, String phone, String password,
-                        AuthCallback<UserAccount> callback) {
-        // TODO: Goi API dang ky that su qua AuthRepository, vi du:
-        // authRepository.register(fullName, companyName, phone, password, callback);
+    public void sendOtp(String phoneNumber, AuthCallback<Void> callback) {
+        authRepository.sendOtp(phoneNumber, new AuthRepository.OtpCallback() {
+            @Override
+            public void onSuccess() {
+                callback.onSuccess(null);
+            }
 
-        // Tam thoi mock du lieu tra ve
-        callback.onSuccess(new UserAccount(
-                "mock-user-id",
-                fullName,
-                phone,
-                UserRole.MANAGER,
-                true,
-                true,
-                Instant.now()
-        ));
+            @Override
+            public void onError(String error) {
+                callback.onError(error);
+            }
+        });
+    }
+
+    /**
+     * Xác thực mã OTP
+     */
+    public void verifyOtp(String phoneNumber, String otp, AuthCallback<Void> callback) {
+        authRepository.verifyOtp(phoneNumber, otp, new AuthRepository.OtpCallback() {
+            @Override
+            public void onSuccess() {
+                callback.onSuccess(null);
+            }
+
+            @Override
+            public void onError(String error) {
+                callback.onError(error);
+            }
+        });
+    }
+
+    /**
+     * Đăng ký tài khoản cơ bản (Chỉ còn Họ tên, SĐT, Mật khẩu)
+     */
+    public void execute(String fullName, String phoneNumber, String password, AuthCallback<UserAccount> callback) {
+        authRepository.register(fullName, phoneNumber, password, new AuthRepository.RegisterCallback() {
+            @Override
+            public void onSuccess(UserAccount user) {
+                callback.onSuccess(user);
+            }
+
+            @Override
+            public void onError(String error) {
+                callback.onError(error);
+            }
+        });
     }
 
     public void saveAccountSaved() {

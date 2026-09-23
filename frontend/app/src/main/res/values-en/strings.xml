@@ -91,12 +91,12 @@
     <string name="forgot_password_title">Password Recovery</string>
     <string name="forgot_password_subtitle">Please follow the steps below</string>
     <string name="forgot_password_step_1_title">Step 1: Account Verification</string>
-    <string name="forgot_password_step_1_desc">Enter your registered Email or Employee Code/Phone Number to receive recovery OTP.</string>
-    <string name="forgot_password_account_hint">Email / Phone Number</string>
+    <string name="forgot_password_step_1_desc">Enter your registered Phone Number to receive recovery OTP.</string>
+    <string name="forgot_password_account_hint">Phone Number</string>
     <string name="forgot_password_send_otp">Send Verification Code</string>
 
     <string name="forgot_password_step_2_title">Step 2: Enter OTP Code</string>
-    <string name="forgot_password_step_2_desc">A 6-digit OTP code has been sent to your email/phone number.</string>
+    <string name="forgot_password_step_2_desc">A 6-digit OTP code has been sent to your phone number.</string>
     <string name="forgot_password_verify_otp">Verify OTP Code</string>
     <string name="forgot_password_no_otp">Didn\'t receive code? </string>
     <string name="forgot_password_resend_otp">Resend</string>

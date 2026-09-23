@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bg_bottom_sheet"
+    android:padding="@dimen/spacing_xl">
+
+    <!-- Drag Handle -->
+    <View
+        android:id="@+id/dragHandle"
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="@dimen/spacing_m"
+        android:background="@drawable/bg_handle" />
+
+    <!-- Title -->
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Tạo doanh nghiệp mới"
+        android:textSize="@dimen/text_size_title_medium"
+        android:textStyle="bold"
+        android:gravity="center" />
+
+    <!-- Subtitle -->
+    <TextView
+        android:id="@+id/tvSubtitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_3xs"
+        android:text="Nhập tên doanh nghiệp để bắt đầu quản lý điểm danh"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:textSize="@dimen/text_size_body_medium"
+        android:gravity="center" />
+
+    <!-- Company Name Input -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilCompanyName"
+        style="@style/AppTextInputLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_l"
+        android:hint="Tên doanh nghiệp"
+        app:counterEnabled="true"
+        app:counterMaxLength="50"
+        app:errorEnabled="true"
+        app:startIconDrawable="@drawable/ic_home">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/edtCompanyName"
+            style="@style/AppTextInputEditText"
+            android:inputType="text|textCapWords"
+            android:maxLength="50" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Info Card -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_m"
+        app:cardBackgroundColor="?attr/colorSurfaceVariant"
+        app:cardCornerRadius="@dimen/radius_m"
+        app:cardElevation="0dp"
+        app:strokeWidth="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="@dimen/spacing_m">
+
+            <ImageView
+                android:layout_width="@dimen/spacing_l"
+                android:layout_height="@dimen/spacing_l"
+                android:src="@drawable/ic_warning"
+                app:tint="?attr/colorPrimary" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_s"
+                android:layout_weight="1"
+                android:text="Tên doanh nghiệp có thể thay đổi sau này trong cài đặt"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="@dimen/text_size_body_small" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_l"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCancel"
+            style="@style/ButtonOutlinedSmallStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="@dimen/spacing_m"
+            android:text="Hủy"
+            app:strokeColor="?attr/colorPrimary" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSubmit"
+            style="@style/ButtonFilledSmallStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Tạo doanh nghiệp" />
+    </LinearLayout>
+
+</LinearLayout>

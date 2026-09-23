@@ -13,8 +13,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel;
 
 @HiltViewModel
 public class RegisterViewModel extends ViewModel {
-    private final RegisterUseCase registerUseCase;
 
+    private final RegisterUseCase registerUseCase;
     private final MutableLiveData<RegisterState> registerState = new MutableLiveData<>();
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
     private final MutableLiveData<OtpState> otpState = new MutableLiveData<>();
@@ -36,22 +36,54 @@ public class RegisterViewModel extends ViewModel {
         return otpState;
     }
 
-    /** Goi API gui OTP den so dien thoai */
+    /** Gọi API gửi OTP đến số điện thoại */
     public void sendOtp(String phone) {
-        // TODO: goi API that su
-        otpState.setValue(new OtpState.Sent(phone));
-    }
+        if (phone == null || phone.length() < 10) {
+            otpState.setValue(new OtpState.Error("Số điện thoại không hợp lệ"));
+            return;
+        }
 
-    /** Xac thuc OTP - tam thoi gia lap dong bo de test UI */
-    public boolean verifyOtpSync(String phone, String otp) {
-        // TODO: goi API verify OTP that su
-        return "123456".equals(otp);
-    }
-
-    /** Dang ky tai khoan - chi con SDT, khong con email/role/contact/isEmail */
-    public void register(String fullName, String companyName, String phone, String password) {
         isLoading.setValue(true);
-        registerUseCase.execute(fullName, companyName, phone, password,
+        // Gọi UseCase/Repository gửi OTP thực tế (hoặc qua callback)
+        registerUseCase.sendOtp(phone, new RegisterUseCase.AuthCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                isLoading.setValue(false);
+                otpState.setValue(new OtpState.Sent(phone));
+            }
+
+            @Override
+            public void onError(String error) {
+                isLoading.setValue(false);
+                otpState.setValue(new OtpState.Error(error));
+            }
+        });
+    }
+
+    /** Xác thực OTP giả lập/thực tế */
+    public void verifyOtp(String phone, String otp) {
+        isLoading.setValue(true);
+        registerUseCase.verifyOtp(phone, otp, new RegisterUseCase.AuthCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                isLoading.setValue(false);
+                otpState.setValue(new OtpState.Verified());
+            }
+
+            @Override
+            public void onError(String error) {
+                isLoading.setValue(false);
+                otpState.setValue(new OtpState.Error(error));
+            }
+        });
+    }
+
+    /** Đăng ký tài khoản - Chỉ còn Họ tên, SĐT, Mật khẩu */
+    public void register(String fullName, String phone, String password) {
+        isLoading.setValue(true);
+
+        // Gọi UseCase đăng ký (Đã bỏ tham số role)
+        registerUseCase.execute(fullName, phone, password,
                 new RegisterUseCase.AuthCallback<UserAccount>() {
                     @Override
                     public void onSuccess(UserAccount result) {
@@ -68,7 +100,9 @@ public class RegisterViewModel extends ViewModel {
                 });
     }
 
-    public static class RegisterState {
+    // --- Sealed/State Classes ---
+
+    public static abstract class RegisterState {
         public static class Success extends RegisterState {
             public final UserAccount user;
             public Success(UserAccount user) {
@@ -84,13 +118,15 @@ public class RegisterViewModel extends ViewModel {
         }
     }
 
-    public static class OtpState {
+    public static abstract class OtpState {
         public static class Sent extends OtpState {
             public final String phone;
             public Sent(String phone) {
                 this.phone = phone;
             }
         }
+
+        public static class Verified extends OtpState {}
 
         public static class Error extends OtpState {
             public final String message;

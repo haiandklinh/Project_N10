@@ -131,10 +131,10 @@
                 android:padding="@dimen/spacing_m">
 
                 <ImageView
-                    android:layout_width="@dimen/spacing_xl"
-                    android:layout_height="@dimen/spacing_xl"
+                    android:layout_width="@dimen/spacing_l"
+                    android:layout_height="@dimen/spacing_l"
                     android:importantForAccessibility="no"
-                    android:src="@drawable/ic_check_circle"
+                    android:src="@drawable/ic_check"
                     app:tint="?attr/colorAttendancePresent" />
 
                 <TextView
@@ -144,7 +144,7 @@
                     android:layout_marginStart="@dimen/spacing_s"
                     android:layout_weight="1"
                     android:textColor="?attr/colorAttendancePresent"
-                    android:textSize="@dimen/text_size_body_medium"
+                    android:textSize="@dimen/text_size_body_small"
                     android:textStyle="bold"
                     tools:text="0912***789 đã xác thực" />
             </LinearLayout>

@@ -13,7 +13,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentResultListener;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 
@@ -26,12 +25,10 @@ import dagger.hilt.android.AndroidEntryPoint;
 public class RegisterFragment extends Fragment {
 
     private static final String OTP_REQUEST_KEY = "otp_verify_request";
-    private static final String OTP_RESULT_VERIFIED_PHONE = "verified_phone";
 
     private FragmentRegisterBinding binding;
     private RegisterViewModel viewModel;
 
-    private int currentStep = 1;
     private boolean isPhoneVerified = false;
 
     @Override
@@ -43,6 +40,7 @@ public class RegisterFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        // Khởi tạo ViewModel theo scope của Fragment này
         viewModel = new ViewModelProvider(this).get(RegisterViewModel.class);
 
         observeViewModel();
@@ -59,22 +57,32 @@ public class RegisterFragment extends Fragment {
 
         viewModel.getRegisterState().observe(getViewLifecycleOwner(), state -> {
             if (state instanceof RegisterViewModel.RegisterState.Success) {
+                clearAllErrors();
                 Toast.makeText(requireContext(), R.string.auth_register_success, Toast.LENGTH_SHORT).show();
                 Navigation.findNavController(requireView()).popBackStack();
             } else if (state instanceof RegisterViewModel.RegisterState.Error) {
                 String error = ((RegisterViewModel.RegisterState.Error) state).message;
-                Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show();
+                showErrorOnInput(error);
+            }
+        });
+
+        // Observe OTP state cho trường hợp kiểm tra SĐT
+        viewModel.getOtpState().observe(getViewLifecycleOwner(), state -> {
+            if (state instanceof RegisterViewModel.OtpState.Error) {
+                String error = ((RegisterViewModel.OtpState.Error) state).message;
+                showErrorOnStep2(error);
             }
         });
     }
 
-    /** Lang nghe ket qua xac thuc OTP tra ve tu OtpBottomSheetFragment */
+    /** Lắng nghe kết quả xác thực OTP trả về từ OtpBottomSheetFragment */
     private void setupOtpResultListener() {
-        getParentFragmentManager().setFragmentResultListener(
+        // ĐỔI THÀNH getChildFragmentManager() để khớp với BottomSheet con
+        getChildFragmentManager().setFragmentResultListener(
                 OTP_REQUEST_KEY,
                 getViewLifecycleOwner(),
-                (FragmentResultListener) (requestKey, result) -> {
-                    String verifiedPhone = result.getString(OTP_RESULT_VERIFIED_PHONE, "");
+                (requestKey, result) -> {
+                    String verifiedPhone = result.getString(OtpBottomSheetFragment.RESULT_VERIFIED_PHONE, "");
                     if (!TextUtils.isEmpty(verifiedPhone)) {
                         onPhoneVerified(verifiedPhone);
                     }
@@ -84,20 +92,19 @@ public class RegisterFragment extends Fragment {
 
     private void setupSteps() {
         setupTermsCheckbox();
-        setupJoinCompanyLink();
 
-        // Step 1: Ten & Cong ty
+        // Step 1: Họ tên
         binding.layoutStep1.btnNextStep1.setOnClickListener(v -> {
             if (validateStep1()) {
                 showStep(2);
             }
         });
 
-        // Step 2: So dien thoai (gui OTP gop trong nut Tiep tuc)
+        // Step 2: Số điện thoại
         binding.layoutStep2.tvBackStep1.setOnClickListener(v -> showStep(1));
         binding.layoutStep2.btnContinueStep2.setOnClickListener(v -> handleContinueStep2());
 
-        // Neu nguoi dung sua lai so dien thoai sau khi da xac thuc -> reset trang thai
+        // Nếu sửa lại SĐT sau khi đã xác thực -> reset trạng thái
         binding.layoutStep2.edtPhone.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -113,7 +120,7 @@ public class RegisterFragment extends Fragment {
             }
         });
 
-        // Step 3: Mat khau
+        // Step 3: Mật khẩu
         binding.layoutStep3.btnRegisterFinal.setOnClickListener(v -> {
             if (validateStep3()) {
                 performRegister();
@@ -135,7 +142,8 @@ public class RegisterFragment extends Fragment {
     private void sendOtpAndOpenBottomSheet(String phone) {
         viewModel.sendOtp(phone);
         OtpBottomSheetFragment bottomSheet = OtpBottomSheetFragment.newInstance(phone, OTP_REQUEST_KEY);
-        bottomSheet.show(getParentFragmentManager(), OtpBottomSheetFragment.TAG);
+        // ĐỔI THÀNH getChildFragmentManager()
+        bottomSheet.show(getChildFragmentManager(), OtpBottomSheetFragment.TAG);
     }
 
     private void onPhoneVerified(String verifiedPhone) {
@@ -145,11 +153,15 @@ public class RegisterFragment extends Fragment {
                 getString(R.string.auth_phone_verified_format, maskPhone(verifiedPhone))
         );
         binding.layoutStep2.edtPhone.setEnabled(false);
+
+        // Tự động chuyển luôn sang Step 3 sau khi xác thực OTP thành công
+        showStep(3);
     }
 
     private void resetPhoneVerification() {
         isPhoneVerified = false;
         binding.layoutStep2.layoutVerifiedStatus.setVisibility(View.GONE);
+        binding.layoutStep2.edtPhone.setEnabled(true);
     }
 
     private void setupTermsCheckbox() {
@@ -158,16 +170,7 @@ public class RegisterFragment extends Fragment {
         );
     }
 
-    private void setupJoinCompanyLink() {
-        binding.layoutStep1.tvGoToJoinCompany.setOnClickListener(v ->
-                Toast.makeText(requireContext(),
-                        "Tính năng gia nhập công ty bằng mã đang phát triển",
-                        Toast.LENGTH_SHORT).show()
-        );
-    }
-
     private void showStep(int step) {
-        currentStep = step;
         binding.layoutStep1.getRoot().setVisibility(step == 1 ? View.VISIBLE : View.GONE);
         binding.layoutStep2.getRoot().setVisibility(step == 2 ? View.VISIBLE : View.GONE);
         binding.layoutStep3.getRoot().setVisibility(step == 3 ? View.VISIBLE : View.GONE);
@@ -175,19 +178,12 @@ public class RegisterFragment extends Fragment {
 
     private boolean validateStep1() {
         String name = binding.layoutStep1.edtFullName.getText().toString().trim();
-        String company = binding.layoutStep1.edtCompanyName.getText().toString().trim();
 
         if (TextUtils.isEmpty(name)) {
             binding.layoutStep1.tilFullName.setError(getString(R.string.auth_error_full_name_required));
             return false;
         }
         binding.layoutStep1.tilFullName.setError(null);
-
-        if (TextUtils.isEmpty(company)) {
-            binding.layoutStep1.tilCompanyName.setError(getString(R.string.auth_error_company_required));
-            return false;
-        }
-        binding.layoutStep1.tilCompanyName.setError(null);
         return true;
     }
 
@@ -232,16 +228,54 @@ public class RegisterFragment extends Fragment {
 
     private void performRegister() {
         String fullName = binding.layoutStep1.edtFullName.getText().toString().trim();
-        String companyName = binding.layoutStep1.edtCompanyName.getText().toString().trim();
         String phone = binding.layoutStep2.edtPhone.getText().toString().trim();
         String password = binding.layoutStep3.edtPassword.getText().toString();
 
-        viewModel.register(fullName, companyName, phone, password);
+        viewModel.register(fullName, phone, password);
     }
 
     private String maskPhone(String phone) {
         if (phone.length() < 7) return phone;
         return phone.substring(0, 4) + "***" + phone.substring(phone.length() - 3);
+    }
+
+    private void clearAllErrors() {
+        binding.layoutStep1.tilFullName.setError(null);
+        binding.layoutStep2.tilPhone.setError(null);
+        binding.layoutStep3.tilPassword.setError(null);
+        binding.layoutStep3.tilConfirmPassword.setError(null);
+    }
+
+    private void showErrorOnInput(String errorMsg) {
+        clearAllErrors();
+        
+        if (errorMsg.contains("Họ tên") || errorMsg.contains("tên")) {
+            showStep(1);
+            binding.layoutStep1.tilFullName.setError(errorMsg);
+            if (binding.layoutStep1.tilFullName.getEditText() != null) {
+                binding.layoutStep1.tilFullName.getEditText().requestFocus();
+            }
+        } else if (errorMsg.contains("Số điện thoại") || errorMsg.contains("phone")) {
+            showStep(2);
+            binding.layoutStep2.tilPhone.setError(errorMsg);
+            if (binding.layoutStep2.tilPhone.getEditText() != null) {
+                binding.layoutStep2.tilPhone.getEditText().requestFocus();
+            }
+        } else {
+            showStep(3);
+            binding.layoutStep3.tilPassword.setError(errorMsg);
+            if (binding.layoutStep3.tilPassword.getEditText() != null) {
+                binding.layoutStep3.tilPassword.getEditText().requestFocus();
+            }
+        }
+    }
+
+    private void showErrorOnStep2(String errorMsg) {
+        showStep(2);
+        binding.layoutStep2.tilPhone.setError(errorMsg);
+        if (binding.layoutStep2.tilPhone.getEditText() != null) {
+            binding.layoutStep2.tilPhone.getEditText().requestFocus();
+        }
     }
 
     @Override

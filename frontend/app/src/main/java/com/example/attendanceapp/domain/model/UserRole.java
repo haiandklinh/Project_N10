@@ -1,6 +1,28 @@
 package com.example.attendanceapp.domain.model;
 
 public enum UserRole {
-    MANAGER,      // Quản trị viên: tạo tài khoản, xem báo cáo toàn bộ
-    EMPLOYEE    // Nhân viên: chấm công, xem lịch sử cá nhân
+    MANAGER("MANAGER"),
+    EMPLOYEE("EMPLOYEE");
+
+    private final String value;
+
+    UserRole(String value) {
+        this.value = value;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    // Helper method giúp convert từ String (API trả về) sang Enum
+    public static UserRole fromString(String roleStr) {
+        if (roleStr != null) {
+            for (UserRole role : UserRole.values()) {
+                if (role.value.equalsIgnoreCase(roleStr)) {
+                    return role;
+                }
+            }
+        }
+        return EMPLOYEE; // Mặc định nếu không tìm thấy
+    }
 }

@@ -3,8 +3,8 @@ package com.example.attendanceapp.ui.main.auth.login;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
-import android.text.TextWatcher;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,7 +23,6 @@ import com.example.attendanceapp.domain.model.UserAccount;
 import com.example.attendanceapp.domain.model.UserRole;
 import com.example.attendanceapp.ui.employee.EmployeeMainActivity;
 import com.example.attendanceapp.ui.manager.ManagerMainActivity;
-import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.textfield.TextInputLayout;
 
 import dagger.hilt.android.AndroidEntryPoint;
@@ -44,82 +43,78 @@ public class LoginFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         viewModel = new ViewModelProvider(this).get(LoginViewModel.class);
+
+        setupDialogListeners();
         observeViewModel();
-        //setupBottomSheet();
         setupViews();
         setupTextChangeListeners();
     }
 
     private void observeViewModel() {
+        viewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
+            binding.progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+            binding.btnLogin.setEnabled(!isLoading);
+        });
+
         viewModel.getLoginState().observe(getViewLifecycleOwner(), state -> {
             if (state instanceof LoginState.Success) {
-                binding.progressBar.setVisibility(View.GONE);
-                binding.btnLogin.setEnabled(true);
-
                 UserAccount user = ((LoginState.Success) state).user;
+                clearAllErrors();
                 Toast.makeText(requireContext(), "Đăng nhập thành công", Toast.LENGTH_SHORT).show();
 
-                showRoleSelectionDialog();
+                // Kiểm tra xem User đã có Vai trò hay chưa
+                if (user.getRole() != null) {
+                    navigateToRoleHome(user.getRole());
+                } else {
+                    // Nếu chưa có vai trò -> Hiện Dialog chọn vai trò
+                    showRoleSelectionDialog();
+                }
 
             } else if (state instanceof LoginState.Error) {
-                binding.progressBar.setVisibility(View.GONE);
-                binding.btnLogin.setEnabled(true);
-
                 String errorMsg = ((LoginState.Error) state).message;
-                Toast.makeText(requireContext(), errorMsg, Toast.LENGTH_SHORT).show();
-
-            } else if (state instanceof LoginState.Idle) {
-                binding.progressBar.setVisibility(View.GONE);
-                binding.btnLogin.setEnabled(true);
+                showErrorOnInput(errorMsg);
             }
         });
+    }
+
+    /** Lắng nghe kết quả trả về từ RoleSelectionDialog qua FragmentResultListener */
+    private void setupDialogListeners() {
+        getChildFragmentManager().setFragmentResultListener(
+                RoleSelectionDialog.REQUEST_KEY,
+                getViewLifecycleOwner(),
+                (requestKey, result) -> {
+                    String action = result.getString(RoleSelectionDialog.RESULT_ACTION, "");
+
+                    if (RoleSelectionDialog.ACTION_SUBMITTED.equals(action)) {
+                        String roleStr = result.getString(RoleSelectionDialog.BUNDLE_KEY_ROLE, "");
+                        UserRole role = UserRole.fromString(roleStr);
+
+                        if (role == UserRole.MANAGER) {
+                            String companyName = result.getString(RoleSelectionDialog.BUNDLE_KEY_COMPANY_NAME, "");
+                            // Quản lý tạo công ty thành công -> Vào thẳng ManagerHome
+                            navigateToRoleHome(UserRole.MANAGER);
+                        } else if (role == UserRole.EMPLOYEE) {
+                            String invitationCode = result.getString(RoleSelectionDialog.BUNDLE_KEY_INVITATION_CODE, "");
+                            String companyName = "Công ty Công nghệ ABC"; // Giả lập lấy từ API
+
+                            // Nhân viên nhập mã mời -> Chuyển sang màn hình Chờ phê duyệt
+                            navigateToPendingApproval(invitationCode, companyName);
+                        }
+                    }
+                }
+        );
     }
 
     private void showRoleSelectionDialog() {
-        RoleSelectionDialog dialog = RoleSelectionDialog.newInstance(new RoleSelectionDialog.OnRoleSelectedListener() {
-            @Override
-            public void onRoleSelected(UserRole role) {
-                if (role == UserRole.EMPLOYEE) {
-                    // TODO: Check if employee has joined any company
-                    // For now, show invitation code bottom sheet
-                    showInvitationCodeBottomSheet();
-                } else {
-                    navigateToRoleHome(UserRole.MANAGER);
-                }
-            }
-
-            @Override
-            public void onDialogCanceled() {
-                // User canceled role selection, stay on login screen
-            }
-        });
-        dialog.show(getChildFragmentManager(), "RoleSelectionDialog");
-    }
-
-    private void showInvitationCodeBottomSheet() {
-        EnterInvitationCodeBottomSheet bottomSheet = EnterInvitationCodeBottomSheet.newInstance(new EnterInvitationCodeBottomSheet.OnInvitationCodeListener() {
-            @Override
-            public void onInvitationCodeSubmitted(String code) {
-                // TODO: Submit invitation code to server and get company name
-                // For now, navigate to PendingApprovalFragment with mock data
-                String companyName = "Công ty ABC"; // TODO: Get from API response
-                navigateToPendingApproval(code, companyName);
-            }
-
-            @Override
-            public void onCanceled() {
-                // User canceled, show role selection again
-                showRoleSelectionDialog();
-            }
-        });
-        bottomSheet.show(getChildFragmentManager(), "EnterInvitationCodeBottomSheet");
+        RoleSelectionDialog.newInstance()
+                .show(getChildFragmentManager(), RoleSelectionDialog.TAG);
     }
 
     private void navigateToPendingApproval(String inviteCode, String companyName) {
         Bundle bundle = new Bundle();
         bundle.putString("invite_code", inviteCode);
         bundle.putString("company_name", companyName);
-        
+
         Navigation.findNavController(requireView())
                 .navigate(R.id.action_loginFragment_to_pendingApprovalFragment, bundle);
     }
@@ -132,18 +127,13 @@ public class LoginFragment extends Fragment {
         } else {
             intent = new Intent(requireContext(), EmployeeMainActivity.class);
         }
-        //dùng để mở Activity mới và xóa toàn bộ Activity trước đó khỏi back stack.
+
+        // Mở Activity mới và xóa toàn bộ luồng Auth khỏi BackStack
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
 
         requireActivity().finish();
     }
-
-//    private void setupBottomSheet() {
-//        BottomSheetBehavior<View> behavior = BottomSheetBehavior.from(binding.bottomSheet);
-//        behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-//        behavior.setSkipCollapsed(true);
-//    }
 
     private void setupViews() {
         binding.btnLogin.setOnClickListener(v -> performLogin());
@@ -174,29 +164,24 @@ public class LoginFragment extends Fragment {
     private void performLogin() {
         clearAllErrors();
 
-        // Lấy dữ liệu từ các input
         String phone = binding.edtPhone.getText().toString().trim();
         String password = binding.edtPassword.getText().toString().trim();
 
         boolean isValid = true;
-        TextInputLayout firstErrorTil = null; // Lưu lại ô lỗi đầu tiên tính từ trên xuống
+        TextInputLayout firstErrorTil = null;
 
         // 1. Kiểm tra Số điện thoại
         if (TextUtils.isEmpty(phone)) {
             binding.tilPhone.setError("Vui lòng nhập số điện thoại");
             isValid = false;
-
-            if (firstErrorTil == null)
-                firstErrorTil = binding.tilPhone;
-
+            if (firstErrorTil == null) firstErrorTil = binding.tilPhone;
         } else if (!Patterns.PHONE.matcher(phone).matches() || !phone.matches("^(0|\\+84)[0-9]{9,10}$")) {
-            // Regex chuẩn số điện thoại VN: bắt đầu bằng 0 hoặc +84, theo sau 9-10 số
-            binding.tilPhone.setError("Số điện thoại phải bắt đầu bằng bằng 0 hoặc +84");
+            binding.tilPhone.setError("Số điện thoại không đúng định dạng");
             isValid = false;
             if (firstErrorTil == null) firstErrorTil = binding.tilPhone;
         }
 
-        // 2. Kiểm tra Password
+        // 2. Kiểm tra Mật khẩu
         if (TextUtils.isEmpty(password)) {
             binding.tilPassword.setError("Vui lòng nhập mật khẩu");
             isValid = false;
@@ -205,14 +190,8 @@ public class LoginFragment extends Fragment {
             binding.tilPassword.setError("Mật khẩu phải có ít nhất 6 ký tự");
             isValid = false;
             if (firstErrorTil == null) firstErrorTil = binding.tilPassword;
-        } else if (!password.matches(".*[A-Za-z].*") || !password.matches(".*\\d.*")) {
-            // Yêu cầu có ít nhất 1 chữ và 1 số (tuỳ chỉnh theo yêu cầu thực tế)
-            binding.tilPassword.setError("Mật khẩu phải chứa cả chữ và số");
-            isValid = false;
-            if (firstErrorTil == null) firstErrorTil = binding.tilPassword;
         }
 
-        // Nếu có lỗi -> Con trỏ tự động di chuyển tới ô lỗi đầu tiên (theo thứ tự từ trên xuống)
         if (!isValid) {
             if (firstErrorTil != null && firstErrorTil.getEditText() != null) {
                 firstErrorTil.getEditText().requestFocus();
@@ -220,18 +199,29 @@ public class LoginFragment extends Fragment {
             return;
         }
 
-        // Bật loading & gọi ViewModel khi tất cả dữ liệu đều hợp lệ
-        binding.progressBar.setVisibility(View.VISIBLE);
-        binding.btnLogin.setEnabled(false);
-
-        // Gọi ViewModel xử lý đăng ký/lưu tài khoản
+        // Gọi ViewModel xử lý đăng nhập
         viewModel.login(phone, password);
     }
 
-    // Hàm bổ trợ xóa toàn bộ lỗi hiển thị trước đó
     private void clearAllErrors() {
         binding.tilPhone.setError(null);
         binding.tilPassword.setError(null);
+    }
+
+    private void showErrorOnInput(String errorMsg) {
+        clearAllErrors();
+        
+        if (errorMsg.contains("Số điện thoại") || errorMsg.contains("phone")) {
+            binding.tilPhone.setError(errorMsg);
+            if (binding.tilPhone.getEditText() != null) {
+                binding.tilPhone.getEditText().requestFocus();
+            }
+        } else {
+            binding.tilPassword.setError(errorMsg);
+            if (binding.tilPassword.getEditText() != null) {
+                binding.tilPassword.getEditText().requestFocus();
+            }
+        }
     }
 
     @Override

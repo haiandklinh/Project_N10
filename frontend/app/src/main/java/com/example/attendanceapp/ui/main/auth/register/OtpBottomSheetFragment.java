@@ -8,6 +8,8 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,8 +21,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
-import android.widget.EditText;
-
 @AndroidEntryPoint
 public class OtpBottomSheetFragment extends BottomSheetDialogFragment {
 
@@ -28,7 +28,7 @@ public class OtpBottomSheetFragment extends BottomSheetDialogFragment {
 
     private static final String ARG_PHONE = "arg_phone";
     private static final String ARG_REQUEST_KEY = "arg_request_key";
-    private static final String RESULT_VERIFIED_PHONE = "verified_phone";
+    public static final String RESULT_VERIFIED_PHONE = "verified_phone";
     private static final long RESEND_COUNTDOWN_MS = 60_000;
 
     private BottomSheetOtpBinding binding;
@@ -68,7 +68,9 @@ public class OtpBottomSheetFragment extends BottomSheetDialogFragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        viewModel = new ViewModelProvider(this).get(RegisterViewModel.class);
+
+        // Scope ViewModel vào ParentFragment để dùng chung ViewModel với RegisterFragment
+        viewModel = new ViewModelProvider(requireParentFragment()).get(RegisterViewModel.class);
 
         binding.tvOtpSubtitle.setText(getString(R.string.auth_otp_subtitle_format, maskPhone(phone)));
 
@@ -80,10 +82,33 @@ public class OtpBottomSheetFragment extends BottomSheetDialogFragment {
         setupOtpBoxAutoAdvance();
         setupConfirmButton();
         setupResendButton();
+        observeViewModel();
         startResendCountdown();
     }
 
-    /** Tu nhay sang o ke tiep khi go xong 1 so, lui lai khi backspace o rong */
+    private void observeViewModel() {
+        // Observe trạng thái OTP từ ViewModel
+        viewModel.getOtpState().observe(getViewLifecycleOwner(), otpState -> {
+            if (otpState instanceof RegisterViewModel.OtpState.Verified) {
+                // Xác thực thành công -> Trả kết quả về RegisterFragment và đóng BottomSheet
+                sendResultAndDismiss();
+            } else if (otpState instanceof RegisterViewModel.OtpState.Error) {
+                // Thất bại -> Hiển thị thông báo lỗi
+                String errorMsg = ((RegisterViewModel.OtpState.Error) otpState).message;
+                binding.tvOtpError.setText(errorMsg);
+                binding.tvOtpError.setVisibility(View.VISIBLE);
+                clearOtpBoxes();
+            }
+        });
+
+        // Observe trạng thái Loading
+        viewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
+            binding.btnConfirmOtp.setEnabled(!isLoading && getOtpCode().length() == otpBoxes.length);
+            binding.progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+        });
+    }
+
+    /** Tự nhảy sang ô kế tiếp khi gõ xong 1 số, lùi lại khi backspace ở ô rỗng */
     private void setupOtpBoxAutoAdvance() {
         for (int i = 0; i < otpBoxes.length; i++) {
             final int index = i;
@@ -121,7 +146,9 @@ public class OtpBottomSheetFragment extends BottomSheetDialogFragment {
     }
 
     private void updateConfirmButtonState() {
-        binding.btnConfirmOtp.setEnabled(getOtpCode().length() == otpBoxes.length);
+        boolean isFull = getOtpCode().length() == otpBoxes.length;
+        Boolean isLoading = viewModel.getIsLoading().getValue();
+        binding.btnConfirmOtp.setEnabled(isFull && (isLoading == null || !isLoading));
     }
 
     private String getOtpCode() {
@@ -138,15 +165,8 @@ public class OtpBottomSheetFragment extends BottomSheetDialogFragment {
 
     private void verifyOtp() {
         String otp = getOtpCode();
-        // TODO: Goi API verify OTP that su. Tam thoi gia lap: OTP dung neu = "123456"
-        boolean isValid = viewModel.verifyOtpSync(phone, otp);
-
-        if (isValid) {
-            sendResultAndDismiss();
-        } else {
-            binding.tvOtpError.setVisibility(View.VISIBLE);
-            clearOtpBoxes();
-        }
+        // Gọi hàm Asynchronous trên ViewModel thay vì verifyOtpSync
+        viewModel.verifyOtp(phone, otp);
     }
 
     private void clearOtpBoxes() {
@@ -166,10 +186,10 @@ public class OtpBottomSheetFragment extends BottomSheetDialogFragment {
 
     private void setupResendButton() {
         binding.tvResendOtp.setOnClickListener(v -> {
-            // TODO: Goi lai API gui OTP
             viewModel.sendOtp(phone);
             clearOtpBoxes();
             startResendCountdown();
+            Toast.makeText(requireContext(), "Đã gửi lại mã OTP", Toast.LENGTH_SHORT).show();
         });
     }
 

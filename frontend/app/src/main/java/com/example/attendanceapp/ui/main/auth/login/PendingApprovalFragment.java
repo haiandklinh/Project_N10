@@ -10,6 +10,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 
 import com.example.attendanceapp.R;
@@ -22,6 +23,8 @@ import dagger.hilt.android.AndroidEntryPoint;
 public class PendingApprovalFragment extends Fragment {
 
     private FragmentPendingApprovalBinding binding;
+    private PendingApprovalViewModel viewModel;
+
     private String inviteCode;
     private String companyName;
 
@@ -53,37 +56,41 @@ public class PendingApprovalFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        viewModel = new ViewModelProvider(this).get(PendingApprovalViewModel.class);
+
         setupViews();
+        observeViewModel();
     }
 
     private void setupViews() {
-        // Display invite code and company name
-        binding.tvInviteCode.setText(inviteCode);
-        binding.tvCompanyName.setText(companyName);
+        // Hiển thị thông tin mã mời và tên công ty
+        binding.tvInviteCode.setText(inviteCode != null ? inviteCode : "");
+        binding.tvCompanyName.setText(companyName != null ? companyName : "");
 
-        binding.btnCheckStatus.setOnClickListener(v -> checkApprovalStatus());
+        binding.btnCheckStatus.setOnClickListener(v -> viewModel.checkApprovalStatus());
         binding.btnLogout.setOnClickListener(v -> logout());
     }
 
-    private void checkApprovalStatus() {
-        // TODO: Call API to check approval status
-        // For now, simulate checking
-        binding.btnCheckStatus.setEnabled(false);
-        
-        // Simulate API call
-        binding.btnCheckStatus.postDelayed(() -> {
-            binding.btnCheckStatus.setEnabled(true);
-            
-            // TODO: Replace with actual API response
-            boolean isApproved = false; // Change to true when approved
-            
-            if (isApproved) {
-                // Navigate to EmployeeMainActivity
+    private void observeViewModel() {
+        // Observe trạng thái Loading
+        viewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
+            binding.progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+            binding.btnCheckStatus.setEnabled(!isLoading);
+            binding.btnLogout.setEnabled(!isLoading);
+        });
+
+        // Observe kết quả kiểm tra phê duyệt
+        viewModel.getApprovalStatusState().observe(getViewLifecycleOwner(), state -> {
+            if (state instanceof PendingApprovalViewModel.ApprovalStatusState.Approved) {
+                Toast.makeText(requireContext(), "Chúc mừng! Yêu cầu của bạn đã được phê duyệt", Toast.LENGTH_SHORT).show();
                 navigateToEmployeeHome();
-            } else {
+            } else if (state instanceof PendingApprovalViewModel.ApprovalStatusState.Pending) {
                 Toast.makeText(requireContext(), "Yêu cầu của bạn vẫn đang chờ quản lý duyệt", Toast.LENGTH_SHORT).show();
+            } else if (state instanceof PendingApprovalViewModel.ApprovalStatusState.Error) {
+                String error = ((PendingApprovalViewModel.ApprovalStatusState.Error) state).message;
+                Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show();
             }
-        }, 1500);
+        });
     }
 
     private void navigateToEmployeeHome() {
@@ -94,7 +101,10 @@ public class PendingApprovalFragment extends Fragment {
     }
 
     private void logout() {
-        // TODO: Clear saved user data and navigate back to login
+        // 1. Xóa sạch Session đăng nhập trong SharedPreferences
+        viewModel.logout();
+
+        // 2. Điều hướng quay về màn hình Đăng nhập
         Navigation.findNavController(requireView()).navigate(R.id.action_pendingApprovalFragment_to_loginFragment);
     }
 

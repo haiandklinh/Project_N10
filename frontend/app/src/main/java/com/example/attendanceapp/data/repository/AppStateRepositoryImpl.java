@@ -1,11 +1,16 @@
 package com.example.attendanceapp.data.repository;
 
 import com.example.attendanceapp.data.local.pref.SharedPreferenceApp;
+import com.example.attendanceapp.domain.model.SavedAccountData;
+import com.example.attendanceapp.domain.model.UserRole;
 import com.example.attendanceapp.domain.repository.AppStateRepository;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
+@Singleton
 public class AppStateRepositoryImpl implements AppStateRepository {
+
     private final SharedPreferenceApp sharedPreferenceApp;
 
     @Inject
@@ -41,5 +46,66 @@ public class AppStateRepositoryImpl implements AppStateRepository {
     @Override
     public void setFirstLaunchDone() {
         sharedPreferenceApp.setFirstLaunchDone();
+    }
+
+    @Override
+    public String getUserStatus() {
+        return sharedPreferenceApp.getUserStatus();
+    }
+
+    @Override
+    public void saveUserStatus(String status) {
+        sharedPreferenceApp.saveUserStatus(status);
+    }
+
+    @Override
+    public UserRole getUserRole() {
+        String roleStr = sharedPreferenceApp.getUserRole();
+        return UserRole.fromString(roleStr);
+    }
+
+    @Override
+    public void saveUserRole(UserRole role) {
+        if (role != null) {
+            sharedPreferenceApp.setUserRole(role.getValue());
+        }
+    }
+
+    @Override
+    public String getAuthToken() {
+        return sharedPreferenceApp.getAuthToken();
+    }
+
+    @Override
+    public void saveAuthToken(String token) {
+        sharedPreferenceApp.saveAuthToken(token);
+    }
+
+    @Override
+    public SavedAccountData getSavedAccountData() {
+        String userId = sharedPreferenceApp.getUserId();
+        if (userId == null) {
+            return null;
+        }
+
+        // Đọc dữ liệu tài khoản đã lưu từ SharedPreferences (hoặc trả về mock data để test UI)
+        return new SavedAccountData(
+                "Nguyễn Viết Sơn",
+                "Công ty Công nghệ ABC",
+                "ABC_CODE",
+                "0987654321"
+        );
+    }
+
+    @Override
+    public void saveAccountData(SavedAccountData accountData) {
+        if (accountData != null) {
+            sharedPreferenceApp.setAccountSaved(true);
+        }
+    }
+
+    @Override
+    public void clearSession() {
+        sharedPreferenceApp.clearSession();
     }
 }

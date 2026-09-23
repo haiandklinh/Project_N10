@@ -106,12 +106,12 @@
     <string name="forgot_password_title">Khôi Phục Mật Khẩu</string>
     <string name="forgot_password_subtitle">Vui lòng thực hiện theo các bước dưới đây</string>
     <string name="forgot_password_step_1_title">Bước 1: Xác nhận tài khoản</string>
-    <string name="forgot_password_step_1_desc">Nhập Email hoặc Mã nhân viên/SĐT đã đăng ký để nhận mã OTP khôi phục.</string>
-    <string name="forgot_password_account_hint">Email/ Số điện thoại</string>
+    <string name="forgot_password_step_1_desc">Nhập Số điện thoại đã đăng ký để nhận mã OTP khôi phục.</string>
+    <string name="forgot_password_account_hint">Số điện thoại</string>
     <string name="forgot_password_send_otp">Gửi mã xác thực</string>
 
     <string name="forgot_password_step_2_title">Bước 2: Nhập mã OTP</string>
-    <string name="forgot_password_step_2_desc">Mã OTP gồm 6 chữ số đã được gửi tới email/SĐT của bạn.</string>
+    <string name="forgot_password_step_2_desc">Mã OTP gồm 6 chữ số đã được gửi tới SĐT của bạn.</string>
     <string name="forgot_password_verify_otp">Xác nhận mã OTP</string>
     <string name="forgot_password_no_otp">Không nhận được mã? </string>
     <string name="forgot_password_resend_otp">Gửi lại</string>
