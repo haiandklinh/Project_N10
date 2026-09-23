@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 
-from backend.app.api.deps import get_account_service
-from backend.schemas.account import CheckPhoneResponse, CheckPhoneRequest, LoginRequest, LoginResponse, SendOTPResponse, \
+from app.api.deps import get_account_service
+from schemas.account import CheckPhoneResponse, CheckPhoneRequest, LoginRequest, LoginResponse, SendOTPResponse, \
     SendOTPRequest, VerifyOTPResponse, VerifyOTPRequest, MessageResponse, RegisterRequest, ResetPasswordRequest, \
     RefreshResponse, RefreshRequest
 

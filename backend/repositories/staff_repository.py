@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.models.staff import Staff
+from models.staff import Staff
 
 
 class StaffRepository :

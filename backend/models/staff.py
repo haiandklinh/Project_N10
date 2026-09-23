@@ -4,7 +4,7 @@ from datetime import date
 from sqlalchemy import ForeignKey, String, Date
 from sqlalchemy.orm import Mapped, mapped_column
 
-from backend.db.base import Base
+from db.base import Base
 
 
 class Staff(Base):

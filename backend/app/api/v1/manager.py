@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 
-from backend.app.api.deps import get_manager_service, get_current_account
-from backend.schemas.manager import ProfileResponse, CreateProfileRequest
+from app.api.deps import get_manager_service, get_current_account
+from schemas.manager import ProfileResponse, CreateProfileRequest
 
 router = APIRouter(
     prefix="/auth",

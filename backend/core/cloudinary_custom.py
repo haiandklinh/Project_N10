@@ -1,7 +1,7 @@
 from cloudinary import uploader
 import cloudinary
 
-from backend.core.config import settings
+from core.config import settings
 
 
 class CloudinaryService:

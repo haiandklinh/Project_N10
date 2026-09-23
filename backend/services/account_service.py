@@ -3,10 +3,10 @@ import secrets
 from fastapi import HTTPException
 from jwt import ExpiredSignatureError, InvalidTokenError
 
-from backend.core.redis_custom import redis_client
-from backend.core.security import verify_password, create_token, decode_token
-from backend.repositories.account_repository import AccountRepository
-from backend.schemas.account import CheckPhoneRequest, CheckPhoneResponse, LoginRequest, LoginResponse, SendOTPRequest, \
+from core.redis_custom import redis_client
+from core.security import verify_password, create_token, decode_token
+from repositories.account_repository import AccountRepository
+from schemas.account import CheckPhoneRequest, CheckPhoneResponse, LoginRequest, LoginResponse, SendOTPRequest, \
     SendOTPResponse, VerifyOTPRequest, VerifyOTPResponse, RegisterRequest, MessageResponse, ResetPasswordRequest, \
     RefreshRequest, RefreshResponse
 

@@ -1,7 +1,7 @@
 import uuid
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
-from backend.db.base import Base
+from db.base import Base
 
 
 class ManagerStaff(Base):

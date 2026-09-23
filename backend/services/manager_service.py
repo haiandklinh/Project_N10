@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 
-from backend.repositories.manager_repository import ManagerRepository
-from backend.schemas.manager import CreateProfileRequest, ProfileResponse
+from repositories.manager_repository import ManagerRepository
+from schemas.manager import CreateProfileRequest, ProfileResponse
 
 
 class ManagerService:

@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.models.manager import Manager
+from models.manager import Manager
 
 
 class ManagerRepository :

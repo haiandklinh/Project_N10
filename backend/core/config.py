@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     CLOUDINARY_API_SECRET: str
 
     class Config:
-        env_file = "../.env"
+        env_file = ".env"
         case_sensitive = True # phân biệt hoa và thường
 
 settings = Settings()

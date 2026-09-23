@@ -4,14 +4,14 @@ import jwt
 from fastapi import Depends, HTTPException ,status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
-from backend.core.config import SessionLocal
-from backend.core.security import decode_token
-from backend.repositories.account_repository import AccountRepository
-from backend.repositories.manager_repository import ManagerRepository
-from backend.repositories.staff_repository import StaffRepository
-from backend.services.account_service import AccountService
-from backend.services.manager_service import ManagerService
-from backend.services.staff_service import StaffService
+from core.config import SessionLocal
+from core.security import decode_token
+from repositories.account_repository import AccountRepository
+from repositories.manager_repository import ManagerRepository
+from repositories.staff_repository import StaffRepository
+from services.account_service import AccountService
+from services.manager_service import ManagerService
+from services.staff_service import StaffService
 
 security = HTTPBearer()
 

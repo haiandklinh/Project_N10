@@ -3,9 +3,9 @@ from datetime import datetime
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
-from backend.core.security import create_token, hash_token, get_password_hash
-from backend.models.account import Account
-from backend.models.refresh_token import RefreshToken
+from core.security import create_token, hash_token, get_password_hash
+from models.account import Account
+from models.refresh_token import RefreshToken
 
 
 class AccountRepository :

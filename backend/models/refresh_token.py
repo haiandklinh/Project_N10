@@ -4,7 +4,7 @@ from datetime import datetime
 from sqlalchemy import ForeignKey, String, DateTime, Boolean
 from sqlalchemy.orm import Mapped, mapped_column
 
-from backend.db.base import Base
+from db.base import Base
 
 
 class RefreshToken(Base):

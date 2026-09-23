@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
 
-from backend.app.api.deps import get_current_account, get_staff_service
-from backend.schemas.manager import CreateProfileRequest
-from backend.schemas.staff import ProfileResponse
+from app.api.deps import get_current_account, get_staff_service
+from schemas.manager import CreateProfileRequest
+from schemas.staff import ProfileResponse
 
 router = APIRouter(
     prefix="/tenants",

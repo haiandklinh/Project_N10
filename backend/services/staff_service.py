@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 
-from backend.repositories.staff_repository import StaffRepository
-from backend.schemas.staff import CreateProfileRequest, ProfileResponse
+from repositories.staff_repository import StaffRepository
+from schemas.staff import CreateProfileRequest, ProfileResponse
 
 
 class StaffService:
