@@ -337,16 +337,16 @@
 
         <action
             android:id="@+id/action_employeeHelpCenterFragment_to_employeeCheckInFragment"
-            app:destination="@+id/employeeCheckInFragment"/>
+            app:destination="@id/employeeCheckInFragment"/>
         <action
             android:id="@+id/action_employeeHelpCenterFragment_to_employeeEditBasicInfoFragment"
-            app:destination="@+id/employeeEditBasicInfoFragment"/>
+            app:destination="@id/employeeEditBasicInfoFragment"/>
         <action
             android:id="@+id/action_employeeHelpCenterFragment_to_employeePayrollFragment"
-            app:destination="@+id/employeePayrollFragment"/>
+            app:destination="@id/employeePayrollFragment"/>
         <action
             android:id="@+id/action_employeeHelpCenterFragment_to_employeeLeaveRequestFragment"
-            app:destination="@+id/employeeLeaveRequestFragment"/>
+            app:destination="@id/employeeLeaveRequestFragment"/>
 
     </fragment>
 

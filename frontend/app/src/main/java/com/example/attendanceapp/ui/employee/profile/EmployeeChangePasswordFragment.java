@@ -44,8 +44,8 @@ public class EmployeeChangePasswordFragment extends Fragment {
 
     private void setupToolbar() {
         binding.layoutToolbar.setTitle("Đổi mật khẩu");
-        binding.layoutToolbar.setOnClickListener(v ->
-                Navigation.findNavController(v).navigateUp()
+        binding.layoutToolbar.setOnBackClickListener(() ->
+                Navigation.findNavController(requireView()).navigateUp()
         );
     }
 

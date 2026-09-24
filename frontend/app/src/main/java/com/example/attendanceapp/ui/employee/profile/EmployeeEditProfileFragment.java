@@ -44,8 +44,8 @@ public class EmployeeEditProfileFragment extends Fragment {
 
     private void setupToolbar() {
         binding.layoutToolbar.setTitle("Chỉnh sửa hồ sơ");
-        binding.layoutToolbar.setOnClickListener(v ->
-            Navigation.findNavController(v).navigateUp()
+        binding.layoutToolbar.setOnBackClickListener(() ->
+            Navigation.findNavController(requireView()).navigateUp()
         );
     }
 
@@ -82,11 +82,6 @@ public class EmployeeEditProfileFragment extends Fragment {
 
         binding.rowContactInfo.getRoot().setOnClickListener(v ->
                 Navigation.findNavController(v).navigate(R.id.action_employeeEditProfileFragment_to_employeeContactInfoFragment)
-        );
-
-
-        binding.rowContactInfo.getRoot().setOnClickListener(v -> 
-            Navigation.findNavController(v).navigate(R.id.action_employeeEditProfileFragment_to_employeeContactInfoFragment)
         );
 
         binding.rowFinanceInfo.getRoot().setOnClickListener(v -> {

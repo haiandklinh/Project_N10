@@ -42,8 +42,8 @@ public class EmployeeBankAndTaxFragment extends Fragment {
 
     private void setupToolbar() {
         binding.layoutToolbar.setTitle("Ngân hàng & Thuế");
-        binding.layoutToolbar.setOnClickListener(v ->
-                Navigation.findNavController(v).navigateUp()
+        binding.layoutToolbar.setOnBackClickListener(() ->
+                Navigation.findNavController(requireView()).navigateUp()
         );
     }
 

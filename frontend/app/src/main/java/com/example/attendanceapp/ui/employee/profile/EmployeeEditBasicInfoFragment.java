@@ -42,8 +42,8 @@ public class EmployeeEditBasicInfoFragment extends Fragment {
 
     private void setupToolbar() {
         binding.layoutToolbar.setTitle("Thông tin cá nhân");
-        binding.layoutToolbar.setOnClickListener(v ->
-                Navigation.findNavController(v).navigateUp()
+        binding.layoutToolbar.setOnBackClickListener(() ->
+                Navigation.findNavController(requireView()).navigateUp()
         );
     }
 

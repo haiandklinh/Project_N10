@@ -46,8 +46,8 @@ public class EmployeeSettingsFragment extends Fragment {
 
     private void setupToolbar() {
         binding.layoutToolbar.setTitle("Cài đặt & Quyền riêng tư");
-        binding.layoutToolbar.setOnClickListener(v ->
-                Navigation.findNavController(v).navigateUp()
+        binding.layoutToolbar.setOnBackClickListener(() ->
+                Navigation.findNavController(requireView()).navigateUp()
         );
     }
 

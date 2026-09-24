@@ -45,8 +45,8 @@ public class EmployeeCreateChangeRequestFragment extends Fragment {
 
     private void setupToolbar() {
         binding.layoutToolbar.setTitle("Yêu cầu sửa thông tin");
-        binding.layoutToolbar.setOnClickListener(v ->
-                Navigation.findNavController(v).navigateUp()
+        binding.layoutToolbar.setOnBackClickListener(() ->
+                Navigation.findNavController(requireView()).navigateUp()
         );
     }
 

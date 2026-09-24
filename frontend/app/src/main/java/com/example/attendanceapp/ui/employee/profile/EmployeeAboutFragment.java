@@ -46,8 +46,8 @@ public class EmployeeAboutFragment extends Fragment {
 
     private void setupToolbar() {
         binding.layoutToolbar.setTitle("Giới thiệu ứng dụng");
-        binding.layoutToolbar.setOnClickListener(v ->
-                Navigation.findNavController(v).navigateUp()
+        binding.layoutToolbar.setOnBackClickListener(() ->
+                Navigation.findNavController(requireView()).navigateUp()
         );
     }
 
