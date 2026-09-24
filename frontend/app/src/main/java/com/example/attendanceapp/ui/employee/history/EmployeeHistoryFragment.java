@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -106,6 +107,11 @@ public class EmployeeHistoryFragment extends Fragment {
     }
 
     private void setupListeners() {
+        // Nút quay lại
+        binding.includeHeader.btnBack.setOnClickListener(v -> 
+            Navigation.findNavController(v).navigateUp()
+        );
+
         // Toggle chế độ Danh sách / Lịch
         binding.includeHeader.toggleViewMode.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
             if (isChecked) {
@@ -295,7 +301,7 @@ public class EmployeeHistoryFragment extends Fragment {
 
         binding.includeHeader.tvOnTimeCount.setText(String.valueOf(presentCount));
         binding.includeHeader.tvLateCount.setText(String.valueOf(lateCount));
-        binding.includeHeader.tvAbsentCount.setText(String.valueOf(absentCount));
+        binding.includeHeader.tvAbsCount.setText(String.valueOf(absentCount));
         binding.includeHeader.tvEarlyLeaveCount.setText(String.valueOf(earlyLeaveCount));
 
         double totalHours = totalWorkingMinutes / 60.0;

@@ -9,6 +9,8 @@
     android:fillViewport="true"
     android:id="@+id/employeeScheduleFragment"
     android:overScrollMode="never"
+    android:clipToPadding="false"
+    android:paddingBottom="100dp"
     tools:context=".ui.employee.schedule.EmployeeScheduleFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout

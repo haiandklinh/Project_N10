@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.GridLayoutManager;
 
 import com.example.attendanceapp.R;
@@ -59,12 +60,19 @@ public class EmployeeStatisticsFragment extends Fragment {
             return insets;
         });
 
+        setupToolbar();
         setupRecyclerView();
         setupStatCards();
         setupToggleListener();
 
         // Mặc định nạp chế độ Tuần
         loadWeekData();
+    }
+
+    private void setupToolbar() {
+        binding.includeHeader.btnBack.setOnClickListener(v -> 
+            Navigation.findNavController(v).navigateUp()
+        );
     }
 
     private void setupRecyclerView() {
@@ -94,16 +102,6 @@ public class EmployeeStatisticsFragment extends Fragment {
         statList.add(new EmployeeStatItem(R.drawable.ic_remove, "1", "lần", "Thiếu checkout", 0xFFEDE7F6, 0xFF512DA8));
 
         employeeStatAdapter.setItems(statList);
-    }
-
-    private void bindStatCard(ItemStatCardBinding card, int iconRes, String value, String unit, String label, int bgColor, int textColor) {
-        card.cardRoot.setCardBackgroundColor(bgColor);
-        card.ivStatIcon.setImageResource(iconRes);
-        card.tvStatValue.setText(value);
-        card.tvStatValue.setTextColor(textColor);
-        card.tvStatUnit.setText(unit);
-        card.tvStatUnit.setTextColor(textColor);
-        card.tvStatLabel.setText(label);
     }
 
     private void setupToggleListener() {

@@ -30,19 +30,15 @@
         app:tabSelectedTextColor="?attr/colorPrimary"
         app:tabTextColor="?attr/colorOnSurfaceVariant">
 
-        <!-- Tab 1: Chờ duyệt -->
+        <!-- Tab Items -->
         <com.google.android.material.tabs.TabItem
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/adjustment_tab_pending" />
-
-        <!-- Tab 2: Đã duyệt -->
         <com.google.android.material.tabs.TabItem
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/adjustment_tab_approved" />
-
-        <!-- Tab 3: Từ chối -->
         <com.google.android.material.tabs.TabItem
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -64,7 +60,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clipToPadding="false"
-            android:paddingBottom="88dp"
+            android:paddingBottom="100dp"
             tools:listitem="@layout/item_attendance_adjustment" />
 
         <include
@@ -87,13 +83,13 @@
             layout="@layout/layout_create_adjustment" />
     </FrameLayout>
 
-    <!-- NÚT FAB NỔI CÓ CẢ ICON VÀ CHỮ TẠO YÊU CẦU -->
+    <!-- NÚT FAB NỔI -->
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/fab_create_adjustment"
         android:layout_width="wrap_content"
         android:layout_height="@dimen/button_height_m"
         android:layout_marginEnd="@dimen/spacing_l"
-        android:layout_marginBottom="@dimen/spacing_3xl"
+        android:layout_marginBottom="100dp"
         android:text="@string/adjustment_create_request"
         android:textColor="?attr/colorOnPrimary"
         android:textStyle="bold"

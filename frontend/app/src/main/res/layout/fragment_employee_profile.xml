@@ -8,6 +8,8 @@
     android:background="?android:attr/colorBackground"
     android:fillViewport="true"
     android:overScrollMode="never"
+    android:clipToPadding="false"
+    android:paddingBottom="100dp"
     tools:context=".ui.employee.profile.EmployeeProfileFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -224,10 +226,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_l"
                 android:text="@string/profile_version"
-                android:layout_marginBottom="100dp"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="@dimen/text_size_label_small"
-                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/btn_logout" />

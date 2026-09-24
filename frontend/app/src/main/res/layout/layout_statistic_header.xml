@@ -10,17 +10,35 @@
     android:paddingVertical="@dimen/spacing_xl"
     android:paddingHorizontal="@dimen/spacing_m">
 
+    <!-- BUTTON BACK -->
+    <ImageView
+        android:id="@+id/btn_back"
+        android:layout_width="@dimen/icon_size_xl"
+        android:layout_height="@dimen/icon_size_xl"
+        android:background="@drawable/bg_time_chip"
+        android:clickable="true"
+        android:contentDescription="Quay lại"
+        android:focusable="true"
+        android:padding="@dimen/spacing_2xs"
+        android:rotation="180"
+        android:src="@drawable/ic_chevron_right"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="?attr/colorOnPrimary" />
+
     <!-- Title -->
     <TextView
         android:id="@+id/tv_screen_title"
         style="@style/TitleTextLargeStyle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/spacing_m"
         android:text="Thống kê"
         android:textColor="?attr/colorOnPrimary"
+        app:layout_constraintBottom_toBottomOf="@id/btn_back"
         app:layout_constraintEnd_toStartOf="@id/toggle_group_time"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toEndOf="@id/btn_back"
+        app:layout_constraintTop_toTopOf="@id/btn_back" />
 
     <!-- Subtitle Tháng/Năm với Navigation -->
     <ImageView
@@ -36,7 +54,7 @@
         android:src="@drawable/ic_chevron_left"
         app:layout_constraintBottom_toBottomOf="@+id/tv_header_subtitle"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_screen_title"
+        app:layout_constraintTop_toBottomOf="@id/btn_back"
         app:tint="?attr/colorOnPrimary" />
 
     <TextView
@@ -49,7 +67,7 @@
         android:textColor="?attr/colorOnPrimary"
         app:layout_constraintEnd_toStartOf="@id/btn_next_month"
         app:layout_constraintStart_toEndOf="@id/btn_prev_month"
-        app:layout_constraintTop_toBottomOf="@id/tv_screen_title" />
+        app:layout_constraintTop_toBottomOf="@id/btn_back" />
 
     <ImageView
         android:id="@+id/btn_next_month"
@@ -65,7 +83,7 @@
         android:src="@drawable/ic_chevron_right"
         app:layout_constraintBottom_toBottomOf="@+id/tv_header_subtitle"
         app:layout_constraintEnd_toStartOf="@id/toggle_group_time"
-        app:layout_constraintTop_toBottomOf="@id/tv_screen_title"
+        app:layout_constraintTop_toBottomOf="@id/btn_back"
         app:tint="?attr/colorOnPrimary" />
 
     <!-- Toggle Button Tuần / Tháng -->

@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.attendanceapp.R;
@@ -52,7 +53,7 @@ public class EmployeePayrollFragment extends Fragment {
 
     private void setupListeners() {
         binding.includeHeader.btnBack.setOnClickListener(v -> {
-            requireActivity().getOnBackPressedDispatcher().onBackPressed();
+            Navigation.findNavController(v).navigateUp();
         });
     }
 
