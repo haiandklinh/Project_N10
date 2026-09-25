@@ -15,8 +15,8 @@ class Deduction(Base):
         default=uuid.uuid4
     )
 
-    id_employee: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("employees.id"),
+    id_staff: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("staffs.id"),
         nullable=False
     )
 
@@ -26,12 +26,12 @@ class Deduction(Base):
     )
 
     deduction_type: Mapped[str] = mapped_column(
-        String,
+        String(255),
         nullable=False
     )
 
     reason: Mapped[str] = mapped_column(
-        String,
+        String(255),
         nullable=False
     )
 
@@ -46,6 +46,6 @@ class Deduction(Base):
     )
 
     status: Mapped[str] = mapped_column(
-        String,
+        String(255),
         nullable=False
     )

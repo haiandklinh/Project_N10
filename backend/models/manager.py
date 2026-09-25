@@ -21,7 +21,7 @@ class Manager(Base):
     )
 
     full_name: Mapped[str] = mapped_column(
-        String,
+        String(255),
         nullable=False
     )
 
@@ -31,17 +31,17 @@ class Manager(Base):
     )
 
     gender: Mapped[str] = mapped_column(
-        String,
+        String(255),
         nullable=False
     )
 
     status: Mapped[str] = mapped_column(
-        String,
+        String(255),
         default="active"
     )
 
     avatar: Mapped[str] = mapped_column(
-        String,
+        String(255),
         nullable=True
     )
 

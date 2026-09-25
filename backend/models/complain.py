@@ -15,8 +15,8 @@ class Complaint(Base):
         default=uuid.uuid4
     )
 
-    id_employee: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("employees.id"),
+    id_staff: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("staffs.id"),
         nullable=False
     )
 
@@ -36,7 +36,7 @@ class Complaint(Base):
     )
 
     reason: Mapped[str] = mapped_column(
-        String,
+        String(255),
         nullable=False
     )
 
@@ -46,6 +46,6 @@ class Complaint(Base):
     )
 
     status: Mapped[str] = mapped_column(
-        String,
+        String(255),
         nullable=False
     )

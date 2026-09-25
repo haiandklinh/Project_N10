@@ -15,13 +15,8 @@ class AttendanceRecord(Base):
         default=uuid.uuid4,
     )
 
-    id_employee: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("employees.id"),
-        nullable=False
-    )
-
-    id_salary_sheet: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("salary_sheets.id"),
+    id_staff: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("staffs.id"),
         nullable=False
     )
 

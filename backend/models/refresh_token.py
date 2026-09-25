@@ -21,7 +21,7 @@ class RefreshToken(Base):
     )
 
     token: Mapped[str] = mapped_column(
-        String,
+        String(255),
         nullable=False
     )
     is_revoked :Mapped[bool] = mapped_column(

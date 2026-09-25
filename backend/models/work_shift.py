@@ -1,7 +1,7 @@
 import datetime
 import uuid
 
-from sqlalchemy import Float, ForeignKey, String, Time, DateTime
+from sqlalchemy import Float, ForeignKey, String, DateTime
 from sqlalchemy.orm import Mapped, mapped_column
 
 from db.base import Base
@@ -21,7 +21,7 @@ class WorkShift(Base):
     )
 
     name: Mapped[str] = mapped_column(
-        String,
+        String(255),
         nullable=False
     )
 
@@ -56,6 +56,6 @@ class WorkShift(Base):
     )
 
     status: Mapped[str] = mapped_column(
-        String,
+        String(255),
         nullable=False
     )

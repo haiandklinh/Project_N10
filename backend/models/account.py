@@ -16,12 +16,12 @@ class Account(Base):
     )
 
     phone_number: Mapped[str] = mapped_column(
-        String,
+        String(255),
         nullable=False
     )
 
     password: Mapped[str] = mapped_column(
-        String,
+        String(255),
         nullable=False
     )
     created_at: Mapped[datetime] = mapped_column(
@@ -30,6 +30,6 @@ class Account(Base):
     )
 
     status: Mapped[str] = mapped_column(
-        String,
+        String(255),
         nullable=False
     )

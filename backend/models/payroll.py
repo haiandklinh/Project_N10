@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 import uuid
 
 from sqlalchemy import  Float, ForeignKey, Integer, String, DateTime
@@ -15,8 +15,8 @@ class Payroll(Base):
         default=uuid.uuid4
     )
 
-    id_employee: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("employees.id"),
+    id_staff: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("staffs.id"),
         nullable=False
     )
 
@@ -41,6 +41,6 @@ class Payroll(Base):
     )
 
     status: Mapped[str] = mapped_column(
-        String,
+        String(255),
         nullable=False
     )

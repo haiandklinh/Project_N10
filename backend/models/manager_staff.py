@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
 from db.base import Base
 
@@ -14,4 +14,8 @@ class ManagerStaff(Base):
     id_staff: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("staffs.id") ,
         primary_key=True,
+    )
+    position : Mapped[str] = mapped_column(
+        String(255) ,
+        nullable= True
     )

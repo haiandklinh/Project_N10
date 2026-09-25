@@ -4,11 +4,11 @@ from sqlalchemy.orm import Mapped, mapped_column
 from db.base import Base
 
 
-class ManagerWorkShift(Base):
-    __tablename__ = "managerwork_shift"
+class StaffWorkShift(Base):
+    __tablename__ = "staff_workshifts"
 
-    employee_id: Mapped[str] = mapped_column(
-        ForeignKey("employees.id"),
+    id_staff: Mapped[str] = mapped_column(
+        ForeignKey("staffs.id"),
         primary_key=True
     )
 

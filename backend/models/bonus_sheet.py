@@ -12,8 +12,8 @@ class BonusSheet(Base) :
         primary_key=True,
         default=uuid.uuid4,
     )
-    id_employee: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("employees.id") ,
+    id_staff: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("staffs.id") ,
         nullable=False
     )
     id_manager: Mapped[uuid.UUID] = mapped_column(
@@ -25,13 +25,13 @@ class BonusSheet(Base) :
         nullable= True
     )
     reason : Mapped[str] = mapped_column(
-        String ,
+        String(255) ,
         nullable=True
     )
 
     status :Mapped[str] = mapped_column(
-        String
+        String(255)
     )
     note :Mapped[str] = mapped_column(
-        String
+        String(255)
     )

@@ -14,8 +14,8 @@ class Notification(Base):
         default=uuid.uuid4,
     )
 
-    id_employee: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("employees.id"),
+    id_staff: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("staffs.id"),
         nullable=False
     )
 
@@ -25,12 +25,12 @@ class Notification(Base):
     )
 
     title: Mapped[str] = mapped_column(
-        String,
+        String(255),
         nullable=False
     )
 
     content: Mapped[str] = mapped_column(
-        String,
+        String(255),
         nullable=False
     )
 
@@ -40,6 +40,6 @@ class Notification(Base):
     )
 
     notification_type: Mapped[str] = mapped_column(
-        String,
+        String(255),
         nullable=False
     )
