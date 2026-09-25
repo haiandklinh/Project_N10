@@ -31,14 +31,14 @@ async def verify_otp(request: VerifyOTPRequest,service =Depends(get_account_serv
 async def register(request : RegisterRequest ,service = Depends(get_account_service)) :
     return await service.register(request)
 
-@router.post('forgot-password/send-otp',response_model=SendOTPResponse)
+@router.post('/forgot-password/send-otp',response_model=SendOTPResponse)
 async def send_otp(request: SendOTPRequest,service =Depends(get_account_service)):
     return await service.send_otp(request)
 
-@router.post('forgot-password/verify-otp',response_model=VerifyOTPResponse)
+@router.post('/forgot-password/verify-otp',response_model=VerifyOTPResponse)
 async def verify_otp(request: VerifyOTPRequest,service =Depends(get_account_service)):
     return await service.verify_otp(request)
-@router.patch('forgot-password/reset',response_model=MessageResponse)
+@router.patch('/forgot-password/reset',response_model=MessageResponse)
 async def reset_password(request : ResetPasswordRequest,service =Depends(get_account_service)):
     return await service.reset_password(request)
 

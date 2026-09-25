@@ -48,23 +48,24 @@ class AccountService:
             access_token=access_token,
             refresh_token=refresh_token
         )
-    async def send_otp(self,request : SendOTPRequest) -> SendOTPResponse:
-        otp =  str(secrets.randbelow(1000000)).zfill(6)
-        redis_client.set(request.phone_number,otp,180)
+    async def send_otp(self, request: SendOTPRequest) -> SendOTPResponse:
+        otp = str(secrets.randbelow(1000000)).zfill(6)
+        await redis_client.set(request.phone_number, otp, 180)
         return SendOTPResponse(
-            OTP = otp
+            OTP=otp
         )
-    async def verify_otp(self,request:VerifyOTPRequest)->VerifyOTPResponse:
-        otp = redis_client.get(request.phone_number)
-        if request.OTP == otp :
+
+    async def verify_otp(self, request: VerifyOTPRequest) -> VerifyOTPResponse:
+        otp = await redis_client.get(request.phone_number)
+        if request.OTP == otp:
             return VerifyOTPResponse(
-                is_verified= True
+                is_verified=True
             )
         return VerifyOTPResponse(
-            is_verified= False
+            is_verified=False
         )
     async def register(self,request: RegisterRequest) -> MessageResponse:
-        new_account = self.repository.create_account(request.phone_number,request.password,request.role)
+        new_account = await self.repository.create_account(request.phone_number,request.password)
         if new_account is None:
             return MessageResponse(
                 message= "Register Fail"
@@ -151,6 +152,6 @@ class AccountService:
 
     async def logout(self, request: RefreshRequest) -> MessageResponse:
         await self.repository.revoked_refresh_token(request.refresh_token)
-        MessageResponse(
+        return MessageResponse(
             message="Logout Success"
         )
