@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingBottom="@dimen/spacing_xl">
+    android:padding="@dimen/spacing_xl">
 
-    <!-- Progress Indicator: Bước 1/3 đang active -->
+    <!-- Progress Indicator: Bước 1/2 đang active -->
     <LinearLayout
         android:id="@+id/layoutProgress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="@dimen/spacing_xl"
         android:gravity="center"
         android:orientation="horizontal"
         android:padding="@dimen/spacing_2xl">
@@ -45,24 +45,6 @@
             android:text="2"
             android:textColor="?attr/colorPrimary"
             android:textStyle="bold" />
-
-        <View
-            android:id="@+id/line2"
-            android:layout_width="@dimen/spacing_4xl"
-            android:layout_height="@dimen/spacing_3xs"
-            android:layout_marginHorizontal="@dimen/spacing_s"
-            android:background="?attr/colorOutline" />
-
-        <TextView
-            android:id="@+id/step3Indicator"
-            android:layout_width="@dimen/spacing_3xl"
-            android:layout_height="@dimen/spacing_3xl"
-            android:background="@drawable/bg_dot_inactive"
-            android:contentDescription="@string/auth_step_3_desc"
-            android:gravity="center"
-            android:text="3"
-            android:textColor="?attr/colorPrimary"
-            android:textStyle="bold" />
     </LinearLayout>
 
     <TextView
@@ -71,7 +53,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/spacing_s"
         android:gravity="center"
-        android:text="@string/auth_step1_title"
+        android:text="@string/auth_step2_title"
         android:textSize="@dimen/text_size_title_medium"
         android:textStyle="bold" />
 
@@ -82,34 +64,72 @@
         android:layout_marginTop="@dimen/spacing_3xs"
         android:layout_marginBottom="@dimen/spacing_m"
         android:gravity="center"
-        android:text="@string/auth_step1_subtitle"
+        android:text="@string/auth_step2_subtitle"
         android:textColor="?attr/colorOnSurfaceVariant"
         android:textSize="@dimen/text_size_body_medium" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingHorizontal="@dimen/spacing_xl">
+        android:orientation="vertical">
 
-        <!-- Họ và tên -->
+        <!-- So dien thoai -->
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tilFullName"
+            android:id="@+id/tilPhone"
             style="@style/AppTextInputLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/auth_full_name_hint"
-            app:counterEnabled="true"
-            app:counterMaxLength="30"
+            android:hint="@string/auth_phone_hint"
             app:errorEnabled="true"
-            app:startIconDrawable="@drawable/ic_user">
+            app:startIconDrawable="@drawable/ic_phone">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/edtFullName"
+                android:id="@+id/edtPhone"
                 style="@style/AppTextInputEditText"
-                android:inputType="textPersonName|textCapWords"
-                android:maxLength="30" />
+                android:inputType="phone"
+                android:maxLength="10" />
         </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Hien trang thai da xac thuc -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/layoutVerifiedStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/MainCard"
+            android:visibility="gone"
+            app:cardBackgroundColor="?attr/colorSurfaceVariant"
+            app:cardCornerRadius="@dimen/radius_m"
+            app:cardElevation="0dp"
+            app:strokeWidth="0dp"
+            tools:visibility="visible">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="@dimen/spacing_m">
+
+                <ImageView
+                    android:layout_width="@dimen/spacing_l"
+                    android:layout_height="@dimen/spacing_l"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_check"
+                    app:tint="?attr/colorAttendancePresent" />
+
+                <TextView
+                    android:id="@+id/tvVerifiedPhone"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/spacing_s"
+                    android:layout_weight="1"
+                    android:textColor="?attr/colorAttendancePresent"
+                    android:textSize="@dimen/text_size_body_small"
+                    android:textStyle="bold"
+                    tools:text="0912***789 đã xác thực" />
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnNextStep1"

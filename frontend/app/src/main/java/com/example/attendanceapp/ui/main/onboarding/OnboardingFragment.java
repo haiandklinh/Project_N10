@@ -17,7 +17,7 @@ import androidx.viewpager2.widget.MarginPageTransformer;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.attendanceapp.R;
-import com.example.attendanceapp.databinding.FragmentOnboardingBinding;
+import com.example.attendanceapp.databinding.FragmentAuthOnboardingBinding;
 import com.example.attendanceapp.domain.model.OnboardingItem;
 
 import java.util.ArrayList;
@@ -28,7 +28,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class OnboardingFragment extends Fragment {
 
-    private FragmentOnboardingBinding binding;
+    private FragmentAuthOnboardingBinding binding;
     private OnboardingViewModel viewModel;
     private OnboardingPagerAdapter adapter;
     private List<OnboardingItem> onboardingItems;
@@ -51,7 +51,7 @@ public class OnboardingFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        binding = FragmentOnboardingBinding.inflate(inflater, container, false);
+        binding = FragmentAuthOnboardingBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
@@ -70,22 +70,22 @@ public class OnboardingFragment extends Fragment {
     private void buildOnboardingItems() {
         onboardingItems = new ArrayList<>();
         onboardingItems.add(new OnboardingItem(
-                R.drawable.ic_check_circle,
+                R.drawable.ic_onboarding_camera,
                 getString(R.string.onboarding_1_title),
                 getString(R.string.onboarding_1_desc)
         ));
         onboardingItems.add(new OnboardingItem(
-                R.drawable.ic_error,
+                R.drawable.ic_onboarding_form,
                 getString(R.string.onboarding_2_title),
                 getString(R.string.onboarding_2_desc)
         ));
         onboardingItems.add(new OnboardingItem(
-                R.drawable.ic_profile,
+                R.drawable.ic_onboarding_search,
                 getString(R.string.onboarding_3_title),
                 getString(R.string.onboarding_3_desc)
         ));
         onboardingItems.add(new OnboardingItem(
-                R.drawable.ic_notifications,
+                R.drawable.ic_onboarding_mind,
                 getString(R.string.onboarding_4_title),
                 getString(R.string.onboarding_4_desc)
         ));
@@ -116,7 +116,7 @@ public class OnboardingFragment extends Fragment {
                 super.onPageSelected(position);
                 updateButtonState(position);
                 handler.removeCallbacks(runnable);
-                handler.postDelayed(runnable, 5000);
+                //handler.postDelayed(runnable, 5000);
             }
         });
     }

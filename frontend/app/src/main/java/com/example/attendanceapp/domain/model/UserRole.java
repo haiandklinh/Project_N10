@@ -23,6 +23,6 @@ public enum UserRole {
                 }
             }
         }
-        return EMPLOYEE; // Mặc định nếu không tìm thấy
+        return null; //EMPLOYEE
     }
 }

@@ -1,22 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingBottom="@dimen/spacing_xl">
+    android:padding="@dimen/spacing_xl">
 
-    <!-- Progress Indicator: Bước 1 hoàn tất, Bước 2 đang active -->
+    <!-- Progress Indicator: Bước 2/2 hoàn tất/active -->
     <LinearLayout
         android:id="@+id/layoutProgress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="@dimen/spacing_xl"
         android:gravity="center"
         android:orientation="horizontal"
-        android:padding="@dimen/spacing_2xl">
+        android:padding="@dimen/spacing_l">
 
         <TextView
             android:id="@+id/step1Indicator"
@@ -46,33 +44,14 @@
             android:text="2"
             android:textColor="@color/white"
             android:textStyle="bold" />
-
-        <View
-            android:id="@+id/line2"
-            android:layout_width="@dimen/spacing_4xl"
-            android:layout_height="@dimen/spacing_3xs"
-            android:layout_marginHorizontal="@dimen/spacing_s"
-            android:background="?attr/colorOutline" />
-
-        <TextView
-            android:id="@+id/step3Indicator"
-            android:layout_width="@dimen/spacing_3xl"
-            android:layout_height="@dimen/spacing_3xl"
-            android:background="@drawable/bg_dot_inactive"
-            android:contentDescription="@string/auth_step_3_desc"
-            android:gravity="center"
-            android:text="3"
-            android:textColor="?attr/colorPrimary"
-            android:textStyle="bold" />
     </LinearLayout>
 
     <TextView
         android:id="@+id/tvStepTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/spacing_s"
         android:gravity="center"
-        android:text="@string/auth_step2_title"
+        android:text="@string/auth_step3_title"
         android:textSize="@dimen/text_size_title_medium"
         android:textStyle="bold" />
 
@@ -83,75 +62,120 @@
         android:layout_marginTop="@dimen/spacing_3xs"
         android:layout_marginBottom="@dimen/spacing_m"
         android:gravity="center"
-        android:text="@string/auth_step2_subtitle"
+        android:text="@string/auth_step3_subtitle"
         android:textColor="?attr/colorOnSurfaceVariant"
         android:textSize="@dimen/text_size_body_medium" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingHorizontal="@dimen/spacing_xl">
+        android:orientation="vertical">
 
-        <!-- So dien thoai -->
+        <!-- Input Mật khẩu -->
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tilPhone"
+            android:id="@+id/tilPassword"
             style="@style/AppTextInputLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/auth_phone_hint"
+            android:hint="@string/auth_password_hint"
+            app:endIconMode="password_toggle"
             app:errorEnabled="true"
-            app:startIconDrawable="@drawable/ic_phone">
+            app:startIconDrawable="@drawable/ic_lock">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/edtPhone"
+                android:id="@+id/edtPassword"
                 style="@style/AppTextInputEditText"
-                android:inputType="phone"
-                android:maxLength="10" />
+                android:inputType="textPassword" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Hien trang thai da xac thuc, an mac dinh. Sau khi bottom sheet xac nhan OTP thanh cong thi hien len -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/layoutVerifiedStatus"
+        <!-- Input Nhập lại mật khẩu -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilConfirmPassword"
+            style="@style/AppTextInputLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            style="@style/MainCard"
-            android:visibility="gone"
-            app:cardBackgroundColor="?attr/colorPrimaryContainer"
+            android:hint="@string/auth_confirm_password_hint"
+            app:endIconMode="password_toggle"
+            app:errorEnabled="true"
+            app:startIconDrawable="@drawable/ic_lock">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edtConfirmPassword"
+                style="@style/AppTextInputEditText"
+                android:inputType="textPassword" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- CARD HIỂN THỊ YÊU CẦU MẬT KHẨU -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardPasswordRequirements"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardBackgroundColor="?attr/colorSurfaceVariant"
             app:cardCornerRadius="@dimen/radius_m"
             app:cardElevation="0dp"
-            app:strokeWidth="0dp"
-            tools:visibility="visible">
+            app:strokeWidth="0dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
+                android:orientation="vertical"
                 android:padding="@dimen/spacing_m">
 
-                <ImageView
-                    android:layout_width="@dimen/spacing_l"
-                    android:layout_height="@dimen/spacing_l"
-                    android:importantForAccessibility="no"
-                    android:src="@drawable/ic_check"
-                    app:tint="?attr/colorAttendancePresent" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Mật khẩu phải bao gồm:"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="@dimen/text_size_body_small"
+                    android:textStyle="bold" />
 
                 <TextView
-                    android:id="@+id/tvVerifiedPhone"
-                    android:layout_width="0dp"
+                    android:id="@+id/tvRequirementLength"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/spacing_s"
-                    android:layout_weight="1"
-                    android:textColor="?attr/colorAttendancePresent"
-                    android:textSize="@dimen/text_size_body_small"
-                    android:textStyle="bold"
-                    tools:text="0912***789 đã xác thực" />
-            </LinearLayout>
+                    android:layout_marginTop="@dimen/spacing_xs"
+                    android:text="• Tối thiểu 8 ký tự"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textSize="@dimen/text_size_body_small" />
 
+                <TextView
+                    android:id="@+id/tvRequirementUppercase"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_3xs"
+                    android:text="• Có ít nhất 1 chữ cái viết hoa (A-Z)"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textSize="@dimen/text_size_body_small" />
+
+                <TextView
+                    android:id="@+id/tvRequirementNumber"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_3xs"
+                    android:text="• Có ít nhất 1 chữ số (0-9)"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textSize="@dimen/text_size_body_small" />
+
+                <TextView
+                    android:id="@+id/tvRequirementSpecial"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_3xs"
+                    android:text="• Có ít nhất 1 ký tự đặc biệt (@, #, $, ...)"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textSize="@dimen/text_size_body_small" />
+            </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Cum nut duoi cung: Quay lai + Tiep tuc (Tiep tuc gom luon logic gui OTP) -->
+        <!-- Đồng ý điều khoản: bắt buộc tick mới bật được nút Đăng ký -->
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/cbAcceptTerms"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/auth_accept_terms"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="@dimen/text_size_body_small" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -163,23 +187,19 @@
                 style="@style/ButtonOutlinedSmallStyle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:layout_marginEnd="@dimen/spacing_xl"
+                android:layout_weight="1"
                 android:text="@string/action_back"
                 app:strokeColor="?attr/colorPrimary" />
 
-            <!--
-                Bam lan dau (chua xac thuc): goi API gui OTP -> mo Bottom Sheet nhap OTP.
-                Sau khi Bottom Sheet xac nhan thanh cong: bam lan nua se sang Buoc 3.
-                Luon enabled vi ban than no la nut kich hoat gui OTP.
-            -->
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnContinueStep2"
+                android:id="@+id/btnRegisterFinal"
                 style="@style/ButtonFilledSmallStyle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/action_next" />
+                android:enabled="false"
+                android:text="@string/auth_register_button" />
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>

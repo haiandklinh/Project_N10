@@ -22,15 +22,25 @@ public class LoginUseCase {
      * Thực hiện Đăng nhập bằng Số điện thoại và Mật khẩu.
      */
     public void execute(String phone, String password, AuthCallback<UserAccount> callback) {
+        if (phone == null || phone.trim().isEmpty()) {
+            if (callback != null) callback.onError("Vui lòng nhập số điện thoại");
+            return;
+        }
+        if (password == null || password.isEmpty()) {
+            if (callback != null) callback.onError("Vui lòng nhập mật khẩu");
+            return;
+        }
+
         authRepository.login(phone, password, new AuthRepository.DataCallback<UserAccount>() {
             @Override
             public void onSuccess(UserAccount user) {
-                callback.onSuccess(user);
+                appStateRepository.setLoggedIn(true);
+                if (callback != null) callback.onSuccess(user);
             }
 
             @Override
             public void onError(String errorMessage) {
-                callback.onError(errorMessage);
+                if (callback != null) callback.onError(errorMessage);
             }
         });
     }
@@ -41,10 +51,5 @@ public class LoginUseCase {
 
     public void setAccountSaved(boolean saved) {
         appStateRepository.setAccountSaved(saved);
-    }
-
-    // Bổ sung vào LoginUseCase.java
-    public SavedAccountData getSavedAccount() {
-        return appStateRepository.getSavedAccountData(); // Đọc từ SharedPreferences
     }
 }

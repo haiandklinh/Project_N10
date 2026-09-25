@@ -2,12 +2,13 @@ package com.example.attendanceapp.domain.repository;
 
 import com.example.attendanceapp.domain.model.UserAccount;
 import com.example.attendanceapp.domain.model.UserRole;
+import com.example.attendanceapp.domain.model.UserStatus;
 
 /**
  * Chỉ chịu trách nhiệm về SESSION & LOCAL PREFERENCES.
  * Không gọi Database/API — mọi thao tác remote nằm ở AuthRepository.
  */
-public interface UserRepository {
+public interface SessionRepository {
 
     // =========================================================
     // SESSION & PREFERENCES (LOCAL MEMORY / SHARED PREFERENCES)
@@ -26,7 +27,7 @@ public interface UserRepository {
     void saveUserSession(UserAccount userAccount, boolean isLoggedIn);
 
     /** Lưu trạng thái duyệt của người dùng (APPROVED, PENDING_APPROVAL, NEEDS_ROLE_SELECTION) */
-    void saveUserStatus(String status);
+    void saveUserStatus(UserStatus status);
 
     /** Lấy trạng thái duyệt của người dùng */
     String getUserStatus();

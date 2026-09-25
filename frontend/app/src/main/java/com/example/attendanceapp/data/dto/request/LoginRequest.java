@@ -1,20 +1,24 @@
 package com.example.attendanceapp.data.dto.request;
 
+import com.google.gson.annotations.SerializedName;
+
 public class LoginRequest {
-    private String phoneNumber;
+
+    @SerializedName("phone")
+    private String phone;
     private String password;
 
-    public LoginRequest(String phoneNumber, String password) {
-        this.phoneNumber = phoneNumber;
+    public LoginRequest(String phone, String password) {
+        this.phone = phone;
         this.password = password;
     }
 
     public String getPhoneNumber() {
-        return phoneNumber;
+        return phone;
     }
 
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
+    public void setPhoneNumber(String phone) {
+        this.phone = phone;
     }
 
     public String getPassword() {

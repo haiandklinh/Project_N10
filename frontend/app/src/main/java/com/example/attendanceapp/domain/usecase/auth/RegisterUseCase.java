@@ -1,6 +1,5 @@
 package com.example.attendanceapp.domain.usecase.auth;
 
-import com.example.attendanceapp.domain.model.UserAccount;
 import com.example.attendanceapp.domain.repository.AppStateRepository;
 import com.example.attendanceapp.domain.repository.AuthRepository;
 
@@ -23,12 +22,12 @@ public class RegisterUseCase {
         authRepository.checkPhoneExists(phoneNumber, new AuthRepository.DataCallback<Boolean>() {
             @Override
             public void onSuccess(Boolean result) {
-                callback.onSuccess(result);
+                if (callback != null) callback.onSuccess(result);
             }
 
             @Override
             public void onError(String errorMessage) {
-                callback.onError(errorMessage);
+                if (callback != null) callback.onError(errorMessage);
             }
         });
     }
@@ -37,49 +36,49 @@ public class RegisterUseCase {
      * Gửi mã OTP về Số điện thoại
      */
     public void sendOtp(String phoneNumber, AuthCallback<Void> callback) {
-        authRepository.sendOtp(phoneNumber, new AuthRepository.DataCallback<Void>() {
+        authRepository.sendOtp(phoneNumber, AuthRepository.OtpPurpose.REGISTER, new AuthRepository.DataCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
-                callback.onSuccess(result);
+                if (callback != null) callback.onSuccess(result);
             }
 
             @Override
             public void onError(String errorMessage) {
-                callback.onError(errorMessage);
+                if (callback != null) callback.onError(errorMessage);
             }
         });
     }
 
     /**
-     * Xác thực mã OTP
+     * Xác thực mã OTP cho Đăng ký
      */
-    public void verifyOtp(String phoneNumber, String otp, AuthCallback<Void> callback) {
-        authRepository.verifyOtp(phoneNumber, otp, new AuthRepository.DataCallback<Void>() {
+    public void verifyOtp(String account, String otp, AuthCallback<String> callback) {
+        authRepository.verifyOtp(account, otp, AuthRepository.OtpPurpose.REGISTER, new AuthRepository.DataCallback<String>() {
             @Override
-            public void onSuccess(Void result) {
-                callback.onSuccess(result);
+            public void onSuccess(String result) {
+                if (callback != null) callback.onSuccess(result);
             }
 
             @Override
             public void onError(String errorMessage) {
-                callback.onError(errorMessage);
+                if (callback != null) callback.onError(errorMessage);
             }
         });
     }
 
     /**
-     * Đăng ký tài khoản cơ bản (Chỉ còn Họ tên, SĐT, Mật khẩu)
+     * Đăng ký tài khoản (Khớp với AuthRepository.register trả về Void)
      */
-    public void execute(String fullName, String phoneNumber, String password, AuthCallback<UserAccount> callback) {
-        authRepository.register(fullName, phoneNumber, password, new AuthRepository.DataCallback<UserAccount>() {
+    public void execute(String phoneNumber, String password, AuthCallback<Void> callback) {
+        authRepository.register(phoneNumber, password, new AuthRepository.DataCallback<Void>() {
             @Override
-            public void onSuccess(UserAccount user) {
-                callback.onSuccess(user);
+            public void onSuccess(Void result) {
+                if (callback != null) callback.onSuccess(result);
             }
 
             @Override
             public void onError(String errorMessage) {
-                callback.onError(errorMessage);
+                if (callback != null) callback.onError(errorMessage);
             }
         });
     }

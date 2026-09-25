@@ -26,11 +26,11 @@ public interface UserDao {
     @Query("SELECT * FROM users WHERE phone = :phone AND password = :password LIMIT 1")
     UserEntity login(String phone, String password);
 
-    // 4. Lấy thông tin User theo SĐT (Hỗ trợ hiển thị trang Profile)
+    // 4. Lấy thông tin User theo SĐT
     @Query("SELECT * FROM users WHERE phone = :phone LIMIT 1")
     UserEntity getUserByPhone(String phone);
 
-    // 5. Lấy thông tin User theo ID (Hỗ trợ khi lưu Session theo ID)
+    // 5. Lấy thông tin User theo ID
     @Query("SELECT * FROM users WHERE id = :userId LIMIT 1")
     UserEntity getUserById(int userId);
 
@@ -38,19 +38,27 @@ public interface UserDao {
     @Query("UPDATE users SET role = :role WHERE phone = :phone")
     void updateRole(String phone, String role);
 
-    // 7. Cập nhật password của user
+    // 7. Cập nhật thông tin cá nhân của user (Sửa dob -> dateOfBirth)
+    @Query("UPDATE users SET name = :name, dateOfBirth = :dob, gender = :gender WHERE phone = :phone")
+    void updatePersonalInfo(String phone, String name, String dob, String gender);
+
+    // 8. Cập nhật ảnh đại diện của user
+    @Query("UPDATE users SET avatarUrl = :avatarUrl WHERE phone = :phone")
+    void updateAvatarUrl(String phone, String avatarUrl);
+
+    // 9. Cập nhật password của user
     @Query("UPDATE users SET password = :newPassword WHERE phone = :phone")
     void updatePassword(String phone, String newPassword);
 
-    // 8. Cập nhật toàn bộ thông tin User
+    // 10. Cập nhật toàn bộ thông tin User
     @Update
     int updateUser(UserEntity user);
 
-    // 9. Lấy danh sách tất cả người dùng (Dành cho tài khoản Admin/Manager xem danh sách nhân viên)
+    // 11. Lấy danh sách tất cả người dùng
     @Query("SELECT * FROM users")
     List<UserEntity> getAllUsers();
 
-    // 10. Xóa user
+    // 12. Xóa user
     @Delete
     void deleteUser(UserEntity user);
 }

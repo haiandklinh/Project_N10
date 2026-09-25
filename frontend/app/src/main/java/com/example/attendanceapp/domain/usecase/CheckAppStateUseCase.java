@@ -24,15 +24,17 @@ public class CheckAppStateUseCase {
                 + " | isFirstLaunch: " + isFirstLaunch);
 
         if (isLoggedIn) {
+            String status = repository.getUserStatus();
+            if ("PENDING_APPROVAL".equals(status)) {
+                return SplashDestination.PENDING_APPROVAL;
+            }
             return SplashDestination.HOME;
         }
         if (isAccountSaved) {
             return SplashDestination.LOGIN_SAVED_ACCOUNT;
         }
-        if (isFirstLaunch) {
-            repository.setFirstLaunchDone();
-            return SplashDestination.ONBOARDING;
-        }
-        return SplashDestination.LOGIN;
+        
+        // Nếu chưa từng login hoặc lưu tài khoản (chưa register/login) thì luôn hiển thị Onboarding
+        return SplashDestination.ONBOARDING;
     }
 }

@@ -2,6 +2,7 @@ package com.example.attendanceapp.domain.repository;
 
 import com.example.attendanceapp.domain.model.SavedAccountData;
 import com.example.attendanceapp.domain.model.UserRole;
+import com.example.attendanceapp.domain.model.UserStatus;
 
 public interface AppStateRepository {
 
@@ -17,7 +18,7 @@ public interface AppStateRepository {
 
     // --- 2. Trạng thái Người dùng & Role (Bổ sung mới) ---
     String getUserStatus();
-    void saveUserStatus(String status); // PENDING_APPROVAL, APPROVED, NEEDS_ROLE_SELECTION
+    void saveUserStatus(UserStatus status); // PENDING_APPROVAL, APPROVED, NEEDS_ROLE_SELECTION
 
     UserRole getUserRole();
     void saveUserRole(UserRole role);

@@ -3,18 +3,19 @@ package com.example.attendanceapp.data.repository;
 import com.example.attendanceapp.data.local.pref.SharedPreferenceApp;
 import com.example.attendanceapp.domain.model.UserAccount;
 import com.example.attendanceapp.domain.model.UserRole;
-import com.example.attendanceapp.domain.repository.UserRepository;
+import com.example.attendanceapp.domain.model.UserStatus;
+import com.example.attendanceapp.domain.repository.SessionRepository;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 @Singleton
-public class UserRepositoryImpl implements UserRepository {
+public class SessionRepositoryImpl implements SessionRepository {
 
     private final SharedPreferenceApp sharedPreferenceApp;
 
     @Inject
-    public UserRepositoryImpl(SharedPreferenceApp sharedPreferenceApp) {
+    public SessionRepositoryImpl(SharedPreferenceApp sharedPreferenceApp) {
         this.sharedPreferenceApp = sharedPreferenceApp;
     }
 
@@ -57,7 +58,7 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public void saveUserStatus(String status) {
+    public void saveUserStatus(UserStatus status) {
         sharedPreferenceApp.saveUserStatus(status);
     }
 

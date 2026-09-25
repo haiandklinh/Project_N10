@@ -1,67 +1,35 @@
 package com.example.attendanceapp.data.dto.response;
 
+import com.google.gson.annotations.SerializedName;
+
 public class AuthResponse {
-    private String token;
-    private String userId;
-    private String fullName;
-    private String phoneNumber;
-    private String role;        // MANAGER / EMPLOYEE
-    private String userStatus;  // PENDING_APPROVAL / APPROVED / ACTIVE
-    private String companyName;
+    @SerializedName("access_token")
+    private String accessToken;
 
-    public String getToken() {
-        return token;
+    @SerializedName("refresh_token")
+    private String refreshToken;
+
+    public AuthResponse() {
     }
 
-    public void setToken(String token) {
-        this.token = token;
+    public AuthResponse(String accessToken, String refreshToken) {
+        this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
     }
 
-    public String getUserId() {
-        return userId;
+    public String getAccessToken() {
+        return accessToken;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setAccessToken(String accessToken) {
+        this.accessToken = accessToken;
     }
 
-    public String getFullName() {
-        return fullName;
+    public String getRefreshToken() {
+        return refreshToken;
     }
 
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
-
-    public String getUserStatus() {
-        return userStatus;
-    }
-
-    public void setUserStatus(String userStatus) {
-        this.userStatus = userStatus;
-    }
-
-    public String getCompanyName() {
-        return companyName;
-    }
-
-    public void setCompanyName(String companyName) {
-        this.companyName = companyName;
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
     }
 }

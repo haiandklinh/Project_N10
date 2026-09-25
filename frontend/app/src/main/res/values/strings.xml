@@ -75,6 +75,7 @@
     <string name="auth_otp_title">Xác thực số điện thoại</string>
     <string name="auth_otp_invalid">Mã OTP không đúng, vui lòng thử lại</string>
     <string name="auth_resend_otp">Gửi lại mã</string>
+    <string name="auth_otp_locked_format">Bạn đã nhập sai quá 5 lần. Vui lòng thử lại sau %1$ds</string>
 
     <string name="auth_phone_hint">Số điện thoại</string>
     <string name="auth_otp_hint">Mã xác thực OTP</string>
@@ -105,22 +106,22 @@
     <!-- Forgot Password / Quên mật khẩu -->
     <string name="forgot_password_title">Khôi Phục Mật Khẩu</string>
     <string name="forgot_password_subtitle">Vui lòng thực hiện theo các bước dưới đây</string>
-    <string name="forgot_password_step_1_title">Bước 1: Xác nhận tài khoản</string>
+    <string name="forgot_password_step_1_title">Xác nhận tài khoản</string>
     <string name="forgot_password_step_1_desc">Nhập Số điện thoại đã đăng ký để nhận mã OTP khôi phục.</string>
     <string name="forgot_password_account_hint">Số điện thoại</string>
     <string name="forgot_password_send_otp">Gửi mã xác thực</string>
 
-    <string name="forgot_password_step_2_title">Bước 2: Nhập mã OTP</string>
+    <string name="forgot_password_step_2_title">Nhập mã OTP</string>
     <string name="forgot_password_step_2_desc">Mã OTP gồm 6 chữ số đã được gửi tới SĐT của bạn.</string>
     <string name="forgot_password_verify_otp">Xác nhận mã OTP</string>
     <string name="forgot_password_no_otp">Không nhận được mã? </string>
     <string name="forgot_password_resend_otp">Gửi lại</string>
 
-    <string name="forgot_password_step_3_title">Bước 3: Tạo mật khẩu mới</string>
+    <string name="forgot_password_step_3_title">Tạo mật khẩu mới</string>
     <string name="forgot_password_step_3_desc">Mật khẩu phải chứa ít nhất 6 ký tự.</string>
     <string name="forgot_password_new_hint">Mật khẩu mới</string>
     <string name="forgot_password_confirm_hint">Xác nhận mật khẩu mới</string>
-    <string name="forgot_password_done">Hoàn tất &amp; Đăng nhập</string>
+    <string name="forgot_password_done">Hoàn tất</string>
 
     <string name="forgot_password_contact_help">Cần giúp đỡ? </string>
     <string name="forgot_password_contact_support">Liên hệ CSKH</string>

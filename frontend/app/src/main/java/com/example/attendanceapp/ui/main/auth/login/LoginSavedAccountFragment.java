@@ -15,7 +15,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 
 import com.example.attendanceapp.R;
-import com.example.attendanceapp.databinding.FragmentLoginSavedBinding;
+import com.example.attendanceapp.databinding.FragmentAuthLoginSavedBinding;
 import com.example.attendanceapp.domain.model.UserAccount;
 import com.example.attendanceapp.domain.model.UserRole;
 import com.example.attendanceapp.ui.employee.EmployeeMainActivity;
@@ -26,13 +26,13 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class LoginSavedAccountFragment extends Fragment {
 
-    private FragmentLoginSavedBinding binding;
+    private FragmentAuthLoginSavedBinding binding;
     private LoginSavedAccountViewModel viewModel;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        binding = FragmentLoginSavedBinding.inflate(inflater, container, false);
+        binding = FragmentAuthLoginSavedBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 

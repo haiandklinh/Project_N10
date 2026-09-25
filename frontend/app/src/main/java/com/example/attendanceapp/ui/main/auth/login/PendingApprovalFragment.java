@@ -14,7 +14,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 
 import com.example.attendanceapp.R;
-import com.example.attendanceapp.databinding.FragmentPendingApprovalBinding;
+import com.example.attendanceapp.databinding.FragmentAuthPendingApprovalBinding;
 import com.example.attendanceapp.ui.employee.EmployeeMainActivity;
 
 import dagger.hilt.android.AndroidEntryPoint;
@@ -22,7 +22,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class PendingApprovalFragment extends Fragment {
 
-    private FragmentPendingApprovalBinding binding;
+    private FragmentAuthPendingApprovalBinding binding;
     private PendingApprovalViewModel viewModel;
 
     private String inviteCode;
@@ -49,7 +49,7 @@ public class PendingApprovalFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        binding = FragmentPendingApprovalBinding.inflate(inflater, container, false);
+        binding = FragmentAuthPendingApprovalBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 

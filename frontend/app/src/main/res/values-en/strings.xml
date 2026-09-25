@@ -105,7 +105,7 @@
     <string name="forgot_password_step_3_desc">Password must contain at least 6 characters.</string>
     <string name="forgot_password_new_hint">New Password</string>
     <string name="forgot_password_confirm_hint">Confirm New Password</string>
-    <string name="forgot_password_done">Complete &amp; Log In</string>
+    <string name="forgot_password_done">Complete</string>
 
     <string name="forgot_password_contact_help">Need help? </string>
     <string name="forgot_password_contact_support">Contact Support</string>

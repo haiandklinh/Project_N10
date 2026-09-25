@@ -1,24 +1,16 @@
 package com.example.attendanceapp.data.dto.request;
 
+import com.google.gson.annotations.SerializedName;
+
 public class RegisterRequest {
-    private String fullName;
+
+    @SerializedName("phone")
     private String phoneNumber;
     private String password;
-    private String role; // "MANAGER" hoặc "EMPLOYEE"
 
-    public RegisterRequest(String fullName, String phoneNumber, String password, String role) {
-        this.fullName = fullName;
+    public RegisterRequest(String phoneNumber, String password) {
         this.phoneNumber = phoneNumber;
         this.password = password;
-        this.role = role;
-    }
-
-    public String getFullName() {
-        return fullName;
-    }
-
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
     }
 
     public String getPhoneNumber() {
@@ -37,11 +29,4 @@ public class RegisterRequest {
         this.password = password;
     }
 
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
 }

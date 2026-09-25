@@ -1,13 +1,19 @@
 package com.example.attendanceapp.ui.main.auth.register;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -16,8 +22,9 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.attendanceapp.R;
-import com.example.attendanceapp.databinding.BottomSheetOtpBinding;
+import com.example.attendanceapp.databinding.BottomSheetAuthOtpBinding;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import com.google.android.material.textfield.TextInputLayout;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -30,14 +37,20 @@ public class OtpBottomSheetFragment extends BottomSheetDialogFragment {
     private static final String ARG_REQUEST_KEY = "arg_request_key";
     public static final String RESULT_VERIFIED_PHONE = "verified_phone";
     private static final long RESEND_COUNTDOWN_MS = 60_000;
+    private static final int MAX_FAILED_ATTEMPTS = 5;
+    private static final long LOCK_COOLDOWN_MS = 60_000;
 
-    private BottomSheetOtpBinding binding;
+    private BottomSheetAuthOtpBinding binding;
     private RegisterViewModel viewModel;
 
     private String phone;
     private String requestKey;
+    private TextInputLayout[] otpTilBoxes;
     private EditText[] otpBoxes;
     private CountDownTimer countDownTimer;
+    private CountDownTimer lockTimer;
+    private int failedAttempts = 0;
+    private boolean isLocked = false;
 
     public static OtpBottomSheetFragment newInstance(String phone, String requestKey) {
         OtpBottomSheetFragment fragment = new OtpBottomSheetFragment();
@@ -61,7 +74,7 @@ public class OtpBottomSheetFragment extends BottomSheetDialogFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        binding = BottomSheetOtpBinding.inflate(inflater, container, false);
+        binding = BottomSheetAuthOtpBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
@@ -74,6 +87,13 @@ public class OtpBottomSheetFragment extends BottomSheetDialogFragment {
 
         binding.tvOtpSubtitle.setText(getString(R.string.auth_otp_subtitle_format, maskPhone(phone)));
 
+        // Mảng TextInputLayout dùng để điều khiển màu sắc viền Material (Normal / Error)
+        otpTilBoxes = new TextInputLayout[]{
+                binding.tilOtp1, binding.tilOtp2, binding.tilOtp3,
+                binding.tilOtp4, binding.tilOtp5, binding.tilOtp6
+        };
+
+        // Mảng EditText dùng để nhận sự kiện nhập phím
         otpBoxes = new EditText[]{
                 binding.edtOtp1, binding.edtOtp2, binding.edtOtp3,
                 binding.edtOtp4, binding.edtOtp5, binding.edtOtp6
@@ -93,11 +113,8 @@ public class OtpBottomSheetFragment extends BottomSheetDialogFragment {
                 // Xác thực thành công -> Trả kết quả về RegisterFragment và đóng BottomSheet
                 sendResultAndDismiss();
             } else if (otpState instanceof RegisterViewModel.OtpState.Error) {
-                // Thất bại -> Hiển thị thông báo lỗi
-                String errorMsg = ((RegisterViewModel.OtpState.Error) otpState).message;
-                binding.tvOtpError.setText(errorMsg);
-                binding.tvOtpError.setVisibility(View.VISIBLE);
-                clearOtpBoxes();
+                // Thất bại -> Xử lý UI lỗi chuyên nghiệp
+                handleOtpError(((RegisterViewModel.OtpState.Error) otpState).message);
             }
         });
 
@@ -123,7 +140,10 @@ public class OtpBottomSheetFragment extends BottomSheetDialogFragment {
 
                 @Override
                 public void afterTextChanged(Editable s) {
-                    binding.tvOtpError.setVisibility(View.GONE);
+                    if (s.length() > 0) {
+                        resetOtpBoxStyles();
+                        binding.tvOtpError.setVisibility(View.GONE);
+                    }
                     if (s.length() == 1 && index < otpBoxes.length - 1) {
                         otpBoxes[index + 1].requestFocus();
                     }
@@ -165,8 +185,104 @@ public class OtpBottomSheetFragment extends BottomSheetDialogFragment {
 
     private void verifyOtp() {
         String otp = getOtpCode();
-        // Gọi hàm Asynchronous trên ViewModel thay vì verifyOtpSync
         viewModel.verifyOtp(phone, otp);
+    }
+
+    private void handleOtpError(String message) {
+        failedAttempts++;
+
+        // 1. Haptic Feedback (Rung máy)
+        triggerHapticFeedback();
+
+        // 2. Shake Animation (Lắc cụm ô nhập)
+        Animation shake = AnimationUtils.loadAnimation(requireContext(), R.anim.shake);
+        binding.layoutOtpBoxes.startAnimation(shake);
+
+        // 3. Đổi màu viền TextInputLayout sang màu Đỏ lỗi bằng API của Material
+        for (TextInputLayout til : otpTilBoxes) {
+            til.setError(" "); // Kích hoạt viền đỏ mà không hiển thị text lỗi trùng lặp dưới từng ô
+            til.setErrorEnabled(true);
+        }
+
+        // 4. Hiển thị thông báo lỗi chính ở bên dưới
+        binding.tvOtpError.setText(message);
+        binding.tvOtpError.setVisibility(View.VISIBLE);
+
+        // 5. Kiểm tra giới hạn số lần thử
+        if (failedAttempts >= MAX_FAILED_ATTEMPTS) {
+            lockOtpInputs();
+        } else {
+            // Tự động xóa dữ liệu và focus lại ô đầu tiên
+            clearOtpBoxes();
+        }
+    }
+
+    private void triggerHapticFeedback() {
+        Vibrator vibrator = (Vibrator) requireContext().getSystemService(Context.VIBRATOR_SERVICE);
+        if (vibrator != null && vibrator.hasVibrator()) {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                vibrator.vibrate(VibrationEffect.createOneShot(200, VibrationEffect.DEFAULT_AMPLITUDE));
+            } else {
+                vibrator.vibrate(200);
+            }
+        }
+    }
+
+    /** Reset trạng thái lỗi của TextInputLayout về màu viền bình thường */
+    private void resetOtpBoxStyles() {
+        for (TextInputLayout til : otpTilBoxes) {
+            til.setError(null);
+            til.setErrorEnabled(false);
+        }
+    }
+
+    private void lockOtpInputs() {
+        isLocked = true;
+        setInputsEnabled(false);
+
+        // Ẩn cụm đếm ngược gửi lại mã, hiện TextView thông báo khóa thay thế
+        binding.layoutResendArea.setVisibility(View.GONE);
+        binding.tvLockCountdown.setVisibility(View.VISIBLE);
+        binding.tvOtpError.setVisibility(View.GONE);
+
+        if (countDownTimer != null) countDownTimer.cancel();
+
+        lockTimer = new CountDownTimer(LOCK_COOLDOWN_MS, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                if (binding == null) return;
+                long seconds = millisUntilFinished / 1000;
+                binding.tvLockCountdown.setText(getString(R.string.auth_otp_locked_format, seconds));
+            }
+
+            @Override
+            public void onFinish() {
+                if (binding == null) return;
+                unlockOtpInputs();
+            }
+        }.start();
+    }
+
+    private void unlockOtpInputs() {
+        isLocked = false;
+        failedAttempts = 0;
+        setInputsEnabled(true);
+        binding.tvOtpError.setVisibility(View.GONE);
+        clearOtpBoxes();
+
+        // Ẩn TextView thông báo khóa, hiện lại cụm gửi lại mã
+        binding.tvLockCountdown.setVisibility(View.GONE);
+        binding.layoutResendArea.setVisibility(View.VISIBLE);
+
+        binding.tvOtpCountdown.setVisibility(View.GONE);
+        binding.tvResendOtp.setVisibility(View.VISIBLE);
+    }
+
+    private void setInputsEnabled(boolean enabled) {
+        for (EditText box : otpBoxes) {
+            box.setEnabled(enabled);
+        }
+        binding.btnConfirmOtp.setEnabled(enabled && getOtpCode().length() == otpBoxes.length);
     }
 
     private void clearOtpBoxes() {
@@ -174,6 +290,10 @@ public class OtpBottomSheetFragment extends BottomSheetDialogFragment {
             box.setText("");
         }
         otpBoxes[0].requestFocus();
+        InputMethodManager imm = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null) {
+            imm.showSoftInput(otpBoxes[0], InputMethodManager.SHOW_IMPLICIT);
+        }
         binding.btnConfirmOtp.setEnabled(false);
     }
 
@@ -230,6 +350,9 @@ public class OtpBottomSheetFragment extends BottomSheetDialogFragment {
         super.onDestroyView();
         if (countDownTimer != null) {
             countDownTimer.cancel();
+        }
+        if (lockTimer != null) {
+            lockTimer.cancel();
         }
         binding = null;
     }

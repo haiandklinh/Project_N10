@@ -11,7 +11,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.example.attendanceapp.databinding.BottomSheetCompanyNameBinding;
+import com.example.attendanceapp.databinding.BottomSheetAuthCompanyNameBinding;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 import dagger.hilt.android.AndroidEntryPoint;
@@ -26,7 +26,7 @@ public class CompanyNameBottomSheet extends BottomSheetDialogFragment {
     public static final String ACTION_CANCELED = "action_canceled";
     public static final String BUNDLE_KEY_COMPANY_NAME = "bundle_key_company_name";
 
-    private BottomSheetCompanyNameBinding binding;
+    private BottomSheetAuthCompanyNameBinding binding;
 
     public static CompanyNameBottomSheet newInstance() {
         return new CompanyNameBottomSheet();
@@ -35,7 +35,7 @@ public class CompanyNameBottomSheet extends BottomSheetDialogFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        binding = BottomSheetCompanyNameBinding.inflate(inflater, container, false);
+        binding = BottomSheetAuthCompanyNameBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 

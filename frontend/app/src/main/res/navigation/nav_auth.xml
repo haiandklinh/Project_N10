@@ -10,7 +10,7 @@
         android:id="@+id/splashFragment"
         android:name="com.example.attendanceapp.ui.main.splash.SplashFragment"
         android:label="Splash"
-        tools:layout="@layout/fragment_splash">
+        tools:layout="@layout/fragment_auth_splash">
 
         <!-- Sang LoginSavedAccount nếu có tk đã lưu -->
         <action
@@ -32,6 +32,13 @@
             app:destination="@id/onboardingFragment"
             app:popUpTo="@id/splashFragment"
             app:popUpToInclusive="true" />
+
+        <!-- Sang Màn hình chờ phê duyệt -->
+        <action
+            android:id="@+id/action_splashFragment_to_pendingApprovalFragment"
+            app:destination="@id/pendingApprovalFragment"
+            app:popUpTo="@id/splashFragment"
+            app:popUpToInclusive="true" />
     </fragment>
 
     <!-- Màn hình Onboarding / Giới thiệu ban đầu -->
@@ -39,7 +46,7 @@
         android:id="@+id/onboardingFragment"
         android:name="com.example.attendanceapp.ui.main.onboarding.OnboardingFragment"
         android:label="Onboarding"
-        tools:layout="@layout/fragment_onboarding">
+        tools:layout="@layout/fragment_auth_onboarding">
 
         <action
             android:id="@+id/action_onboardingFragment_to_loginFragment"
@@ -53,7 +60,7 @@
         android:id="@+id/loginFragment"
         android:name="com.example.attendanceapp.ui.main.auth.login.LoginFragment"
         android:label="Đăng nhập"
-        tools:layout="@layout/fragment_login">
+        tools:layout="@layout/fragment_auth_login">
 
         <action
             android:id="@+id/action_loginFragment_to_forgotPasswordFragment"
@@ -73,7 +80,7 @@
         android:id="@+id/loginSavedAccountFragment"
         android:name="com.example.attendanceapp.ui.main.auth.login.LoginSavedAccountFragment"
         android:label="Đăng nhập tài khoản đã lưu"
-        tools:layout="@layout/fragment_login_saved">
+        tools:layout="@layout/fragment_auth_login_saved">
 
         <action
             android:id="@+id/action_loginSavedAccountFragment_to_forgotPasswordFragment"
@@ -89,7 +96,7 @@
         android:id="@+id/registerFragment"
         android:name="com.example.attendanceapp.ui.main.auth.register.RegisterFragment"
         android:label="Đăng ký"
-        tools:layout="@layout/fragment_register">
+        tools:layout="@layout/fragment_auth_register">
 
         <action
             android:id="@+id/action_registerFragment_to_loginFragment"
@@ -101,7 +108,7 @@
         android:id="@+id/forgotPasswordFragment"
         android:name="com.example.attendanceapp.ui.main.auth.forgotpassword.ForgotPasswordFragment"
         android:label="Quên mật khẩu"
-        tools:layout="@layout/fragment_forgot_password">
+        tools:layout="@layout/fragment_auth_forgot_password">
 
         <action
             android:id="@+id/action_forgotPasswordFragment_to_loginFragment"
@@ -115,7 +122,7 @@
         android:id="@+id/pendingApprovalFragment"
         android:name="com.example.attendanceapp.ui.main.auth.login.PendingApprovalFragment"
         android:label="Đang chờ phê duyệt"
-        tools:layout="@layout/fragment_pending_approval">
+        tools:layout="@layout/fragment_auth_pending_approval">
 
         <action
             android:id="@+id/action_pendingApprovalFragment_to_loginFragment"

@@ -3,5 +3,6 @@ public enum SplashDestination {
     HOME,
     LOGIN_SAVED_ACCOUNT,
     ONBOARDING,
-    LOGIN
+    LOGIN,
+    PENDING_APPROVAL
 }

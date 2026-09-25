@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel;
 import com.example.attendanceapp.domain.model.SavedAccountData;
 import com.example.attendanceapp.domain.model.UserAccount;
 import com.example.attendanceapp.domain.usecase.auth.AuthCallback;
+import com.example.attendanceapp.domain.usecase.auth.GetSavedAccountUseCase;
 import com.example.attendanceapp.domain.usecase.auth.LoginUseCase;
 
 import javax.inject.Inject;
@@ -16,14 +17,16 @@ import dagger.hilt.android.lifecycle.HiltViewModel;
 @HiltViewModel
 public class LoginSavedAccountViewModel extends ViewModel {
     private final LoginUseCase loginUseCase;
+    private final GetSavedAccountUseCase getSavedAccountUseCase;
 
     private final MutableLiveData<LoginState> loginState = new MutableLiveData<>();
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
     private final MutableLiveData<SavedAccountData> savedAccountData = new MutableLiveData<>();
 
     @Inject
-    public LoginSavedAccountViewModel(LoginUseCase loginUseCase) {
+    public LoginSavedAccountViewModel(LoginUseCase loginUseCase, GetSavedAccountUseCase getSavedAccountUseCase) {
         this.loginUseCase = loginUseCase;
+        this.getSavedAccountUseCase = getSavedAccountUseCase;
     }
 
     public LiveData<LoginState> getLoginState() {
@@ -39,7 +42,7 @@ public class LoginSavedAccountViewModel extends ViewModel {
     }
 
     public void loadSavedAccount() {
-        SavedAccountData data = loginUseCase.getSavedAccount();
+        SavedAccountData data = getSavedAccountUseCase.execute();
         if (data != null) {
             savedAccountData.setValue(data);
         } else {

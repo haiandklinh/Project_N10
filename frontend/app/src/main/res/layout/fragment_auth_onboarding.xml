@@ -30,8 +30,8 @@
         android:id="@+id/viewPagerOnboarding"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:paddingStart="60dp"
-        android:paddingEnd="60dp"
+        android:paddingStart="0dp"
+        android:paddingEnd="0dp"
         android:overScrollMode="never"
         app:layout_constraintBottom_toTopOf="@id/tabIndicator"
         app:layout_constraintEnd_toEndOf="parent"
@@ -44,7 +44,7 @@
         android:layout_width="wrap_content"
         android:layout_height="@dimen/spacing_2xl"
         android:layout_marginBottom="@dimen/spacing_l"
-
+        app:ci_drawable="@drawable/bg_dot_active"
         app:layout_constraintBottom_toTopOf="@id/btnNext"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

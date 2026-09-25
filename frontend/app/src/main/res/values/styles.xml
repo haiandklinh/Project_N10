@@ -154,14 +154,34 @@
         <item name="counterOverflowTextColor">?attr/colorError</item>
     </style>
 
-    <style name="OtpBoxStyle">
+    <!-- 1. Style cho TextInputLayout (Khung bên ngoài) -->
+    <style name="AppTextInputLayout.Otp">
         <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">52dp</item>
+        <item name="android:layout_height">56dp</item>
         <item name="android:layout_weight">1</item>
-        <item name="android:background">@drawable/bg_otp_box</item>
+        <item name="boxCornerRadiusTopStart">12dp</item>
+        <item name="boxCornerRadiusTopEnd">12dp</item>
+        <item name="boxCornerRadiusBottomStart">12dp</item>
+        <item name="boxCornerRadiusBottomEnd">12dp</item>
+
+        <!-- Tắt đẩy chữ -->
+        <item name="hintEnabled">false</item>
+        <item name="expandedHintEnabled">false</item>
+
+        <!-- BẬT SẴN ERROR CỦA MATERIAL -->
+        <item name="errorEnabled">true</item>
+        <item name="errorIconDrawable">@null</item> <!-- Bỏ icon chấm cảm đỏ bên trong ô cho đỡ chật -->
+        <item name="boxStrokeErrorColor">?attr/colorError</item>
+    </style>
+
+    <!-- 2. Style cho TextInputEditText (Chữ/Số nhập bên trong) -->
+    <style name="OtpEditTextStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
         <item name="android:gravity">center</item>
         <item name="android:inputType">number</item>
         <item name="android:maxLength">1</item>
+        <item name="android:padding">0dp</item> <!-- Căn giữa tuyệt đối -->
         <item name="android:textSize">20sp</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textColor">?attr/colorOnSurface</item>

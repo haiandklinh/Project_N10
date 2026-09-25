@@ -11,7 +11,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.example.attendanceapp.databinding.BottomSheetInvitationCodeBinding;
+import com.example.attendanceapp.databinding.BottomSheetAuthInvitationCodeBinding;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 import dagger.hilt.android.AndroidEntryPoint;
@@ -26,7 +26,7 @@ public class EnterInvitationCodeBottomSheet extends BottomSheetDialogFragment {
     public static final String ACTION_CANCELED = "action_canceled";
     public static final String BUNDLE_KEY_CODE = "bundle_key_code";
 
-    private BottomSheetInvitationCodeBinding binding;
+    private BottomSheetAuthInvitationCodeBinding binding;
 
     public static EnterInvitationCodeBottomSheet newInstance() {
         return new EnterInvitationCodeBottomSheet();
@@ -35,7 +35,7 @@ public class EnterInvitationCodeBottomSheet extends BottomSheetDialogFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        binding = BottomSheetInvitationCodeBinding.inflate(inflater, container, false);
+        binding = BottomSheetAuthInvitationCodeBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 

@@ -17,7 +17,7 @@ import androidx.navigation.fragment.NavHostFragment;
 
 
 import com.example.attendanceapp.R;
-import com.example.attendanceapp.databinding.FragmentSplashBinding;
+import com.example.attendanceapp.databinding.FragmentAuthSplashBinding;
 import com.example.attendanceapp.domain.model.SplashDestination;
 import com.example.attendanceapp.domain.model.UserRole;
 import com.example.attendanceapp.ui.employee.EmployeeMainActivity;
@@ -28,7 +28,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class SplashFragment extends Fragment {
 
-    private FragmentSplashBinding binding;
+    private FragmentAuthSplashBinding binding;
     private SplashViewModel viewModel;
 
     private final Handler handler = new Handler(Looper.getMainLooper());
@@ -40,7 +40,7 @@ public class SplashFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        binding = FragmentSplashBinding.inflate(inflater, container, false);
+        binding = FragmentAuthSplashBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
@@ -72,6 +72,10 @@ public class SplashFragment extends Fragment {
 
             case LOGIN_SAVED_ACCOUNT:
                 navController.navigate(R.id.action_splashFragment_to_loginSavedAccountFragment);
+                break;
+
+            case PENDING_APPROVAL:
+                navController.navigate(R.id.action_splashFragment_to_pendingApprovalFragment);
                 break;
 
             case HOME:

@@ -1,0 +1,209 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_bottom_sheet"
+        android:orientation="vertical"
+        android:paddingBottom="@dimen/spacing_2xl">
+        <!-- Drag handle -->
+        <View
+            android:layout_width="30dp"
+            android:layout_height="4dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="@dimen/spacing_s"
+            android:background="@drawable/bg_handle" />
+
+        <!-- Tieu de -->
+        <TextView
+            android:id="@+id/tvOtpTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="@dimen/spacing_xl"
+            android:text="@string/auth_otp_title"
+            android:textSize="@dimen/text_size_title_medium"
+            android:textStyle="bold" />
+
+        <!-- "Nhap ma OTP da gui den 0912***789" -->
+        <TextView
+            android:id="@+id/tvOtpSubtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="@dimen/spacing_s"
+            android:gravity="center"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="@dimen/text_size_body_medium"
+            tools:text="Nhập mã OTP đã gửi đến 0912***789" />
+
+        <!-- 6 o PIN OTP -->
+        <LinearLayout
+            android:id="@+id/layoutOtpBoxes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_2xl"
+            android:gravity="center"
+            android:paddingHorizontal="@dimen/spacing_xl"
+            android:orientation="horizontal">
+
+            <!-- Ô 1 -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilOtp1"
+                style="@style/AppTextInputLayout.Otp"
+                android:layout_marginEnd="@dimen/spacing_s">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/edtOtp1"
+                    style="@style/OtpEditTextStyle" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Ô 2 -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilOtp2"
+                style="@style/AppTextInputLayout.Otp"
+                android:layout_marginEnd="@dimen/spacing_s">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/edtOtp2"
+                    style="@style/OtpEditTextStyle" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Ô 3 -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilOtp3"
+                style="@style/AppTextInputLayout.Otp"
+                android:layout_marginEnd="@dimen/spacing_s">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/edtOtp3"
+                    style="@style/OtpEditTextStyle" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Ô 4 -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilOtp4"
+                style="@style/AppTextInputLayout.Otp"
+                android:layout_marginEnd="@dimen/spacing_s">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/edtOtp4"
+                    style="@style/OtpEditTextStyle" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Ô 5 -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilOtp5"
+                style="@style/AppTextInputLayout.Otp"
+                android:layout_marginEnd="@dimen/spacing_s">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/edtOtp5"
+                    style="@style/OtpEditTextStyle" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Ô 6 -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilOtp6"
+                style="@style/AppTextInputLayout.Otp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/edtOtp6"
+                    style="@style/OtpEditTextStyle" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+        </LinearLayout>
+
+        <!-- Text loi khi OTP sai -->
+        <TextView
+            android:id="@+id/tvOtpError"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="@dimen/spacing_s"
+            android:text="@string/auth_otp_invalid"
+            android:textColor="?attr/colorError"
+            android:textSize="@dimen/text_size_label_medium"
+            android:visibility="gone"
+            tools:visibility="visible" />
+
+        <!-- Container cho Gui lai ma / Hoac Thong bao khoa -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_xl">
+
+            <!-- Cụm đếm ước + Gửi lại mã -->
+            <LinearLayout
+                android:id="@+id/layoutResendArea"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tvOtpCountdown"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textSize="@dimen/text_size_body_medium"
+                    tools:text="Gửi lại mã sau 00:59" />
+
+                <TextView
+                    android:id="@+id/tvResendOtp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="?attr/selectableItemBackground"
+                    android:padding="@dimen/spacing_s"
+                    android:text="@string/auth_resend_otp"
+                    android:textColor="?attr/colorPrimary"
+                    android:textSize="@dimen/text_size_body_medium"
+                    android:textStyle="bold"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
+            </LinearLayout>
+
+            <!-- Thông báo khi bị khóa (Hiện lên thay thế khi sai quá 5 lần) -->
+            <TextView
+                android:id="@+id/tvLockCountdown"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:gravity="center"
+                android:textColor="?attr/colorError"
+                android:textSize="@dimen/text_size_body_medium"
+                android:textStyle="bold"
+                android:visibility="gone"
+                tools:text="Tài khoản bị khóa, thử lại sau 60 giây"
+                tools:visibility="visible" />
+        </FrameLayout>
+
+        <!-- Nut xac nhan -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnConfirmOtp"
+            style="@style/ButtonMaxWidthStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_2xl"
+            android:layout_marginHorizontal="@dimen/spacing_xl"
+            android:enabled="false"
+            android:text="@string/action_confirm"
+            app:cornerRadius="@dimen/radius_full" />
+
+    </LinearLayout>
+
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+        android:id="@+id/progressBar"
+        android:indeterminate="true"
+        android:layout_gravity="center"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
+</FrameLayout>

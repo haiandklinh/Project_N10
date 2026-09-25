@@ -31,6 +31,23 @@ public class RoleSelectionUseCase {
     }
 
     /**
+     * Cập nhật thông tin cá nhân
+     */
+    public void updatePersonalInfo(String name, String dob, String gender, AuthCallback<Void> callback) {
+        authRepository.updatePersonalInfo(name, dob, gender, new AuthRepository.DataCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                callback.onSuccess(result);
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                callback.onError(errorMessage);
+            }
+        });
+    }
+
+    /**
      * Tạo công ty mới (cho Manager)
      */
     public void createCompany(String companyName, AuthCallback<String> callback) {

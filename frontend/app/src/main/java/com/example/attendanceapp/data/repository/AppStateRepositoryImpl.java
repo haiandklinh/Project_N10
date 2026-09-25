@@ -3,6 +3,7 @@ package com.example.attendanceapp.data.repository;
 import com.example.attendanceapp.data.local.pref.SharedPreferenceApp;
 import com.example.attendanceapp.domain.model.SavedAccountData;
 import com.example.attendanceapp.domain.model.UserRole;
+import com.example.attendanceapp.domain.model.UserStatus;
 import com.example.attendanceapp.domain.repository.AppStateRepository;
 
 import javax.inject.Inject;
@@ -54,8 +55,8 @@ public class AppStateRepositoryImpl implements AppStateRepository {
     }
 
     @Override
-    public void saveUserStatus(String status) {
-        sharedPreferenceApp.saveUserStatus(status);
+    public void saveUserStatus(UserStatus status) {
+        sharedPreferenceApp.saveUserStatus(status); // convert UserStatus -> String, gửi xuống tầng dưới
     }
 
     @Override
@@ -84,7 +85,7 @@ public class AppStateRepositoryImpl implements AppStateRepository {
     @Override
     public SavedAccountData getSavedAccountData() {
         String userId = sharedPreferenceApp.getUserId();
-        String username = sharedPreferenceApp.getUsername();
+        String username = sharedPreferenceApp.getFullName();
         String phone = sharedPreferenceApp.getPhone();
 
         if (userId == null || phone == null) {

@@ -18,10 +18,9 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 
 import com.example.attendanceapp.R;
-import com.example.attendanceapp.databinding.FragmentLoginBinding;
+import com.example.attendanceapp.databinding.FragmentAuthLoginBinding;
 import com.example.attendanceapp.domain.model.UserAccount;
 import com.example.attendanceapp.domain.model.UserRole;
-import com.example.attendanceapp.domain.usecase.auth.AuthCallback;
 import com.example.attendanceapp.ui.employee.EmployeeMainActivity;
 import com.example.attendanceapp.ui.manager.ManagerMainActivity;
 import com.google.android.material.textfield.TextInputLayout;
@@ -31,12 +30,12 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class LoginFragment extends Fragment {
 
-    private FragmentLoginBinding binding;
+    private FragmentAuthLoginBinding binding;
     private LoginViewModel viewModel;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        binding = FragmentLoginBinding.inflate(inflater, container, false);
+        binding = FragmentAuthLoginBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
@@ -63,62 +62,92 @@ public class LoginFragment extends Fragment {
                 clearAllErrors();
                 Toast.makeText(requireContext(), "Đăng nhập thành công", Toast.LENGTH_SHORT).show();
 
-                // Kiểm tra xem User đã có Vai trò hay chưa
                 if (user.getRole() != null) {
                     navigateToRoleHome(user.getRole());
                 } else {
-                    // Nếu chưa có vai trò -> Hiện Dialog chọn vai trò
                     showRoleSelectionDialog();
                 }
-
             } else if (state instanceof LoginState.Error) {
                 String errorMsg = ((LoginState.Error) state).message;
                 showErrorOnInput(errorMsg);
             }
         });
+
+        // Lắng nghe các sự kiện thiết lập Role từ ViewModel
+        viewModel.getRoleSetupEvent().observe(getViewLifecycleOwner(), event -> {
+            if (event instanceof LoginViewModel.RoleSetupEvent.ShowPersonalInfoForm) {
+                PersonalInfoBottomSheet.newInstance()
+                        .show(getChildFragmentManager(), PersonalInfoBottomSheet.TAG);
+
+            } else if (event instanceof LoginViewModel.RoleSetupEvent.ShowCompanyNameForm) {
+                CompanyNameBottomSheet.newInstance()
+                        .show(getChildFragmentManager(), CompanyNameBottomSheet.TAG);
+
+            } else if (event instanceof LoginViewModel.RoleSetupEvent.ShowInvitationCodeForm) {
+                EnterInvitationCodeBottomSheet.newInstance()
+                        .show(getChildFragmentManager(), EnterInvitationCodeBottomSheet.TAG);
+
+            } else if (event instanceof LoginViewModel.RoleSetupEvent.NavigateToHome) {
+                navigateToRoleHome(((LoginViewModel.RoleSetupEvent.NavigateToHome) event).role);
+
+            } else if (event instanceof LoginViewModel.RoleSetupEvent.NavigateToPendingApproval) {
+                LoginViewModel.RoleSetupEvent.NavigateToPendingApproval e = (LoginViewModel.RoleSetupEvent.NavigateToPendingApproval) event;
+                navigateToPendingApproval(e.inviteCode, e.companyName);
+
+            } else if (event instanceof LoginViewModel.RoleSetupEvent.ShowError) {
+                Toast.makeText(requireContext(), ((LoginViewModel.RoleSetupEvent.ShowError) event).message, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
-    /** Lắng nghe kết quả trả về từ RoleSelectionDialog qua FragmentResultListener */
     private void setupDialogListeners() {
+        // 1. Nhận Role đã chọn
         getChildFragmentManager().setFragmentResultListener(
                 RoleSelectionDialog.REQUEST_KEY,
                 getViewLifecycleOwner(),
                 (requestKey, result) -> {
-                    String action = result.getString(RoleSelectionDialog.RESULT_ACTION, "");
+                    String selectedRoleStr = result.getString(RoleSelectionDialog.BUNDLE_KEY_SELECTED_ROLE, "");
+                    viewModel.onRoleSelected(UserRole.fromString(selectedRoleStr));
+                }
+        );
 
-                    if (RoleSelectionDialog.ACTION_SUBMITTED.equals(action)) {
-                        String roleStr = result.getString(RoleSelectionDialog.BUNDLE_KEY_ROLE, "");
-                        UserRole role = UserRole.fromString(roleStr);
+        // 2. Nhận Thông tin cá nhân
+        getChildFragmentManager().setFragmentResultListener(
+                PersonalInfoBottomSheet.REQUEST_KEY,
+                getViewLifecycleOwner(),
+                (requestKey, result) -> {
+                    String action = result.getString(PersonalInfoBottomSheet.RESULT_ACTION, "");
+                    if (PersonalInfoBottomSheet.ACTION_SUBMITTED.equals(action)) {
+                        String name = result.getString(PersonalInfoBottomSheet.BUNDLE_KEY_NAME, "");
+                        String dob = result.getString(PersonalInfoBottomSheet.BUNDLE_KEY_DOB, "");
+                        String gender = result.getString(PersonalInfoBottomSheet.BUNDLE_KEY_GENDER, "");
+                        viewModel.onPersonalInfoEntered(name, dob, gender);
+                    }
+                }
+        );
 
-                        if (role == UserRole.MANAGER) {
-                            String companyName = result.getString(RoleSelectionDialog.BUNDLE_KEY_COMPANY_NAME, "");
-                            // Gọi ViewModel để xử lý chọn role và tạo công ty
-                            viewModel.handleManagerRoleSelection(companyName, new AuthCallback<Void>() {
-                                @Override
-                                public void onSuccess(Void result) {
-                                    navigateToRoleHome(UserRole.MANAGER);
-                                }
+        // 3. Nhận Tên công ty (Manager)
+        getChildFragmentManager().setFragmentResultListener(
+                CompanyNameBottomSheet.REQUEST_KEY,
+                getViewLifecycleOwner(),
+                (requestKey, result) -> {
+                    String action = result.getString(CompanyNameBottomSheet.RESULT_ACTION, "");
+                    if (CompanyNameBottomSheet.ACTION_SUBMITTED.equals(action)) {
+                        String companyName = result.getString(CompanyNameBottomSheet.BUNDLE_KEY_COMPANY_NAME, "");
+                        viewModel.submitManagerCompany(companyName);
+                    }
+                }
+        );
 
-                                @Override
-                                public void onError(String errorMessage) {
-                                    Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show();
-                                }
-                            });
-                        } else if (role == UserRole.EMPLOYEE) {
-                            String invitationCode = result.getString(RoleSelectionDialog.BUNDLE_KEY_INVITATION_CODE, "");
-                            // Gọi ViewModel để xử lý chọn role và tham gia công ty
-                            viewModel.handleEmployeeRoleSelection(invitationCode, new AuthCallback<String>() {
-                                @Override
-                                public void onSuccess(String companyName) {
-                                    navigateToPendingApproval(invitationCode, companyName);
-                                }
-
-                                @Override
-                                public void onError(String errorMessage) {
-                                    Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show();
-                                }
-                            });
-                        }
+        // 4. Nhận Mã mời (Employee)
+        getChildFragmentManager().setFragmentResultListener(
+                EnterInvitationCodeBottomSheet.REQUEST_KEY,
+                getViewLifecycleOwner(),
+                (requestKey, result) -> {
+                    String action = result.getString(EnterInvitationCodeBottomSheet.RESULT_ACTION, "");
+                    if (EnterInvitationCodeBottomSheet.ACTION_SUBMITTED.equals(action)) {
+                        String invitationCode = result.getString(EnterInvitationCodeBottomSheet.BUNDLE_KEY_CODE, "");
+                        viewModel.submitEmployeeInvitationCode(invitationCode);
                     }
                 }
         );
@@ -139,18 +168,9 @@ public class LoginFragment extends Fragment {
     }
 
     private void navigateToRoleHome(UserRole role) {
-        Intent intent;
-
-        if (role == UserRole.MANAGER) {
-            intent = new Intent(requireContext(), ManagerMainActivity.class);
-        } else {
-            intent = new Intent(requireContext(), EmployeeMainActivity.class);
-        }
-
-        // Mở Activity mới và xóa toàn bộ luồng Auth khỏi BackStack
+        Intent intent = new Intent(requireContext(), role == UserRole.MANAGER ? ManagerMainActivity.class : EmployeeMainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
-
         requireActivity().finish();
     }
 
@@ -189,7 +209,6 @@ public class LoginFragment extends Fragment {
         boolean isValid = true;
         TextInputLayout firstErrorTil = null;
 
-        // 1. Kiểm tra Số điện thoại
         if (TextUtils.isEmpty(phone)) {
             binding.tilPhone.setError("Vui lòng nhập số điện thoại");
             isValid = false;
@@ -200,7 +219,6 @@ public class LoginFragment extends Fragment {
             if (firstErrorTil == null) firstErrorTil = binding.tilPhone;
         }
 
-        // 2. Kiểm tra Mật khẩu
         if (TextUtils.isEmpty(password)) {
             binding.tilPassword.setError("Vui lòng nhập mật khẩu");
             isValid = false;
@@ -218,7 +236,6 @@ public class LoginFragment extends Fragment {
             return;
         }
 
-        // Gọi ViewModel xử lý đăng nhập
         viewModel.login(phone, password);
     }
 
@@ -229,7 +246,7 @@ public class LoginFragment extends Fragment {
 
     private void showErrorOnInput(String errorMsg) {
         clearAllErrors();
-        
+
         if (errorMsg.contains("Số điện thoại") || errorMsg.contains("phone")) {
             binding.tilPhone.setError(errorMsg);
             if (binding.tilPhone.getEditText() != null) {

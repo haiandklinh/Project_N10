@@ -1,27 +1,32 @@
 package com.example.attendanceapp.data.dto.request;
 
+import com.google.gson.annotations.SerializedName;
+
 public class VerifyOtpRequest {
-    private String phoneNumber;
-    private String otpCode;
+    @SerializedName("phone")
+    private String phone;
+    
+    @SerializedName("OTP")
+    private String otp;
 
-    public VerifyOtpRequest(String phoneNumber, String otpCode) {
-        this.phoneNumber = phoneNumber;
-        this.otpCode = otpCode;
+    public VerifyOtpRequest(String phone, String otp) {
+        this.phone = phone;
+        this.otp = otp;
     }
 
-    public String getPhoneNumber() {
-        return phoneNumber;
+    public String getPhone() {
+        return phone;
     }
 
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
-    public String getOtpCode() {
-        return otpCode;
+    public String getOtp() {
+        return otp;
     }
 
-    public void setOtpCode(String otpCode) {
-        this.otpCode = otpCode;
+    public void setOtp(String otp) {
+        this.otp = otp;
     }
 }

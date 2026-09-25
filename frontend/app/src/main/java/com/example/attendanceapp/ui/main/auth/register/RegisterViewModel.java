@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.example.attendanceapp.domain.model.UserAccount;
+import com.example.attendanceapp.domain.repository.AuthRepository;
 import com.example.attendanceapp.domain.usecase.auth.AuthCallback;
 import com.example.attendanceapp.domain.usecase.auth.RegisterUseCase;
 
@@ -37,7 +38,7 @@ public class RegisterViewModel extends ViewModel {
         return otpState;
     }
 
-    /** BỔ SUNG: Kiểm tra SĐT đã đăng ký chưa trước khi gửi OTP */
+    /** Kiểm tra SĐT đã đăng ký chưa trước khi gửi OTP */
     public void checkPhoneAndSendOtp(String phone) {
         if (phone == null || phone.length() < 9) {
             otpState.setValue(new OtpState.Error("Số điện thoại không hợp lệ!"));
@@ -46,16 +47,13 @@ public class RegisterViewModel extends ViewModel {
 
         isLoading.setValue(true);
 
-        // Gọi UseCase kiểm tra SĐT trong Room/API
         registerUseCase.checkPhoneExists(phone, new AuthCallback<Boolean>() {
             @Override
             public void onSuccess(Boolean isExists) {
                 if (isExists) {
                     isLoading.setValue(false);
-                    // Báo lỗi trùng SĐT ngay lập tức
                     otpState.setValue(new OtpState.Error("Số điện thoại này đã được đăng ký!"));
                 } else {
-                    // Nếu CHƯA tồn tại -> Tiến hành gửi OTP
                     sendOtpInternal(phone);
                 }
             }
@@ -88,9 +86,10 @@ public class RegisterViewModel extends ViewModel {
     /** Xác thực OTP */
     public void verifyOtp(String phone, String otp) {
         isLoading.setValue(true);
-        registerUseCase.verifyOtp(phone, otp, new AuthCallback<Void>() {
+        // Đã sửa AuthCallback<Void> thành AuthCallback<String>
+        registerUseCase.verifyOtp(phone, otp, new AuthCallback<String>() {
             @Override
-            public void onSuccess(Void result) {
+            public void onSuccess(String result) {
                 isLoading.setValue(false);
                 otpState.setValue(new OtpState.Verified());
             }
@@ -104,34 +103,32 @@ public class RegisterViewModel extends ViewModel {
     }
 
     /** Đăng ký tài khoản */
-    public void register(String fullName, String phone, String password) {
+    public void register(String phone, String password) {
         isLoading.setValue(true);
 
-        registerUseCase.execute(fullName, phone, password,
-                new AuthCallback<UserAccount>() {
-                    @Override
-                    public void onSuccess(UserAccount result) {
-                        registerUseCase.saveAccountSaved();
-                        isLoading.setValue(false);
-                        registerState.setValue(new RegisterState.Success(result));
-                    }
+        registerUseCase.execute(phone, password, new AuthCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                registerUseCase.saveAccountSaved();
+                isLoading.setValue(false);
+                registerState.setValue(new RegisterState.Success());
+            }
 
-                    @Override
-                    public void onError(String error) {
-                        isLoading.setValue(false);
-                        registerState.setValue(new RegisterState.Error(error));
-                    }
-                });
+            @Override
+            public void onError(String error) {
+                isLoading.setValue(false);
+                registerState.setValue(new RegisterState.Error(error));
+            }
+        });
     }
 
     // --- Sealed/State Classes ---
 
     public static abstract class RegisterState {
         public static class Success extends RegisterState {
-            public final UserAccount user;
-            public Success(UserAccount user) {
-                this.user = user;
-            }
+            // Không còn chứa UserAccount vì API /register không trả về thông tin user,
+            // chỉ trả message thành công. Sau khi Success, điều hướng người dùng
+            // về màn hình Login để họ tự đăng nhập lại (đúng theo mô tả API gốc).
         }
 
         public static class Error extends RegisterState {

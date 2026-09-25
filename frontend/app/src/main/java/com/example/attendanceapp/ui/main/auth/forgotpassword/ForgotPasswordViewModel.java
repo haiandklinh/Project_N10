@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.example.attendanceapp.domain.repository.AuthRepository;
 import com.example.attendanceapp.domain.usecase.auth.AuthCallback;
 import com.example.attendanceapp.domain.usecase.auth.ForgotPasswordUseCase;
 
@@ -57,7 +58,6 @@ public class ForgotPasswordViewModel extends ViewModel {
             }
         });
     }
-
     public void verifyOtp(String otp) {
         if (otp == null || otp.length() < 6) {
             forgotPasswordState.setValue(new ForgotPasswordState.Error("Vui lòng nhập mã OTP 6 số"));
@@ -66,9 +66,10 @@ public class ForgotPasswordViewModel extends ViewModel {
 
         isLoading.setValue(true);
 
-        forgotPasswordUseCase.verifyOtp(currentAccount, otp, new AuthCallback<Void>() {
+        // Đã sửa AuthCallback<Void> thành AuthCallback<String> khớp với UseCase
+        forgotPasswordUseCase.verifyOtp(currentAccount, otp, new AuthCallback<String>() {
             @Override
-            public void onSuccess(Void result) {
+            public void onSuccess(String result) {
                 isLoading.setValue(false);
                 forgotPasswordState.setValue(new ForgotPasswordState.OtpVerified());
             }
@@ -115,6 +116,11 @@ public class ForgotPasswordViewModel extends ViewModel {
     }
 
     public void resendOtp() {
+        if (currentAccount.isEmpty()) {
+            forgotPasswordState.setValue(new ForgotPasswordState.Error("Không tìm thấy thông tin tài khoản"));
+            return;
+        }
+
         isLoading.setValue(true);
 
         forgotPasswordUseCase.sendOtp(currentAccount, new AuthCallback<Void>() {
@@ -132,7 +138,7 @@ public class ForgotPasswordViewModel extends ViewModel {
         });
     }
 
-    // --- Sealed/State Classes ---
+    // --- State Classes ---
 
     public static abstract class ForgotPasswordState {
         public static class OtpSent extends ForgotPasswordState {
@@ -143,7 +149,6 @@ public class ForgotPasswordViewModel extends ViewModel {
         }
 
         public static class OtpVerified extends ForgotPasswordState {}
-
         public static class OtpResent extends ForgotPasswordState {}
 
         public static class Success extends ForgotPasswordState {}

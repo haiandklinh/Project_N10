@@ -17,7 +17,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 
 import com.example.attendanceapp.R;
-import com.example.attendanceapp.databinding.FragmentRegisterBinding;
+import com.example.attendanceapp.databinding.FragmentAuthRegisterBinding;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -26,14 +26,14 @@ public class RegisterFragment extends Fragment {
 
     private static final String OTP_REQUEST_KEY = "otp_verify_request";
 
-    private FragmentRegisterBinding binding;
+    private FragmentAuthRegisterBinding binding;
     private RegisterViewModel viewModel;
 
     private boolean isPhoneVerified = false;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        binding = FragmentRegisterBinding.inflate(inflater, container, false);
+        binding = FragmentAuthRegisterBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
@@ -50,9 +50,16 @@ public class RegisterFragment extends Fragment {
 
     private void observeViewModel() {
         viewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
-            binding.progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
-            binding.layoutStep3.btnRegisterFinal.setEnabled(!isLoading);
-            binding.layoutStep2.btnContinueStep2.setEnabled(!isLoading);
+            if (binding.progressBar != null) {
+                binding.progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+            }
+            if (binding.layoutStep2 != null && binding.layoutStep2.btnRegisterFinal != null) {
+                // Nút chỉ enable khi không load VÀ đã tích checkbox
+                binding.layoutStep2.btnRegisterFinal.setEnabled(!isLoading && binding.layoutStep2.cbAcceptTerms.isChecked());
+            }
+            if (binding.layoutStep1 != null && binding.layoutStep1.btnNextStep1 != null) {
+                binding.layoutStep1.btnNextStep1.setEnabled(!isLoading);
+            }
         });
 
         viewModel.getRegisterState().observe(getViewLifecycleOwner(), state -> {
@@ -96,18 +103,10 @@ public class RegisterFragment extends Fragment {
     private void setupSteps() {
         setupTermsCheckbox();
 
-        // Step 1: Họ tên
-        binding.layoutStep1.btnNextStep1.setOnClickListener(v -> {
-            if (validateStep1()) {
-                showStep(2);
-            }
-        });
+        // Step 1: Số điện thoại & OTP
+        binding.layoutStep1.btnNextStep1.setOnClickListener(v -> handleContinueStep1());
 
-        // Step 2: Số điện thoại
-        binding.layoutStep2.tvBackStep1.setOnClickListener(v -> showStep(1));
-        binding.layoutStep2.btnContinueStep2.setOnClickListener(v -> handleContinueStep2());
-
-        binding.layoutStep2.edtPhone.addTextChangedListener(new TextWatcher() {
+        binding.layoutStep1.edtPhone.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
@@ -122,24 +121,22 @@ public class RegisterFragment extends Fragment {
             }
         });
 
-        // Step 3: Mật khẩu
-        binding.layoutStep3.btnRegisterFinal.setOnClickListener(v -> {
-            if (validateStep3()) {
+        // Step 2: Mật khẩu
+        binding.layoutStep2.btnRegisterFinal.setOnClickListener(v -> {
+            if (validateStep2()) {
                 performRegister();
             }
         });
-        binding.layoutStep3.tvBackStep2.setOnClickListener(v -> showStep(2));
+        binding.layoutStep2.tvBackStep1.setOnClickListener(v -> showStep(1));
     }
 
-    private void handleContinueStep2() {
+    private void handleContinueStep1() {
         if (!isPhoneVerified) {
-            if (!validateStep2()) return;
-            String phone = binding.layoutStep2.edtPhone.getText().toString().trim();
-
-            // ĐỔI: Gọi hàm kiểm tra trùng SĐT trước khi gửi OTP
+            if (!validateStep1()) return;
+            String phone = binding.layoutStep1.edtPhone.getText().toString().trim();
             viewModel.checkPhoneAndSendOtp(phone);
         } else {
-            showStep(3);
+            showStep(2);
         }
     }
 
@@ -150,75 +147,63 @@ public class RegisterFragment extends Fragment {
 
     private void onPhoneVerified(String verifiedPhone) {
         isPhoneVerified = true;
-        binding.layoutStep2.layoutVerifiedStatus.setVisibility(View.VISIBLE);
-        binding.layoutStep2.tvVerifiedPhone.setText(
+        binding.layoutStep1.layoutVerifiedStatus.setVisibility(View.VISIBLE);
+        binding.layoutStep1.tvVerifiedPhone.setText(
                 getString(R.string.auth_phone_verified_format, maskPhone(verifiedPhone))
         );
-        binding.layoutStep2.edtPhone.setEnabled(false);
+        binding.layoutStep1.edtPhone.setEnabled(false);
 
-        showStep(3);
+        showStep(2);
     }
 
     private void resetPhoneVerification() {
         isPhoneVerified = false;
-        binding.layoutStep2.layoutVerifiedStatus.setVisibility(View.GONE);
-        binding.layoutStep2.edtPhone.setEnabled(true);
+        binding.layoutStep1.layoutVerifiedStatus.setVisibility(View.GONE);
+        binding.layoutStep1.edtPhone.setEnabled(true);
     }
 
     private void setupTermsCheckbox() {
-        binding.layoutStep3.cbAcceptTerms.setOnCheckedChangeListener((buttonView, isChecked) ->
-                binding.layoutStep3.btnRegisterFinal.setEnabled(isChecked)
+        binding.layoutStep2.cbAcceptTerms.setOnCheckedChangeListener((buttonView, isChecked) ->
+                binding.layoutStep2.btnRegisterFinal.setEnabled(isChecked)
         );
     }
 
     private void showStep(int step) {
         binding.layoutStep1.getRoot().setVisibility(step == 1 ? View.VISIBLE : View.GONE);
         binding.layoutStep2.getRoot().setVisibility(step == 2 ? View.VISIBLE : View.GONE);
-        binding.layoutStep3.getRoot().setVisibility(step == 3 ? View.VISIBLE : View.GONE);
     }
 
     private boolean validateStep1() {
-        String name = binding.layoutStep1.edtFullName.getText().toString().trim();
+        String phone = binding.layoutStep1.edtPhone.getText().toString().trim();
 
-        if (TextUtils.isEmpty(name)) {
-            binding.layoutStep1.tilFullName.setError(getString(R.string.auth_error_full_name_required));
+        if (TextUtils.isEmpty(phone)) {
+            binding.layoutStep1.tilPhone.setError(getString(R.string.auth_error_phone_required));
             return false;
         }
-        binding.layoutStep1.tilFullName.setError(null);
+        if (!Patterns.PHONE.matcher(phone).matches() || phone.length() < 9) {
+            binding.layoutStep1.tilPhone.setError(getString(R.string.auth_error_phone_invalid));
+            return false;
+        }
+        binding.layoutStep1.tilPhone.setError(null);
         return true;
     }
 
     private boolean validateStep2() {
-        String phone = binding.layoutStep2.edtPhone.getText().toString().trim();
-
-        if (TextUtils.isEmpty(phone)) {
-            binding.layoutStep2.tilPhone.setError(getString(R.string.auth_error_phone_required));
-            return false;
-        }
-        if (!Patterns.PHONE.matcher(phone).matches() || phone.length() < 9) {
-            binding.layoutStep2.tilPhone.setError(getString(R.string.auth_error_phone_invalid));
-            return false;
-        }
-        binding.layoutStep2.tilPhone.setError(null);
-        return true;
-    }
-
-    private boolean validateStep3() {
-        String pass = binding.layoutStep3.edtPassword.getText().toString();
-        String confirm = binding.layoutStep3.edtConfirmPassword.getText().toString();
-        boolean acceptTerms = binding.layoutStep3.cbAcceptTerms.isChecked();
+        String pass = binding.layoutStep2.edtPassword.getText().toString();
+        String confirm = binding.layoutStep2.edtConfirmPassword.getText().toString();
+        boolean acceptTerms = binding.layoutStep2.cbAcceptTerms.isChecked();
 
         if (pass.length() < 6) {
-            binding.layoutStep3.tilPassword.setError(getString(R.string.auth_error_password_min));
+            binding.layoutStep2.tilPassword.setError(getString(R.string.auth_error_password_min));
             return false;
         }
-        binding.layoutStep3.tilPassword.setError(null);
+        binding.layoutStep2.tilPassword.setError(null);
 
         if (!pass.equals(confirm)) {
-            binding.layoutStep3.tilConfirmPassword.setError(getString(R.string.auth_error_password_mismatch));
+            binding.layoutStep2.tilConfirmPassword.setError(getString(R.string.auth_error_password_mismatch));
             return false;
         }
-        binding.layoutStep3.tilConfirmPassword.setError(null);
+        binding.layoutStep2.tilConfirmPassword.setError(null);
 
         if (!acceptTerms) {
             Toast.makeText(requireContext(), R.string.auth_error_accept_terms, Toast.LENGTH_SHORT).show();
@@ -228,11 +213,11 @@ public class RegisterFragment extends Fragment {
     }
 
     private void performRegister() {
-        String fullName = binding.layoutStep1.edtFullName.getText().toString().trim();
-        String phone = binding.layoutStep2.edtPhone.getText().toString().trim();
-        String password = binding.layoutStep3.edtPassword.getText().toString();
+        String phone = binding.layoutStep1.edtPhone.getText().toString().trim();
+        String password = binding.layoutStep2.edtPassword.getText().toString();
 
-        viewModel.register(fullName, phone, password);
+        // FullName để null, sẽ cập nhật ở Profile Completion sau
+        viewModel.register( phone, password);
     }
 
     private String maskPhone(String phone) {
@@ -241,41 +226,35 @@ public class RegisterFragment extends Fragment {
     }
 
     private void clearAllErrors() {
-        binding.layoutStep1.tilFullName.setError(null);
-        binding.layoutStep2.tilPhone.setError(null);
-        binding.layoutStep3.tilPassword.setError(null);
-        binding.layoutStep3.tilConfirmPassword.setError(null);
+        binding.layoutStep1.tilPhone.setError(null);
+        binding.layoutStep2.tilPassword.setError(null);
+        binding.layoutStep2.tilConfirmPassword.setError(null);
     }
 
     private void showErrorOnInput(String errorMsg) {
         clearAllErrors();
 
-        if (errorMsg.contains("Họ tên") || errorMsg.contains("tên")) {
+        if (errorMsg.contains("Số điện thoại") || errorMsg.contains("phone") || errorMsg.contains("đăng ký")) {
             showStep(1);
-            binding.layoutStep1.tilFullName.setError(errorMsg);
-            if (binding.layoutStep1.tilFullName.getEditText() != null) {
-                binding.layoutStep1.tilFullName.getEditText().requestFocus();
-            }
-        } else if (errorMsg.contains("Số điện thoại") || errorMsg.contains("phone") || errorMsg.contains("đăng ký")) {
-            showStep(2);
-            binding.layoutStep2.tilPhone.setError(errorMsg);
-            if (binding.layoutStep2.tilPhone.getEditText() != null) {
-                binding.layoutStep2.tilPhone.getEditText().requestFocus();
+            binding.layoutStep1.tilPhone.setError(errorMsg);
+        } else if (errorMsg.contains("mật khẩu") || errorMsg.contains("Mật khẩu") || errorMsg.contains("password")) {
+            if (isPhoneVerified) {
+                showStep(2);
+                binding.layoutStep2.tilPassword.setError(errorMsg);
             }
         } else {
-            showStep(3);
-            binding.layoutStep3.tilPassword.setError(errorMsg);
-            if (binding.layoutStep3.tilPassword.getEditText() != null) {
-                binding.layoutStep3.tilPassword.getEditText().requestFocus();
+            // Giữ nguyên step hiện tại nếu là lỗi không xác định (như sai OTP)
+            if (!isPhoneVerified) {
+                showStep(1);
             }
         }
     }
 
     private void showErrorOnStep2(String errorMsg) {
-        showStep(2);
-        binding.layoutStep2.tilPhone.setError(errorMsg);
-        if (binding.layoutStep2.tilPhone.getEditText() != null) {
-            binding.layoutStep2.tilPhone.getEditText().requestFocus();
+        showStep(1);
+        binding.layoutStep1.tilPhone.setError(errorMsg);
+        if (binding.layoutStep1.tilPhone.getEditText() != null) {
+            binding.layoutStep1.tilPhone.getEditText().requestFocus();
         }
     }
 

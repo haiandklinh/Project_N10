@@ -1,19 +1,19 @@
 package com.example.attendanceapp.domain.usecase.auth;
 import com.example.attendanceapp.domain.model.UserRole;
-import com.example.attendanceapp.domain.repository.UserRepository; // Hoặc AuthRepository
+import com.example.attendanceapp.domain.repository.SessionRepository;
 
 import javax.inject.Inject;
 
 public class GetUserRoleUseCase {
 
-    private final UserRepository userRepository;
+    private final SessionRepository sessionRepository;
 
     @Inject
-    public GetUserRoleUseCase(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public GetUserRoleUseCase(SessionRepository sessionRepository) {
+        this.sessionRepository = sessionRepository;
     }
 
     public UserRole execute() {
-        return userRepository.getSavedUserRole();
+        return sessionRepository.getSavedUserRole();
     }
 }

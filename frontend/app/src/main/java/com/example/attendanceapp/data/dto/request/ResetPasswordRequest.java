@@ -1,22 +1,24 @@
 package com.example.attendanceapp.data.dto.request;
 
+import com.google.gson.annotations.SerializedName;
+
 public class ResetPasswordRequest {
-    private String phoneNumber;
+    private String phone;
+    
+    @SerializedName("password")
     private String newPassword;
-    private String otpCode; // Hoặc token xác thực sau khi verify OTP
 
-    public ResetPasswordRequest(String phoneNumber, String newPassword, String otpCode) {
-        this.phoneNumber = phoneNumber;
+    public ResetPasswordRequest(String phone, String newPassword) {
+        this.phone = phone;
         this.newPassword = newPassword;
-        this.otpCode = otpCode;
     }
 
-    public String getPhoneNumber() {
-        return phoneNumber;
+    public String getPhone() {
+        return phone;
     }
 
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     public String getNewPassword() {
@@ -25,13 +27,5 @@ public class ResetPasswordRequest {
 
     public void setNewPassword(String newPassword) {
         this.newPassword = newPassword;
-    }
-
-    public String getOtpCode() {
-        return otpCode;
-    }
-
-    public void setOtpCode(String otpCode) {
-        this.otpCode = otpCode;
     }
 }
