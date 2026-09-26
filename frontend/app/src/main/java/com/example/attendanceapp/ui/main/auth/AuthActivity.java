@@ -2,7 +2,6 @@ package com.example.attendanceapp.ui.main.auth;
 
 import android.os.Bundle;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -29,7 +28,6 @@ public class AuthActivity extends AppCompatActivity {
         applyAppTheme(viewModel.getCurrentTheme().getValue());
 
         // 4. Setup UI & ViewBinding
-        EdgeToEdge.enable(this);
         binding = ActivityAuthBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
