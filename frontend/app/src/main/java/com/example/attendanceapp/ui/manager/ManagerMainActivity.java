@@ -4,11 +4,8 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.NavOptions;
@@ -44,11 +41,9 @@ public class ManagerMainActivity extends AppCompatActivity {
         viewModel = new ViewModelProvider(this).get(ManagerMainViewModel.class);
 
         // 2. UI Setup
-        EdgeToEdge.enable(this);
         binding = ActivityManagerMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        setupWindowInsets();
         setupNavigation();
         setupCustomBottomNavListeners();
     }
@@ -77,18 +72,6 @@ public class ManagerMainActivity extends AppCompatActivity {
         }
     }
 
-    private void setupWindowInsets() {
-        ViewCompat.setOnApplyWindowInsetsListener(binding.bottomNavigation, (v, insets) -> {
-            Insets navigationBars = insets.getInsets(WindowInsetsCompat.Type.navigationBars());
-            v.setPadding(
-                    v.getPaddingLeft(),
-                    v.getPaddingTop(),
-                    v.getPaddingRight(),
-                    navigationBars.bottom
-            );
-            return insets;
-        });
-    }
 
     private void setupNavigation() {
         NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager()
@@ -110,6 +93,8 @@ public class ManagerMainActivity extends AppCompatActivity {
                 updateSelectedTab(binding.tabSchedule);
             } else if (id == R.id.managerHumanFragment) {
                 updateSelectedTab(binding.tabEmployee);
+            } else if (id == R.id.managerProfileFragment) {
+                updateSelectedTab(binding.tabProfile);
             }
 
             // Ẩn/Hiện Custom BottomBar dựa trên ViewModel Logic
@@ -130,6 +115,9 @@ public class ManagerMainActivity extends AppCompatActivity {
 
         // Tab 4: Employees
         binding.tabEmployee.setOnClickListener(v -> navigateToTab(R.id.managerHumanFragment));
+
+        // Tab 5: Profile
+        binding.tabProfile.setOnClickListener(v -> navigateToTab(R.id.managerProfileFragment));
     }
 
     private void navigateToTab(int destinationId) {
@@ -179,6 +167,12 @@ public class ManagerMainActivity extends AppCompatActivity {
         binding.tabEmployee.setSelected(isEmployee);
         binding.iconEmployee.setSelected(isEmployee);
         binding.labelEmployee.setSelected(isEmployee);
+
+        // Tab 5
+        boolean isProfile = (selectedTab == binding.tabProfile);
+        binding.tabProfile.setSelected(isProfile);
+        binding.iconProfile.setSelected(isProfile);
+        binding.labelProfile.setSelected(isProfile);
     }
 
     private void updateBottomBarVisibility(boolean show) {

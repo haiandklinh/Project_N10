@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Khi TextInputLayout được focus -->
-    <item android:color="?attr/colorPrimary" android:state_focused="true" />
-    <!-- Mặc định (khi không focus) -->
-    <item android:color="?attr/colorSecondary" />
-</selector>
