@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/ItemCard"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/spacing_s"
+    android:foreground="?attr/selectableItemBackground">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/spacing_m">
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/iv_avatar"
+            android:layout_width="@dimen/avatar_size_m"
+            android:layout_height="@dimen/avatar_size_m"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_avatar"
+            android:contentDescription="@null"
+            app:shapeAppearanceOverlay="@style/ImageCircleStyle"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_name"
+            style="@style/TitleTextMediumStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_m"
+            android:ellipsize="end"
+            android:maxLines="1"
+            app:layout_constraintEnd_toStartOf="@id/chip_status"
+            app:layout_constraintStart_toEndOf="@id/iv_avatar"
+            app:layout_constraintTop_toTopOf="@id/iv_avatar"
+            tools:text="Phạm Thu Hà" />
+
+        <TextView
+            android:id="@+id/tv_position"
+            style="@style/BodyTextSmallStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_m"
+            android:ellipsize="end"
+            android:maxLines="1"
+            app:layout_constraintEnd_toStartOf="@id/chip_status"
+            app:layout_constraintStart_toEndOf="@id/iv_avatar"
+            app:layout_constraintTop_toBottomOf="@id/tv_name"
+            tools:text="Thu ngân · Cửa hàng Q1" />
+
+        <TextView
+            android:id="@+id/tv_phone"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_m"
+            android:layout_marginTop="1dp"
+            android:drawablePadding="4dp"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="@dimen/text_size_body_small"
+            app:drawableStartCompat="@drawable/ic_phone"
+            app:drawableTint="?attr/colorOnSurfaceVariant"
+            app:layout_constraintStart_toEndOf="@id/iv_avatar"
+            app:layout_constraintTop_toBottomOf="@id/tv_position"
+            tools:text="0987 654 321" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_status"
+            style="@style/ChipStatusStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="@id/iv_avatar"
+            app:layout_constraintEnd_toStartOf="@id/iv_chevron"
+            tools:text="Đang làm" />
+
+        <ImageView
+            android:id="@+id/iv_chevron"
+            android:layout_width="@dimen/icon_size_s"
+            android:layout_height="@dimen/icon_size_s"
+            android:layout_marginStart="@dimen/spacing_2xs"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_chevron_right"
+            app:tint="?attr/colorOnSurfaceVariant"
+            app:layout_constraintBottom_toBottomOf="@id/chip_status"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/chip_status" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>

@@ -1,0 +1,214 @@
+package com.example.attendanceapp.ui.main.auth.forgotpassword;
+
+import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
+
+import com.example.attendanceapp.R;
+import com.example.attendanceapp.databinding.FragmentForgotPasswordBinding;
+
+import java.util.Arrays;
+import java.util.List;
+
+public class ForgotPasswordFragment extends Fragment {
+
+    private FragmentForgotPasswordBinding binding;
+    private List<EditText> otpBoxes;
+
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        binding = FragmentForgotPasswordBinding.inflate(inflater, container, false);
+        return binding.getRoot();
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        setupViews();
+        setupOtpInputs();
+        setupListeners();
+    }
+
+    private void setupViews() {
+        // Danh sách 6 ô nhập OTP từ layout đã include
+        otpBoxes = Arrays.asList(
+                binding.includeStep2.edtOtp1,
+                binding.includeStep2.edtOtp2,
+                binding.includeStep2.edtOtp3,
+                binding.includeStep2.edtOtp4,
+                binding.includeStep2.edtOtp5,
+                binding.includeStep2.edtOtp6
+        );
+
+        // Mặc định hiển thị Bước 1
+        showStep(1);
+    }
+
+    private void setupListeners() {
+        // Nút Back trên cùng
+        binding.btnBack.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
+
+        // BƯỚC 1: Nút Gửi mã xác thực OTP
+        binding.includeStep1.btnSendOtp.setOnClickListener(v -> {
+            String inputAccount = binding.includeStep1.edtAccountInput.getText().toString().trim();
+
+            if (inputAccount.isEmpty()) {
+                binding.includeStep1.tilAccountInput.setError(getString(R.string.error_enter_email_or_phone));
+                return;
+            }
+            binding.includeStep1.tilAccountInput.setError(null);
+
+            // TODO: Gọi API gửi mã OTP tới Email/SĐT của người dùng
+            // Ví dụ: AuthRepository.sendOtp(inputAccount, callback...)
+
+            Toast.makeText(requireContext(), getString(R.string.msg_otp_sent_success), Toast.LENGTH_SHORT).show();
+            showStep(2);
+        });
+
+        // BƯỚC 2: Nút Xác nhận OTP
+        binding.includeStep2.btnVerifyOtp.setOnClickListener(v -> {
+            String otpCode = getOtpCode();
+
+            if (otpCode.length() < 6) {
+                Toast.makeText(requireContext(), getString(R.string.error_enter_6_digits), Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // TODO: Gọi API xác thực mã OTP nhập vào có đúng không
+            // Ví dụ: AuthRepository.verifyOtp(account, otpCode, callback...)
+
+            Toast.makeText(requireContext(), getString(R.string.msg_otp_verified_success), Toast.LENGTH_SHORT).show();
+            showStep(3);
+        });
+
+        // BƯỚC 2: Nút Gửi lại mã OTP
+        binding.includeStep2.tvResendOtp.setOnClickListener(v -> {
+            // TODO: Gọi API gửi lại mã OTP mới
+
+            Toast.makeText(requireContext(), getString(R.string.msg_otp_resend_success), Toast.LENGTH_SHORT).show();
+            clearOtpBoxes();
+        });
+
+        // BƯỚC 3: Nút Hoàn tất đặt lại mật khẩu mới
+        binding.includeStep3.btnResetPassword.setOnClickListener(v -> {
+            String newPassword = binding.includeStep3.edtNewPassword.getText().toString().trim();
+            String confirmPassword = binding.includeStep3.edtConfirmPassword.getText().toString().trim();
+
+            if (newPassword.isEmpty()) {
+                binding.includeStep3.tilNewPassword.setError(getString(R.string.error_enter_new_password));
+                return;
+            }
+
+            if (newPassword.length() < 6) {
+                binding.includeStep3.tilNewPassword.setError(getString(R.string.error_password_min_length));
+                return;
+            }
+            binding.includeStep3.tilNewPassword.setError(null);
+
+            if (!newPassword.equals(confirmPassword)) {
+                binding.includeStep3.tilConfirmPassword.setError(getString(R.string.error_password_not_match));
+                return;
+            }
+            binding.includeStep3.tilConfirmPassword.setError(null);
+
+            // TODO: Gọi API đổi mật khẩu mới lên máy chủ
+            // Ví dụ: AuthRepository.resetPassword(account, newPassword, callback...)
+
+            Toast.makeText(requireContext(), getString(R.string.msg_password_reset_success), Toast.LENGTH_LONG).show();
+
+            // Hoàn tất -> Chuyển về màn hình Đăng nhập (LoginFragment)
+            Navigation.findNavController(v).navigateUp();
+        });
+    }
+
+    /**
+     * Xử lý tự động di chuyển con trỏ (Focus) và xóa lùi (Backspace) cho 6 ô OTP
+     */
+    private void setupOtpInputs() {
+        for (int i = 0; i < otpBoxes.size(); i++) {
+            final int currentIndex = i;
+
+            // Bắt sự kiện khi gõ ký tự -> Nhảy sang ô tiếp theo
+            otpBoxes.get(i).addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                    if (s != null && s.length() == 1 && currentIndex < otpBoxes.size() - 1) {
+                        otpBoxes.get(currentIndex + 1).requestFocus();
+                    }
+                }
+            });
+
+            // Bắt sự kiện bấm nút Xóa (Backspace) -> Quay lại ô trước
+            otpBoxes.get(i).setOnKeyListener((v, keyCode, event) -> {
+                if (keyCode == KeyEvent.KEYCODE_DEL && event.getAction() == KeyEvent.ACTION_DOWN) {
+                    if (otpBoxes.get(currentIndex).getText().toString().isEmpty() && currentIndex > 0) {
+                        otpBoxes.get(currentIndex - 1).requestFocus();
+                        otpBoxes.get(currentIndex - 1).setText("");
+                        return true;
+                    }
+                }
+                return false;
+            });
+        }
+    }
+
+    /**
+     * Hiển thị CardView tương ứng với từng bước (1, 2 hoặc 3)
+     */
+    private void showStep(int step) {
+        binding.includeStep1.getRoot().setVisibility(step == 1 ? View.VISIBLE : View.GONE);
+        binding.includeStep2.getRoot().setVisibility(step == 2 ? View.VISIBLE : View.GONE);
+        binding.includeStep3.getRoot().setVisibility(step == 3 ? View.VISIBLE : View.GONE);
+
+        if (step == 2) {
+            otpBoxes.get(0).requestFocus();
+        }
+    }
+
+    /**
+     * Lấy chuỗi OTP 6 số từ các ô nhập
+     */
+    private String getOtpCode() {
+        StringBuilder sb = new StringBuilder();
+        for (EditText editText : otpBoxes) {
+            sb.append(editText.getText().toString().trim());
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Xóa nội dung các ô OTP
+     */
+    private void clearOtpBoxes() {
+        for (EditText editText : otpBoxes) {
+            editText.setText("");
+        }
+        if (!otpBoxes.isEmpty()) {
+            otpBoxes.get(0).requestFocus();
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
+    }
+}
