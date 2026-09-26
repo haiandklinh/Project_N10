@@ -3,10 +3,10 @@ package com.example.attendanceapp.data.dto.request;
 import com.google.gson.annotations.SerializedName;
 
 public class VerifyOtpRequest {
-    @SerializedName("phone")
+    @SerializedName("phone_number")
     private String phone;
     
-    @SerializedName("OTP")
+    @SerializedName("otp")
     private String otp;
 
     public VerifyOtpRequest(String phone, String otp) {

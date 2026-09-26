@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName;
 
 public class CheckPhoneRequest {
 
-    @SerializedName("phone")
+    @SerializedName("phone_number")
     private String phone;
 
     public CheckPhoneRequest() {

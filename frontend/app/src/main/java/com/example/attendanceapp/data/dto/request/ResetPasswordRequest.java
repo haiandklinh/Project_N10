@@ -2,7 +2,7 @@ package com.example.attendanceapp.data.dto.request;
 
 import com.google.gson.annotations.SerializedName;
 
-public class ResetPasswordRequest {
+public class  ResetPasswordRequest {
     private String phone;
     
     @SerializedName("password")

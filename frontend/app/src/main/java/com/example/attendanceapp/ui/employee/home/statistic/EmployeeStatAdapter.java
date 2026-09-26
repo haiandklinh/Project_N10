@@ -52,6 +52,7 @@ public class EmployeeStatAdapter extends RecyclerView.Adapter<EmployeeStatAdapte
         public void bind(EmployeeStatItem item) {
             binding.cardRoot.setCardBackgroundColor(item.getBgColor());
             binding.ivStatIcon.setImageResource(item.getIconRes());
+            binding.ivStatIcon.setColorFilter(item.getTextColor());
             binding.tvStatValue.setText(item.getValue());
             binding.tvStatValue.setTextColor(item.getTextColor());
             binding.tvStatUnit.setText(item.getUnit());

@@ -5,7 +5,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     style="@style/MainCard"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="16dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -19,28 +20,30 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:textColor="?attr/colorOnSurface"
+            android:textSize="16sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="Phân bố tình trạng (tuần)" />
 
-        <!-- Biểu đồ PieChart -->
+        <!-- Biểu đồ Donut (PieChart) -->
         <com.github.mikephil.charting.charts.PieChart
             android:id="@+id/pie_chart"
-            android:layout_width="140dp"
-            android:layout_height="140dp"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
             android:layout_marginTop="@dimen/spacing_m"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tv_donut_title" />
 
-        <!-- Text hiển thị giữa Donut Chart (Ràng buộc căn giữa theo PieChart) -->
+        <!-- Hiển thị Tổng số ngày giữa Donut Chart -->
         <TextView
             android:id="@+id/tv_center_total_days"
             style="@style/TitleTextLargeStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="?attr/colorOnSurface"
+            android:textSize="20sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toTopOf="@id/tv_center_unit"
             app:layout_constraintEnd_toEndOf="@id/pie_chart"
@@ -56,6 +59,7 @@
             android:layout_height="wrap_content"
             android:text="ngày"
             android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="11sp"
             app:layout_constraintBottom_toBottomOf="@id/pie_chart"
             app:layout_constraintEnd_toEndOf="@id/pie_chart"
             app:layout_constraintStart_toStartOf="@id/pie_chart"
@@ -70,15 +74,17 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/spacing_l"
-            android:drawablePadding="@dimen/spacing_xs"
+            android:drawablePadding="8dp"
             android:text="Đúng giờ"
             android:textColor="?attr/colorOnSurface"
+            android:textSize="13sp"
             app:drawableStartCompat="@drawable/ic_circle"
+            app:drawableTint="?attr/colorAttendancePresent"
             app:layout_constraintBottom_toTopOf="@id/tv_label_late"
             app:layout_constraintEnd_toStartOf="@id/tv_count_on_time"
             app:layout_constraintStart_toEndOf="@id/pie_chart"
             app:layout_constraintTop_toTopOf="@id/pie_chart"
-            app:layout_constraintVertical_chainStyle="spread_inside" />
+            app:layout_constraintVertical_chainStyle="spread" />
 
         <TextView
             android:id="@+id/tv_count_on_time"
@@ -86,6 +92,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="?attr/colorOnSurface"
+            android:textSize="13sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="@id/tv_label_on_time"
             app:layout_constraintEnd_toEndOf="parent"
@@ -99,10 +106,12 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/spacing_l"
-            android:drawablePadding="@dimen/spacing_xs"
+            android:drawablePadding="8dp"
             android:text="Đi muộn"
             android:textColor="?attr/colorOnSurface"
+            android:textSize="13sp"
             app:drawableStartCompat="@drawable/ic_circle"
+            app:drawableTint="?attr/colorAttendanceLate"
             app:layout_constraintBottom_toTopOf="@id/tv_label_early"
             app:layout_constraintEnd_toStartOf="@id/tv_count_late"
             app:layout_constraintStart_toEndOf="@id/pie_chart"
@@ -114,6 +123,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="?attr/colorOnSurface"
+            android:textSize="13sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="@id/tv_label_late"
             app:layout_constraintEnd_toEndOf="parent"
@@ -127,10 +137,12 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/spacing_l"
-            android:drawablePadding="@dimen/spacing_xs"
+            android:drawablePadding="8dp"
             android:text="Về sớm"
             android:textColor="?attr/colorOnSurface"
+            android:textSize="13sp"
             app:drawableStartCompat="@drawable/ic_circle"
+            app:drawableTint="?attr/colorAttendanceEarlyLeave"
             app:layout_constraintBottom_toTopOf="@id/tv_label_absent"
             app:layout_constraintEnd_toStartOf="@id/tv_count_early"
             app:layout_constraintStart_toEndOf="@id/pie_chart"
@@ -142,6 +154,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="?attr/colorOnSurface"
+            android:textSize="13sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="@id/tv_label_early"
             app:layout_constraintEnd_toEndOf="parent"
@@ -155,10 +168,12 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/spacing_l"
-            android:drawablePadding="@dimen/spacing_xs"
+            android:drawablePadding="8dp"
             android:text="Vắng mặt"
             android:textColor="?attr/colorOnSurface"
+            android:textSize="13sp"
             app:drawableStartCompat="@drawable/ic_circle"
+            app:drawableTint="?attr/colorAttendanceAbsent"
             app:layout_constraintBottom_toBottomOf="@id/pie_chart"
             app:layout_constraintEnd_toStartOf="@id/tv_count_absent"
             app:layout_constraintStart_toEndOf="@id/pie_chart"
@@ -170,6 +185,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="?attr/colorOnSurface"
+            android:textSize="13sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="@id/tv_label_absent"
             app:layout_constraintEnd_toEndOf="parent"

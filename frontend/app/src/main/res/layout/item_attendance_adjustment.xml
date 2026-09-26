@@ -3,18 +3,17 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    style="@style/ItemCard"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="@dimen/spacing_m"
-    android:layout_marginBottom="@dimen/spacing_m"
-    style="@style/ItemCard">
+    android:layout_marginBottom="@dimen/spacing_m">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="@dimen/spacing_l">
 
-        <!-- Badge Loại điều chỉnh (Ví dụ: Thiếu check-in) -->
+        <!-- 1. Badge Loại điều chỉnh -->
         <com.google.android.material.chip.Chip
             android:id="@+id/tv_reason_type"
             style="@style/ChipStatusStyle"
@@ -25,7 +24,7 @@
             app:layout_constraintTop_toTopOf="parent"
             tools:text="Thiếu check-in" />
 
-        <!-- Badge Trạng thái (Ví dụ: Chờ duyệt) -->
+        <!-- 2. Badge Trạng thái -->
         <com.google.android.material.chip.Chip
             android:id="@+id/tv_status"
             style="@style/ChipStatusStyle"
@@ -33,49 +32,59 @@
             android:layout_height="wrap_content"
             android:textSize="@dimen/text_size_label_small"
             android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="@+id/tv_reason_type"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="Chờ duyệt" />
 
-        <!-- Ngày cần điều chỉnh -->
+        <!-- DIVIDER 1 (Ngang): Tách phần Chip và Ngày điều chỉnh -->
+        <View
+            android:id="@+id/divider_chip"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_marginTop="@dimen/spacing_s"
+            android:background="?attr/colorPrimary"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_reason_type" />
+
+        <!-- 3. Ngày cần điều chỉnh -->
         <TextView
             android:id="@+id/tv_request_date"
+            style="@style/BodyTextLargeStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_m"
+            android:layout_marginTop="@dimen/spacing_s"
             android:textColor="?attr/colorOnSurface"
-            style="@style/BodyTextLargeStyle"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_reason_type"
+            app:layout_constraintTop_toBottomOf="@id/divider_chip"
             tools:text="Thứ Năm, 10/09/2026" />
 
-        <!-- Layout Giờ Check-in / Check-out -->
+        <!-- 4. Layout Giờ Check-in / Check-out -->
         <LinearLayout
             android:id="@+id/layout_times"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_s"
+            android:gravity="center_vertical"
             android:orientation="horizontal"
             app:layout_constraintTop_toBottomOf="@id/tv_request_date">
 
-            <!-- Check-in Block -->
             <!-- Check-in Block Card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/container_check_in"
                 style="@style/Widget.Material3.CardView.Filled"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="@dimen/spacing_s"
+                android:layout_weight="1"
                 app:cardBackgroundColor="@color/attendance_present_container"
                 app:cardCornerRadius="@dimen/radius_m"
                 app:cardElevation="0dp"
                 app:strokeWidth="0dp">
 
                 <LinearLayout
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:orientation="vertical"
@@ -100,12 +109,21 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- DIVIDER 2 (Dọc): Tách giữa Check-in và Check-out -->
+            <View
+                android:id="@+id/divider_check_in_out"
+                android:layout_width="1dp"
+                android:layout_height="32dp"
+                android:layout_marginHorizontal="@dimen/spacing_s"
+                android:background="?attr/colorPrimary" />
+
             <!-- Check-out Block Card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/container_check_out"
                 style="@style/Widget.Material3.CardView.Filled"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:visibility="gone"
                 app:cardBackgroundColor="@color/attendance_early_leave_container"
                 app:cardCornerRadius="@dimen/radius_m"
@@ -114,7 +132,7 @@
                 tools:visibility="visible">
 
                 <LinearLayout
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:orientation="vertical"
@@ -141,42 +159,64 @@
 
         </LinearLayout>
 
-        <!-- Lý do chi tiết -->
-        <TextView
-            android:id="@+id/tv_reason_detail"
+        <!-- DIVIDER 3 (Ngang): Tách phần Time và Nội dung mô tả -->
+        <View
+            android:id="@+id/divider_time_reason"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="1dp"
             android:layout_marginTop="@dimen/spacing_m"
-            android:textColor="?attr/colorOnSurfaceVariant"
-            android:background="@drawable/bg_otp_box"
-            android:padding="@dimen/spacing_s"
-            style="@style/BodyTextMediumStyle"
+            android:background="?attr/colorPrimary"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/layout_times"
-            tools:text="Quên chấm công vào do họp khách hàng ngay đầu giờ sáng, có thể xác nhận qua lịch Google Meet." />
+            app:layout_constraintTop_toBottomOf="@id/layout_times" />
 
-        <!-- Ngày gửi -->
-        <TextView
-            android:id="@+id/tv_send"
-            style="@style/BodyTextSmallStyle"
-            android:layout_width="wrap_content"
+        <!-- 5. Lý do chi tiết -->
+        <!-- 5. Lý do chi tiết (Đã bọc trong MaterialCardView) -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_reason_detail"
+            style="@style/MainCard"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_s"
-            android:text="Ngày gửi: "
-            android:textColor="?attr/colorOnSurfaceVariant"
+            app:cardCornerRadius="@dimen/radius_m"
+            app:strokeColor="?attr/colorPrimaryContainer"
+            app:strokeWidth="@dimen/border_width_s"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_reason_detail" />
+            app:layout_constraintTop_toBottomOf="@id/divider_time_reason">
 
+            <TextView
+                android:id="@+id/tv_reason_detail"
+                style="@style/BodyTextMediumStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="@dimen/spacing_s"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                tools:text="Quên chấm công vào do họp khách hàng ngay đầu giờ sáng, có thể xác nhận qua lịch Google Meet." />
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- 6. Footer: Ngày gửi -->
         <TextView
             android:id="@+id/tv_created_date"
             style="@style/BodyTextSmallStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_s"
             android:textColor="?attr/colorOnSurfaceVariant"
-            app:layout_constraintBaseline_toBaselineOf="@id/tv_send"
-            app:layout_constraintStart_toEndOf="@id/tv_send"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/card_reason_detail"
             tools:text="11/9/2026" />
+
+        <TextView
+            android:id="@+id/tv_send"
+            style="@style/BodyTextSmallStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ngày gửi: "
+            android:textColor="?attr/colorOnSurfaceVariant"
+            app:layout_constraintBaseline_toBaselineOf="@id/tv_created_date"
+            app:layout_constraintEnd_toStartOf="@id/tv_created_date" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

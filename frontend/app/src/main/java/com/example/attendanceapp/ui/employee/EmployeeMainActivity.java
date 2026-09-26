@@ -87,7 +87,7 @@ public class EmployeeMainActivity extends AppCompatActivity {
                     v.getPaddingLeft(),
                     v.getPaddingTop(),
                     v.getPaddingRight(),
-                    navigationBars.bottom
+                    v.getPaddingBottom()
             );
             return insets;
         });

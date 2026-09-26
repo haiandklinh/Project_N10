@@ -10,10 +10,10 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.attendanceapp.R;
+import com.example.attendanceapp.core.utils.ColorUtil;
 import com.example.attendanceapp.databinding.ItemScheduleWeekDayBinding;
 import com.example.attendanceapp.domain.model.AttendanceStatus;
 import com.example.attendanceapp.domain.model.WeekDay;
-import com.google.android.material.color.MaterialColors;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -101,31 +101,37 @@ public class EmployeeScheduleWeekDayAdapter extends RecyclerView.Adapter<Employe
             setupStatusIcon(weekDay.getStatus());
 
             // 4. Xử lý UI Trạng thái Được chọn (Selected) vs Chưa chọn (Unselected)
+            int strokeWidth = 0;
+            int strokeColor = 0;
+            if (date.equals(LocalDate.now())) {
+                strokeWidth = (int) (2 * context.getResources().getDisplayMetrics().density); // 2dp
+                strokeColor = ColorUtil.getThemeColor(context, com.google.android.material.R.attr.colorSecondary);
+            }
+            binding.cardDayItem.setStrokeWidth(strokeWidth);
+            binding.cardDayItem.setStrokeColor(strokeColor);
+
             if (isSelected) {
                 // Card trắng nổi bật khi chọn
                 // Lấy màu từ Theme Attribute (R.attr.colorPrimaryContainer)
-                int containerColor = MaterialColors.getColor(
+                int containerColor = ColorUtil.getThemeColor(
                         context,
-                        com.google.android.material.R.attr.colorPrimaryContainer,
-                        0 // Giá trị màu mặc định nếu không tìm thấy attribute
+                        com.google.android.material.R.attr.colorPrimaryContainer
                 );
                 // Gán màu vào MaterialCardView
                 binding.cardDayItem.setCardBackgroundColor(containerColor);
 
-                int primaryColor = MaterialColors.getColor(context, com.google.android.material.R.attr.colorSecondary, 0);
+                int primaryColor = ColorUtil.getThemeColor(context, com.google.android.material.R.attr.colorSecondary);
                 binding.tvDayOfWeek.setTextColor(primaryColor);
                 binding.tvDayNumber.setTextColor(primaryColor);
-                binding.ivDayStatus.setImageTintList(ColorStateList.valueOf(primaryColor));
             } else {
                 // Background mờ khi không chọn
                 binding.cardDayItem.setCardBackgroundColor(
-                        MaterialColors.getColor(context, com.google.android.material.R.attr.colorSurfaceVariant, 0)
+                        ColorUtil.getThemeColor(context, com.google.android.material.R.attr.colorSurfaceVariant)
                 );
 
-                int secondaryColor = MaterialColors.getColor(context, com.google.android.material.R.attr.colorSecondary, 0);
+                int secondaryColor = ColorUtil.getThemeColor(context, com.google.android.material.R.attr.colorSecondary);
                 binding.tvDayOfWeek.setTextColor(secondaryColor);
                 binding.tvDayNumber.setTextColor(secondaryColor);
-                binding.ivDayStatus.setImageTintList(ColorStateList.valueOf(secondaryColor));
             }
 
             // 5. Sự kiện Click ô ngày
@@ -151,29 +157,13 @@ public class EmployeeScheduleWeekDayAdapter extends RecyclerView.Adapter<Employe
         }
 
         private void setupStatusIcon(AttendanceStatus status) {
-            int iconRes;
-
-            switch (status) {
-                case PRESENT:
-                case LEAVE:
-                case EARLY_LEAVE:
-                    iconRes = R.drawable.ic_check;
-                    break;
-                case LATE:
-                    iconRes = R.drawable.ic_warning;
-                    break;
-                case ABSENT:
-                    iconRes = R.drawable.ic_close;
-                    break;
-                case NOT_CHECKED:
-                case WEEKEND:
-                default:
-                    iconRes = R.drawable.ic_remove; // Chưa chấm công hoặc cuối tuần -> ic_remove
-                    break;
-            }
+            Context context = itemView.getContext();
+            int iconRes = status.getIconRes();
+            int color = ColorUtil.getThemeColor(context, status.getColorAttr());
 
             binding.ivDayStatus.setVisibility(View.VISIBLE);
             binding.ivDayStatus.setImageResource(iconRes);
+            binding.ivDayStatus.setImageTintList(ColorStateList.valueOf(color));
         }
     }
 }

@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName;
 
 public class SendOtpRequest {
 
-    @SerializedName("phone")
+    @SerializedName("phone_number")
     private String phone;
 
     public SendOtpRequest() {

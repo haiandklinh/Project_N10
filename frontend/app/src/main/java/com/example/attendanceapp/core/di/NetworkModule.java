@@ -28,7 +28,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class NetworkModule {
 
     // TODO: đổi thành URL API thật của bạn
-    private static final String BASE_URL = "https://your-api-domain.com/api/";
+    private static final String BASE_URL = "http://192.168.1.226:8000/auth/";
 
     @Provides
     @Singleton
