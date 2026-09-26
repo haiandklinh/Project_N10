@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_manager"
+    app:startDestination="@id/managerHomeFragment">
+
+    <!-- ================================================================= -->
+    <!-- 1. NHÓM MÀN HÌNH CHÍNH (BOTTOM NAVIGATION DESTINATIONS)          -->
+    <!-- ================================================================= -->
+
+    <!-- Tab 1: Trang chủ / Tổng quan (Dashboard) -->
+    <fragment
+        android:id="@+id/managerHomeFragment"
+        android:name="com.example.attendanceapp.ui.manager.home.ManagerHomeFragment"
+        android:label="@string/nav_manager_dashboard"
+        tools:layout="@layout/fragment_manager_home">
+        
+        <action
+            android:id="@+id/action_managerHomeFragment_to_managerPayrollFragment"
+            app:destination="@id/managerPayrollFragment" />
+        <action
+            android:id="@+id/action_managerHomeFragment_to_managerRewardPunishFragment"
+            app:destination="@id/managerRewardPunishFragment" />
+        <action
+            android:id="@+id/action_managerHomeFragment_to_managerJoinRequestFragment"
+            app:destination="@id/managerJoinRequestFragment" />
+        <action
+            android:id="@+id/action_managerHomeFragment_to_managerStatisticFragment"
+            app:destination="@id/managerStatisticFragment" />
+    </fragment>
+
+    <!-- Tab 2: Phê duyệt (Approvals) -->
+    <fragment
+        android:id="@+id/managerApprovalFragment"
+        android:name="com.example.attendanceapp.ui.manager.approval.ManagerApprovalFragment"
+        android:label="@string/nav_manager_approvals"
+        tools:layout="@layout/fragment_manager_approval" />
+
+    <!-- Tab 3: Lịch trình & Quản lý ca làm (Shift Management) -->
+    <fragment
+        android:id="@+id/managerScheduleFragment"
+        android:name="com.example.attendanceapp.ui.manager.schedule.ManagerScheduleFragment"
+        android:label="@string/nav_manager_schedule"
+        tools:layout="@layout/fragment_manager_schedule" />
+
+    <!-- Tab 4: Nhân sự (Employee Management) -->
+    <fragment
+        android:id="@+id/managerHumanFragment"
+        android:name="com.example.attendanceapp.ui.manager.human.ManagerHumanFragment"
+        android:label="@string/nav_manager_employees"
+        tools:layout="@layout/fragment_manager_human" />
+
+    <!-- Tab 5: Hồ sơ cá nhân (Profile) -->
+    <fragment
+        android:id="@+id/managerProfileFragment"
+        android:name="com.example.attendanceapp.ui.manager.profile.ManagerProfileFragment"
+        android:label="@string/nav_profile"
+        tools:layout="@layout/fragment_manager_profile">
+        
+        <action
+            android:id="@+id/action_managerProfileFragment_to_managerStatisticFragment"
+            app:destination="@id/managerStatisticFragment" />
+        <action
+            android:id="@+id/action_managerProfileFragment_to_managerEditProfileFragment"
+            app:destination="@id/managerEditProfileFragment" />
+        <action
+            android:id="@+id/action_managerProfileFragment_to_managerChangePasswordFragment"
+            app:destination="@id/managerChangePasswordFragment" />
+    </fragment>
+
+
+    <!-- ================================================================= -->
+    <!-- 2. NHÓM MÀN HÌNH CHI TIẾT & CHỨC NĂNG PHỤ (FULLSCREEN DESTINATIONS) -->
+    <!-- ================================================================= -->
+
+    <!-- Quản lý Tiền Lương -->
+    <fragment
+        android:id="@+id/managerPayrollFragment"
+        android:name="com.example.attendanceapp.ui.manager.payroll.ManagerPayrollFragment"
+        android:label="Quản lý tiền lương"
+        tools:layout="@layout/fragment_manager_payroll" />
+
+    <!-- Ghi nhận Thưởng Phạt -->
+    <fragment
+        android:id="@+id/managerRewardPunishFragment"
+        android:name="com.example.attendanceapp.ui.manager.reward.ManagerRewardPunishFragment"
+        android:label="Quyết định thưởng phạt"
+        tools:layout="@layout/fragment_manager_reward_punish" />
+
+    <!-- Danh sách phê duyệt yêu cầu tham gia công ty -->
+    <fragment
+        android:id="@+id/managerJoinRequestFragment"
+        android:name="com.example.attendanceapp.ui.manager.human.ManagerJoinRequestFragment"
+        android:label="Yêu cầu tham gia"
+        tools:layout="@layout/fragment_manager_join_request" />
+
+    <!-- Báo cáo Thống kê đồ thị -->
+    <fragment
+        android:id="@+id/managerStatisticFragment"
+        android:name="com.example.attendanceapp.ui.manager.statistic.ManagerStatisticFragment"
+        android:label="Báo cáo thống kê"
+        tools:layout="@layout/fragment_manager_statistic" />
+
+    <!-- Chỉnh sửa hồ sơ Quản lý -->
+    <fragment
+        android:id="@+id/managerEditProfileFragment"
+        android:name="com.example.attendanceapp.ui.manager.profile.ManagerEditProfileFragment"
+        android:label="Chỉnh sửa hồ sơ"
+        tools:layout="@layout/fragment_edit_profile" />
+
+    <!-- Đổi mật khẩu Quản lý -->
+    <fragment
+        android:id="@+id/managerChangePasswordFragment"
+        android:name="com.example.attendanceapp.ui.manager.profile.ManagerChangePasswordFragment"
+        android:label="Đổi mật khẩu"
+        tools:layout="@layout/fragment_change_password" />
+
+</navigation>

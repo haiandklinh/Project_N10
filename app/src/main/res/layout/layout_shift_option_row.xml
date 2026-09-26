@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="@dimen/spacing_m">
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_icon"
+        style="@style/IconViewCard"
+        android:layout_width="@dimen/icon_container_l"
+        android:layout_height="@dimen/icon_container_l"
+        app:cardBackgroundColor="?attr/colorPrimaryContainer"
+        app:cardCornerRadius="100dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <ImageView
+            android:id="@+id/iv_icon"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="@dimen/spacing_m"
+            android:src="@drawable/ic_schedule"
+            app:tint="?attr/colorPrimary" />
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <TextView
+        android:id="@+id/tv_shift_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/spacing_m"
+        android:textSize="@dimen/text_size_body_large"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toStartOf="@id/iv_check"
+        app:layout_constraintStart_toEndOf="@id/card_icon"
+        app:layout_constraintTop_toTopOf="@id/card_icon"
+        tools:text="Ca Sáng" />
+
+    <TextView
+        android:id="@+id/tv_shift_time"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/spacing_m"
+        android:layout_marginTop="@dimen/spacing_3xs"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:textSize="@dimen/text_size_body_small"
+        app:layout_constraintEnd_toStartOf="@id/iv_check"
+        app:layout_constraintStart_toEndOf="@id/card_icon"
+        app:layout_constraintTop_toBottomOf="@id/tv_shift_name"
+        app:layout_constraintBottom_toBottomOf="@id/card_icon"
+        tools:text="08:00 - 12:00" />
+
+    <ImageView
+        android:id="@+id/iv_check"
+        android:layout_width="@dimen/icon_size_l"
+        android:layout_height="@dimen/icon_size_l"
+        android:contentDescription="@null"
+        android:src="@drawable/ic_check_circle"
+        android:visibility="invisible"
+        app:tint="?attr/colorPrimary"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        tools:visibility="visible" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

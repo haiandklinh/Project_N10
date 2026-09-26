@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <!-- ==================== CHẤM CÔNG GẦN ĐÂY ==================== -->
+    <TextView
+        android:id="@+id/tv_recent_label"
+        style="@style/TitleTextMediumStyle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Chấm công gần đây"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/tv_see_all"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tv_see_all"
+        style="@style/TitleTextSmallStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?attr/selectableItemBackground"
+        android:padding="@dimen/spacing_3xs"
+        android:text="Xem tất cả"
+        android:textColor="?attr/colorPrimary"
+        android:textSize="@dimen/text_size_label_medium"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@id/tv_recent_label"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/tv_recent_label" />
+
+    <!-- Container của Recent -->
+    <FrameLayout
+        android:id="@+id/recent_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_s"
+        app:layout_constraintTop_toBottomOf="@id/tv_recent_label"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_recent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:nestedScrollingEnabled="false"
+            tools:itemCount="4"
+            tools:listitem="@layout/item_home_recent_attendance" />
+
+        <include
+            android:id="@+id/include_empty_state"
+            layout="@layout/layout_empty_state"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
+
+    </FrameLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

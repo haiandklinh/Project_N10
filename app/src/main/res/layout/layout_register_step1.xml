@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/spacing_xl">
+
+    <!-- Progress Indicator: Bước 1/3 đang active -->
+    <LinearLayout
+        android:id="@+id/layoutProgress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/spacing_xl"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:padding="@dimen/spacing_2xl">
+
+        <TextView
+            android:id="@+id/step1Indicator"
+            android:layout_width="@dimen/spacing_3xl"
+            android:layout_height="@dimen/spacing_3xl"
+            android:background="@drawable/bg_dot_active"
+            android:contentDescription="@string/auth_step_1_desc"
+            android:gravity="center"
+            android:text="1"
+            android:textColor="@color/white"
+            android:textStyle="bold" />
+
+        <View
+            android:id="@+id/line1"
+            android:layout_width="@dimen/spacing_4xl"
+            android:layout_height="@dimen/spacing_3xs"
+            android:layout_marginHorizontal="@dimen/spacing_s"
+            android:background="?attr/colorOutline" />
+
+        <TextView
+            android:id="@+id/step2Indicator"
+            android:layout_width="@dimen/spacing_3xl"
+            android:layout_height="@dimen/spacing_3xl"
+            android:background="@drawable/bg_dot_inactive"
+            android:contentDescription="@string/auth_step_2_desc"
+            android:gravity="center"
+            android:text="2"
+            android:textColor="?attr/colorPrimary"
+            android:textStyle="bold" />
+
+        <View
+            android:id="@+id/line2"
+            android:layout_width="@dimen/spacing_4xl"
+            android:layout_height="@dimen/spacing_3xs"
+            android:layout_marginHorizontal="@dimen/spacing_s"
+            android:background="?attr/colorOutline" />
+
+        <TextView
+            android:id="@+id/step3Indicator"
+            android:layout_width="@dimen/spacing_3xl"
+            android:layout_height="@dimen/spacing_3xl"
+            android:background="@drawable/bg_dot_inactive"
+            android:contentDescription="@string/auth_step_3_desc"
+            android:gravity="center"
+            android:text="3"
+            android:textColor="?attr/colorPrimary"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvStepTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_s"
+        android:gravity="center"
+        android:text="@string/auth_step1_title"
+        android:textSize="@dimen/text_size_title_medium"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tvStepSubtitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_3xs"
+        android:layout_marginBottom="@dimen/spacing_m"
+        android:gravity="center"
+        android:text="@string/auth_step1_subtitle"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:textSize="@dimen/text_size_body_medium" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="@dimen/spacing_xl">
+
+        <!-- Họ và tên -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilFullName"
+            style="@style/AppTextInputLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/auth_full_name_hint"
+            app:counterEnabled="true"
+            app:counterMaxLength="30"
+            app:errorEnabled="true"
+            app:startIconDrawable="@drawable/ic_user">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edtFullName"
+                style="@style/AppTextInputEditText"
+                android:inputType="textPersonName|textCapWords"
+                android:maxLength="30" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Tên công ty / tổ chức -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilCompanyName"
+            style="@style/AppTextInputLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_m"
+            android:hint="@string/auth_company_name_hint"
+            app:counterEnabled="true"
+            app:counterMaxLength="50"
+            app:errorEnabled="true"
+            app:startIconDrawable="@drawable/ic_home">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edtCompanyName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/AppTextInputEditText"
+                android:inputType="text|textCapWords" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnNextStep1"
+            style="@style/ButtonMaxWidthStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_xl"
+            android:text="@string/action_next"
+            app:cornerRadius="@dimen/radius_full" />
+
+        <!-- Link chuyển sang màn "Gia nhập công ty bằng mã" cho nhân viên -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_l"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/auth_already_have_code_prefix"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+
+            <TextView
+                android:id="@+id/tvGoToJoinCompany"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_3xs"
+                android:background="?attr/selectableItemBackground"
+                android:padding="@dimen/spacing_3xs"
+                android:text="@string/auth_join_company_link"
+                android:textColor="?attr/colorPrimary"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

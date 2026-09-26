@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layout_list_view"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintTop_toBottomOf="@id/header_section">
+
+    <!-- ChipGroup tự cuộn ngang, bỏ HorizontalScrollView -->
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/chip_group_filter"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_s"
+        android:paddingHorizontal="@dimen/spacing_l"
+        android:clipToPadding="false"
+        app:singleLine="true"
+        app:singleSelection="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_all"
+            style="@style/ChipFilterStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="@string/history_filter_all" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_present"
+            style="@style/ChipFilterStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/history_filter_present" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_late"
+            style="@style/ChipFilterStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/history_filter_late" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_absent"
+            style="@style/ChipFilterStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/history_filter_absent" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_early"
+            style="@style/ChipFilterStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/history_filter_early" />
+    </com.google.android.material.chip.ChipGroup>
+
+    <!-- Container chứa RecyclerView & Empty State -->
+    <FrameLayout
+        android:id="@+id/history_container"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/spacing_2xs"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/chip_group_filter">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_history"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:paddingHorizontal="@dimen/spacing_xs"
+            android:paddingBottom="@dimen/spacing_l"
+            tools:itemCount="5"
+            tools:listitem="@layout/item_history_attendance" />
+
+        <include
+            android:id="@+id/include_empty_state"
+            layout="@layout/layout_empty_state"
+            android:visibility="gone" />
+    </FrameLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

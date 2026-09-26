@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/spacing_xl">
+
+    <!-- Progress Indicator: cả 3 bước hoàn tất/active -->
+    <LinearLayout
+        android:id="@+id/layoutProgress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/spacing_xl"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:padding="@dimen/spacing_2xl">
+
+        <TextView
+            android:id="@+id/step1Indicator"
+            android:layout_width="@dimen/spacing_3xl"
+            android:layout_height="@dimen/spacing_3xl"
+            android:background="@drawable/bg_dot_active"
+            android:contentDescription="@string/auth_step_1_desc"
+            android:gravity="center"
+            android:text="1"
+            android:textColor="@color/white"
+            android:textStyle="bold" />
+
+        <View
+            android:id="@+id/line1"
+            android:layout_width="@dimen/spacing_4xl"
+            android:layout_height="@dimen/spacing_3xs"
+            android:layout_marginHorizontal="@dimen/spacing_s"
+            android:background="?attr/colorPrimary" />
+
+        <TextView
+            android:id="@+id/step2Indicator"
+            android:layout_width="@dimen/spacing_3xl"
+            android:layout_height="@dimen/spacing_3xl"
+            android:background="@drawable/bg_dot_active"
+            android:contentDescription="@string/auth_step_2_desc"
+            android:gravity="center"
+            android:text="2"
+            android:textColor="@color/white"
+            android:textStyle="bold" />
+
+        <View
+            android:id="@+id/line2"
+            android:layout_width="@dimen/spacing_4xl"
+            android:layout_height="@dimen/spacing_3xs"
+            android:layout_marginHorizontal="@dimen/spacing_s"
+            android:background="?attr/colorPrimary" />
+
+        <TextView
+            android:id="@+id/step3Indicator"
+            android:layout_width="@dimen/spacing_3xl"
+            android:layout_height="@dimen/spacing_3xl"
+            android:background="@drawable/bg_dot_active"
+            android:contentDescription="@string/auth_step_3_desc"
+            android:gravity="center"
+            android:text="3"
+            android:textColor="@color/white"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvStepTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_s"
+        android:gravity="center"
+        android:text="@string/auth_step3_title"
+        android:textSize="@dimen/text_size_title_medium"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tvStepSubtitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_3xs"
+        android:layout_marginBottom="@dimen/spacing_m"
+        android:gravity="center"
+        android:text="@string/auth_step3_subtitle"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:textSize="@dimen/text_size_body_medium" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="@dimen/spacing_xl">
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilPassword"
+            style="@style/AppTextInputLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/auth_password_hint"
+            app:endIconMode="password_toggle"
+            app:errorEnabled="true"
+            app:helperText="@string/auth_password_helper"
+            app:helperTextEnabled="true"
+            app:startIconDrawable="@drawable/ic_lock">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edtPassword"
+                style="@style/AppTextInputEditText"
+                android:inputType="textPassword" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilConfirmPassword"
+            style="@style/AppTextInputLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_m"
+            android:hint="@string/auth_confirm_password_hint"
+            app:endIconMode="password_toggle"
+            app:errorEnabled="true"
+            app:startIconDrawable="@drawable/ic_lock">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edtConfirmPassword"
+                style="@style/AppTextInputEditText"
+                android:inputType="textPassword" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Đồng ý điều khoản: bắt buộc tick mới bật được nút Đăng ký -->
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/cbAcceptTerms"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_l"
+            android:text="@string/auth_accept_terms"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="@dimen/text_size_body_small" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_l"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/tvBackStep2"
+                style="@style/ButtonOutlinedSmallStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="@dimen/spacing_xl"
+                android:text="@string/action_back"
+                app:strokeColor="?attr/colorPrimary" />
+
+            <!-- Vô hiệu hoá cho tới khi tick đồng ý điều khoản -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnRegisterFinal"
+                style="@style/ButtonFilledSmallStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:enabled="false"
+                android:text="@string/auth_register_button" />
+        </LinearLayout>
+
+        <!-- Loading khi đang gọi API đăng ký -->
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:id="@+id/progressRegister"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="@dimen/spacing_m"
+            android:indeterminate="true"
+            android:visibility="gone" />
+    </LinearLayout>
+</LinearLayout>
