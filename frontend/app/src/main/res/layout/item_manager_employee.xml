@@ -14,18 +14,20 @@
         android:layout_height="wrap_content"
         android:padding="@dimen/spacing_m">
 
+        <!-- Avatar: Căn giữa dọc theo parent -->
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/iv_avatar"
             android:layout_width="@dimen/avatar_size_m"
             android:layout_height="@dimen/avatar_size_m"
+            android:contentDescription="@null"
             android:scaleType="centerCrop"
             android:src="@drawable/ic_avatar"
-            android:contentDescription="@null"
-            app:shapeAppearanceOverlay="@style/ImageCircleStyle"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            app:shapeAppearanceOverlay="@style/ImageCircleStyle" />
 
+        <!-- Tên: Top giằng lên Top parent, Bottom nối Top tv_position -->
         <TextView
             android:id="@+id/tv_name"
             style="@style/TitleTextMediumStyle"
@@ -34,48 +36,66 @@
             android:layout_marginStart="@dimen/spacing_m"
             android:ellipsize="end"
             android:maxLines="1"
+            app:layout_constraintBottom_toTopOf="@id/tv_position"
             app:layout_constraintEnd_toStartOf="@id/chip_status"
             app:layout_constraintStart_toEndOf="@id/iv_avatar"
-            app:layout_constraintTop_toTopOf="@id/iv_avatar"
+            app:layout_constraintTop_toTopOf="parent"
             tools:text="Phạm Thu Hà" />
 
+        <!-- Chức vụ: Nằm giữa tv_name và iv_phone/tv_phone -->
         <TextView
             android:id="@+id/tv_position"
             style="@style/BodyTextSmallStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/spacing_m"
             android:ellipsize="end"
             android:maxLines="1"
+            android:layout_marginVertical="@dimen/spacing_3xs"
+            app:layout_constraintBottom_toTopOf="@id/tv_phone"
             app:layout_constraintEnd_toStartOf="@id/chip_status"
-            app:layout_constraintStart_toEndOf="@id/iv_avatar"
+            app:layout_constraintStart_toStartOf="@id/tv_name"
             app:layout_constraintTop_toBottomOf="@id/tv_name"
             tools:text="Thu ngân · Cửa hàng Q1" />
 
+        <!-- Icon điện thoại: Đã tách riêng thành ImageView -->
+        <ImageView
+            android:id="@+id/iv_phone_icon"
+            android:layout_width="@dimen/icon_size_s"
+            android:layout_height="@dimen/icon_size_s"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_phone"
+            app:layout_constraintBottom_toBottomOf="@id/tv_phone"
+            app:layout_constraintStart_toStartOf="@id/tv_name"
+            app:layout_constraintTop_toTopOf="@id/tv_phone"
+            app:tint="?attr/colorPrimary" />
+
+        <!-- SĐT: Giằng Bottom xuống Bottom parent để hoàn tất chuỗi Pack vertical chain -->
         <TextView
             android:id="@+id/tv_phone"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/spacing_m"
-            android:layout_marginTop="1dp"
-            android:drawablePadding="4dp"
-            android:textColor="?attr/colorOnSurfaceVariant"
+            android:layout_marginStart="4dp"
+            android:textColor="?attr/colorPrimary"
+            android:textStyle="bold"
             android:textSize="@dimen/text_size_body_small"
-            app:drawableStartCompat="@drawable/ic_phone"
-            app:drawableTint="?attr/colorOnSurfaceVariant"
-            app:layout_constraintStart_toEndOf="@id/iv_avatar"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/chip_status"
+            app:layout_constraintStart_toEndOf="@id/iv_phone_icon"
             app:layout_constraintTop_toBottomOf="@id/tv_position"
             tools:text="0987 654 321" />
 
+        <!-- Chip trạng thái: Căn giữa dọc theo parent -->
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_status"
             style="@style/ChipStatusStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toTopOf="@id/iv_avatar"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/iv_chevron"
+            app:layout_constraintTop_toTopOf="parent"
             tools:text="Đang làm" />
 
+        <!-- Chevron: Căn giữa dọc theo parent -->
         <ImageView
             android:id="@+id/iv_chevron"
             android:layout_width="@dimen/icon_size_s"
@@ -83,10 +103,10 @@
             android:layout_marginStart="@dimen/spacing_2xs"
             android:contentDescription="@null"
             android:src="@drawable/ic_chevron_right"
-            app:tint="?attr/colorOnSurfaceVariant"
-            app:layout_constraintBottom_toBottomOf="@id/chip_status"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/chip_status" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="?attr/colorOnSurfaceVariant" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

@@ -6,69 +6,46 @@
     android:layout_height="match_parent"
     android:background="?android:attr/colorBackground">
 
-    <!-- Header Toolbar -->
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/layout_header"
+    <!-- Header Toolbar chuẩn ứng dụng -->
+    <com.example.attendanceapp.core.utils.ToolbarApp
+        android:id="@+id/toolbar_app"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp"
-        android:background="?attr/colorPrimary"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <ImageView
-            android:id="@+id/btn_back"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:src="@drawable/ic_back"
-            app:tint="@color/white"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Quyết định Thưởng / Phạt"
-            android:textColor="@color/white"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:layout_marginStart="16dp"
-            app:layout_constraintStart_toEndOf="@id/btn_back"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"/>
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:fillViewport="true"
-        app:layout_constraintTop_toBottomOf="@id/layout_header"
+        app:layout_constraintTop_toBottomOf="@id/toolbar_app"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="20dp">
+            android:padding="@dimen/spacing_l">
 
             <!-- Chọn loại hình -->
             <TextView
+                style="@style/TitleTextMediumStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Hình thức áp dụng"
-                android:textStyle="bold"
-                android:textSize="14sp"
-                android:layout_marginBottom="8dp"/>
+                android:layout_marginBottom="@dimen/spacing_s"/>
 
             <RadioGroup
                 android:id="@+id/rg_type"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginBottom="20dp">
+                android:layout_marginBottom="@dimen/spacing_l">
 
                 <RadioButton
                     android:id="@+id/rb_reward"
+                    style="@style/BodyTextLargeStyle"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -77,6 +54,7 @@
 
                 <RadioButton
                     android:id="@+id/rb_punish"
+                    style="@style/BodyTextLargeStyle"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -84,71 +62,71 @@
             </RadioGroup>
 
             <!-- Chọn Nhân viên -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Chọn nhân sự áp dụng"
-                android:textStyle="bold"
-                android:textSize="14sp"
-                android:layout_marginBottom="8dp"/>
-
-            <TextView
-                android:id="@+id/tv_select_employee"
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/AppTextInputLayout"
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:text="Nhấn để chọn nhân viên từ danh sách..."
-                android:gravity="center_vertical"
-                android:paddingHorizontal="12dp"
-                android:background="@drawable/bg_edittext_outline"
-                android:layout_marginBottom="20dp"
-                android:clickable="true"
-                android:focusable="true"/>
+                android:layout_height="wrap_content"
+                android:hint="Chọn nhân sự áp dụng"
+                android:layout_marginBottom="@dimen/spacing_l"
+                app:startIconDrawable="@drawable/ic_check"
+                app:endIconMode="custom">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/tv_select_employee"
+                    style="@style/AppTextInputEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:cursorVisible="false"
+                    android:focusable="false"
+                    android:clickable="true"
+                    android:longClickable="false"
+                    android:text="Nhấn để chọn nhân viên từ danh sách..." />
+            </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Nhập Số tiền -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Số tiền (VNĐ)"
-                android:textStyle="bold"
-                android:textSize="14sp"
-                android:layout_marginBottom="8dp"/>
-
-            <EditText
-                android:id="@+id/et_amount"
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/AppTextInputLayout"
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:hint="Ví dụ: 200000"
-                android:inputType="number"
-                android:paddingHorizontal="12dp"
-                android:background="@drawable/bg_edittext_outline"
-                android:layout_marginBottom="20dp"/>
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_l"
+                android:hint="Số tiền"
+                app:suffixText="VNĐ"
+                app:suffixTextAppearance="@style/BodyTextSmallStyle">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_amount"
+                    style="@style/AppTextInputEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="number" />
+
+            </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Lý do / Nội dung chi tiết -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Lý do cụ thể"
-                android:textStyle="bold"
-                android:textSize="14sp"
-                android:layout_marginBottom="8dp"/>
-
-            <EditText
-                android:id="@+id/et_reason"
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/AppTextInputLayout"
                 android:layout_width="match_parent"
-                android:layout_height="120dp"
-                android:hint="Nhập nội dung khen thưởng hoặc vi phạm nội quy..."
-                android:gravity="top|start"
-                android:padding="12dp"
-                android:background="@drawable/bg_edittext_outline"
-                android:layout_marginBottom="30dp"/>
+                android:layout_height="wrap_content"
+                android:hint="Lý do cụ thể"
+                android:layout_marginBottom="@dimen/spacing_xl"
+                app:helperText="Ví dụ: Khen thưởng thành tích xuất sắc, vi phạm quy định đi trễ...">
 
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_reason"
+                    style="@style/AppTextInputEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minLines="4"
+                    android:gravity="top|start"
+                    android:inputType="textMultiLine" />
+            </com.google.android.material.textfield.TextInputLayout>
             <!-- Gửi xác nhận -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_submit"
+                style="@style/ButtonMaxWidthStyle"
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:text="LƯU QUYẾT ĐỊNH"
-                app:cornerRadius="12dp"/>
+                android:layout_height="wrap_content"
+                android:text="LƯU QUYẾT ĐỊNH" />
 
         </LinearLayout>
     </ScrollView>

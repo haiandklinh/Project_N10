@@ -45,9 +45,11 @@ public class ManagerHomeFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         viewModel = new ViewModelProvider(this).get(ManagerHomeViewModel.class);
 
+
         setupOverview();
         setupQuickActions();
         setupPendingPreview();
+        setupListeners();
     }
 
     private void setupOverview() {
@@ -61,9 +63,9 @@ public class ManagerHomeFragment extends Fragment {
     private void setupQuickActions() {
         List<ManagerQuickAction> actions = Arrays.asList(
                 new ManagerQuickAction("Xếp ca", R.drawable.ic_calendar,
-                        () -> navigateTo(R.id.managerScheduleFragment)),
+                        () -> navigateTo(R.id.action_managerHomeFragment_to_managerScheduleFragment)),
                 new ManagerQuickAction("Duyệt đơn", R.drawable.ic_approval,
-                        () -> navigateTo(R.id.managerApprovalFragment)),
+                        () -> navigateTo(R.id.action_managerHomeFragment_to_managerApprovalFragment)),
                 new ManagerQuickAction("Mã mời & Duyệt", R.drawable.ic_profile,
                         () -> navigateTo(R.id.action_managerHomeFragment_to_managerJoinRequestFragment)),
                 new ManagerQuickAction("Bảng lương", R.drawable.ic_payroll,
@@ -75,10 +77,44 @@ public class ManagerHomeFragment extends Fragment {
         );
 
         RecyclerView rv = binding.includeQuickActions.rvQuickActions;
-        rv.setLayoutManager(new GridLayoutManager(getContext(), 3));
+        rv.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
         rv.setAdapter(new ManagerQuickActionAdapter(actions));
+
+        // Scroll Indicator setup
+        rv.post(this::updateScrollThumb);
+        rv.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                updateScrollThumb();
+            }
+        });
+    }
+    private void updateScrollThumb() {
+        if (binding == null) return;
+        RecyclerView rv = binding.includeQuickActions.rvQuickActions;
+        int totalRange = rv.computeHorizontalScrollRange();
+        int extent = rv.computeHorizontalScrollExtent();
+        int offset = rv.computeHorizontalScrollOffset();
+
+        binding.includeQuickActions.scrollIndicatorTrack.setVisibility(View.VISIBLE);
+        if (totalRange <= extent) {
+            binding.includeQuickActions.scrollIndicatorThumb.setTranslationX(0f);
+            return;
+        }
+
+        int trackWidth = binding.includeQuickActions.scrollIndicatorTrack.getWidth();
+        int thumbWidth = binding.includeQuickActions.scrollIndicatorThumb.getWidth();
+        float scrollPercent = (float) offset / (float) (totalRange - extent);
+        binding.includeQuickActions.scrollIndicatorThumb.setTranslationX((trackWidth - thumbWidth) * scrollPercent);
     }
 
+    private void setupListeners(){
+        binding.includeHeader.btnNotification.setOnClickListener(v ->
+                navigateTo(R.id.action_managerHomeFragment_to_notificationFragment));
+        binding.includeHeader.ivAvatar.setOnClickListener(v ->
+                navigateTo(R.id.action_managerHomeFragment_to_managerProfileFragment));
+    }
     private void setupPendingPreview() {
         List<ManagerApprovalItem> pending = new ArrayList<>();
         pending.add(new ManagerApprovalItem("1", "Trần Thị Bình", null, "Nhân viên bán hàng",

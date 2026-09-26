@@ -36,7 +36,10 @@ public class ManagerJoinRequestFragment extends Fragment {
     }
 
     private void setupToolbar() {
-        binding.btnBack.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
+        binding.toolbarApp.setOnBackClickListener(() -> {
+            requireActivity().getOnBackPressedDispatcher().onBackPressed();
+        });
+        binding.toolbarApp.setTitle("Yêu cầu tham gia");
     }
 
     private void loadJoinRequests() {

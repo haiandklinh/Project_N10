@@ -18,7 +18,7 @@
         <!--Header-->
         <action
             android:id="@+id/action_employeeHomeFragment_to_employeeNotificationFragment"
-            app:destination="@id/employeeNotificationFragment" />
+            app:destination="@id/notificationFragment" />
         <action
             android:id="@+id/action_employeeHomeFragment_to_employeeProfileFragment"
             app:destination="@id/employeeProfileFragment" />
@@ -116,7 +116,7 @@
 
         <action
             android:id="@+id/action_employeeProfileFragment_to_employeeNotificationFragment"
-            app:destination="@id/employeeNotificationFragment" />
+            app:destination="@id/notificationFragment" />
     </fragment>
 
 
@@ -126,8 +126,8 @@
 
     <!-- Thông báo hệ thống -->
     <fragment
-        android:id="@+id/employeeNotificationFragment"
-        android:name="com.example.attendanceapp.ui.employee.home.notification.EmployeeNotificationFragment"
+        android:id="@+id/notificationFragment"
+        android:name="com.example.attendanceapp.ui.main.common.notification.NotificationFragment"
         android:label="Thông báo"
         tools:layout="@layout/fragment_notification" />
 
@@ -231,7 +231,7 @@
 
         <action
             android:id="@+id/action_employeeEditProfileFragment_to_employeeNotificationFragment"
-            app:destination="@id/employeeNotificationFragment" />
+            app:destination="@id/notificationFragment" />
 
         <action
             android:id="@+id/action_employeeEditProfileFragment_to_employeeSettingsFragment"

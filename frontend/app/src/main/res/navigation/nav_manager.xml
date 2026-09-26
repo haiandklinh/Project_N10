@@ -15,7 +15,21 @@
         android:name="com.example.attendanceapp.ui.manager.home.ManagerHomeFragment"
         android:label="@string/nav_manager_dashboard"
         tools:layout="@layout/fragment_manager_home">
-        
+
+        <action
+            android:id="@+id/action_managerHomeFragment_to_notificationFragment"
+            app:destination="@id/notificationFragment" />
+
+        <action
+            android:id="@+id/action_managerHomeFragment_to_managerProfileFragment"
+            app:destination="@id/managerProfileFragment" />
+
+        <action
+            android:id="@+id/action_managerHomeFragment_to_managerScheduleFragment"
+            app:destination="@id/managerScheduleFragment" />
+        <action
+            android:id="@+id/action_managerHomeFragment_to_managerApprovalFragment"
+            app:destination="@id/managerApprovalFragment" />
         <action
             android:id="@+id/action_managerHomeFragment_to_managerPayrollFragment"
             app:destination="@id/managerPayrollFragment" />
@@ -29,6 +43,12 @@
             android:id="@+id/action_managerHomeFragment_to_managerStatisticFragment"
             app:destination="@id/managerStatisticFragment" />
     </fragment>
+
+    <fragment
+        android:id="@+id/notificationFragment"
+        android:name="com.example.attendanceapp.ui.main.common.notification.NotificationFragment"
+        android:label="Thông báo"
+        tools:layout="@layout/fragment_notification" />
 
     <!-- Tab 2: Phê duyệt (Approvals) -->
     <fragment

@@ -1,4 +1,4 @@
-package com.example.attendanceapp.ui.employee.home.notification;
+package com.example.attendanceapp.ui.main.common.notification;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -23,15 +23,15 @@ import java.util.List;
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
-public class EmployeeNotificationFragment extends Fragment {
+public class NotificationFragment extends Fragment {
 
     FragmentNotificationBinding binding;
-    EmployeeNotificationAdapter employeeNotificationAdapter;
+    NotificationAdapter notificationAdapter;
 
     // TODO: thay bằng dữ liệu thật từ ViewModel/Repository (Room, API, Firebase...)
     private final List<Notification> allNotifications = new ArrayList<>();
 
-    public EmployeeNotificationFragment() {
+    public NotificationFragment() {
         // Constructor rỗng mặc định - BẮT BUỘC để hệ thống khôi phục Fragment khi cần
     }
 
@@ -59,11 +59,11 @@ public class EmployeeNotificationFragment extends Fragment {
     private void setupViews() {
         binding.toolbarApp.setTitle("Thông báo");
 
-        employeeNotificationAdapter = new EmployeeNotificationAdapter(new ArrayList<>(), this::onNotificationClicked);
+        notificationAdapter = new NotificationAdapter(new ArrayList<>(), this::onNotificationClicked);
 
         binding.rvNotification.setLayoutManager(new LinearLayoutManager(
                 requireContext(), LinearLayoutManager.VERTICAL, false));
-        binding.rvNotification.setAdapter(employeeNotificationAdapter);
+        binding.rvNotification.setAdapter(notificationAdapter);
         binding.rvNotification.setHasFixedSize(true);
     }
 
@@ -136,7 +136,7 @@ public class EmployeeNotificationFragment extends Fragment {
     }
 
     private void renderList() {
-        employeeNotificationAdapter.updateData(new ArrayList<>(allNotifications));
+        notificationAdapter.updateData(new ArrayList<>(allNotifications));
 
         boolean isEmpty = allNotifications.isEmpty();
         binding.rvNotification.setVisibility(isEmpty ? View.GONE : View.VISIBLE);

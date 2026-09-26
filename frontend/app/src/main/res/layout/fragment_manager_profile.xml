@@ -74,12 +74,83 @@
             android:layout_height="wrap_content"
             android:background="?android:attr/colorBackground"
             android:paddingStart="@dimen/spacing_l"
-            android:paddingTop="80dp"
+            android:paddingTop="50dp"
             android:paddingEnd="@dimen/spacing_l"
             android:paddingBottom="@dimen/spacing_xl"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/layout_profile_header">
+
+
+            <!-- Card Tóm tắt doanh nghiệp (Mới bổ sung) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_business_summary"
+                style="@style/MainCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_s"
+                app:layout_constraintTop_toTopOf="parent"
+                android:elevation="2dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/spacing_m"
+                    android:orientation="horizontal"
+                    android:baselineAligned="false">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:orientation="vertical">
+                        <TextView
+                            android:id="@+id/tv_total_employees"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="24"
+                            android:textColor="?attr/colorPrimary"
+                            android:textSize="@dimen/text_size_title_medium"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Nhân viên"
+                            android:textSize="@dimen/text_size_label_small" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="match_parent"
+                        android:background="?attr/colorOutlineVariant"
+                        android:layout_marginVertical="4dp" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:orientation="vertical">
+                        <TextView
+                            android:id="@+id/tv_pending_requests"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="05"
+                            android:textColor="@color/md_theme_light_error"
+                            android:textSize="@dimen/text_size_title_medium"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Chờ duyệt"
+                            android:textSize="@dimen/text_size_label_small" />
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
 
             <!-- =================== QUẢN LÝ DOANH NGHIỆP ==================== -->
             <TextView
@@ -92,7 +163,7 @@
                 android:textSize="@dimen/text_size_label_medium"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toBottomOf="@+id/card_business_summary" />
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_business_settings"
@@ -248,14 +319,14 @@
                 android:id="@+id/card_invite_code"
                 style="@style/CategoryCard"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:elevation="4dp">
+                android:layout_height="wrap_content">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:padding="@dimen/spacing_m">
 
+                    <!-- Tiêu đề Card -->
                     <TextView
                         android:id="@+id/tv_invite_title"
                         android:layout_width="0dp"
@@ -266,115 +337,49 @@
                         android:textStyle="bold"
                         app:layout_constraintEnd_toStartOf="@id/btn_copy_code"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
+                        app:layout_constraintTop_toTopOf="parent"
+                        tools:text="Mã giới thiệu quản lý" />
 
+                    <!-- Mã Code (BKS-CODE-2024) -->
                     <TextView
                         android:id="@+id/tv_invite_code"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/spacing_s"
-                        android:text="BKS-CODE-2024"
                         android:textColor="?attr/colorPrimary"
                         android:textSize="@dimen/text_size_title_large"
                         android:textStyle="bold"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/tv_invite_title" />
+                        app:layout_constraintTop_toBottomOf="@id/tv_invite_title"
+                        tools:text="BKS-CODE-2024" />
 
+                    <!-- Môn tả/Ghi chú bên dưới mã Code -->
                     <TextView
                         android:id="@+id/tv_invite_description"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/spacing_2xs"
-                        android:text="@string/manager_profile_invite_description"
                         android:textColor="?attr/colorOnPrimaryContainer"
                         android:textSize="@dimen/text_size_body_small"
-                        app:layout_constraintBottom_toBottomOf="@id/tv_invite_code"
                         app:layout_constraintEnd_toStartOf="@id/btn_copy_code"
-                        app:layout_constraintStart_toEndOf="@id/tv_invite_code"
-                        app:layout_constraintTop_toTopOf="@id/tv_invite_code" />
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/tv_invite_code"
+                        tools:text="Chia sẻ mã này để mời nhân viên tham gia vào hệ thống." />
 
+                    <!-- Nút Copy căn giữa theo chiều dọc của Card -->
                     <ImageView
                         android:id="@+id/btn_copy_code"
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginStart="@dimen/spacing_s"
                         android:background="?attr/selectableItemBackgroundBorderless"
-                        android:contentDescription="Sao chép"
-                        android:padding="6dp"
-                        android:src="@drawable/ic_form"
+                        android:contentDescription="Sao chép mã"
+                        android:padding="2dp"
+                        android:src="@drawable/ic_copy"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
                         app:tint="?attr/colorPrimary" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
-
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Card Tóm tắt doanh nghiệp (Mới bổ sung) -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/card_business_summary"
-                style="@style/MainCard"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_s"
-                android:elevation="2dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="@dimen/spacing_m"
-                    android:orientation="horizontal"
-                    android:baselineAligned="false">
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:orientation="vertical">
-                        <TextView
-                            android:id="@+id/tv_total_employees"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="24"
-                            android:textColor="?attr/colorPrimary"
-                            android:textSize="@dimen/text_size_title_medium"
-                            android:textStyle="bold" />
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Nhân viên"
-                            android:textSize="@dimen/text_size_label_small" />
-                    </LinearLayout>
-
-                    <View
-                        android:layout_width="1dp"
-                        android:layout_height="match_parent"
-                        android:background="?attr/colorOutlineVariant"
-                        android:layout_marginVertical="4dp" />
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:orientation="vertical">
-                        <TextView
-                            android:id="@+id/tv_pending_requests"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="05"
-                            android:textColor="@color/md_theme_light_error"
-                            android:textSize="@dimen/text_size_title_medium"
-                            android:textStyle="bold" />
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Chờ duyệt"
-                            android:textSize="@dimen/text_size_label_small" />
-                    </LinearLayout>
-
-                </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
 

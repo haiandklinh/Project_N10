@@ -27,10 +27,11 @@ public class ManagerMainViewModel extends ViewModel {
 
     // Danh sách các màn hình Fullscreen không hiện BottomBar trong luồng Manager
     private final List<Integer> fullscreenDestinations = Arrays.asList(
-//            R.id.managerEmployeeDetailFragment,
-//            R.id.managerCreateShiftFragment,
-//            R.id.managerApproveDetailFragment,
-//            R.id.managerSettingsFragment
+            R.id.managerJoinRequestFragment,
+            R.id.managerPayrollFragment,
+            R.id.managerRewardPunishFragment,
+            R.id.managerStatisticFragment
+
     );
 
     @Inject

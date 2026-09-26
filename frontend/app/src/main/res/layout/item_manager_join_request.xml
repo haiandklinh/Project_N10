@@ -67,7 +67,7 @@
             android:id="@+id/divider"
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:layout_marginTop="@dimen/spacing_m"
+            android:layout_marginTop="@dimen/spacing_xl"
             android:alpha="0.4"
             android:background="?attr/colorOutlineVariant"
             app:layout_constraintTop_toBottomOf="@id/iv_avatar" />
@@ -84,9 +84,9 @@
                 android:id="@+id/btn_reject"
                 style="@style/ButtonOutlinedSmallStyle"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="@dimen/button_height_s"
                 android:layout_weight="1"
-                android:layout_marginEnd="@dimen/spacing_s"
+                android:layout_marginEnd="@dimen/spacing_3xl"
                 android:text="Từ chối"
                 app:strokeColor="?attr/colorAttendanceAbsent"
                 android:textColor="?attr/colorAttendanceAbsent" />
@@ -95,7 +95,7 @@
                 android:id="@+id/btn_approve"
                 style="@style/ButtonFilledSmallStyle"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="@dimen/button_height_s"
                 android:layout_weight="1"
                 android:text="Chấp nhận" />
 

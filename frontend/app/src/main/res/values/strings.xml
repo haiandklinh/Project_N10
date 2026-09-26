@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- App General / Chung -->
+    <!-- ================================================================= -->
+    <!-- 1. PHẦN DÙNG CHUNG (GENERAL / ACTIONS / DIALOGS / COMMON)          -->
+    <!-- ================================================================= -->
     <string name="app_name">Quản lý chấm công</string>
     <string name="action_save">Lưu</string>
     <string name="action_cancel">Hủy</string>
@@ -12,30 +14,47 @@
     <string name="action_delete">Xóa</string>
     <string name="action_retry">Thử lại</string>
     <string name="action_done">Hoàn thành</string>
+    <string name="action_get_started">Bắt đầu</string>
+    <string name="action_next">Tiếp tục</string>
+    <string name="action_back">Quay lại</string>
 
-    <!-- Employee Navigation Menu -->
-    <string name="home">Trang chủ</string>
-    <string name="history">Lịch sử</string>
-    <string name="schedule">Lịch trình</string>
-    <string name="check_in">Điểm danh</string>
-    <string name="profile">Cá nhân</string>
-
-
-    <!-- Manager Navigation Menu -->
-    <string name="nav_manager_dashboard">Trang chủ</string>
-    <string name="nav_manager_approvals">Phê duyệt</string>
-    <string name="nav_manager_schedule">Lịch trình</string>
-    <string name="nav_manager_employees">Nhân sự</string>
-
-
-    <!-- Navigation / Bottom Bar -->
+    <!-- General Navigation Bar Titles -->
     <string name="nav_home">Trang chủ</string>
     <string name="nav_attendance">Chấm công</string>
     <string name="nav_history">Lịch sử</string>
     <string name="nav_requests">Đơn từ</string>
     <string name="nav_profile">Tài khoản</string>
 
-    <!-- Authentication / Đăng nhập & Đăng ký -->
+    <!-- General Dialogs & Messages & Errors -->
+    <string name="dialog_success_title">Thành công!</string>
+    <string name="dialog_success_message">Thao tác của bạn đã được ghi nhận.</string>
+    <string name="msg_network_error">Không có kết nối mạng, vui lòng kiểm tra lại</string>
+    <string name="error_fill_required_fields">Vui lòng điền đầy đủ thông tin bắt buộc (*)</string>
+
+    <!-- General Theme & Display Settings -->
+    <string name="theme_select_title">Chọn chủ đề giao diện</string>
+    <string name="dark_mode_label">Chế độ tối</string>
+    <string name="theme_avocado">Màu Bơ</string>
+    <string name="theme_watermelon">Dưa Hấu</string>
+    <string name="theme_orange">Quả Cam</string>
+
+
+    <!-- ================================================================= -->
+    <!-- 2. PHẦN AUTH (AUTH ACTIVITY & FRAGMENTS)                           -->
+    <!-- ================================================================= -->
+
+    <!-- Onboarding Fragment -->
+    <string name="onboarding_skip">Bỏ qua</string>
+    <string name="onboarding_1_title">Chấm Công Nhanh Chóng</string>
+    <string name="onboarding_1_desc">Thực hiện điểm danh, vào ca làm việc chỉ với một chạm ngay trên điện thoại của bạn.</string>
+    <string name="onboarding_2_title">Gửi Đơn &amp; Giải Trình Dễ Dàng</string>
+    <string name="onboarding_2_desc">Tạo đơn xin nghỉ phép, đi muộn, về sớm hoặc gửi giải trình quên chấm công tức thì.</string>
+    <string name="onboarding_3_title">Theo Dõi Bảng Công Cá Nhân</string>
+    <string name="onboarding_3_desc">Xem chi tiết lịch sử chấm công, tổng số giờ làm và theo dõi ngày công thực tế trong tháng.</string>
+    <string name="onboarding_4_title">Nhắc Nhở Chấm Công Tự Động</string>
+    <string name="onboarding_4_desc">Nhận thông báo nhắc nhở trước giờ vào ca và hết giờ làm để không bao giờ bỏ lỡ lượt chấm công.</string>
+
+    <!-- Login Fragment -->
     <string name="login_welcome_title">Bắt đầu ngày làm việc!</string>
     <string name="login_welcome_subtitle">Đăng nhập để bắt đầu làm việc</string>
     <string name="auth_login_title">Đăng nhập</string>
@@ -47,6 +66,15 @@
     <string name="login_or_continue_with">hoặc tiếp tục với</string>
     <string name="login_dont_have_account">Chưa có tài khoản? </string>
     <string name="login_sign_up_now">Đăng ký ngay</string>
+
+    <string name="login_desc_google">Đăng nhập bằng Google</string>
+    <string name="login_desc_facebook">Đăng nhập bằng Facebook</string>
+    <string name="login_desc_guest">Đăng nhập với tư cách khách</string>
+    <string name="auth_login_error">Mã nhân viên hoặc mật khẩu không chính xác</string>
+    <string name="auth_logout">Đăng xuất</string>
+    <string name="auth_logout_confirm_msg">Bạn có chắc chắn muốn đăng xuất khỏi tài khoản?</string>
+
+    <!-- Register Fragment -->
     <string name="auth_register_title">Đăng ký tài khoản Quản lý</string>
     <string name="auth_register_subtitle">Tạo tài khoản để quản lý doanh nghiệp của bạn</string>
     <string name="auth_step1_title">Thông tin cá nhân</string>
@@ -55,8 +83,6 @@
     <string name="auth_step2_subtitle">Xác thực thông tin liên hệ của bạn</string>
     <string name="auth_step3_title">Thiết lập mật khẩu</string>
     <string name="auth_step3_subtitle">Thiết lập mật khẩu an toàn</string>
-
-
     <string name="auth_step_1_desc">Bước 1: Thông tin cá nhân</string>
     <string name="auth_step_2_desc">Bước 2: Xác thực liên hệ</string>
     <string name="auth_step_3_desc">Bước 3: Thiết lập mật khẩu</string>
@@ -71,23 +97,8 @@
     <string name="auth_password_helper">Tối thiểu 6 ký tự</string>
     <string name="auth_accept_terms">Tôi đồng ý với Điều khoản dịch vụ và Chính sách bảo mật</string>
     <string name="auth_error_manager_only">Ứng dụng này chỉ dành cho Quản lý đăng ký.</string>
-
-    <string name="auth_otp_title">Xác thực số điện thoại</string>
-    <string name="auth_otp_invalid">Mã OTP không đúng, vui lòng thử lại</string>
-    <string name="auth_resend_otp">Gửi lại mã</string>
-    <string name="auth_otp_locked_format">Bạn đã nhập sai quá 5 lần. Vui lòng thử lại sau %1$ds</string>
-
-    <string name="auth_phone_hint">Số điện thoại</string>
-    <string name="auth_otp_hint">Mã xác thực OTP</string>
-    <string name="auth_send_otp">Gửi mã OTP</string>
-    <string name="auth_verify_otp">Xác nhận</string>
-    <string name="auth_otp_not_received">Không nhận được mã?</string>
     <string name="auth_confirm_password_hint">Xác nhận mật khẩu</string>
 
-
-    <string name="auth_phone_verified_format">%1$s đã xác thực</string>
-    <string name="auth_otp_subtitle_format">Nhập mã OTP đã gửi đến %1$s</string>
-    <string name="auth_resend_otp_countdown_format">Gửi lại mã sau %1$ds</string>
     <string name="auth_error_full_name_required">Vui lòng nhập họ tên</string>
     <string name="auth_error_company_required">Vui lòng nhập tên công ty</string>
     <string name="auth_error_phone_required">Vui lòng nhập số điện thoại</string>
@@ -96,37 +107,63 @@
     <string name="auth_error_password_mismatch">Mật khẩu không khớp</string>
     <string name="auth_error_accept_terms">Vui lòng đồng ý điều khoản dịch vụ</string>
 
-    <string name="login_desc_google">Đăng nhập bằng Google</string>
-    <string name="login_desc_facebook">Đăng nhập bằng Facebook</string>
-    <string name="login_desc_guest">Đăng nhập với tư cách khách</string>
-    <string name="auth_login_error">Mã nhân viên hoặc mật khẩu không chính xác</string>
-    <string name="auth_logout">Đăng xuất</string>
-    <string name="auth_logout_confirm_msg">Bạn có chắc chắn muốn đăng xuất khỏi tài khoản?</string>
+    <!-- OTP Verification Fragment -->
+    <string name="auth_otp_title">Xác thực số điện thoại</string>
+    <string name="auth_otp_invalid">Mã OTP không đúng, vui lòng thử lại</string>
+    <string name="auth_resend_otp">Gửi lại mã</string>
+    <string name="auth_otp_resend_label">Không nhận được mã? Gửi lại mã OTP</string>
+    <string name="auth_otp_locked_format">Bạn đã nhập sai quá 5 lần. Vui lòng thử lại sau %1$ds</string>
+    <string name="auth_phone_hint">Số điện thoại</string>
+    <string name="auth_otp_hint">Mã xác thực OTP</string>
+    <string name="auth_send_otp">Gửi mã OTP</string>
+    <string name="auth_verify_otp">Xác nhận</string>
+    <string name="auth_otp_not_received">Không nhận được mã?</string>
+    <string name="auth_phone_verified_format">%1$s đã xác thực</string>
+    <string name="auth_otp_subtitle_format">Nhập mã OTP đã gửi đến %1$s</string>
+    <string name="auth_resend_otp_countdown_format">Gửi lại mã sau %1$ds</string>
+    <string name="msg_otp_sent_success">Đã gửi mã OTP thành công!</string>
+    <string name="msg_otp_verified_success">Xác thực OTP thành công!</string>
+    <string name="msg_otp_resend_success">Mã OTP mới đã được gửi!</string>
 
-    <!-- Forgot Password / Quên mật khẩu -->
+    <!-- Forgot Password Fragment -->
     <string name="forgot_password_title">Khôi Phục Mật Khẩu</string>
     <string name="forgot_password_subtitle">Vui lòng thực hiện theo các bước dưới đây</string>
     <string name="forgot_password_step_1_title">Xác nhận tài khoản</string>
     <string name="forgot_password_step_1_desc">Nhập Số điện thoại đã đăng ký để nhận mã OTP khôi phục.</string>
     <string name="forgot_password_account_hint">Số điện thoại</string>
     <string name="forgot_password_send_otp">Gửi mã xác thực</string>
-
     <string name="forgot_password_step_2_title">Nhập mã OTP</string>
     <string name="forgot_password_step_2_desc">Mã OTP gồm 6 chữ số đã được gửi tới SĐT của bạn.</string>
     <string name="forgot_password_verify_otp">Xác nhận mã OTP</string>
     <string name="forgot_password_no_otp">Không nhận được mã? </string>
     <string name="forgot_password_resend_otp">Gửi lại</string>
-
     <string name="forgot_password_step_3_title">Tạo mật khẩu mới</string>
     <string name="forgot_password_step_3_desc">Mật khẩu phải chứa ít nhất 6 ký tự.</string>
     <string name="forgot_password_new_hint">Mật khẩu mới</string>
     <string name="forgot_password_confirm_hint">Xác nhận mật khẩu mới</string>
     <string name="forgot_password_done">Hoàn tất</string>
-
     <string name="forgot_password_contact_help">Cần giúp đỡ? </string>
     <string name="forgot_password_contact_support">Liên hệ CSKH</string>
+    <string name="error_enter_email_or_phone">Vui lòng nhập Email hoặc SĐT!</string>
+    <string name="error_enter_6_digits">Vui lòng nhập đủ 6 chữ số OTP!</string>
+    <string name="error_enter_new_password">Vui lòng nhập mật khẩu mới!</string>
+    <string name="error_password_min_length">Mật khẩu phải từ 6 ký tự trở lên!</string>
+    <string name="error_password_not_match">Mật khẩu xác nhận không trùng khớp!</string>
+    <string name="msg_password_reset_success">Đặt lại mật khẩu thành công! Vui lòng đăng nhập lại.</string>
 
-    <!-- Home Screen / Màn hình chính -->
+
+    <!-- ================================================================= -->
+    <!-- 3. PHẦN EMPLOYEE (EMPLOYEE MAIN ACTIVITY & FRAGMENTS)              -->
+    <!-- ================================================================= -->
+
+    <!-- Employee Navigation Menu Titles -->
+    <string name="home">Trang chủ</string>
+    <string name="history">Lịch sử</string>
+    <string name="schedule">Lịch trình</string>
+    <string name="check_in">Điểm danh</string>
+    <string name="profile">Cá nhân</string>
+
+    <!-- Employee Home Fragment -->
     <string name="home_greeting_morning">Chào buổi sáng,</string>
     <string name="home_greeting_afternoon">Chào buổi chiều,</string>
     <string name="home_greeting_evening">Chào buổi tối,</string>
@@ -137,7 +174,7 @@
     <string name="home_check_out_time">Ra ca: %s</string>
     <string name="home_not_checked_in">Chưa chấm công</string>
 
-    <!-- Attendance Action / Thao tác chấm công -->
+    <!-- Employee CheckIn Fragment -->
     <string name="attendance_title">Chấm công</string>
     <string name="attendance_btn_check_in">CHẤM CÔNG VÀO</string>
     <string name="attendance_btn_check_out">CHẤM CÔNG RA</string>
@@ -146,14 +183,40 @@
     <string name="attendance_method_face">Nhận diện khuôn mặt</string>
     <string name="attendance_method_qr">Quét mã QR</string>
 
-    <!-- Verification / Xác thực chấm công -->
     <string name="verify_locating">Đang xác định vị trí...</string>
     <string name="verify_location_success">Đã xác minh vị trí hợp lệ</string>
     <string name="verify_location_failed">Bạn đang ở ngoài khu vực chấm công</string>
     <string name="verify_wifi_failed">Vui lòng kết nối Wi-Fi của công ty để chấm công</string>
     <string name="verify_face_instruction">Vui lòng đưa khuôn mặt vào khung hình</string>
 
-    <!-- Attendance Status / Trạng thái công -->
+    <string name="checkin_locating">Đang xác định...</string>
+    <string name="checkin_determining_distance">Đang xác định khoảng cách...</string>
+    <string name="checkin_determining_location">Đang xác định vị trí...</string>
+    <string name="checkin_distance_meters">Cách văn phòng %.0fm</string>
+    <string name="checkin_distance_kilometers">Cách văn phòng %.2fkm</string>
+    <string name="checkin_current_location">Vị trí hiện tại</string>
+    <string name="checkin_current_location_label">Vị trí hiện tại</string>
+    <string name="checkin_location_valid">Hợp lệ</string>
+    <string name="checkin_location_invalid">Ngoài phạm vi</string>
+    <string name="checkin_permission_denied">Chưa cấp quyền vị trí</string>
+    <string name="checkin_enable_location">Bật quyền vị trí để chấm công</string>
+    <string name="checkin_not_determined">Chưa xác định</string>
+    <string name="checkin_enable_gps">Vui lòng bật định vị GPS để chấm công</string>
+    <string name="checkin_gps_enabled">Đã bật định vị GPS</string>
+    <string name="checkin_within_range">Trong bán kính cho phép (50m)</string>
+    <string name="checkin_network_stable">Kết nối mạng ổn định</string>
+    <string name="checkin_determining_your_location">Đang xác định vị trí của bạn</string>
+    <string name="checkin_outside_allowed_area">Bạn đang ở ngoài khu vực cho phép chấm công</string>
+    <string name="checkin_warning_out_of_range">Bạn đang ở ngoài khu vực cho phép chấm công</string>
+    <string name="checkin_check_network">Vui lòng kiểm tra kết nối mạng để chấm công</string>
+    <string name="checkin_conditions_not_met">Chưa đủ điều kiện để chấm công</string>
+    <string name="checkin_btn_check_in">CHECK IN</string>
+    <string name="checkin_btn_check_out">CHECK OUT</string>
+    <string name="checkin_completed_today">ĐÃ HOÀN TẤT HÔM NAY</string>
+    <string name="checkin_today_summary">Hôm nay</string>
+    <string name="checkin_check_in_time">Giờ vào</string>
+    <string name="checkin_check_out_time">Giờ ra</string>
+
     <string name="status_on_time">Đúng giờ</string>
     <string name="status_late">Đi muộn</string>
     <string name="status_early_leave">Về sớm</string>
@@ -162,15 +225,45 @@
     <string name="status_holiday">Ngày lễ</string>
     <string name="status_overtime">Làm thêm giờ (OT)</string>
 
-    <!-- History & Timesheet / Bảng công & Lịch sử -->
+    <string name="msg_check_in_success">Chấm công vào thành công!</string>
+    <string name="msg_check_out_success">Chấm công ra thành công!</string>
+    <string name="msg_permission_location_required">Cần cấp quyền truy cập vị trí để thực hiện chấm công</string>
+    <string name="msg_permission_camera_required">Cần cấp quyền Camera để quét khuôn mặt/mã QR</string>
+
+    <!-- Employee Schedule Fragment -->
+    <string name="schedule_title">Lịch làm việc</string>
+    <string name="schedule_month_format">Tháng %d, %d</string>
+    <string name="schedule_day_mon">T2</string>
+    <string name="schedule_day_tue">T3</string>
+    <string name="schedule_day_wed">T4</string>
+    <string name="schedule_day_thu">T5</string>
+    <string name="schedule_day_fri">T6</string>
+    <string name="schedule_day_sat">T7</string>
+    <string name="schedule_day_sun">CN</string>
+
+    <!-- Employee History Fragment -->
+    <string name="history_title">Lịch sử chấm công</string>
     <string name="history_select_month">Chọn tháng</string>
+    <string name="history_month_format">Tháng 10 2026</string>
     <string name="history_total_working_days">Tổng ngày công: %s ngày</string>
     <string name="history_total_late">Đi muộn: %s lần</string>
     <string name="history_total_early">Về sớm: %s lần</string>
     <string name="history_total_ot">Giờ OT: %s giờ</string>
     <string name="history_empty">Chưa có dữ liệu chấm công trong tháng này</string>
+    <string name="history_status_on_time">Đúng giờ</string>
+    <string name="history_status_late">Đi muộn</string>
+    <string name="history_status_absent">Vắng</string>
+    <string name="history_status_early_leave">Về sớm</string>
+    <string name="history_status_leave">Nghỉ phép</string>
+    <string name="history_status_not_checked">Chưa chấm</string>
+    <string name="history_total_working_hours">Tổng giờ làm việc</string>
+    <string name="history_filter_all">Tất cả</string>
+    <string name="history_filter_present">Đúng giờ</string>
+    <string name="history_filter_late">Đi muộn</string>
+    <string name="history_filter_absent">Vắng mặt</string>
+    <string name="history_filter_early">Về sớm</string>
 
-    <!-- Leave Requests / Đơn từ & Xin nghỉ -->
+    <!-- Employee Leave Requests & Adjustments Fragment -->
     <string name="request_title">Quản lý đơn từ</string>
     <string name="request_create_leave">Tạo đơn xin nghỉ</string>
     <string name="request_create_overtime">Tạo đơn làm thêm giờ</string>
@@ -180,16 +273,23 @@
     <string name="request_end_date">Đến ngày</string>
     <string name="request_reason_hint">Nhập lý do...</string>
     <string name="request_submit">Gửi đơn</string>
-
-    <!-- Request Status / Trạng thái đơn -->
     <string name="request_status_pending">Chờ duyệt</string>
     <string name="request_status_approved">Đã duyệt</string>
     <string name="request_status_rejected">Từ chối</string>
+    <string name="msg_request_success">Đã gửi đơn thành công, vui lòng chờ duyệt</string>
 
-    <!-- Profile & Settings / Cá nhân & Cài đặt -->
-    <string name="profile_title">Hồ sơ cá nhân</string>
+    <string name="adjustment_title">Điều chỉnh chấm công</string>
+    <string name="adjustment_type_missing_checkin">Thiếu check-in</string>
+    <string name="adjustment_type_missing_checkout">Thiếu check-out</string>
+    <string name="adjustment_type_late_early">Đi muộn / Về sớm</string>
+    <string name="adjustment_type_add_working_day">Bổ sung ngày công</string>
+    <string name="adjustment_create_request">Tạo yêu cầu</string>
+    <string name="msg_adjustment_sent_success">Gửi yêu cầu điều chỉnh thành công!</string>
+    <string name="adjustment_tab_pending">Chờ duyệt (%d)</string>
+    <string name="adjustment_tab_approved">Đã duyệt (%d)</string>
+    <string name="adjustment_tab_rejected">Từ chối (%d)</string>
 
-    <!-- Payroll / Lương -->
+    <!-- Employee Payroll Fragment -->
     <string name="payroll_title">Bảng lương</string>
     <string name="payroll_total_expected">Tổng lương nhận dự kiến</string>
     <string name="payroll_month_format">Tháng %s</string>
@@ -206,68 +306,18 @@
     <string name="payroll_bonus">Thưởng</string>
     <string name="payroll_deductions">Khấu trừ</string>
 
-    <!-- Dialogs & Toast Notifications -->
-    <string name="msg_check_in_success">Chấm công vào thành công!</string>
-    <string name="msg_check_out_success">Chấm công ra thành công!</string>
-    <string name="msg_request_success">Đã gửi đơn thành công, vui lòng chờ duyệt</string>
-    <string name="msg_permission_location_required">Cần cấp quyền truy cập vị trí để thực hiện chấm công</string>
-    <string name="msg_permission_camera_required">Cần cấp quyền Camera để quét khuôn mặt/mã QR</string>
-    <string name="msg_network_error">Không có kết nối mạng, vui lòng kiểm tra lại</string>
-
-
-    <!-- Onboarding 1: ic_check_circle (Chấm công nhanh chóng / Chính xác) -->
-    <string name="onboarding_1_title">Chấm Công Nhanh Chóng</string>
-    <string name="onboarding_1_desc">Thực hiện điểm danh, vào ca làm việc chỉ với một chạm ngay trên điện thoại của bạn.</string>
-
-    <!-- Onboarding 2: ic_error (Quản lý sự cố / Gửi đơn từ / Báo giải trình) -->
-    <string name="onboarding_2_title">Gửi Đơn &amp; Giải Trình Dễ Dàng</string>
-    <string name="onboarding_2_desc">Tạo đơn xin nghỉ phép, đi muộn, về sớm hoặc gửi giải trình quên chấm công tức thì.</string>
-
-    <!-- Onboarding 3: ic_profile (Hồ sơ cá nhân / Lịch sử chấm công / Bảng công) -->
-    <string name="onboarding_3_title">Theo Dõi Bảng Công Cá Nhân</string>
-    <string name="onboarding_3_desc">Xem chi tiết lịch sử chấm công, tổng số giờ làm và theo dõi ngày công thực tế trong tháng.</string>
-
-    <!-- Onboarding 4: ic_notifications (Thông báo nhắc nhở vào/ra ca) -->
-    <string name="onboarding_4_title">Nhắc Nhở Chấm Công Tự Động</string>
-    <string name="onboarding_4_desc">Nhận thông báo nhắc nhở trước giờ vào ca và hết giờ làm để không bao giờ bỏ lỡ lượt chấm công.</string>
-
-    <string name="action_get_started">Bắt đầu</string>
-    <string name="action_next">Tiếp tục</string>
-    
-    
-    
-    
-    
-    
-    <string name="mapbox_access_token">pk.eyJ1Ijoic29uYmFuZGExMSIsImEiOiJjbW51MThxejIwdHRyMnBwd2p2OHhvMzFxIn0.XsxPqOqD9upAvTzh5iI3ZA</string>
-    <string name="auth_otp_resend_label">Không nhận được mã? Gửi lại mã OTP</string>
-    <string name="action_back">Quay lại</string>
-
-    <!-- Check In / Chấm công -->
-    <string name="checkin_locating">Đang xác định...</string>
-    <string name="checkin_determining_distance">Đang xác định khoảng cách...</string>
-    <string name="checkin_determining_location">Đang xác định vị trí...</string>
-    <string name="checkin_distance_meters">Cách văn phòng %.0fm</string>
-    <string name="checkin_distance_kilometers">Cách văn phòng %.2fkm</string>
-    <string name="checkin_current_location">Vị trí hiện tại</string>
-    <string name="checkin_location_valid">Hợp lệ</string>
-    <string name="checkin_location_invalid">Ngoài phạm vi</string>
-    <string name="checkin_permission_denied">Chưa cấp quyền vị trí</string>
-    <string name="checkin_enable_location">Bật quyền vị trí để chấm công</string>
-    <string name="checkin_not_determined">Chưa xác định</string>
-    <string name="checkin_enable_gps">Vui lòng bật định vị GPS để chấm công</string>
-    <string name="checkin_determining_your_location">Đang xác định vị trí của bạn</string>
-    <string name="checkin_outside_allowed_area">Bạn đang ở ngoài khu vực cho phép chấm công</string>
-    <string name="checkin_check_network">Vui lòng kiểm tra kết nối mạng để chấm công</string>
-    <string name="checkin_conditions_not_met">Chưa đủ điều kiện để chấm công</string>
-    <string name="checkin_btn_check_in">CHECK IN</string>
-    <string name="checkin_btn_check_out">CHECK OUT</string>
-    <string name="checkin_completed_today">ĐÃ HOÀN TẤT HÔM NAY</string>
-
-    <!-- Profile / Hồ sơ -->
+    <!-- Employee Profile Fragment & Sub-screens -->
+    <string name="profile_title">Hồ sơ cá nhân</string>
+    <string name="profile_user_name">Nguyễn Văn A</string>
+    <string name="profile_user_position">Nhân viên Kinh doanh · Phòng Sale</string>
+    <string name="profile_section_account">TÀI KHOẢN</string>
+    <string name="profile_section_app">ỨNG DỤNG</string>
     <string name="profile_attendance_summary">Chuyên cần tháng này</string>
     <string name="profile_attendance_rate">95%</string>
     <string name="profile_attendance_description">tỉ lệ đúng giờ · xem chi tiết tại Lịch sử</string>
+    <string name="profile_summary_title">Chuyên cần tháng này</string>
+    <string name="profile_summary_rate">95%</string>
+    <string name="profile_summary_description">tỉ lệ đúng giờ · xem chi tiết tại Lịch sử</string>
     <string name="profile_edit_profile">Chỉnh sửa hồ sơ</string>
     <string name="profile_change_password">Đổi mật khẩu</string>
     <string name="profile_notifications">Thông báo</string>
@@ -276,101 +326,57 @@
     <string name="profile_help_support">Trợ giúp &amp; Hỗ trợ</string>
     <string name="profile_about_app">Giới thiệu ứng dụng</string>
     <string name="profile_dark_mode">Chế độ tối</string>
-    <string name="theme_avocado">Màu Bơ</string>
-    <string name="theme_watermelon">Dưa Hấu</string>
-    <string name="theme_orange">Quả Cam</string>
     <string name="profile_select_language">Chọn ngôn ngữ / Select Language</string>
     <string name="profile_logout_title">Đăng xuất</string>
     <string name="profile_logout_message">Bạn có chắc chắn muốn đăng xuất khỏi tài khoản này không?</string>
-    <string name="profile_language_vietnamese">Tiếng Việt</string>
-    <string name="profile_language_english">English</string>
-
-    <!-- Forgot Password Error Messages -->
-    <string name="error_enter_email_or_phone">Vui lòng nhập Email hoặc SĐT!</string>
-    <string name="msg_otp_sent_success">Đã gửi mã OTP thành công!</string>
-    <string name="error_enter_6_digits">Vui lòng nhập đủ 6 chữ số OTP!</string>
-    <string name="msg_otp_verified_success">Xác thực OTP thành công!</string>
-    <string name="msg_otp_resend_success">Mã OTP mới đã được gửi!</string>
-    <string name="error_enter_new_password">Vui lòng nhập mật khẩu mới!</string>
-    <string name="error_password_min_length">Mật khẩu phải từ 6 ký tự trở lên!</string>
-    <string name="error_password_not_match">Mật khẩu xác nhận không trùng khớp!</string>
-    <string name="msg_password_reset_success">Đặt lại mật khẩu thành công! Vui lòng đăng nhập lại.</string>
-
-    <!-- Adjustment / Điều chỉnh chấm công -->
-    <string name="adjustment_title">Điều chỉnh chấm công</string>
-    <string name="adjustment_type_missing_checkin">Thiếu check-in</string>
-    <string name="adjustment_type_missing_checkout">Thiếu check-out</string>
-    <string name="adjustment_type_late_early">Đi muộn / Về sớm</string>
-    <string name="adjustment_type_add_working_day">Bổ sung ngày công</string>
-    <string name="adjustment_create_request">Tạo yêu cầu</string>
-    <string name="error_fill_required_fields">Vui lòng điền đầy đủ thông tin bắt buộc (*)</string>
-    <string name="msg_adjustment_sent_success">Gửi yêu cầu điều chỉnh thành công!</string>
-    <string name="adjustment_tab_pending">Chờ duyệt (%d)</string>
-    <string name="adjustment_tab_approved">Đã duyệt (%d)</string>
-    <string name="adjustment_tab_rejected">Từ chối (%d)</string>
-
-    <!-- Schedule / Lịch làm việc -->
-    <string name="schedule_title">Lịch làm việc</string>
-    <string name="schedule_month_format">Tháng %d, %d</string>
-    <string name="schedule_day_mon">T2</string>
-    <string name="schedule_day_tue">T3</string>
-    <string name="schedule_day_wed">T4</string>
-    <string name="schedule_day_thu">T5</string>
-    <string name="schedule_day_fri">T6</string>
-    <string name="schedule_day_sat">T7</string>
-    <string name="schedule_day_sun">CN</string>
-
-    <!-- Theme Selection -->
-    <string name="theme_select_title">Chọn chủ đề giao diện</string>
-    <string name="dark_mode_label">Chế độ tối</string>
-
-    <!-- Dialog Success -->
-    <string name="dialog_success_title">Thành công!</string>
-    <string name="dialog_success_message">Thao tác của bạn đã được ghi nhận.</string>
-
-    <!-- Onboarding -->
-    <string name="onboarding_skip">Bỏ qua</string>
-
-    <!-- Check In Layout -->
-    <string name="checkin_current_location_label">Vị trí hiện tại</string>
-    <string name="checkin_gps_enabled">Đã bật định vị GPS</string>
-    <string name="checkin_within_range">Trong bán kính cho phép (50m)</string>
-    <string name="checkin_network_stable">Kết nối mạng ổn định</string>
-    <string name="checkin_today_summary">Hôm nay</string>
-    <string name="checkin_check_in_time">Giờ vào</string>
-    <string name="checkin_check_out_time">Giờ ra</string>
-    <string name="checkin_warning_out_of_range">Bạn đang ở ngoài khu vực cho phép chấm công</string>
-
-    <!-- Notification -->
-    <string name="notification_mark_all_read">Đánh dấu tất cả đã đọc</string>
-
-    <!-- Profile Layout -->
-    <string name="profile_user_name">Nguyễn Văn A</string>
-    <string name="profile_user_position">Nhân viên Kinh doanh · Phòng Sale</string>
-    <string name="profile_section_account">Tài khoản</string>
-    <string name="profile_section_app">Ứng dụng</string>
     <string name="profile_logout_button">Đăng xuất</string>
     <string name="profile_version">Phiên bản 1.0.0</string>
-    <string name="profile_summary_title">Chuyên cần tháng này</string>
-    <string name="profile_summary_rate">95%</string>
-    <string name="profile_summary_description">tỉ lệ đúng giờ · xem chi tiết tại Lịch sử</string>
-
-    <!-- History -->
-    <string name="history_title">Lịch sử chấm công</string>
-    <string name="history_month_format">Tháng 10 2026</string>
-    <string name="history_status_on_time">Đúng giờ</string>
-    <string name="history_status_late">Đi muộn</string>
-    <string name="history_status_absent">Vắng</string>
-    <string name="history_status_early_leave">Về sớm</string>
-    <string name="history_total_working_hours">Tổng giờ làm việc</string>
-    <string name="history_filter_all">Tất cả</string>
-    <string name="history_filter_present">Đúng giờ</string>
-    <string name="history_filter_late">Đi muộn</string>
-    <string name="history_filter_absent">Vắng mặt</string>
-    <string name="history_filter_early">Về sớm</string>
-    <string name="history_status_leave">Nghỉ phép</string>
-    <string name="history_status_not_checked">Chưa chấm</string>
-
-    <!-- Profile Editing Strings -->
+    <string name="profile_language_vietnamese">Tiếng Việt</string>
+    <string name="profile_language_english">English</string>
     <string name="title_change_request_history">Lịch sử yêu cầu thay đổi</string>
+
+    <!-- Employee Notification Fragment -->
+    <string name="notification_mark_all_read">Đánh dấu tất cả đã đọc</string>
+
+
+    <!-- ================================================================= -->
+    <!-- 4. PHẦN MANAGER (MANAGER MAIN ACTIVITY & FRAGMENTS)               -->
+    <!-- ================================================================= -->
+
+    <!-- Manager Navigation Menu Titles -->
+    <string name="nav_manager_dashboard">Trang chủ</string>
+    <string name="nav_manager_approvals">Phê duyệt</string>
+    <string name="nav_manager_schedule">Lịch trình</string>
+    <string name="nav_manager_employees">Nhân sự</string>
+
+    <!-- Manager Dashboard / Home Fragment -->
+    <!-- (Có thể bổ sung các chuỗi của Dashboard/Home tại đây khi phát triển) -->
+
+    <!-- Manager Approvals Fragment -->
+    <!-- (Có thể bổ sung các chuỗi của Phê duyệt tại đây khi phát triển) -->
+
+    <!-- Manager Schedule Fragment -->
+    <!-- (Có thể bổ sung các chuỗi của Lịch trình Quản lý tại đây) -->
+
+    <!-- Manager Employees / Human Resource Fragment -->
+    <!-- (Có thể bổ sung các chuỗi của Quản lý Nhân sự tại đây) -->
+
+    <!-- Manager Profile Fragment & Settings -->
+    <string name="manager_profile_default_name">Quản lý</string>
+    <string name="manager_profile_default_pos">Quản lý</string>
+    <string name="manager_profile_section_business">QUẢN LÝ DOANH NGHIỆP</string>
+    <string name="manager_profile_company_settings">Cài đặt doanh nghiệp</string>
+    <string name="manager_profile_salary_config">Thiết lập đơn giá ca</string>
+    <string name="manager_profile_permissions">Phân quyền &amp; Vai trò</string>
+    <string name="manager_profile_statistics">Thống kê &amp; Báo cáo</string>
+    <string name="manager_profile_personal_history">Lịch sử cá nhân</string>
+    <string name="manager_profile_invite_title">Mã mời doanh nghiệp</string>
+    <string name="manager_profile_invite_description">Dùng mã này để nhân viên mới gia nhập</string>
+    <string name="manager_profile_copy_success">Đã sao chép mã mời</string>
+
+
+    <!-- ================================================================= -->
+    <!-- 5. CẤU HÌNH BÊN THỨ 3 & SDK TOKENS (THIRD-PARTY TOKENS)            -->
+    <!-- ================================================================= -->
+    <string name="mapbox_access_token">pk.eyJ1Ijoic29uYmFuZGExMSIsImEiOiJjbW51MThxejIwdHRyMnBwd2p2OHhvMzFxIn0.XsxPqOqD9upAvTzh5iI3ZA</string>
 </resources>

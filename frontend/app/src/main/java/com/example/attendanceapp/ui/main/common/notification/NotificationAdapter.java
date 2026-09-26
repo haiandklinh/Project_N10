@@ -1,4 +1,4 @@
-package com.example.attendanceapp.ui.employee.home.notification;
+package com.example.attendanceapp.ui.main.common.notification;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,8 +17,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-public class EmployeeNotificationAdapter
-        extends RecyclerView.Adapter<EmployeeNotificationAdapter.NotificationViewHolder> {
+public class NotificationAdapter
+        extends RecyclerView.Adapter<NotificationAdapter.NotificationViewHolder> {
 
     /**
      * Callback khi người dùng bấm vào 1 thông báo - dùng để đánh dấu đã đọc
@@ -33,7 +33,7 @@ public class EmployeeNotificationAdapter
 
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    public EmployeeNotificationAdapter(List<Notification> notifications, OnNotificationClickListener listener) {
+    public NotificationAdapter(List<Notification> notifications, OnNotificationClickListener listener) {
         this.notifications = notifications;
         this.listener = listener;
     }

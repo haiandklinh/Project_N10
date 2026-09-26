@@ -44,7 +44,10 @@ public class ManagerStatisticFragment extends Fragment {
     }
 
     private void setupToolbar() {
-        binding.btnBack.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
+        binding.toolbarApp.setOnBackClickListener(() -> {
+            requireActivity().getOnBackPressedDispatcher().onBackPressed();
+        });
+        binding.toolbarApp.setTitle("Thống kê");
     }
 
     private void setupBarChart() {

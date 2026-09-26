@@ -39,7 +39,10 @@ public class ManagerPayrollFragment extends Fragment {
     }
 
     private void setupToolbar() {
-        binding.btnBack.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
+        binding.toolbarApp.setOnBackClickListener(() -> {
+            requireActivity().getOnBackPressedDispatcher().onBackPressed();
+        });
+        binding.toolbarApp.setTitle("Quản lý tiền lương");
     }
 
     private void setupList() {

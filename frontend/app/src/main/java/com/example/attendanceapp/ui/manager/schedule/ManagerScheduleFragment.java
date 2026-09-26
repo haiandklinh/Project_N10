@@ -56,7 +56,6 @@ public class ManagerScheduleFragment extends Fragment {
         viewModel = new ViewModelProvider(this).get(ManagerScheduleViewModel.class);
 
         binding.toolbarApp.setTitle("Xếp ca");
-        binding.toolbarApp.setBackButtonVisible(false);
 
         loadMockData();
         setupWeekDaySelector();

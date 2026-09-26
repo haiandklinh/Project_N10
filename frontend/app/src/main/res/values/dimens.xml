@@ -85,6 +85,7 @@
     <!-- ==================== COMPONENT SIZES ==================== -->
     <!-- Buttons -->
     <dimen name="button_height_default">52dp</dimen>
+    <dimen name="button_height_xs">28dp</dimen>
     <dimen name="button_height_s">36dp</dimen>
     <dimen name="button_height_m">48dp</dimen>
     <dimen name="button_height_l">56dp</dimen>
