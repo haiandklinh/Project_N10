@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/ItemCard"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/spacing_s">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/spacing_l">
+
+        <!-- ===== HÀNG 1: NHÂN VIÊN GỬI YÊU CẦU ===== -->
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/iv_employee_avatar"
+            android:layout_width="@dimen/avatar_size_m"
+            android:layout_height="@dimen/avatar_size_m"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_avatar"
+            android:contentDescription="@null"
+            app:shapeAppearanceOverlay="@style/ImageCircleStyle"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_employee_name"
+            style="@style/TitleTextMediumStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_s"
+            android:ellipsize="end"
+            android:maxLines="1"
+            app:layout_constraintEnd_toStartOf="@id/chip_status"
+            app:layout_constraintStart_toEndOf="@id/iv_employee_avatar"
+            app:layout_constraintTop_toTopOf="@id/iv_employee_avatar"
+            tools:text="Trần Thị Bình" />
+
+        <TextView
+            android:id="@+id/tv_employee_position"
+            style="@style/BodyTextSmallStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_s"
+            android:ellipsize="end"
+            android:maxLines="1"
+            app:layout_constraintEnd_toStartOf="@id/chip_status"
+            app:layout_constraintStart_toEndOf="@id/iv_employee_avatar"
+            app:layout_constraintTop_toBottomOf="@id/tv_employee_name"
+            app:layout_constraintBottom_toBottomOf="@id/iv_employee_avatar"
+            tools:text="Nhân viên bán hàng" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_status"
+            style="@style/ChipStatusStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="@id/iv_employee_avatar"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="Chờ duyệt" />
+
+        <View
+            android:id="@+id/divider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="@dimen/spacing_m"
+            android:alpha="0.4"
+            android:background="?attr/colorOutlineVariant"
+            app:layout_constraintTop_toBottomOf="@id/iv_employee_avatar" />
+
+        <!-- ===== HÀNG 2: LOẠI YÊU CẦU ===== -->
+        <ImageView
+            android:id="@+id/iv_type_icon"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_marginTop="@dimen/spacing_m"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_leave"
+            app:tint="?attr/colorPrimary"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/divider" />
+
+        <TextView
+            android:id="@+id/tv_request_type"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="@id/iv_type_icon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/iv_type_icon"
+            app:layout_constraintTop_toTopOf="@id/iv_type_icon"
+            tools:text="Nghỉ phép" />
+
+        <!-- ===== HÀNG 3: NGÀY ÁP DỤNG / THỜI GIAN ===== -->
+        <ImageView
+            android:id="@+id/iv_calendar_icon"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_marginTop="@dimen/spacing_xs"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_calendar"
+            app:tint="?attr/colorOnSurfaceVariant"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/iv_type_icon" />
+
+        <TextView
+            android:id="@+id/tv_target_date"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="13sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/iv_calendar_icon"
+            app:layout_constraintTop_toTopOf="@id/iv_calendar_icon"
+            app:layout_constraintBottom_toBottomOf="@id/iv_calendar_icon"
+            tools:text="Ngày áp dụng: 20/09/2026 · 08:00 - 17:00" />
+
+        <!-- ===== HÀNG 4: LÝ DO ===== -->
+        <TextView
+            android:id="@+id/tv_reason"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="13sp"
+            app:layout_constraintTop_toBottomOf="@id/iv_calendar_icon"
+            tools:text="Lý do: Bị ốm đột xuất cần nghỉ ca sáng để đi khám bệnh." />
+
+        <!-- ===== HÀNG 5: NÚT XỬ LÝ (CHỈ HIỆN KHI CHỜ DUYỆT) ===== -->
+        <LinearLayout
+            android:id="@+id/layout_actions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_m"
+            android:orientation="horizontal"
+            app:layout_constraintTop_toBottomOf="@id/tv_reason"
+            tools:visibility="visible">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_reject"
+                style="@style/ButtonOutlinedSmallStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="@dimen/spacing_s"
+                android:text="Từ chối"
+                app:strokeColor="?attr/colorAttendanceAbsent"
+                android:textColor="?attr/colorAttendanceAbsent" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_approve"
+                style="@style/ButtonFilledSmallStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Duyệt" />
+
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>

@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/header_section"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_card_gradient"
+    android:padding="@dimen/spacing_m">
+
+    <!-- Title -->
+    <TextView
+        android:id="@+id/tv_screen_title"
+        style="@style/TitleTextLargeStyle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/history_title"
+        android:textColor="?attr/colorOnPrimary"
+        app:layout_constraintEnd_toStartOf="@id/toggle_view_mode"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Subtitle Tháng/Năm với Navigation -->
+    <ImageView
+        android:id="@+id/btn_prev_month"
+        android:layout_width="@dimen/icon_size_xl"
+        android:layout_height="@dimen/icon_size_xl"
+        android:layout_marginTop="@dimen/spacing_l"
+        android:background="@drawable/bg_time_chip"
+        android:clickable="true"
+        android:contentDescription="Tháng trước"
+        android:focusable="true"
+        android:padding="@dimen/spacing_xs"
+        android:src="@drawable/ic_chevron_left"
+        app:layout_constraintBottom_toBottomOf="@+id/tv_month_year_subtitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_screen_title"
+        app:tint="?attr/colorOnPrimary" />
+
+    <TextView
+        android:id="@+id/tv_month_year_subtitle"
+        style="@style/BodyTextMediumStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_l"
+        android:text="@string/history_month_format"
+        android:textColor="?attr/colorOnPrimary"
+        app:layout_constraintEnd_toStartOf="@id/btn_next_month"
+        app:layout_constraintStart_toEndOf="@id/btn_prev_month"
+        app:layout_constraintTop_toBottomOf="@id/tv_screen_title" />
+
+    <ImageView
+        android:id="@+id/btn_next_month"
+        android:layout_width="@dimen/icon_size_xl"
+        android:layout_height="@dimen/icon_size_xl"
+        android:layout_marginTop="@dimen/spacing_l"
+        android:layout_marginEnd="60dp"
+        android:background="@drawable/bg_time_chip"
+        android:clickable="true"
+        android:contentDescription="Tháng sau"
+        android:focusable="true"
+        android:padding="@dimen/spacing_xs"
+        android:src="@drawable/ic_chevron_right"
+        app:layout_constraintBottom_toBottomOf="@+id/tv_month_year_subtitle"
+        app:layout_constraintEnd_toStartOf="@id/toggle_view_mode"
+        app:layout_constraintTop_toBottomOf="@id/tv_screen_title"
+        app:tint="?attr/colorOnPrimary" />
+
+    <!-- Toggle View Mode Button -->
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/toggle_view_mode"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/icon_container_m"
+        app:checkedButton="@id/btn_view_list"
+        app:layout_constraintBottom_toBottomOf="@+id/tv_month_year_subtitle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:selectionRequired="true"
+        app:singleSelection="true">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_view_list"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="40dp"
+            android:layout_height="match_parent"
+            android:padding="0dp"
+            app:icon="@drawable/ic_menu"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconTint="?attr/colorPrimary" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_view_calendar"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="40dp"
+            android:layout_height="match_parent"
+            android:padding="0dp"
+            app:icon="@drawable/ic_calendar"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconTint="?attr/colorOnPrimary" />
+    </com.google.android.material.button.MaterialButtonToggleGroup>
+
+    <!-- LƯỚI 4 Ô THỐNG KÊ -->
+    <LinearLayout
+        android:id="@+id/layout_stats_grid"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_l"
+        android:baselineAligned="false"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@id/tv_month_year_subtitle">
+
+        <!-- Ô Đúng Giờ -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/WaterCard"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/spacing_s"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingVertical="@dimen/spacing_s">
+
+                <TextView
+                    android:id="@+id/tv_on_time_count"
+                    style="@style/TitleTextLargeStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="8"
+                    android:textColor="?attr/colorSurfaceVariant" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_3xs"
+                    android:text="@string/history_status_on_time"
+                    android:textColor="?attr/colorSurfaceVariant"
+                    android:textSize="@dimen/text_size_body_small" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Ô Đi Muộn -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/WaterCard"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/spacing_s"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingVertical="@dimen/spacing_s">
+
+                <TextView
+                    android:id="@+id/tv_late_count"
+                    style="@style/TitleTextLargeStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="8"
+                    android:textColor="?attr/colorSurfaceVariant" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_3xs"
+                    android:text="@string/history_status_late"
+                    android:textColor="?attr/colorSurfaceVariant"
+                    android:textSize="@dimen/text_size_body_small" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Ô Vắng -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/WaterCard"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/spacing_s"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingVertical="@dimen/spacing_s">
+
+                <TextView
+                    android:id="@+id/tv_absent_count"
+                    style="@style/TitleTextLargeStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="8"
+                    android:textColor="?attr/colorSurfaceVariant" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_3xs"
+                    android:text="@string/history_status_absent"
+                    android:textColor="?attr/colorSurfaceVariant"
+                    android:textSize="@dimen/text_size_body_small" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Ô Về Sớm -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/WaterCard"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="6dp"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingVertical="@dimen/spacing_s">
+
+                <TextView
+                    android:id="@+id/tv_early_leave_count"
+                    style="@style/TitleTextLargeStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="8"
+                    android:textColor="?attr/colorSurfaceVariant" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_3xs"
+                    android:text="@string/history_status_early_leave"
+                    android:textColor="?attr/colorSurfaceVariant"
+                    android:textSize="@dimen/text_size_body_small" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+    </LinearLayout>
+
+    <!-- Ô TỔNG GIỜ LÀM VIỆC -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_total_working_hours"
+        style="@style/WaterCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_s"
+        app:layout_constraintTop_toBottomOf="@id/layout_stats_grid">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingHorizontal="@dimen/spacing_l"
+            android:paddingVertical="@dimen/spacing_l">
+
+            <TextView
+                style="@style/BodyTextMediumStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/history_total_working_hours"
+                android:textColor="?attr/colorOnPrimary"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/tv_total_working_hours"
+                style="@style/BodyTextLargeStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="98.4 giờ"
+                android:textColor="?attr/colorOnPrimary"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

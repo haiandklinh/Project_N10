@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/employeeHomeFragment">
+
+    <!-- ================================================================= -->
+    <!-- 1. NHÓM MÀN HÌNH CHÍNH (MAIN NAVIGATION / BOTTOM NAV DESTINATIONS) -->
+    <!-- ================================================================= -->
+
+    <!-- Trang chủ (Home) -->
+    <fragment
+        android:id="@+id/employeeHomeFragment"
+        android:name="com.example.attendanceapp.ui.employee.home.EmployeeHomeFragment"
+        android:label="Trang chủ"
+        tools:layout="@layout/fragment_employee_home">
+        <!--Header-->
+        <action
+            android:id="@+id/action_employeeHomeFragment_to_employeeNotificationFragment"
+            app:destination="@id/employeeNotificationFragment" />
+        <action
+            android:id="@+id/action_employeeHomeFragment_to_employeeProfileFragment"
+            app:destination="@id/employeeProfileFragment" />
+        <!--Today Card-->
+        <action
+            android:id="@+id/action_employeeHomeFragment_to_employeeCheckInFragment"
+            app:destination="@id/employeeCheckInFragment" />
+        <!--Categories-->
+        <action
+            android:id="@+id/action_employeeHomeFragment_to_employeeScheduleFragment"
+            app:destination="@id/employeeScheduleFragment" />
+
+        <action
+            android:id="@+id/action_employeeHomeFragment_to_employeeAdjustmentFragment"
+            app:destination="@id/employeeAdjustmentFragment" />
+
+        <action
+            android:id="@+id/action_employeeHomeFragment_to_employeeLeaveHistoryFragment"
+            app:destination="@id/employeeLeaveHistoryFragment" />
+
+        <action
+            android:id="@+id/action_employeeHomeFragment_to_employeeShiftExchangeFragment"
+            app:destination="@id/employeeShiftExchangeFragment" />
+
+        <action
+            android:id="@+id/action_employeeHomeFragment_to_employeePayrollFragment"
+            app:destination="@id/employeePayrollFragment" />
+
+        <action
+            android:id="@+id/action_employeeHomeFragment_to_employeeStatisticsFragment"
+            app:destination="@id/employeeStatisticsFragment" />
+
+    </fragment>
+
+    <!-- Màn hình Lịch trình & Ca làm việc -->
+    <fragment
+        android:id="@+id/employeeScheduleFragment"
+        android:name="com.example.attendanceapp.ui.employee.schedule.EmployeeScheduleFragment"
+        android:label="Lịch làm việc"
+        tools:layout="@layout/fragment_employee_schedule">
+
+        <action
+            android:id="@+id/action_employeeScheduleFragment_to_employeeShiftExchangeFragment"
+            app:destination="@id/employeeShiftExchangeFragment" />
+
+        <action
+            android:id="@+id/action_employeeScheduleFragment_to_employeeLeaveHistoryFragment"
+            app:destination="@id/employeeLeaveHistoryFragment" />
+    </fragment>
+
+    <!-- Màn hình Chấm công (Check In / Check Out) -->
+    <fragment
+        android:id="@+id/employeeCheckInFragment"
+        android:name="com.example.attendanceapp.ui.employee.checkin.EmployeeCheckInFragment"
+        android:label="Chấm công"
+        tools:layout="@layout/fragment_employee_check_in" />
+
+    <!-- Màn hình Lịch sử chấm công -->
+    <fragment
+        android:id="@+id/employeeHistoryFragment"
+        android:name="com.example.attendanceapp.ui.employee.history.EmployeeHistoryFragment"
+        android:label="Lịch sử chấm công"
+        tools:layout="@layout/fragment_employee_history" />
+
+    <!-- Màn hình Hồ sơ cá nhân (Profile Main) -->
+    <fragment
+        android:id="@+id/employeeProfileFragment"
+        android:name="com.example.attendanceapp.ui.employee.profile.EmployeeProfileFragment"
+        android:label="Trang cá nhân"
+        tools:layout="@layout/fragment_employee_profile">
+
+        <action
+            android:id="@+id/action_employeeProfileFragment_to_employeeHistoryFragment"
+            app:destination="@id/employeeHistoryFragment" />
+
+        <action
+            android:id="@+id/action_employeeProfileFragment_to_employeeHelpCenterFragment"
+            app:destination="@id/employeeHelpCenterFragment" />
+
+        <action
+            android:id="@+id/action_employeeProfileFragment_to_employeePolicyFragment"
+            app:destination="@id/employeePolicyFragment" />
+
+        <action
+            android:id="@+id/action_employeeProfileFragment_to_employeeEditProfileFragment"
+            app:destination="@id/employeeEditProfileFragment" />
+
+        <action
+            android:id="@+id/action_employeeProfileFragment_to_employeeAboutFragment"
+            app:destination="@id/employeeAboutFragment" />
+
+        <action
+            android:id="@+id/action_employeeProfileFragment_to_employeeChangePasswordFragment"
+            app:destination="@id/employeeChangePasswordFragment" />
+
+        <action
+            android:id="@+id/action_employeeProfileFragment_to_employeeNotificationFragment"
+            app:destination="@id/employeeNotificationFragment" />
+    </fragment>
+
+
+    <!-- ================================================================= -->
+    <!-- 2. NHÓM CHỨC NĂNG TRANG CHỦ (HOME SUB-FEATURES)                   -->
+    <!-- ================================================================= -->
+
+    <!-- Thông báo hệ thống -->
+    <fragment
+        android:id="@+id/employeeNotificationFragment"
+        android:name="com.example.attendanceapp.ui.employee.home.notification.EmployeeNotificationFragment"
+        android:label="Thông báo"
+        tools:layout="@layout/fragment_notification" />
+
+    <!-- Bảng lương -->
+    <fragment
+        android:id="@+id/employeePayrollFragment"
+        android:name="com.example.attendanceapp.ui.employee.home.payroll.EmployeePayrollFragment"
+        android:label="Bảng lương"
+        tools:layout="@layout/fragment_payroll">
+
+        <action
+            android:id="@+id/action_employeePayrollFragment_to_employeePayrollDetailFragment"
+            app:destination="@id/employeePayrollDetailFragment" />
+    </fragment>
+
+    <!-- Chi tiết phiếu lương -->
+    <fragment
+        android:id="@+id/employeePayrollDetailFragment"
+        android:name="com.example.attendanceapp.ui.employee.home.payroll.EmployeePayrollDetailFragment"
+        android:label="Chi tiết Bảng lương"
+        tools:layout="@layout/fragment_payroll_detail" />
+
+    <!-- Thống kê ngày công -->
+    <fragment
+        android:id="@+id/employeeStatisticsFragment"
+        android:name="com.example.attendanceapp.ui.employee.home.statistic.EmployeeStatisticsFragment"
+        android:label="Thống kê công"
+        tools:layout="@layout/fragment_statistics" />
+
+    <!-- Đơn xin điều chỉnh công / Giải trình đi muộn, quên check-out -->
+    <fragment
+        android:id="@+id/employeeAdjustmentFragment"
+        android:name="com.example.attendanceapp.ui.employee.home.adjustment.EmployeeAdjustmentFragment"
+        android:label="Yêu cầu điều chỉnh công"
+        tools:layout="@layout/fragment_adjustment" />
+
+
+    <!-- ================================================================= -->
+    <!-- 3. NHÓM LỊCH TRÌNH & ĐƠN TỪ (SCHEDULE & REQUESTS)                 -->
+    <!-- ================================================================= -->
+
+    <!-- Đơn xin nghỉ phép -->
+    <fragment
+        android:id="@+id/employeeLeaveHistoryFragment"
+        android:name="com.example.attendanceapp.ui.employee.schedule.leave.EmployeeLeaveHistoryFragment"
+        android:label="Lịch sử đơn từ"
+        tools:layout="@layout/fragment_leave_history">
+        <action
+            android:id="@+id/action_employeeLeaveHistoryFragment_to_employeeLeaveRequestFragment"
+            app:destination="@id/employeeLeaveRequestFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/employeeLeaveRequestFragment"
+        android:name="com.example.attendanceapp.ui.employee.schedule.leave.EmployeeLeaveRequestFragment"
+        android:label="Tạo đơn nghỉ phép"
+        tools:layout="@layout/fragment_leave_request" />
+
+    <!-- Yêu cầu đổi ca làm việc -->
+    <fragment
+        android:id="@+id/employeeShiftExchangeFragment"
+        android:name="com.example.attendanceapp.ui.employee.schedule.EmployeeShiftExchangeFragment"
+        android:label="Yêu cầu đổi ca"
+        tools:layout="@layout/fragment_shift_exchange" />
+
+
+    <!-- ================================================================= -->
+    <!-- 4. NHÓM QUẢN LÝ HỒ SƠ & CÀI ĐẶT (PROFILE & SETTINGS SUB-FEATURES) -->
+    <!-- ================================================================= -->
+
+    <!-- Màn hình Quản lý Hồ sơ chung (Menu danh mục chỉnh sửa) -->
+    <fragment
+        android:id="@+id/employeeEditProfileFragment"
+        android:name="com.example.attendanceapp.ui.employee.profile.EmployeeEditProfileFragment"
+        android:label="Chỉnh sửa hồ sơ"
+        tools:layout="@layout/fragment_edit_profile">
+
+        <action
+            android:id="@+id/action_employeeEditProfileFragment_to_employeeEditBasicInfoFragment"
+            app:destination="@id/employeeEditBasicInfoFragment" />
+
+        <action
+            android:id="@+id/action_employeeEditProfileFragment_to_employeeContactInfoFragment"
+            app:destination="@id/employeeContactInfoFragment" />
+
+        <action
+            android:id="@+id/action_employeeEditProfileFragment_to_employeeBankAndTaxFragment"
+            app:destination="@id/employeeBankAndTaxFragment" />
+
+        <action
+            android:id="@+id/action_employeeEditProfileFragment_to_employeeJobInfoFragment"
+            app:destination="@id/employeeJobInfoFragment" />
+
+        <action
+            android:id="@+id/action_employeeEditProfileFragment_to_employeeChangeRequestHistoryFragment"
+            app:destination="@id/employeeChangeRequestHistoryFragment" />
+
+        <action
+            android:id="@+id/action_employeeEditProfileFragment_to_employeeChangePasswordFragment"
+            app:destination="@id/employeeChangePasswordFragment" />
+
+        <action
+            android:id="@+id/action_employeeEditProfileFragment_to_employeeNotificationFragment"
+            app:destination="@id/employeeNotificationFragment" />
+
+        <action
+            android:id="@+id/action_employeeEditProfileFragment_to_employeeSettingsFragment"
+            app:destination="@id/employeeSettingsFragment" />
+    </fragment>
+
+    <!-- Thông tin định danh cá nhân (Họ tên, CCCD, Ngày sinh...) -->
+    <fragment
+        android:id="@+id/employeeEditBasicInfoFragment"
+        android:name="com.example.attendanceapp.ui.employee.profile.EmployeeEditBasicInfoFragment"
+        android:label="Thông tin cá nhân"
+        tools:layout="@layout/fragment_edit_basic_info">
+
+        <action
+            android:id="@+id/action_employeeEditBasicInfoFragment_to_employeeCreateChangeRequestFragment"
+            app:destination="@id/employeeCreateChangeRequestFragment" />
+    </fragment>
+
+    <!-- Thông tin liên hệ (SĐT, Email, Địa chỉ) -->
+    <fragment
+        android:id="@+id/employeeContactInfoFragment"
+        android:name="com.example.attendanceapp.ui.employee.profile.EmployeeContactInfoFragment"
+        android:label="Thông tin liên hệ"
+        tools:layout="@layout/fragment_contact_info" />
+
+    <!-- Thông tin Tài khoản Ngân hàng & Thuế TNCN -->
+    <fragment
+        android:id="@+id/employeeBankAndTaxFragment"
+        android:name="com.example.attendanceapp.ui.employee.profile.EmployeeBankAndTaxFragment"
+        android:label="Ngân hàng &amp; Thuế"
+        tools:layout="@layout/fragment_bank_tax_info">
+
+        <action
+            android:id="@+id/action_employeeBankAndTaxFragment_to_employeeCreateChangeRequestFragment"
+            app:destination="@id/employeeCreateChangeRequestFragment" />
+    </fragment>
+
+    <!-- Thông tin công việc (Phòng ban, Chức danh, Ca làm việc) -->
+    <fragment
+        android:id="@+id/employeeJobInfoFragment"
+        android:name="com.example.attendanceapp.ui.employee.profile.EmployeeJobInfoFragment"
+        android:label="Thông tin công việc"
+        tools:layout="@layout/fragment_job_info">
+
+        <action
+            android:id="@+id/action_employeeJobInfoFragment_to_employeeCreateChangeRequestFragment"
+            app:destination="@id/employeeCreateChangeRequestFragment" />
+    </fragment>
+
+    <!-- Tạo Ticket/Yêu cầu sửa thông tin bị khóa gửi HR -->
+    <fragment
+        android:id="@+id/employeeCreateChangeRequestFragment"
+        android:name="com.example.attendanceapp.ui.employee.profile.EmployeeCreateChangeRequestFragment"
+        android:label="Tạo yêu cầu thay đổi"
+        tools:layout="@layout/fragment_create_change_request">
+
+        <action
+            android:id="@+id/action_employeeCreateChangeRequestFragment_to_employeeChangeRequestHistoryFragment"
+            app:destination="@id/employeeChangeRequestHistoryFragment" />
+    </fragment>
+
+    <!-- Lịch sử danh sách yêu cầu thay đổi gửi HR -->
+    <fragment
+        android:id="@+id/employeeChangeRequestHistoryFragment"
+        android:name="com.example.attendanceapp.ui.employee.profile.EmployeeChangeRequestHistoryFragment"
+        android:label="Lịch sử yêu cầu thay đổi"
+        tools:layout="@layout/fragment_change_request_history" />
+
+    <!-- Cài đặt ứng dụng & Quyền riêng tư -->
+    <fragment
+        android:id="@+id/employeeSettingsFragment"
+        android:name="com.example.attendanceapp.ui.employee.profile.EmployeeSettingsFragment"
+        android:label="Cài đặt &amp; Quyền riêng tư"
+        tools:layout="@layout/fragment_settings">
+
+        <action
+            android:id="@+id/action_employeeSettingsFragment_to_employeePolicyFragment"
+            app:destination="@id/employeePolicyFragment" />
+
+        <action
+            android:id="@+id/action_employeeSettingsFragment_to_employeeChangePasswordFragment"
+            app:destination="@id/employeeChangePasswordFragment" />
+    </fragment>
+
+    <!-- Đổi mật khẩu tài khoản -->
+    <fragment
+        android:id="@+id/employeeChangePasswordFragment"
+        android:name="com.example.attendanceapp.ui.employee.profile.EmployeeChangePasswordFragment"
+        android:label="Đổi mật khẩu"
+        tools:layout="@layout/fragment_change_password" />
+
+
+    <!-- ================================================================= -->
+    <!-- 5. NHÓM TRỢ GIÚP & ĐIỀU KHỎAN (HELP, POLICY & ABOUT)              -->
+    <!-- ================================================================= -->
+
+    <!-- Trung tâm trợ giúp & Câu hỏi thường gặp (Help Center / FAQ) -->
+    <fragment
+        android:id="@+id/employeeHelpCenterFragment"
+        android:name="com.example.attendanceapp.ui.employee.profile.EmployeeHelpCenterFragment"
+        android:label="Trung tâm trợ giúp"
+        tools:layout="@layout/fragment_help_center">
+
+        <action
+            android:id="@+id/action_employeeHelpCenterFragment_to_employeeCheckInFragment"
+            app:destination="@+id/employeeCheckInFragment"/>
+        <action
+            android:id="@+id/action_employeeHelpCenterFragment_to_employeeEditBasicInfoFragment"
+            app:destination="@+id/employeeEditBasicInfoFragment"/>
+        <action
+            android:id="@+id/action_employeeHelpCenterFragment_to_employeePayrollFragment"
+            app:destination="@+id/employeePayrollFragment"/>
+        <action
+            android:id="@+id/action_employeeHelpCenterFragment_to_employeeLeaveRequestFragment"
+            app:destination="@+id/employeeLeaveRequestFragment"/>
+
+    </fragment>
+
+    <!-- Chính sách bảo mật & Điều khoản sử dụng -->
+    <fragment
+        android:id="@+id/employeePolicyFragment"
+        android:name="com.example.attendanceapp.ui.employee.profile.EmployeePolicyFragment"
+        android:label="Chính sách &amp; Điều khoản"
+        tools:layout="@layout/fragment_policy" />
+
+    <!-- Màn hình Giới thiệu ứng dụng -->
+    <fragment
+        android:id="@+id/employeeAboutFragment"
+        android:name="com.example.attendanceapp.ui.employee.profile.EmployeeAboutFragment"
+        android:label="Giới thiệu ứng dụng"
+        tools:layout="@layout/fragment_about">
+
+        <action
+            android:id="@+id/action_employeeAboutFragment_to_employeePolicyFragment"
+            app:destination="@id/employeePolicyFragment" />
+    </fragment>
+
+</navigation>

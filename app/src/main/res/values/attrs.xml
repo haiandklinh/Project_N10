@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <attr name="colorPrimary" format="color" />
+    <attr name="colorPrimaryContainer" format="color" />
+    <attr name="colorSurfaceVariant" format="color" />
+    <attr name="colorOnSurfaceVariant" format="color" />
+
+    <attr name="colorAttendancePresent" format="color" />
+    <attr name="colorAttendancePresentContainer" format="color" />
+    <attr name="colorAttendancePresentCard" format="color" />
+
+    <attr name="colorAttendanceLate" format="color" />
+    <attr name="colorAttendanceLateContainer" format="color" />
+    <attr name="colorAttendanceLateCard" format="color" />
+
+    <attr name="colorAttendanceAbsent" format="color" />
+    <attr name="colorAttendanceAbsentContainer" format="color" />
+    <attr name="colorAttendanceAbsentCard" format="color" />
+
+    <attr name="colorAttendanceLeave" format="color" />
+    <attr name="colorAttendanceLeaveContainer" format="color" />
+    <attr name="colorAttendanceLeaveCard" format="color" />
+
+    <attr name="colorAttendanceNotChecked" format="color" />
+    <attr name="colorAttendanceNotCheckedContainer" format="color" />
+    <attr name="colorAttendanceNotCheckedCard" format="color" />
+
+    <attr name="colorAttendanceWeekend" format="color" />
+    <attr name="colorAttendanceWeekendContainer" format="color" />
+    <attr name="colorAttendanceWeekendCard" format="color" />
+
+    <attr name="colorAttendanceEarlyLeave" format="color" />
+    <attr name="colorAttendanceEarlyLeaveContainer" format="color" />
+    <attr name="colorAttendanceEarlyLeaveCard" format="color" />
+
+
+</resources>

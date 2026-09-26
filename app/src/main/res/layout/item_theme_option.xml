@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/btn_select_theme"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_weight="1"
+    android:background="?attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="@dimen/spacing_m">
+
+    <!-- Card hình tròn chứa duy nhất 1 ImageView -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_theme_color"
+        style="@style/CategoryCard"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        app:cardCornerRadius="@dimen/radius_full">
+
+        <ImageView
+            android:id="@+id/iv_theme_icon"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="14dp"
+            android:scaleType="centerInside"
+            android:importantForAccessibility="no"
+            tools:src="@drawable/ic_watermelon" />
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Tên chủ đề phía dưới -->
+    <TextView
+        android:id="@+id/tv_theme_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_xs"
+        android:textColor="?attr/colorOnSurface"
+        android:textSize="@dimen/text_size_body_small"
+        android:textStyle="bold"
+        tools:text="Màu Bơ" />
+
+</LinearLayout>

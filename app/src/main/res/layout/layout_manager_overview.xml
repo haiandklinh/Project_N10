@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ==================== TỔNG QUAN CHẤM CÔNG HÔM NAY (DASHBOARD QUẢN LÝ) ==================== -->
+<com.google.android.material.card.MaterialCardView android:id="@+id/card_overview"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    style="@style/MainCard"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_card_gradient">
+
+        <View
+            android:layout_width="140dp"
+            android:layout_height="140dp"
+            android:layout_marginTop="-60dp"
+            android:layout_marginEnd="-40dp"
+            android:alpha="0.08"
+            android:background="@drawable/bg_decor_circle"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <View
+            android:layout_width="90dp"
+            android:layout_height="90dp"
+            android:layout_marginStart="-30dp"
+            android:layout_marginBottom="-30dp"
+            android:alpha="0.06"
+            android:background="@drawable/bg_decor_circle"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/spacing_xl"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <TextView
+                android:id="@+id/tv_overview_label"
+                style="@style/TitleTextMediumStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Tổng quan hôm nay"
+                android:textColor="?attr/colorOnPrimary"
+                app:layout_constraintEnd_toStartOf="@id/tv_overview_date"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/tv_overview_date"
+                style="@style/TitleTextSmallStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_time_chip"
+                android:paddingHorizontal="@dimen/spacing_s"
+                android:paddingVertical="@dimen/spacing_3xs"
+                android:text="24/09/2026"
+                android:textColor="?attr/colorOnPrimary"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/tv_overview_label"
+                app:layout_constraintBottom_toBottomOf="@id/tv_overview_label" />
+
+            <!-- Tổng số nhân viên -->
+            <ImageView
+                android:id="@+id/iv_employees_icon"
+                android:layout_width="@dimen/icon_size_l"
+                android:layout_height="@dimen/icon_size_l"
+                android:layout_marginTop="@dimen/spacing_l"
+                android:alpha="0.5"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_profile"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_overview_label"
+                app:tint="?attr/colorOnPrimary" />
+
+            <TextView
+                android:id="@+id/tv_total_employees"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_2xs"
+                android:text="24"
+                android:textColor="?attr/colorOnPrimary"
+                android:textSize="36sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="@id/iv_employees_icon"
+                app:layout_constraintStart_toEndOf="@id/iv_employees_icon"
+                app:layout_constraintTop_toTopOf="@id/iv_employees_icon" />
+
+            <TextView
+                android:id="@+id/tv_total_employees_label"
+                style="@style/BodyTextMediumStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_2xs"
+                android:text="nhân viên đang hoạt động"
+                android:textColor="?attr/colorOnPrimary"
+                app:layout_constraintBottom_toBottomOf="@id/tv_total_employees"
+                app:layout_constraintStart_toEndOf="@id/tv_total_employees" />
+
+            <!-- 4 Ô THỐNG KÊ TRẠNG THÁI CHẤM CÔNG -->
+            <LinearLayout
+                android:id="@+id/layout_stats_grid"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_l"
+                android:baselineAligned="false"
+                android:orientation="horizontal"
+                app:layout_constraintTop_toBottomOf="@id/iv_employees_icon">
+
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/WaterCard"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/spacing_s"
+                    android:layout_weight="1">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingVertical="@dimen/spacing_s">
+
+                        <TextView
+                            android:id="@+id/tv_present_count"
+                            style="@style/TitleTextLargeStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="18"
+                            android:textColor="?attr/colorOnPrimary" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_3xs"
+                            android:text="Có mặt"
+                            android:textColor="?attr/colorOnPrimary"
+                            android:textSize="@dimen/text_size_body_small" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/WaterCard"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/spacing_s"
+                    android:layout_weight="1">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingVertical="@dimen/spacing_s">
+
+                        <TextView
+                            android:id="@+id/tv_late_count"
+                            style="@style/TitleTextLargeStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="3"
+                            android:textColor="?attr/colorOnPrimary" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_3xs"
+                            android:text="Đi muộn"
+                            android:textColor="?attr/colorOnPrimary"
+                            android:textSize="@dimen/text_size_body_small" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/WaterCard"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/spacing_s"
+                    android:layout_weight="1">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingVertical="@dimen/spacing_s">
+
+                        <TextView
+                            android:id="@+id/tv_absent_count"
+                            style="@style/TitleTextLargeStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="1"
+                            android:textColor="?attr/colorOnPrimary" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_3xs"
+                            android:text="Vắng mặt"
+                            android:textColor="?attr/colorOnPrimary"
+                            android:textSize="@dimen/text_size_body_small" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/WaterCard"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingVertical="@dimen/spacing_s">
+
+                        <TextView
+                            android:id="@+id/tv_leave_count"
+                            style="@style/TitleTextLargeStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="2"
+                            android:textColor="?attr/colorOnPrimary" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_3xs"
+                            android:text="Nghỉ phép"
+                            android:textColor="?attr/colorOnPrimary"
+                            android:textSize="@dimen/text_size_body_small" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/MainCard"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/spacing_l">
+
+        <!-- Tiêu đề -->
+        <TextView
+            android:id="@+id/tv_donut_title"
+            style="@style/TitleTextMediumStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textColor="?attr/colorOnSurface"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Phân bố tình trạng (tuần)" />
+
+        <!-- Biểu đồ PieChart -->
+        <com.github.mikephil.charting.charts.PieChart
+            android:id="@+id/pie_chart"
+            android:layout_width="140dp"
+            android:layout_height="140dp"
+            android:layout_marginTop="@dimen/spacing_m"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_donut_title" />
+
+        <!-- Text hiển thị giữa Donut Chart (Ràng buộc căn giữa theo PieChart) -->
+        <TextView
+            android:id="@+id/tv_center_total_days"
+            style="@style/TitleTextLargeStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="?attr/colorOnSurface"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@id/tv_center_unit"
+            app:layout_constraintEnd_toEndOf="@id/pie_chart"
+            app:layout_constraintStart_toStartOf="@id/pie_chart"
+            app:layout_constraintTop_toTopOf="@id/pie_chart"
+            app:layout_constraintVertical_chainStyle="packed"
+            tools:text="12" />
+
+        <TextView
+            android:id="@+id/tv_center_unit"
+            style="@style/BodyTextSmallStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ngày"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            app:layout_constraintBottom_toBottomOf="@id/pie_chart"
+            app:layout_constraintEnd_toEndOf="@id/pie_chart"
+            app:layout_constraintStart_toStartOf="@id/pie_chart"
+            app:layout_constraintTop_toBottomOf="@id/tv_center_total_days" />
+
+        <!-- ==================== BẢNG CHỈ SỐ THỐNG KÊ (BÊN PHẢI) ==================== -->
+
+        <!-- 1. Đúng giờ -->
+        <TextView
+            android:id="@+id/tv_label_on_time"
+            style="@style/BodyTextMediumStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_l"
+            android:drawablePadding="@dimen/spacing_xs"
+            android:text="Đúng giờ"
+            android:textColor="?attr/colorOnSurface"
+            app:drawableStartCompat="@drawable/ic_circle"
+            app:layout_constraintBottom_toTopOf="@id/tv_label_late"
+            app:layout_constraintEnd_toStartOf="@id/tv_count_on_time"
+            app:layout_constraintStart_toEndOf="@id/pie_chart"
+            app:layout_constraintTop_toTopOf="@id/pie_chart"
+            app:layout_constraintVertical_chainStyle="spread_inside" />
+
+        <TextView
+            android:id="@+id/tv_count_on_time"
+            style="@style/BodyTextMediumStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="?attr/colorOnSurface"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="@id/tv_label_on_time"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tv_label_on_time"
+            tools:text="8" />
+
+        <!-- 2. Đi muộn -->
+        <TextView
+            android:id="@+id/tv_label_late"
+            style="@style/BodyTextMediumStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_l"
+            android:drawablePadding="@dimen/spacing_xs"
+            android:text="Đi muộn"
+            android:textColor="?attr/colorOnSurface"
+            app:drawableStartCompat="@drawable/ic_circle"
+            app:layout_constraintBottom_toTopOf="@id/tv_label_early"
+            app:layout_constraintEnd_toStartOf="@id/tv_count_late"
+            app:layout_constraintStart_toEndOf="@id/pie_chart"
+            app:layout_constraintTop_toBottomOf="@id/tv_label_on_time" />
+
+        <TextView
+            android:id="@+id/tv_count_late"
+            style="@style/BodyTextMediumStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="?attr/colorOnSurface"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="@id/tv_label_late"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tv_label_late"
+            tools:text="3" />
+
+        <!-- 3. Về sớm -->
+        <TextView
+            android:id="@+id/tv_label_early"
+            style="@style/BodyTextMediumStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_l"
+            android:drawablePadding="@dimen/spacing_xs"
+            android:text="Về sớm"
+            android:textColor="?attr/colorOnSurface"
+            app:drawableStartCompat="@drawable/ic_circle"
+            app:layout_constraintBottom_toTopOf="@id/tv_label_absent"
+            app:layout_constraintEnd_toStartOf="@id/tv_count_early"
+            app:layout_constraintStart_toEndOf="@id/pie_chart"
+            app:layout_constraintTop_toBottomOf="@id/tv_label_late" />
+
+        <TextView
+            android:id="@+id/tv_count_early"
+            style="@style/BodyTextMediumStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="?attr/colorOnSurface"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="@id/tv_label_early"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tv_label_early"
+            tools:text="1" />
+
+        <!-- 4. Vắng mặt -->
+        <TextView
+            android:id="@+id/tv_label_absent"
+            style="@style/BodyTextMediumStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_l"
+            android:drawablePadding="@dimen/spacing_xs"
+            android:text="Vắng mặt"
+            android:textColor="?attr/colorOnSurface"
+            app:drawableStartCompat="@drawable/ic_circle"
+            app:layout_constraintBottom_toBottomOf="@id/pie_chart"
+            app:layout_constraintEnd_toStartOf="@id/tv_count_absent"
+            app:layout_constraintStart_toEndOf="@id/pie_chart"
+            app:layout_constraintTop_toBottomOf="@id/tv_label_early" />
+
+        <TextView
+            android:id="@+id/tv_count_absent"
+            style="@style/BodyTextMediumStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="?attr/colorOnSurface"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="@id/tv_label_absent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tv_label_absent"
+            tools:text="2" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>
