@@ -1,0 +1,38 @@
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/card_week_day"
+    style="@style/IconViewCard"
+    app:cardCornerRadius="@dimen/radius_s"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="@dimen/spacing_3xs">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="@dimen/spacing_s">
+
+        <TextView
+            android:id="@+id/tv_day_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="?attr/colorPrimary"
+            android:textSize="@dimen/text_size_label_large"
+            android:textStyle="bold"
+            tools:text="T2"/>
+
+        <ImageView
+            android:id="@+id/iv_day_status"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginTop="@dimen/spacing_s"
+            android:contentDescription="@null"
+            android:scaleType="centerInside"
+            tools:src="@drawable/ic_check"/>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

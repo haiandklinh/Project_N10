@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:layout_marginEnd="@dimen/spacing_s">
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_icon"
+        style="@style/CategoryCard"
+        android:layout_width="@dimen/icon_container_2xl"
+        android:layout_height="@dimen/icon_container_2xl"
+        android:clickable="false"
+        android:focusable="false">
+
+        <ImageView
+            android:id="@+id/iv_category_icon"
+            android:layout_width="@dimen/icon_size_l"
+            android:layout_height="@dimen/icon_size_l"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_home"
+            app:tint="?attr/colorPrimary" />
+    </com.google.android.material.card.MaterialCardView>
+
+    <TextView
+        android:id="@+id/tv_category_name"
+        style="@style/BodyTextSmallStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_xs"
+        android:text="Category Cte"
+        android:maxLines="1" />
+
+</LinearLayout>

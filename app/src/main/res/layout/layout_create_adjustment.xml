@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="@dimen/spacing_s">
+
+        <!-- CARD FORM NHẬP LIỆU -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/MainCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="@dimen/radius_l">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_l">
+
+                <!-- 1. Ngày cần điều chỉnh -->
+                <TextView
+                    style="@style/BodyTextMediumStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Ngày cần điều chỉnh *"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/til_request_date"
+                    style="@style/AppTextInputLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_xs"
+                    android:layout_marginBottom="@dimen/spacing_m"
+                    app:endIconDrawable="@drawable/ic_calendar"
+                    app:endIconMode="custom">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_request_date"
+                        style="@style/AppTextInputEditText"
+                        android:clickable="true"
+                        android:focusable="false"
+                        android:hint="dd/mm/yyyy" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- 2. Loại điều chỉnh (Dropdown/Exposed Dropdown Menu) -->
+                <TextView
+                    style="@style/BodyTextMediumStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Loại điều chỉnh *"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/til_adjustment_type"
+                    style="@style/SpinnerStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_xs"
+                    android:layout_marginBottom="@dimen/spacing_m"
+                    app:endIconMode="dropdown_menu">
+
+                    <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                        android:id="@+id/actv_adjustment_type"
+                        style="@style/AppTextInputEditText"
+                        android:hint="Chọn loại điều chỉnh"
+                        android:inputType="none" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- 3. Hàng Giờ Check-in & Giờ Check-out -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <!-- Giờ check-in -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="@dimen/spacing_xs"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            style="@style/BodyTextMediumStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Giờ check-in"
+                            android:textStyle="bold" />
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/til_check_in_time"
+                            style="@style/AppTextInputLayout"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_xs"
+                            app:endIconDrawable="@drawable/ic_history"
+                            app:endIconMode="custom">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/et_check_in_time"
+                                style="@style/AppTextInputEditText"
+                                android:clickable="true"
+                                android:focusable="false"
+                                android:hint="--:-- --" />
+                        </com.google.android.material.textfield.TextInputLayout>
+                    </LinearLayout>
+
+                    <!-- Giờ check-out -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_xs"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            style="@style/BodyTextMediumStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Giờ check-out"
+                            android:textStyle="bold" />
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/til_check_out_time"
+                            style="@style/AppTextInputLayout"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_xs"
+                            app:endIconDrawable="@drawable/ic_history"
+                            app:endIconMode="custom">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/et_check_out_time"
+                                style="@style/AppTextInputEditText"
+                                android:clickable="true"
+                                android:focusable="false"
+                                android:hint="--:-- --" />
+                        </com.google.android.material.textfield.TextInputLayout>
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- 4. Lý do điều chỉnh -->
+                <TextView
+                    style="@style/BodyTextMediumStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_m"
+                    android:text="Lý do điều chỉnh *"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/til_reason"
+                    style="@style/AppTextInputLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_xs">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_reason"
+                        style="@style/AppTextInputEditText"
+                        android:gravity="top"
+                        android:hint="Mô tả chi tiết lý do cần điều chỉnh chấm công. Cung cấp bằng chứng hoặc người xác nhận nếu có..."
+                        android:inputType="textMultiLine"
+                        android:lines="4"
+                        android:minLines="3" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- NÚT GỬI YÊU CẦU -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_submit_request"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/button_height_default"
+            android:layout_marginTop="@dimen/spacing_l"
+            android:layout_marginHorizontal="@dimen/spacing_m"
+            android:text="Gửi yêu cầu điều chỉnh"
+            android:textSize="@dimen/text_size_body_medium"
+            android:textStyle="bold"
+            app:cornerRadius="@dimen/radius_m" />
+
+        <!-- CARD LƯU Ý -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/ItemCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_m"
+            app:cardBackgroundColor="#FFFDE7"
+            app:cardCornerRadius="@dimen/radius_m"
+            app:strokeColor="#FFE082"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_m">
+
+                <TextView
+                    style="@style/BodyTextMediumStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:drawablePadding="@dimen/spacing_3xs"
+                    android:text="Lưu ý:"
+                    android:textColor="#E65100"
+                    android:textStyle="bold" />
+
+                <TextView
+                    style="@style/BodyTextSmallStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_3xs"
+                    android:text="Yêu cầu sẽ được xem xét trong vòng 1-2 ngày làm việc. Nêu rõ lý do và cung cấp bằng chứng giúp yêu cầu được duyệt nhanh hơn."
+                    android:textColor="#F57F17" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

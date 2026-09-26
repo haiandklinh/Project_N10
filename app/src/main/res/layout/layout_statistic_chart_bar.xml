@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/MainCard"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/spacing_l">
+
+        <!-- Tiêu đề -->
+        <TextView
+            android:id="@+id/tv_chart_title"
+            style="@style/TitleTextMediumStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textColor="?attr/colorOnSurface"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@id/tv_chart_subtitle"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Giờ làm tuần này" />
+
+        <!-- Subtitle Khoảng thời gian -->
+        <TextView
+            android:id="@+id/tv_chart_subtitle"
+            style="@style/BodyTextSmallStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            app:layout_constraintBottom_toBottomOf="@id/tv_chart_title"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tv_chart_title"
+            tools:text="08/09 – 13/09" />
+
+        <!-- Biểu đồ Cột (MPAndroidChart BarChart) -->
+        <com.github.mikephil.charting.charts.BarChart
+            android:id="@+id/bar_chart"
+            android:layout_width="0dp"
+            android:layout_height="180dp"
+            android:layout_marginTop="@dimen/spacing_m"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_chart_title" />
+
+        <!-- ==================== LEGEND CHÚ THÍCH CĂN GIỮA (PACKED CHAIN) ==================== -->
+
+        <!-- Legend 1: ≥ 9 giờ -->
+        <TextView
+            android:id="@+id/tv_legend_overtime"
+            style="@style/BodyTextSmallStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_m"
+            android:drawablePadding="@dimen/spacing_xs"
+            android:text="≥ 9 giờ"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            app:drawableStartCompat="@drawable/ic_circle"
+            app:layout_constraintEnd_toStartOf="@id/tv_legend_standard"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/bar_chart" />
+
+        <!-- Legend 2: 8-9 giờ -->
+        <TextView
+            android:id="@+id/tv_legend_standard"
+            style="@style/BodyTextSmallStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_l"
+            android:drawablePadding="@dimen/spacing_xs"
+            android:text="8 - 9 giờ"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            app:drawableStartCompat="@drawable/ic_circle"
+            app:layout_constraintBottom_toBottomOf="@id/tv_legend_overtime"
+            app:layout_constraintEnd_toStartOf="@id/tv_legend_under"
+            app:layout_constraintStart_toEndOf="@id/tv_legend_overtime"
+            app:layout_constraintTop_toTopOf="@id/tv_legend_overtime" />
+
+        <!-- Legend 3: < 8 giờ -->
+        <TextView
+            android:id="@+id/tv_legend_under"
+            style="@style/BodyTextSmallStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_l"
+            android:drawablePadding="@dimen/spacing_xs"
+            android:text="&lt; 8 giờ"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            app:drawableStartCompat="@drawable/ic_circle"
+            app:layout_constraintBottom_toBottomOf="@id/tv_legend_overtime"
+            app:layout_constraintEnd_toStartOf="@id/tv_legend_off"
+            app:layout_constraintStart_toEndOf="@id/tv_legend_standard"
+            app:layout_constraintTop_toTopOf="@id/tv_legend_overtime" />
+
+        <!-- Legend 4: Nghỉ -->
+        <TextView
+            android:id="@+id/tv_legend_off"
+            style="@style/BodyTextSmallStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_l"
+            android:drawablePadding="@dimen/spacing_xs"
+            android:text="Nghỉ"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            app:drawableStartCompat="@drawable/ic_circle"
+            app:layout_constraintBottom_toBottomOf="@id/tv_legend_overtime"
+            app:layout_constraintStart_toEndOf="@id/tv_legend_under"
+            app:layout_constraintTop_toTopOf="@id/tv_legend_overtime" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

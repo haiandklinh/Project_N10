@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_today_shift"
+        style="@style/CategoryCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardBackgroundColor="?attr/colorPrimaryContainer"
+        android:foreground="?attr/selectableItemBackground"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/spacing_m">
+
+            <!-- ICON -->
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_shift_icon"
+                style="@style/CircleIconCardStyle"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                app:cardBackgroundColor="?attr/colorSurfaceVariant"
+                app:cardCornerRadius="12dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent">
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:layout_gravity="center"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_schedule"
+                    app:tint="?attr/colorPrimary" />
+
+            </com.google.android.material.card.MaterialCardView>
+
+
+            <!-- TÊN CA + KHUNG GIỜ -->
+            <TextView
+                android:id="@+id/tv_shift_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_m"
+                android:layout_marginTop="2dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="Ca sáng · 08:00 - 17:00"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="@dimen/text_size_body_medium"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toStartOf="@id/tag_shift_status"
+                app:layout_constraintStart_toEndOf="@id/card_shift_icon"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="Ca sáng · 08:00 - 17:00" />
+
+            <!-- ĐỊA ĐIỂM / GHI CHÚ (tuỳ chọn) -->
+
+            <TextView
+                android:id="@+id/tv_shift_location"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_m"
+                android:layout_marginTop="3dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="Văn phòng chính · Tầng 3"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="@dimen/text_size_label_small"
+                app:layout_constraintEnd_toStartOf="@id/tag_shift_status"
+                app:layout_constraintStart_toEndOf="@id/card_shift_icon"
+                app:layout_constraintTop_toBottomOf="@id/tv_shift_name" />
+
+            <!-- CHIP TRẠNG THÁI: Chưa vào ca / Đang làm việc / Đã hoàn thành / Nghỉ -->
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/tag_shift_status"
+                style="@style/ChipStatusStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Chưa vào ca"
+                app:chipBackgroundColor="?attr/colorSurfaceVariant"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/card_shift_icon"
+                app:layout_constraintBottom_toBottomOf="@id/card_shift_icon"
+                />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
