@@ -4,7 +4,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -45,7 +44,7 @@ public class EmployeeMainActivity extends AppCompatActivity {
         viewModel = new ViewModelProvider(this).get(EmployeeMainViewModel.class);
 
         // 3. UI Setup
-        EdgeToEdge.enable(this);
+
         binding = ActivityEmployeeMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 

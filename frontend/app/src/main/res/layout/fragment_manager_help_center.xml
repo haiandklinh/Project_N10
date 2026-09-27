@@ -1,0 +1,526 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?android:attr/colorBackground">
+
+    <!-- Toolbar -->
+    <com.example.attendanceapp.core.utils.ToolbarApp
+        android:id="@+id/layout_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Content -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        android:overScrollMode="never"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/layout_toolbar">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_m">
+
+            <!-- Search Bar -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/RadiusItemCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_l"
+                app:cardCornerRadius="@dimen/radius_full">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/search_height"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="@dimen/spacing_l">
+
+                    <ImageView
+                        android:layout_width="@dimen/icon_size_m"
+                        android:layout_height="@dimen/icon_size_m"
+                        android:src="@drawable/ic_search"
+                        app:tint="?attr/colorPrimary" />
+
+                    <EditText
+                        android:id="@+id/et_search_help"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@android:color/transparent"
+                        android:hint="Tìm kiếm câu hỏi hỗ trợ quản lý..."
+                        android:importantForAutofill="no"
+                        android:inputType="text"
+                        android:paddingStart="@dimen/spacing_s"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textColorHint="?attr/colorOnSurfaceVariant"
+                        android:textSize="@dimen/text_size_body_medium" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Quick Categories -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_s"
+                android:text="Danh mục hỗ trợ quản lý"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="@dimen/text_size_title_medium"
+                android:textStyle="bold" />
+
+            <GridLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_l"
+                android:alignmentMode="alignMargins"
+                android:columnCount="2"
+                android:columnOrderPreserved="false"
+                android:rowCount="2">
+
+                <!-- Cat 1: Xếp ca làm -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_help_schedule"
+                    style="@style/CategoryCard"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="@dimen/spacing_xs"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_m">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_size_xl"
+                            android:layout_height="@dimen/icon_size_xl"
+                            android:src="@drawable/ic_history"
+                            app:tint="?attr/colorPrimary" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_s"
+                            android:text="Xếp ca làm"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textSize="@dimen/text_size_body_medium"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Cat 2: Phê duyệt đơn -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_help_approval"
+                    style="@style/CategoryCard"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="@dimen/spacing_xs"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_m">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_size_xl"
+                            android:layout_height="@dimen/icon_size_xl"
+                            android:src="@drawable/ic_form"
+                            app:tint="?attr/colorPrimary" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_s"
+                            android:text="Phê duyệt đơn"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textSize="@dimen/text_size_body_medium"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Cat 3: Quản lý lương -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_help_payroll"
+                    style="@style/CategoryCard"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="@dimen/spacing_xs"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_m">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_size_xl"
+                            android:layout_height="@dimen/icon_size_xl"
+                            android:src="@drawable/ic_payroll"
+                            app:tint="?attr/colorPrimary" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_s"
+                            android:text="Quản lý lương"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textSize="@dimen/text_size_body_medium"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Cat 4: Quản lý nhân sự -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_help_human"
+                    style="@style/CategoryCard"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="@dimen/spacing_xs"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_m">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_size_xl"
+                            android:layout_height="@dimen/icon_size_xl"
+                            android:src="@drawable/ic_profile"
+                            app:tint="?attr/colorPrimary" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_s"
+                            android:text="Quản lý nhân sự"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textSize="@dimen/text_size_body_medium"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+            </GridLayout>
+
+            <!-- Popular FAQ -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_s"
+                android:text="Câu hỏi thường gặp (FAQ)"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="@dimen/text_size_title_medium"
+                android:textStyle="bold" />
+
+            <!-- FAQ 1 -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/MainCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_s"
+                android:clickable="true"
+                android:focusable="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/spacing_m">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Làm thế nào để thêm nhân viên mới vào hệ thống?"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textSize="@dimen/text_size_body_medium"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_2xs"
+                            android:text="Bạn chỉ cần gửi Mã mời (Invite Code) hiển thị ở màn hình Hồ sơ cho nhân viên. Khi nhân viên nhập mã này, yêu cầu sẽ xuất hiện trong mục 'Phê duyệt'."
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:textSize="@dimen/text_size_body_small" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="@dimen/icon_size_m"
+                        android:layout_height="@dimen/icon_size_m"
+                        android:layout_marginStart="@dimen/spacing_s"
+                        android:src="@drawable/ic_chevron_right"
+                        app:tint="?attr/colorOnSurfaceVariant" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- FAQ 2 -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/MainCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_s"
+                android:clickable="true"
+                android:focusable="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/spacing_m">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Làm thế nào để sửa ca làm việc đã xếp?"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textSize="@dimen/text_size_body_medium"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_2xs"
+                            android:text="Bạn truy cập vào tab 'Lịch trình', chọn nhân viên và ngày cần chỉnh sửa, sau đó chọn ca làm mới và xác nhận cập nhật."
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:textSize="@dimen/text_size_body_small" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="@dimen/icon_size_m"
+                        android:layout_height="@dimen/icon_size_m"
+                        android:layout_marginStart="@dimen/spacing_s"
+                        android:src="@drawable/ic_chevron_right"
+                        app:tint="?attr/colorOnSurfaceVariant" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- FAQ 3 -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/MainCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_l"
+                android:clickable="true"
+                android:focusable="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/spacing_m">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Thời gian chốt bảng lương tự động là khi nào?"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textSize="@dimen/text_size_body_medium"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_2xs"
+                            android:text="Hệ thống sẽ tổng hợp dữ liệu chấm công ngay khi hết tháng. Bạn có thể duyệt và nhấn 'Chốt lương' bất kỳ lúc nào tại mục 'Quản lý tiền lương'."
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:textSize="@dimen/text_size_body_small" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="@dimen/icon_size_m"
+                        android:layout_height="@dimen/icon_size_m"
+                        android:layout_marginStart="@dimen/spacing_s"
+                        android:src="@drawable/ic_chevron_right"
+                        app:tint="?attr/colorOnSurfaceVariant" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Contact Support Section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_s"
+                android:text="Vẫn cần hỗ trợ kỹ thuật?"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="@dimen/text_size_title_medium"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_s"
+                android:text="Liên hệ trực tiếp với bộ phận Chăm sóc khách hàng và kỹ thuật của hệ thống."
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textStyle="italic"
+                android:textSize="@dimen/text_size_body_medium" />
+
+            <com.google.android.material.card.MaterialCardView
+                style="@style/MainCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_s"
+                android:layout_marginBottom="@dimen/spacing_l"
+                app:cardBackgroundColor="?attr/colorSurfaceVariant">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_m">
+
+                    <!-- Hotline -->
+                    <LinearLayout
+                        android:id="@+id/layout_call_support"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_size_l"
+                            android:layout_height="@dimen/icon_size_l"
+                            android:src="@drawable/ic_phone"
+                            app:tint="?attr/colorPrimary" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/spacing_m"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Tổng đài Hotline kỹ thuật"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:textSize="@dimen/text_size_label_small" />
+
+                            <TextView
+                                android:id="@+id/tv_phone"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0987654321"
+                                android:textColor="?attr/colorPrimary"
+                                android:textSize="@dimen/text_size_body_medium"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_size_m"
+                            android:layout_height="@dimen/icon_size_m"
+                            android:layout_marginStart="@dimen/spacing_s"
+                            android:src="@drawable/ic_chevron_right"
+                            app:tint="?attr/colorOnSurfaceVariant" />
+                    </LinearLayout>
+
+                    <View
+                        style="@style/DividerStyle"
+                        android:layout_marginTop="@dimen/spacing_s" />
+
+                    <!-- Email -->
+                    <LinearLayout
+                        android:id="@+id/layout_email_support"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingTop="@dimen/spacing_s">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_size_l"
+                            android:layout_height="@dimen/icon_size_l"
+                            android:src="@drawable/ic_email"
+                            app:tint="?attr/colorPrimary" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/spacing_m"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Gửi thư hỗ trợ"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:textSize="@dimen/text_size_label_small" />
+
+                            <TextView
+                                android:id="@+id/tv_email"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="attendanceapp2026@gmail.com"
+                                android:textColor="?attr/colorOnSurface"
+                                android:textSize="@dimen/text_size_body_medium"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_size_m"
+                            android:layout_height="@dimen/icon_size_m"
+                            android:layout_marginStart="@dimen/spacing_s"
+                            android:src="@drawable/ic_chevron_right"
+                            app:tint="?attr/colorOnSurfaceVariant" />
+                    </LinearLayout>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

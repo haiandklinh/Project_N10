@@ -87,6 +87,12 @@
         <action
             android:id="@+id/action_managerProfileFragment_to_managerChangePasswordFragment"
             app:destination="@id/managerChangePasswordFragment" />
+        <action
+            android:id="@+id/action_managerProfileFragment_to_managerHelpCenterFragment"
+            app:destination="@id/managerHelpCenterFragment" />
+        <action
+            android:id="@+id/action_managerProfileFragment_to_managerAboutFragment"
+            app:destination="@id/managerAboutFragment" />
     </fragment>
 
 
@@ -135,5 +141,30 @@
         android:name="com.example.attendanceapp.ui.manager.profile.ManagerChangePasswordFragment"
         android:label="Đổi mật khẩu"
         tools:layout="@layout/fragment_change_password" />
+
+    <!-- Trung tâm trợ giúp & Câu hỏi thường gặp -->
+    <fragment
+        android:id="@+id/managerHelpCenterFragment"
+        android:name="com.example.attendanceapp.ui.manager.profile.ManagerHelpCenterFragment"
+        android:label="Trung tâm trợ giúp"
+        tools:layout="@layout/fragment_help_center" />
+
+    <!-- Màn hình Giới thiệu ứng dụng -->
+    <fragment
+        android:id="@+id/managerAboutFragment"
+        android:name="com.example.attendanceapp.ui.manager.profile.ManagerAboutFragment"
+        android:label="Giới thiệu ứng dụng"
+        tools:layout="@layout/fragment_about">
+        <action
+            android:id="@+id/action_managerAboutFragment_to_managerPolicyFragment"
+            app:destination="@id/managerPolicyFragment" />
+    </fragment>
+
+    <!-- Chính sách bảo mật & Điều khoản sử dụng -->
+    <fragment
+        android:id="@+id/managerPolicyFragment"
+        android:name="com.example.attendanceapp.ui.employee.profile.EmployeePolicyFragment"
+        android:label="Chính sách &amp; Điều khoản"
+        tools:layout="@layout/fragment_policy" />
 
 </navigation>

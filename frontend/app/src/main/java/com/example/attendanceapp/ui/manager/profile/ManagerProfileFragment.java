@@ -33,6 +33,8 @@ import com.example.attendanceapp.domain.usecase.auth.LogoutUseCase;
 import com.example.attendanceapp.ui.main.auth.AuthActivity;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
+import java.util.Locale;
+
 import javax.inject.Inject;
 
 import dagger.hilt.android.AndroidEntryPoint;
@@ -106,10 +108,11 @@ public class ManagerProfileFragment extends Fragment {
     }
 
     private void loadBusinessSummary() {
-        // Giả lập dữ liệu - Sau này sẽ gọi từ ViewModel/Repository
-        binding.layoutSummaryCards.findViewById(R.id.tv_total_employees).setOnClickListener(v -> {
-            // Chuyển sang tab Nhân sự nếu cần
-        });
+        if (binding.tvTotalEmployees != null) {
+            binding.tvTotalEmployees.setOnClickListener(v -> {
+                // Chuyển sang tab Nhân sự nếu cần
+            });
+        }
     }
 
     private void setupListeners() {
@@ -126,7 +129,6 @@ public class ManagerProfileFragment extends Fragment {
             Navigation.findNavController(v).navigate(R.id.action_managerProfileFragment_to_managerStatisticFragment));
         
         binding.rowSalaryConfig.getRoot().setOnClickListener(v -> {
-            // Nếu bạn có màn hình cấu hình lương chuyên sâu, hãy thêm action vào nav_manager.xml
             Toast.makeText(requireContext(), "Chức năng Cấu hình lương ca làm", Toast.LENGTH_SHORT).show();
         });
 
@@ -137,12 +139,19 @@ public class ManagerProfileFragment extends Fragment {
         binding.rowChangePassword.getRoot().setOnClickListener(v -> 
             Navigation.findNavController(v).navigate(R.id.action_managerProfileFragment_to_managerChangePasswordFragment));
 
-        // Logic Hệ thống
+        // ----- Nhóm Ứng dụng -----
         binding.rowLanguage.getRoot().setOnClickListener(v -> showLanguagePicker());
         binding.rowThemes.getRoot().setOnClickListener(v -> showThemePickerBottomSheet());
         binding.rowDarkMode.switchRow.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (buttonView.isPressed()) DarkModeAnimationHelper.startCloseCurtainAnimation(requireActivity(), isChecked);
         });
+
+        // Trợ giúp và Hỗ trợ & Giới thiệu ứng dụng
+        binding.rowHelpSupport.getRoot().setOnClickListener(v -> 
+            Navigation.findNavController(v).navigate(R.id.action_managerProfileFragment_to_managerHelpCenterFragment));
+        
+        binding.rowAboutApp.getRoot().setOnClickListener(v -> 
+            Navigation.findNavController(v).navigate(R.id.action_managerProfileFragment_to_managerAboutFragment));
 
         binding.btnLogout.setOnClickListener(v -> showLogoutConfirmDialog());
     }
@@ -172,14 +181,23 @@ public class ManagerProfileFragment extends Fragment {
     }
 
     private void applyNewTheme(SharedPreferences pref, BottomSheetDialog dialog, String themeKey) {
-        pref.edit().putString("app_theme", themeKey).commit();
+        pref.edit().putString("app_theme", themeKey).apply();
         dialog.dismiss();
         requireActivity().recreate();
     }
 
     private void showLanguagePicker() {
         String[] languages = {getString(R.string.profile_language_vietnamese), getString(R.string.profile_language_english)};
-        int selectedIndex = AppCompatDelegate.getApplicationLocales().isEmpty() || !AppCompatDelegate.getApplicationLocales().get(0).getLanguage().equals("en") ? 0 : 1;
+        
+        LocaleListCompat locales = AppCompatDelegate.getApplicationLocales();
+        int selectedIndex = 0;
+        if (!locales.isEmpty()) {
+            Locale currentLocale = locales.get(0);
+            if (currentLocale != null && "en".equals(currentLocale.getLanguage())) {
+                selectedIndex = 1;
+            }
+        }
+        
         new AlertDialog.Builder(requireContext()).setTitle(getString(R.string.profile_select_language)).setSingleChoiceItems(languages, selectedIndex, (dialog, which) -> {
             AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(which == 0 ? "vi" : "en"));
             dialog.dismiss();
@@ -192,7 +210,7 @@ public class ManagerProfileFragment extends Fragment {
 
     private void performLogout() {
         if (logoutUseCase != null) {
-            logoutUseCase.execute(new AuthCallback<Void>() {
+            logoutUseCase.execute(new AuthCallback<>() {
                 @Override
                 public void onSuccess(Void result) {
                     navigateToLoginAndFinish();
@@ -200,8 +218,6 @@ public class ManagerProfileFragment extends Fragment {
 
                 @Override
                 public void onError(String errorMessage) {
-                    // Session local đã được clear trong AuthRepositoryImpl dù có lỗi
-                    // (ví dụ lỗi gọi API invalidate token), nên vẫn điều hướng về Login
                     navigateToLoginAndFinish();
                 }
             });
@@ -209,13 +225,13 @@ public class ManagerProfileFragment extends Fragment {
             navigateToLoginAndFinish();
         }
     }
+
     private void navigateToLoginAndFinish() {
         Intent intent = new Intent(requireContext(), AuthActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         requireActivity().finish();
     }
-
 
     @Override
     public void onDestroyView() {
