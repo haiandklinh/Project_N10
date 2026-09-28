@@ -19,11 +19,11 @@
         app:strokeColor="?attr/colorPrimary"
         app:strokeWidth="1dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <!-- Thông tin chào mừng -->
     <LinearLayout
+        android:id="@+id/layout_welcome_info"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/spacing_m"
@@ -66,8 +66,8 @@
         android:layout_height="@dimen/icon_container_m"
         android:layout_marginEnd="@dimen/spacing_2xs"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintTop_toTopOf="@id/iv_avatar"
+        app:layout_constraintBottom_toBottomOf="@id/iv_avatar">
 
         <ImageView
             android:layout_width="@dimen/icon_size_m"
@@ -92,5 +92,71 @@
         app:layout_constraintEnd_toEndOf="@id/btn_notification"
         android:translationX="-1dp"
         android:translationY="1dp" />
+
+    <!-- ==================== TỔNG HỢP NHANH MÃ MỜI DOANH NGHIỆP ==================== -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_home_invite_code"
+        style="@style/CategoryCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_m"
+        app:layout_constraintTop_toBottomOf="@id/iv_avatar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/spacing_m">
+
+            <TextView
+                android:id="@+id/tv_home_invite_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@string/manager_profile_invite_title"
+                android:textColor="?attr/colorOnPrimaryContainer"
+                android:textSize="@dimen/text_size_body_medium"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/btn_home_copy_code" />
+
+            <TextView
+                android:id="@+id/tv_home_invite_code"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="BKS-CODE-2024"
+                android:textColor="?attr/colorPrimary"
+                android:textSize="@dimen/text_size_title_large"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_home_invite_title" />
+
+            <TextView
+                android:id="@+id/tv_home_invite_desc"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@string/manager_profile_invite_description"
+                android:textColor="?attr/colorOnPrimaryContainer"
+                android:textSize="@dimen/text_size_body_small"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_home_invite_code"
+                app:layout_constraintEnd_toStartOf="@id/btn_home_copy_code" />
+
+            <ImageView
+                android:id="@+id/btn_home_copy_code"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Sao chép mã"
+                android:padding="2dp"
+                android:src="@drawable/ic_copy"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:tint="?attr/colorPrimary" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </com.google.android.material.card.MaterialCardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

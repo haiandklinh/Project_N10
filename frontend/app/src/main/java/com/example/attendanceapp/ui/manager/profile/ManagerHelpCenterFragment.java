@@ -13,7 +13,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
-import com.example.attendanceapp.R;
 import com.example.attendanceapp.databinding.FragmentManagerHelpCenterBinding;
 
 import dagger.hilt.android.AndroidEntryPoint;
@@ -54,19 +53,6 @@ public class ManagerHelpCenterFragment extends Fragment {
     }
 
     private void setupListeners() {
-        // Điều hướng theo các chức năng của Manager
-        binding.cardHelpSchedule.setOnClickListener(v -> 
-            Navigation.findNavController(v).navigate(R.id.managerScheduleFragment));
-            
-        binding.cardHelpApproval.setOnClickListener(v -> 
-            Navigation.findNavController(v).navigate(R.id.managerApprovalFragment));
-            
-        binding.cardHelpPayroll.setOnClickListener(v -> 
-            Navigation.findNavController(v).navigate(R.id.managerPayrollFragment));
-            
-        binding.cardHelpHuman.setOnClickListener(v -> 
-            Navigation.findNavController(v).navigate(R.id.managerHumanFragment));
-
         // Các hành động liên hệ hỗ trợ
         binding.layoutCallSupport.setOnClickListener(v -> {
             try {

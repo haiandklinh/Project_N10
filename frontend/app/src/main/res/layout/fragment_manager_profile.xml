@@ -352,11 +352,12 @@
                         app:layout_constraintTop_toBottomOf="@id/tv_invite_title"
                         tools:text="BKS-CODE-2024" />
 
-                    <!-- Môn tả/Ghi chú bên dưới mã Code -->
+                    <!-- Mô tả/Ghi chú bên dưới mã Code -->
                     <TextView
                         android:id="@+id/tv_invite_description"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:text="@string/manager_profile_invite_description"
                         android:textColor="?attr/colorOnPrimaryContainer"
                         android:textSize="@dimen/text_size_body_small"
                         app:layout_constraintEnd_toStartOf="@id/btn_copy_code"
@@ -386,5 +387,4 @@
         </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
 </androidx.core.widget.NestedScrollView>

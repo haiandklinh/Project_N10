@@ -14,8 +14,6 @@ import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,9 +28,10 @@ import androidx.fragment.app.Fragment;
 import com.example.attendanceapp.R;
 import com.example.attendanceapp.databinding.FragmentEmployeeCheckInBinding;
 import com.example.attendanceapp.domain.model.CheckState;
-
 import com.example.attendanceapp.core.utils.DateTimeFormatUtils;
 import com.example.attendanceapp.core.utils.IntervalTicker;
+import com.mapbox.bindgen.Expected;
+import com.mapbox.bindgen.Value;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -40,6 +39,7 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.Priority;
 
+import com.mapbox.bindgen.Value;
 import com.mapbox.common.MapboxOptions;
 import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.FeatureCollection;
@@ -49,19 +49,12 @@ import com.mapbox.maps.CameraOptions;
 import com.mapbox.maps.MapView;
 import com.mapbox.maps.MapboxMap;
 import com.mapbox.maps.Style;
-import com.mapbox.maps.extension.style.layers.LayerUtils;
-import com.mapbox.maps.extension.style.layers.generated.FillLayer;
-import com.mapbox.maps.extension.style.sources.SourceUtils;
-import com.mapbox.maps.extension.style.sources.generated.GeoJsonSource;
 
-// Annotation imports cho Marker trong Mapbox SDK v11
 import com.mapbox.maps.plugin.Plugin;
 import com.mapbox.maps.plugin.annotation.AnnotationPlugin;
 import com.mapbox.maps.plugin.annotation.AnnotationType;
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotationManager;
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions;
-
-// Compass & Gestures plugin imports
 import com.mapbox.maps.plugin.compass.CompassUtils;
 
 import java.io.IOException;
@@ -88,11 +81,14 @@ public class EmployeeCheckInFragment extends Fragment {
     private static final String OFFICE_RADIUS_SOURCE = "office-radius-source";
     private static final String OFFICE_RADIUS_LAYER = "office-radius-layer";
 
-    private static final int COLOR_CONDITION_OK = Color.rgb(76, 175, 80);
-    private static final int COLOR_CONDITION_FAIL = Color.rgb(244, 67, 54);
+    private static final int COLOR_CONDITION_OK =
+            Color.rgb(76, 175, 80);
+
+    private static final int COLOR_CONDITION_FAIL =
+            Color.rgb(244, 67, 54);
+
     private static final long CONDITIONS_CHECK_INTERVAL_MS = 3000L;
 
-    // Cấu hình cập nhật vị trí cho FusedLocationProviderClient
     private static final long LOCATION_UPDATE_INTERVAL_MS = 2000L;
     private static final long LOCATION_UPDATE_MIN_INTERVAL_MS = 1000L;
 
@@ -102,12 +98,12 @@ public class EmployeeCheckInFragment extends Fragment {
 
     private FragmentEmployeeCheckInBinding binding;
 
-    // -- Bản đồ (Mapbox) --
+    // -- Bản đồ Mapbox --
     private MapView mapView;
     private MapboxMap mapboxMap;
     private PointAnnotationManager pointAnnotationManager;
 
-    // -- Vị trí (FusedLocationProviderClient) --
+    // -- Vị trí --
     private FusedLocationProviderClient fusedLocationClient;
     private LocationCallback locationCallback;
     private Location currentLocation;
@@ -118,167 +114,235 @@ public class EmployeeCheckInFragment extends Fragment {
 
     private ActivityResultLauncher<String[]> locationPermissionLauncher;
 
-    // -- Đồng hồ --
-    private final Handler clockHandler = new Handler(Looper.getMainLooper());
-    private Runnable clockTickRunnable;
-    private final DateTimeFormatter clockFormatter = DateTimeFormatter.ofPattern("HH:mm");
-    private final DateTimeFormatter dateFormatter =
-            DateTimeFormatter.ofPattern("EEEE, dd 'tháng' MM, yyyy", new Locale("vi", "VN"));
-
-    // -- Điều kiện chấm công (polling) --
-    private final Handler conditionsHandler = new Handler(Looper.getMainLooper());
-    private Runnable conditionsTickRunnable;
-
-    // -- Trạng thái chấm công --
-    private CheckState currentState = CheckState.NOT_CHECKED_IN;
-    private LocalTime checkInTime;
-    private LocalTime checkOutTime;
+    // -- Đồng hồ & điều kiện --
+    private final DateTimeFormatter clockFormatter =
+            DateTimeFormatter.ofPattern("HH:mm");
 
     private IntervalTicker clockTicker;
     private IntervalTicker conditionsTicker;
+
+    // -- Trạng thái chấm công --
+    private CheckState currentState =
+            CheckState.NOT_CHECKED_IN;
 
     public EmployeeCheckInFragment() {
     }
 
     // =====================================================================
-    // 1. VÒNG ĐỜI FRAGMENT (LIFECYCLE)
+    // 1. VÒNG ĐỜI FRAGMENT
     // =====================================================================
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        MapboxOptions.setAccessToken(getString(R.string.mapbox_access_token));
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
 
-        clockTicker = new IntervalTicker(1000, this::updateClockLabel);
-        conditionsTicker = new IntervalTicker(CONDITIONS_CHECK_INTERVAL_MS, this::checkAndRenderConditions);
+        MapboxOptions.setAccessToken(
+                getString(R.string.mapbox_access_token)
+        );
+
+        fusedLocationClient =
+                LocationServices.getFusedLocationProviderClient(
+                        requireContext()
+                );
+
+        clockTicker = new IntervalTicker(
+                1000,
+                this::updateClockLabel
+        );
+
+        conditionsTicker = new IntervalTicker(
+                CONDITIONS_CHECK_INTERVAL_MS,
+                this::checkAndRenderConditions
+        );
+
         registerPermissionLauncher();
     }
 
-
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        binding = FragmentEmployeeCheckInBinding.inflate(inflater, container, false);
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState
+    ) {
+        binding = FragmentEmployeeCheckInBinding.inflate(
+                inflater,
+                container,
+                false
+        );
+
         setupMapboxMap();
+
         return binding.getRoot();
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(
+            @NonNull View view,
+            @Nullable Bundle savedInstanceState
+    ) {
         super.onViewCreated(view, savedInstanceState);
 
         setupViews();
         setupListeners();
         updateDateLabel();
-        requestLocationPermissionIfNeeded(); //bắt đầu xin quyền GPS
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        if (mapView != null) mapView.onStart();
+        requestLocationPermissionIfNeeded();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        clockTicker.start();
-        conditionsTicker.start();
-        if (checkGpsEnabled()) startLocationUpdates();
+
+        if (clockTicker != null) {
+            clockTicker.start();
+        }
+
+        if (conditionsTicker != null) {
+            conditionsTicker.start();
+        }
+
+        if (checkGpsEnabled()) {
+            startLocationUpdates();
+        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        clockTicker.stop();
-        conditionsTicker.stop();
-        stopLocationUpdates();
-    }
 
-    @Override
-    public void onStop() {
-        super.onStop();
-        if (mapView != null) mapView.onStop();
+        if (clockTicker != null) {
+            clockTicker.stop();
+        }
+
+        if (conditionsTicker != null) {
+            conditionsTicker.stop();
+        }
+
+        stopLocationUpdates();
     }
 
     @Override
     public void onDestroyView() {
-        stopClockTicking();
-        stopConditionsPolling();
         stopLocationUpdates();
 
         if (pointAnnotationManager != null) {
+            pointAnnotationManager.deleteAll();
             pointAnnotationManager.onDestroy();
             pointAnnotationManager = null;
         }
 
-        if (mapView != null) {
-            mapView.onDestroy();
-            mapView = null;
-        }
-
+        mapboxMap = null;
+        mapView = null;
         binding = null;
+
         super.onDestroyView();
     }
 
     // =====================================================================
-    // 2. THIẾT LẬP GIAO DIỆN BAN ĐẦU (INIT VIEWS & LISTENERS)
+    // 2. THIẾT LẬP GIAO DIỆN
     // =====================================================================
 
     private void setupViews() {
-        binding.tagLocationValid.setText(getString(R.string.checkin_locating));
-        binding.cardWarningOutOfRange.setVisibility(View.GONE);
-        binding.tvDistanceToOffice.setText(getString(R.string.checkin_determining_distance));
-        binding.tvLocationAddress.setText(getString(R.string.checkin_determining_location));
+        if (binding == null) {
+            return;
+        }
+
+        binding.tagLocationValid.setText(
+                getString(R.string.checkin_locating)
+        );
+
+        binding.cardWarningOutOfRange.setVisibility(
+                View.GONE
+        );
+
+        binding.tvDistanceToOffice.setText(
+                getString(R.string.checkin_determining_distance)
+        );
+
+        binding.tvLocationAddress.setText(
+                getString(R.string.checkin_determining_location)
+        );
 
         renderCheckButtonState();
         checkAndRenderConditions();
     }
 
     private void setupListeners() {
-        binding.btnCheckAction.setOnClickListener(v -> handleCheckActionClicked());
-    }
-
-    // =====================================================================
-    // 3. ĐỒNG HỒ & NGÀY THÁNG (CLOCK & DATE)
-    // =====================================================================
-
-
-    private void stopClockTicking() {
-        if (clockTickRunnable != null) {
-            clockHandler.removeCallbacks(clockTickRunnable);
-            clockTickRunnable = null;
+        if (binding == null) {
+            return;
         }
+
+        binding.btnCheckAction.setOnClickListener(
+                v -> handleCheckActionClicked()
+        );
     }
+
+    // =====================================================================
+    // 3. ĐỒNG HỒ & NGÀY
+    // =====================================================================
 
     private void updateClockLabel() {
-        if (binding == null) return;
-        binding.tvClockBig.setText(DateTimeFormatUtils.formatTime(LocalTime.now()));
+        if (binding == null) {
+            return;
+        }
+
+        binding.tvClockBig.setText(
+                DateTimeFormatUtils.formatTime(
+                        LocalTime.now()
+                )
+        );
     }
 
     private void updateDateLabel() {
-        if (binding == null) return;
-        binding.tvDateToday.setText(DateTimeFormatUtils.formatTodayLabel(LocalDate.now()));
+        if (binding == null) {
+            return;
+        }
+
+        binding.tvDateToday.setText(
+                DateTimeFormatUtils.formatTodayLabel(
+                        LocalDate.now()
+                )
+        );
     }
 
-
     // =====================================================================
-    // 4. BẢN ĐỒ (MAPBOX MAP)
+    // 4. MAPBOX
     // =====================================================================
 
     private void setupMapboxMap() {
+        if (binding == null) {
+            return;
+        }
+
         mapView = binding.mapView;
         mapboxMap = mapView.getMapboxMap();
 
-        // Ẩn các UI control không cần thiết trên MapView
-        CompassUtils.getCompass(mapView).setEnabled(false);
+        CompassUtils.getCompass(mapView)
+                .setEnabled(false);
 
-        mapboxMap.loadStyleUri(
+        /*
+         * Mapbox Maps SDK 11.x:
+         *
+         * Không dùng:
+         * new Style.Builder().fromUri(...)
+         *
+         * Dùng trực tiếp:
+         * loadStyle(Style.MAPBOX_STREETS, callback)
+         */
+        mapboxMap.loadStyle(
                 Style.MAPBOX_STREETS,
                 style -> {
+                    if (mapboxMap == null) {
+                        return;
+                    }
+
                     mapboxMap.setCamera(
                             new CameraOptions.Builder()
-                                    .center(Point.fromLngLat(OFFICE_LNG, OFFICE_LAT))
+                                    .center(
+                                            Point.fromLngLat(
+                                                    OFFICE_LNG,
+                                                    OFFICE_LAT
+                                            )
+                                    )
                                     .zoom(17.0)
                                     .build()
                     );
@@ -290,413 +354,1024 @@ public class EmployeeCheckInFragment extends Fragment {
     }
 
     private void addOfficeMarker() {
-        AnnotationPlugin annotationPlugin = mapView.getPlugin(Plugin.MAPBOX_ANNOTATION_PLUGIN_ID);
-
-        if (annotationPlugin != null) {
-            pointAnnotationManager = (PointAnnotationManager) annotationPlugin.createAnnotationManager(
-                    AnnotationType.PointAnnotation,
-                    null
-            );
-
-            pointAnnotationManager.deleteAll();
-
-            Bitmap iconBitmap = bitmapFromDrawableRes(requireContext(), R.drawable.ic_location);
-
-            PointAnnotationOptions pointAnnotationOptions = new PointAnnotationOptions()
-                    .withPoint(Point.fromLngLat(OFFICE_LNG, OFFICE_LAT));
-
-            if (iconBitmap != null) {
-                pointAnnotationOptions.withIconImage(iconBitmap);
-            }
-
-            pointAnnotationManager.create(pointAnnotationOptions);
+        if (mapView == null) {
+            return;
         }
+
+        AnnotationPlugin annotationPlugin =
+                mapView.getPlugin(
+                        Plugin.MAPBOX_ANNOTATION_PLUGIN_ID
+                );
+
+        if (annotationPlugin == null) {
+            return;
+        }
+
+        pointAnnotationManager =
+                (PointAnnotationManager)
+                        annotationPlugin.createAnnotationManager(
+                                AnnotationType.PointAnnotation,
+                                null
+                        );
+
+        pointAnnotationManager.deleteAll();
+
+        Context context = getContext();
+
+        if (context == null) {
+            return;
+        }
+
+        Bitmap iconBitmap =
+                bitmapFromDrawableRes(
+                        context,
+                        R.drawable.ic_location
+                );
+
+        PointAnnotationOptions options =
+                new PointAnnotationOptions()
+                        .withPoint(
+                                Point.fromLngLat(
+                                        OFFICE_LNG,
+                                        OFFICE_LAT
+                                )
+                        );
+
+        if (iconBitmap != null) {
+            options.withIconImage(iconBitmap);
+        }
+
+        pointAnnotationManager.create(options);
     }
 
-    private Bitmap bitmapFromDrawableRes(Context context, int resourceId) {
-        Drawable drawable = ContextCompat.getDrawable(context, resourceId);
-        if (drawable == null) return null;
+    private Bitmap bitmapFromDrawableRes(
+            Context context,
+            int resourceId
+    ) {
+        Drawable drawable =
+                ContextCompat.getDrawable(
+                        context,
+                        resourceId
+                );
+
+        if (drawable == null) {
+            return null;
+        }
+
+        int width =
+                drawable.getIntrinsicWidth() > 0
+                        ? drawable.getIntrinsicWidth()
+                        : 64;
+
+        int height =
+                drawable.getIntrinsicHeight() > 0
+                        ? drawable.getIntrinsicHeight()
+                        : 64;
 
         Bitmap bitmap = Bitmap.createBitmap(
-                drawable.getIntrinsicWidth() > 0 ? drawable.getIntrinsicWidth() : 64,
-                drawable.getIntrinsicHeight() > 0 ? drawable.getIntrinsicHeight() : 64,
+                width,
+                height,
                 Bitmap.Config.ARGB_8888
         );
+
         Canvas canvas = new Canvas(bitmap);
-        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+
+        drawable.setBounds(
+                0,
+                0,
+                canvas.getWidth(),
+                canvas.getHeight()
+        );
+
         drawable.draw(canvas);
+
         return bitmap;
     }
 
+    /**
+     * Vẽ vùng bán kính 50m quanh văn phòng.
+     *
+     * Mapbox 11.x không dùng:
+     *
+     * style.addSource(source);
+     * style.addLayer(fillLayer);
+     *
+     * theo API cũ.
+     *
+     * Vì vậy sử dụng addStyleSource() và addStyleLayer()
+     * với Value.
+     */
     private void drawOfficeRadius(@NonNull Style style) {
-        Polygon circlePolygon = createCirclePolygon(OFFICE_LAT, OFFICE_LNG, ALLOWED_RADIUS_METERS);
+        Polygon circlePolygon = createCirclePolygon(
+                OFFICE_LAT,
+                OFFICE_LNG,
+                ALLOWED_RADIUS_METERS
+        );
+
         Feature feature = Feature.fromGeometry(circlePolygon);
-        FeatureCollection featureCollection = FeatureCollection.fromFeature(feature);
+        FeatureCollection featureCollection =
+                FeatureCollection.fromFeature(feature);
 
-        GeoJsonSource source = new GeoJsonSource.Builder(OFFICE_RADIUS_SOURCE)
-                .featureCollection(featureCollection)
-                .build();
+        String geoJson = featureCollection.toJson();
 
-        SourceUtils.addSource(style, source);
+        // =========================================================
+        // GeoJSON Source
+        // =========================================================
 
-        FillLayer fillLayer = new FillLayer(OFFICE_RADIUS_LAYER, OFFICE_RADIUS_SOURCE);
-        fillLayer.fillColor(Color.rgb(76, 175, 80));
-        fillLayer.fillOpacity(0.4);
-        fillLayer.fillOutlineColor(Color.rgb(46, 125, 50));
+        Value sourceProperties =
+                Value.valueOf(
+                        new java.util.HashMap<String, Value>() {{
+                            put(
+                                    "type",
+                                    Value.valueOf("geojson")
+                            );
 
-        LayerUtils.addLayer(style, fillLayer);
+                            put(
+                                    "data",
+                                    Value.fromJson(geoJson)
+                                            .getValueOrElse(
+                                                    error -> Value.nullValue()
+                                            )
+                            );
+                        }}
+                );
+
+        style.addStyleSource(
+                OFFICE_RADIUS_SOURCE,
+                sourceProperties
+        );
+
+        // =========================================================
+        // Fill Layer
+        // =========================================================
+
+        java.util.HashMap<String, Value> paint =
+                new java.util.HashMap<>();
+
+        paint.put(
+                "fill-color",
+                Value.valueOf("#4CAF50")
+        );
+
+        paint.put(
+                "fill-opacity",
+                Value.valueOf(0.4)
+        );
+
+        paint.put(
+                "fill-outline-color",
+                Value.valueOf("#2E7D32")
+        );
+
+        java.util.HashMap<String, Value> layer =
+                new java.util.HashMap<>();
+
+        layer.put(
+                "id",
+                Value.valueOf(OFFICE_RADIUS_LAYER)
+        );
+
+        layer.put(
+                "type",
+                Value.valueOf("fill")
+        );
+
+        layer.put(
+                "source",
+                Value.valueOf(OFFICE_RADIUS_SOURCE)
+        );
+
+        layer.put(
+                "paint",
+                Value.valueOf(paint)
+        );
+
+        style.addStyleLayer(
+                Value.valueOf(layer),
+                null
+        );
     }
+    private Polygon createCirclePolygon(
+            double centerLat,
+            double centerLng,
+            double radiusMeters
+    ) {
+        List<Point> points =
+                new ArrayList<>();
 
-    private Polygon createCirclePolygon(double centerLat, double centerLng, double radiusMeters) {
-        List<Point> points = new ArrayList<>();
         int numberOfPoints = 64;
+
         double earthRadius = 6371000.0;
-        double latRadians = Math.toRadians(centerLat);
 
-        for (int i = 0; i <= numberOfPoints; i++) {
-            double angle = 2 * Math.PI * i / numberOfPoints;
-            double deltaLat = (radiusMeters * Math.cos(angle)) / earthRadius;
-            double deltaLng = (radiusMeters * Math.sin(angle)) / (earthRadius * Math.cos(latRadians));
+        double latRadians =
+                Math.toRadians(centerLat);
 
-            double pointLat = centerLat + Math.toDegrees(deltaLat);
-            double pointLng = centerLng + Math.toDegrees(deltaLng);
+        for (int i = 0;
+             i <= numberOfPoints;
+             i++) {
 
-            points.add(Point.fromLngLat(pointLng, pointLat));
+            double angle =
+                    2 * Math.PI * i / numberOfPoints;
+
+            double deltaLat =
+                    (radiusMeters * Math.cos(angle))
+                            / earthRadius;
+
+            double deltaLng =
+                    (radiusMeters * Math.sin(angle))
+                            / (
+                            earthRadius
+                                    * Math.cos(latRadians)
+                    );
+
+            double pointLat =
+                    centerLat
+                            + Math.toDegrees(deltaLat);
+
+            double pointLng =
+                    centerLng
+                            + Math.toDegrees(deltaLng);
+
+            points.add(
+                    Point.fromLngLat(
+                            pointLng,
+                            pointLat
+                    )
+            );
         }
 
-        List<List<Point>> coordinates = new ArrayList<>();
+        List<List<Point>> coordinates =
+                new ArrayList<>();
+
         coordinates.add(points);
 
-        return Polygon.fromLngLats(coordinates);
-    }
-
-    // =====================================================================
-    // 5. QUYỀN & VỊ TRÍ (LOCATION PERMISSION & FUSED LOCATION PROVIDER)
-    // =====================================================================
-
-    private void registerPermissionLauncher() {
-        locationPermissionLauncher = registerForActivityResult(
-                new ActivityResultContracts.RequestMultiplePermissions(),
-                result -> {
-                    Boolean fineGranted = result.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false);
-                    Boolean coarseGranted = result.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false);
-
-                    if (Boolean.TRUE.equals(fineGranted) || Boolean.TRUE.equals(coarseGranted)) {
-                        startLocationUpdates();
-                    } else {
-                        showLocationPermissionDenied();
-                    }
-                }
+        return Polygon.fromLngLats(
+                coordinates
         );
     }
 
+    // =====================================================================
+    // 5. QUYỀN VỊ TRÍ
+    // =====================================================================
+
+    private void registerPermissionLauncher() {
+        locationPermissionLauncher =
+                registerForActivityResult(
+                        new ActivityResultContracts
+                                .RequestMultiplePermissions(),
+                        result -> {
+
+                            Boolean fineGranted =
+                                    result.getOrDefault(
+                                            Manifest.permission
+                                                    .ACCESS_FINE_LOCATION,
+                                            false
+                                    );
+
+                            Boolean coarseGranted =
+                                    result.getOrDefault(
+                                            Manifest.permission
+                                                    .ACCESS_COARSE_LOCATION,
+                                            false
+                                    );
+
+                            if (
+                                    Boolean.TRUE.equals(
+                                            fineGranted
+                                    )
+                                            ||
+                                            Boolean.TRUE.equals(
+                                                    coarseGranted
+                                            )
+                            ) {
+                                startLocationUpdates();
+                            } else {
+                                showLocationPermissionDenied();
+                            }
+                        }
+                );
+    }
+
     private void requestLocationPermissionIfNeeded() {
-        boolean fineGranted = hasPermission(Manifest.permission.ACCESS_FINE_LOCATION);
-        boolean coarseGranted = hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION);
+        Context context = getContext();
+
+        if (context == null) {
+            return;
+        }
+
+        boolean fineGranted =
+                hasPermission(
+                        Manifest.permission
+                                .ACCESS_FINE_LOCATION
+                );
+
+        boolean coarseGranted =
+                hasPermission(
+                        Manifest.permission
+                                .ACCESS_COARSE_LOCATION
+                );
 
         if (fineGranted || coarseGranted) {
             startLocationUpdates();
         } else {
-            locationPermissionLauncher.launch(new String[]{
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-            });
+            locationPermissionLauncher.launch(
+                    new String[]{
+                            Manifest.permission
+                                    .ACCESS_FINE_LOCATION,
+                            Manifest.permission
+                                    .ACCESS_COARSE_LOCATION
+                    }
+            );
         }
     }
 
-    private boolean hasPermission(String permission) {
-        return ContextCompat.checkSelfPermission(requireContext(), permission)
-                == PackageManager.PERMISSION_GRANTED;
+    private boolean hasPermission(
+            String permission
+    ) {
+        Context context = getContext();
+
+        if (context == null) {
+            return false;
+        }
+
+        return ContextCompat.checkSelfPermission(
+                context,
+                permission
+        ) == PackageManager.PERMISSION_GRANTED;
     }
 
-    /**
-     * Bắt đầu lắng nghe vị trí bằng FusedLocationProviderClient.
-     * Ưu điểm so với LocationManager: tự động chọn nguồn vị trí tốt nhất
-     * (GPS / mạng / cảm biến kết hợp), pin tối ưu hơn, và có API dựa trên
-     * Task/Callback hiện đại hơn.
-     */
+    // =====================================================================
+    // 6. FUSED LOCATION
+    // =====================================================================
+
     private void startLocationUpdates() {
-        if (!isAdded() || binding == null) return;
+        if (!isAdded() || binding == null) {
+            return;
+        }
 
         if (!checkGpsEnabled()) {
             checkAndRenderConditions();
             return;
         }
 
-        if (!hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-                && !hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)) {
+        if (
+                !hasPermission(
+                        Manifest.permission
+                                .ACCESS_FINE_LOCATION
+                )
+                        &&
+                        !hasPermission(
+                                Manifest.permission
+                                        .ACCESS_COARSE_LOCATION
+                        )
+        ) {
             return;
         }
 
-        // Tránh đăng ký callback trùng lặp nếu đã có sẵn
-        if (locationCallback != null) return;
+        if (locationCallback != null) {
+            return;
+        }
 
-        LocationRequest locationRequest = new LocationRequest.Builder(
-                Priority.PRIORITY_HIGH_ACCURACY,
-                LOCATION_UPDATE_INTERVAL_MS
-        )
-                .setMinUpdateIntervalMillis(LOCATION_UPDATE_MIN_INTERVAL_MS)
-                .setWaitForAccurateLocation(false)
-                .build();
+        LocationRequest locationRequest =
+                new LocationRequest.Builder(
+                        Priority.PRIORITY_HIGH_ACCURACY,
+                        LOCATION_UPDATE_INTERVAL_MS
+                )
+                        .setMinUpdateIntervalMillis(
+                                LOCATION_UPDATE_MIN_INTERVAL_MS
+                        )
+                        .setWaitForAccurateLocation(false)
+                        .build();
 
-        locationCallback = new LocationCallback() {
-            @Override
-            public void onLocationResult(@NonNull LocationResult locationResult) {
-                Location location = locationResult.getLastLocation();
-                if (location != null) {
-                    onLocationReceived(location);
-                }
-            }
-        };
+        locationCallback =
+                new LocationCallback() {
 
-        try {
-            fusedLocationClient.requestLocationUpdates(
-                    locationRequest,
-                    locationCallback,
-                    Looper.getMainLooper()
-            );
+                    @Override
+                    public void onLocationResult(
+                            @NonNull LocationResult locationResult
+                    ) {
+                        Location location =
+                                locationResult
+                                        .getLastLocation();
 
-            // Lấy vị trí gần nhất đã biết để hiển thị ngay, không cần chờ update mới
-            fusedLocationClient.getLastLocation()
-                    .addOnSuccessListener(location -> {
                         if (location != null) {
                             onLocationReceived(location);
                         }
-                    });
+                    }
+                };
+
+        try {
+
+            fusedLocationClient.requestLocationUpdates(
+                    locationRequest,
+                    locationCallback,
+                    android.os.Looper.getMainLooper()
+            );
+
+            fusedLocationClient
+                    .getLastLocation()
+                    .addOnSuccessListener(
+                            location -> {
+
+                                if (location != null) {
+                                    onLocationReceived(
+                                            location
+                                    );
+                                }
+                            }
+                    );
+
         } catch (SecurityException e) {
             showLocationPermissionDenied();
         }
     }
 
     private void stopLocationUpdates() {
-        if (fusedLocationClient != null && locationCallback != null) {
-            fusedLocationClient.removeLocationUpdates(locationCallback);
+        if (
+                fusedLocationClient != null
+                        &&
+                        locationCallback != null
+        ) {
+            fusedLocationClient.removeLocationUpdates(
+                    locationCallback
+            );
         }
+
         locationCallback = null;
     }
 
-    private void onLocationReceived(@NonNull Location location) {
-        if (binding == null) return;
+    private void onLocationReceived(
+            @NonNull Location location
+    ) {
+        if (binding == null) {
+            return;
+        }
 
         currentLocation = location;
 
-        float[] distanceResult = new float[1];
+        float[] distanceResult =
+                new float[1];
+
         Location.distanceBetween(
-                location.getLatitude(), location.getLongitude(),
-                OFFICE_LAT, OFFICE_LNG,
+                location.getLatitude(),
+                location.getLongitude(),
+                OFFICE_LAT,
+                OFFICE_LNG,
                 distanceResult
         );
 
-        float distanceMeters = distanceResult[0];
-        isLocationValid = distanceMeters <= ALLOWED_RADIUS_METERS;
+        float distanceMeters =
+                distanceResult[0];
+
+        isLocationValid =
+                distanceMeters <= ALLOWED_RADIUS_METERS;
 
         if (distanceMeters < 1000) {
-            binding.tvDistanceToOffice.setText(getString(R.string.checkin_distance_meters, distanceMeters));
+
+            binding.tvDistanceToOffice.setText(
+                    getString(
+                            R.string.checkin_distance_meters,
+                            distanceMeters
+                    )
+            );
+
         } else {
-            binding.tvDistanceToOffice.setText(getString(R.string.checkin_distance_kilometers, distanceMeters / 1000f));
+
+            binding.tvDistanceToOffice.setText(
+                    getString(
+                            R.string.checkin_distance_kilometers,
+                            distanceMeters / 1000f
+                    )
+            );
         }
 
         updateAddress(location);
+
         renderLocationValidChip();
+
         checkAndRenderConditions();
     }
 
-    private void updateAddress(@NonNull Location location) {
-        if (binding == null) return;
+    private void updateAddress(
+            @NonNull Location location
+    ) {
+        if (binding == null) {
+            return;
+        }
+
+        Context appContext =
+                requireContext()
+                        .getApplicationContext();
 
         new Thread(() -> {
+
             try {
-                Geocoder geocoder = new Geocoder(requireContext(), new Locale("vi", "VN"));
-                List<android.location.Address> addresses =
-                        geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
 
-                String addressText = getString(R.string.checkin_current_location);
-                if (addresses != null && !addresses.isEmpty()) {
-                    android.location.Address address = addresses.get(0);
-                    StringBuilder builder = new StringBuilder();
-                    for (int i = 0; i <= address.getMaxAddressLineIndex(); i++) {
-                        if (i > 0) builder.append(", ");
-                        builder.append(address.getAddressLine(i));
+                Geocoder geocoder =
+                        new Geocoder(
+                                appContext,
+                                new Locale(
+                                        "vi",
+                                        "VN"
+                                )
+                        );
+
+                List<android.location.Address>
+                        addresses =
+                        geocoder.getFromLocation(
+                                location.getLatitude(),
+                                location.getLongitude(),
+                                1
+                        );
+
+                String addressText =
+                        appContext.getString(
+                                R.string
+                                        .checkin_current_location
+                        );
+
+                if (
+                        addresses != null
+                                &&
+                                !addresses.isEmpty()
+                ) {
+
+                    android.location.Address address =
+                            addresses.get(0);
+
+                    StringBuilder builder =
+                            new StringBuilder();
+
+                    for (
+                            int i = 0;
+                            i <= address
+                                    .getMaxAddressLineIndex();
+                            i++
+                    ) {
+
+                        if (i > 0) {
+                            builder.append(", ");
+                        }
+
+                        builder.append(
+                                address.getAddressLine(i)
+                        );
                     }
+
                     if (builder.length() > 0) {
-                        addressText = builder.toString();
+                        addressText =
+                                builder.toString();
                     }
                 }
 
-                String finalAddress = addressText;
-                if (binding != null && isAdded()) {
-                    requireActivity().runOnUiThread(() -> binding.tvLocationAddress.setText(finalAddress));
+                String finalAddress =
+                        addressText;
+
+                if (
+                        isAdded()
+                                &&
+                                binding != null
+                ) {
+
+                    requireActivity()
+                            .runOnUiThread(() -> {
+
+                                if (binding != null) {
+                                    binding.tvLocationAddress
+                                            .setText(
+                                                    finalAddress
+                                            );
+                                }
+                            });
                 }
-            } catch (IOException | IllegalArgumentException e) {
-                if (binding != null && isAdded()) {
-                    requireActivity().runOnUiThread(() -> binding.tvLocationAddress.setText(getString(R.string.checkin_current_location)));
+
+            } catch (
+                    IOException
+                    |
+                    IllegalArgumentException e
+            ) {
+
+                if (
+                        isAdded()
+                                &&
+                                binding != null
+                ) {
+
+                    requireActivity()
+                            .runOnUiThread(() -> {
+
+                                if (binding != null) {
+                                    binding.tvLocationAddress
+                                            .setText(
+                                                    appContext
+                                                            .getString(
+                                                                    R.string
+                                                                            .checkin_current_location
+                                                            )
+                                            );
+                                }
+                            });
                 }
             }
+
         }).start();
     }
 
     private void renderLocationValidChip() {
-        if (binding == null) return;
-        binding.tagLocationValid.setText(isLocationValid ? getString(R.string.checkin_location_valid) : getString(R.string.checkin_location_invalid));
+        if (binding == null) {
+            return;
+        }
+
+        binding.tagLocationValid.setText(
+                isLocationValid
+                        ? getString(
+                        R.string
+                                .checkin_location_valid
+                )
+                        : getString(
+                        R.string
+                                .checkin_location_invalid
+                )
+        );
     }
 
     private void showLocationPermissionDenied() {
-        if (binding == null) return;
+        if (binding == null) {
+            return;
+        }
 
-        binding.tvLocationAddress.setText(getString(R.string.checkin_permission_denied));
-        binding.tvDistanceToOffice.setText(getString(R.string.checkin_enable_location));
-        binding.tagLocationValid.setText(getString(R.string.checkin_not_determined));
+        binding.tvLocationAddress.setText(
+                getString(
+                        R.string.checkin_permission_denied
+                )
+        );
 
+        binding.tvDistanceToOffice.setText(
+                getString(
+                        R.string.checkin_enable_location
+                )
+        );
+
+        binding.tagLocationValid.setText(
+                getString(
+                        R.string.checkin_not_determined
+                )
+        );
+
+        currentLocation = null;
         isLocationValid = false;
+
         checkAndRenderConditions();
     }
 
     // =====================================================================
-    // 6. KIỂM TRA ĐIỀU KIỆN CHẤM CÔNG (GPS / MẠNG / BÁN KÍNH)
+    // 7. GPS & NETWORK
     // =====================================================================
 
-    /**
-     * Kiểm tra công tắc GPS phần cứng có đang bật hay không. FusedLocationProviderClient
-     * không cho biết trực tiếp trạng thái này, nên vẫn dùng LocationManager chỉ để đọc
-     * cờ isProviderEnabled cho mục đích hiển thị điều kiện trên UI.
-     */
     private boolean checkGpsEnabled() {
-        if (!isAdded()) return false;
-        LocationManager manager = (LocationManager) requireContext().getSystemService(Context.LOCATION_SERVICE);
-        if (manager == null) return false;
+        if (!isAdded()) {
+            return false;
+        }
+
+        Context context = getContext();
+
+        if (context == null) {
+            return false;
+        }
+
+        LocationManager manager =
+                (LocationManager)
+                        context.getSystemService(
+                                Context.LOCATION_SERVICE
+                        );
+
+        if (manager == null) {
+            return false;
+        }
+
         try {
-            return manager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+            return manager.isProviderEnabled(
+                    LocationManager.GPS_PROVIDER
+            );
         } catch (Exception e) {
             return false;
         }
     }
 
     private boolean checkNetworkConnected() {
-        if (!isAdded()) return false;
+        if (!isAdded()) {
+            return false;
+        }
+
+        Context context = getContext();
+
+        if (context == null) {
+            return false;
+        }
+
         ConnectivityManager connectivityManager =
-                (ConnectivityManager) requireContext().getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (connectivityManager == null) return false;
+                (ConnectivityManager)
+                        context.getSystemService(
+                                Context.CONNECTIVITY_SERVICE
+                        );
 
-        Network network = connectivityManager.getActiveNetwork();
-        if (network == null) return false;
+        if (connectivityManager == null) {
+            return false;
+        }
 
-        NetworkCapabilities capabilities = connectivityManager.getNetworkCapabilities(network);
+        Network network =
+                connectivityManager.getActiveNetwork();
+
+        if (network == null) {
+            return false;
+        }
+
+        NetworkCapabilities capabilities =
+                connectivityManager.getNetworkCapabilities(
+                        network
+                );
+
         return capabilities != null
-                && capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-                && (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
-                || capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR));
+                &&
+                capabilities.hasCapability(
+                        NetworkCapabilities
+                                .NET_CAPABILITY_INTERNET
+                )
+                &&
+                (
+                        capabilities.hasTransport(
+                                NetworkCapabilities
+                                        .TRANSPORT_WIFI
+                        )
+                                ||
+                                capabilities.hasTransport(
+                                        NetworkCapabilities
+                                                .TRANSPORT_CELLULAR
+                                )
+                );
     }
 
+    // =====================================================================
+    // 8. KIỂM TRA ĐIỀU KIỆN CHẤM CÔNG
+    // =====================================================================
+
     private void checkAndRenderConditions() {
-        if (binding == null) return;
+        if (binding == null) {
+            return;
+        }
 
-        isGpsEnabled = checkGpsEnabled();
-        isNetworkConnected = checkNetworkConnected();
+        isGpsEnabled =
+                checkGpsEnabled();
 
-        renderConditionRow(binding.ivConditionGpsStatus, isGpsEnabled);
-        renderConditionRow(binding.ivConditionRangeStatus, isLocationValid);
-        renderConditionRow(binding.ivConditionNetworkStatus, isNetworkConnected);
+        /*
+         * Không dùng:
+         *
+         * isLocationValid =
+         *     (currentLocation != null)
+         *     && isLocationValid;
+         *
+         * vì biểu thức này có thể giữ giá trị false
+         * vĩnh viễn sau một lần false.
+         *
+         * Tính lại khoảng cách trực tiếp từ currentLocation.
+         */
+        if (currentLocation != null) {
+
+            float[] distanceResult =
+                    new float[1];
+
+            Location.distanceBetween(
+                    currentLocation.getLatitude(),
+                    currentLocation.getLongitude(),
+                    OFFICE_LAT,
+                    OFFICE_LNG,
+                    distanceResult
+            );
+
+            isLocationValid =
+                    distanceResult[0]
+                            <= ALLOWED_RADIUS_METERS;
+
+        } else {
+            isLocationValid = false;
+        }
+
+        isNetworkConnected =
+                checkNetworkConnected();
+
+        renderConditionRow(
+                binding.ivConditionGpsStatus,
+                isGpsEnabled
+        );
+
+        renderConditionRow(
+                binding.ivConditionRangeStatus,
+                isLocationValid
+        );
+
+        renderConditionRow(
+                binding.ivConditionNetworkStatus,
+                isNetworkConnected
+        );
 
         renderCheckButtonEnabled();
     }
 
-    private void renderConditionRow(android.widget.ImageView iconView, boolean isOk) {
-        iconView.setImageResource(isOk ? R.drawable.ic_check : R.drawable.ic_close);
-        iconView.setColorFilter(isOk ? COLOR_CONDITION_OK : COLOR_CONDITION_FAIL);
-    }
-
-    private void startConditionsPolling() {
-        conditionsTickRunnable = new Runnable() {
-            @Override
-            public void run() {
-                checkAndRenderConditions();
-                conditionsHandler.postDelayed(this, CONDITIONS_CHECK_INTERVAL_MS);
-            }
-        };
-        conditionsHandler.post(conditionsTickRunnable);
-    }
-
-    private void stopConditionsPolling() {
-        if (conditionsTickRunnable != null) {
-            conditionsHandler.removeCallbacks(conditionsTickRunnable);
-            conditionsTickRunnable = null;
-        }
-    }
-
-    private boolean isAllConditionsMet() {
-        return isGpsEnabled && isLocationValid && isNetworkConnected && currentLocation != null;
-    }
-
-    private String buildConditionsWarningMessage() {
-        if (!isGpsEnabled) return getString(R.string.checkin_enable_gps);
-        if (currentLocation == null) return getString(R.string.checkin_determining_your_location);
-        if (!isLocationValid) return getString(R.string.checkin_outside_allowed_area);
-        if (!isNetworkConnected) return getString(R.string.checkin_check_network);
-        return getString(R.string.checkin_conditions_not_met);
-    }
-
-    // =====================================================================
-    // 7. CHECK IN / CHECK OUT
-    // =====================================================================
-
-    private void handleCheckActionClicked() {
-        if (!isAllConditionsMet()) {
-            binding.cardWarningOutOfRange.setVisibility(View.VISIBLE);
-            binding.tvWarningOutOfRange.setText(buildConditionsWarningMessage());
+    private void renderConditionRow(
+            android.widget.ImageView iconView,
+            boolean isOk
+    ) {
+        if (iconView == null) {
             return;
         }
 
-        binding.cardWarningOutOfRange.setVisibility(View.GONE);
+        iconView.setImageResource(
+                isOk
+                        ? R.drawable.ic_check
+                        : R.drawable.ic_close
+        );
+
+        iconView.setColorFilter(
+                isOk
+                        ? COLOR_CONDITION_OK
+                        : COLOR_CONDITION_FAIL
+        );
+    }
+
+    private boolean isAllConditionsMet() {
+        return isGpsEnabled
+                && isLocationValid
+                && isNetworkConnected
+                && currentLocation != null;
+    }
+
+    private String buildConditionsWarningMessage() {
+
+        if (!isGpsEnabled) {
+            return getString(
+                    R.string.checkin_enable_gps
+            );
+        }
+
+        if (currentLocation == null) {
+            return getString(
+                    R.string
+                            .checkin_determining_your_location
+            );
+        }
+
+        if (!isLocationValid) {
+            return getString(
+                    R.string
+                            .checkin_outside_allowed_area
+            );
+        }
+
+        if (!isNetworkConnected) {
+            return getString(
+                    R.string.checkin_check_network
+            );
+        }
+
+        return getString(
+                R.string.checkin_conditions_not_met
+        );
+    }
+
+    // =====================================================================
+    // 9. XỬ LÝ NÚT CHẤM CÔNG
+    // =====================================================================
+
+    private void handleCheckActionClicked() {
+
+        if (!isAllConditionsMet()) {
+
+            binding.cardWarningOutOfRange
+                    .setVisibility(View.VISIBLE);
+
+            binding.tvWarningOutOfRange.setText(
+                    buildConditionsWarningMessage()
+            );
+
+            return;
+        }
+
+        binding.cardWarningOutOfRange
+                .setVisibility(View.GONE);
 
         switch (currentState) {
+
             case NOT_CHECKED_IN:
                 performCheckIn();
                 break;
+
             case CHECKED_IN:
                 performCheckOut();
                 break;
+
             case CHECKED_OUT:
                 break;
         }
     }
 
     private void performCheckIn() {
-        checkInTime = LocalTime.now();
-        currentState = CheckState.CHECKED_IN;
-        binding.tvSummaryCheckInTime.setText(checkInTime.format(clockFormatter));
+
+        LocalTime time =
+                LocalTime.now();
+
+        currentState =
+                CheckState.CHECKED_IN;
+
+        binding.tvSummaryCheckInTime.setText(
+                time.format(clockFormatter)
+        );
+
         renderCheckButtonState();
     }
 
     private void performCheckOut() {
-        checkOutTime = LocalTime.now();
-        currentState = CheckState.CHECKED_OUT;
-        binding.tvSummaryCheckOutTime.setText(checkOutTime.format(clockFormatter));
+
+        LocalTime time =
+                LocalTime.now();
+
+        currentState =
+                CheckState.CHECKED_OUT;
+
+        binding.tvSummaryCheckOutTime.setText(
+                time.format(clockFormatter)
+        );
+
         renderCheckButtonState();
     }
 
+    // =====================================================================
+    // 10. TRẠNG THÁI NÚT
+    // =====================================================================
+
     private void renderCheckButtonState() {
-        if (binding == null) return;
+        if (binding == null) {
+            return;
+        }
 
         switch (currentState) {
+
             case NOT_CHECKED_IN:
-                binding.btnCheckAction.setText(getString(R.string.checkin_btn_check_in));
-                binding.btnCheckAction.setEnabled(isAllConditionsMet());
+
+                binding.btnCheckAction.setText(
+                        getString(
+                                R.string
+                                        .checkin_btn_check_in
+                        )
+                );
+
+                binding.btnCheckAction.setEnabled(
+                        isAllConditionsMet()
+                );
+
                 break;
+
             case CHECKED_IN:
-                binding.btnCheckAction.setText(getString(R.string.checkin_btn_check_out));
-                binding.btnCheckAction.setEnabled(isAllConditionsMet());
+
+                binding.btnCheckAction.setText(
+                        getString(
+                                R.string
+                                        .checkin_btn_check_out
+                        )
+                );
+
+                binding.btnCheckAction.setEnabled(
+                        isAllConditionsMet()
+                );
+
                 break;
+
             case CHECKED_OUT:
-                binding.btnCheckAction.setText(getString(R.string.checkin_completed_today));
+
+                binding.btnCheckAction.setText(
+                        getString(
+                                R.string
+                                        .checkin_completed_today
+                        )
+                );
+
                 binding.btnCheckAction.setEnabled(false);
+
                 break;
         }
     }
 
     private void renderCheckButtonEnabled() {
-        if (binding == null) return;
-        if (currentState != CheckState.CHECKED_OUT) {
-            binding.btnCheckAction.setEnabled(isAllConditionsMet());
+        if (binding == null) {
+            return;
+        }
+
+        if (
+                currentState !=
+                        CheckState.CHECKED_OUT
+        ) {
+            binding.btnCheckAction.setEnabled(
+                    isAllConditionsMet()
+            );
         }
     }
 }

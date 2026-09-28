@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     android:background="?android:attr/colorBackground">
 
-    <!-- Header Toolbar chuẩn ứng dụng -->
     <com.example.attendanceapp.core.utils.ToolbarApp
         android:id="@+id/toolbar_app"
         android:layout_width="match_parent"
@@ -15,43 +14,107 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Empty State chuẩn style ứng dụng -->
-    <LinearLayout
-        android:id="@+id/layout_empty_state"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/toolbar_app"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <ImageView
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:src="@drawable/ic_user"
-            app:tint="?attr/colorSecondary" />
-
-        <TextView
-            style="@style/BodyTextMediumStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_m"
-            android:text="Không có yêu cầu tham gia nào mới"
-            android:textColor="?android:attr/textColorSecondary" />
-    </LinearLayout>
-
-    <!-- RecyclerView List Requests -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_join_requests"
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:padding="@dimen/spacing_m"
-        android:clipToPadding="false"
+        android:fillViewport="true"
         app:layout_constraintTop_toBottomOf="@id/toolbar_app"
-        app:layout_constraintBottom_toBottomOf="parent"
-        tools:listitem="@layout/item_payroll_history" />
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_m">
+
+            <!-- Card Mã mời dùng chung (Thống nhất Frontend) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_join_invite_code"
+                style="@style/CategoryCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_l">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/spacing_m">
+
+                    <TextView
+                        android:id="@+id/tv_join_invite_title"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="@string/manager_profile_invite_title"
+                        android:textColor="?attr/colorOnPrimaryContainer"
+                        android:textSize="@dimen/text_size_body_medium"
+                        android:textStyle="bold"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintEnd_toStartOf="@id/btn_join_copy_code" />
+
+                    <TextView
+                        android:id="@+id/tv_join_invite_code"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="BKS-CODE-2024"
+                        android:textColor="?attr/colorPrimary"
+                        android:textSize="@dimen/text_size_title_large"
+                        android:textStyle="bold"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/tv_join_invite_title" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="@string/manager_profile_invite_description"
+                        android:textColor="?attr/colorOnPrimaryContainer"
+                        android:textSize="@dimen/text_size_body_small"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/tv_join_invite_code"
+                        app:layout_constraintEnd_toStartOf="@id/btn_join_copy_code" />
+
+                    <ImageView
+                        android:id="@+id/btn_join_copy_code"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="Sao chép"
+                        android:padding="2dp"
+                        android:src="@drawable/ic_copy"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:tint="?attr/colorPrimary" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Danh sách yêu cầu gia nhập"
+                style="@style/TitleTextSmallStyle"
+                android:layout_marginBottom="@dimen/spacing_s" />
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_join_requests"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    tools:listitem="@layout/item_manager_join_request" />
+
+                <include
+                    android:id="@+id/include_empty_state"
+                    layout="@layout/layout_empty_state"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone" />
+            </FrameLayout>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

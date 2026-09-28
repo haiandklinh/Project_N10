@@ -5,6 +5,16 @@
       <config />
     </shared>
     <layouts>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/drawable/ic_add.xml">
+        <config>
+          <theme>@style/Theme.AttendanceApp</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/drawable/ic_adjust.xml">
+        <config>
+          <theme>@style/Theme.AttendanceApp</theme>
+        </config>
+      </layout>
       <layout url="file://$PROJECT_DIR$/app/src/main/res/drawable/ic_search.xml">
         <config>
           <theme>@style/Theme.AttendanceApp</theme>
@@ -175,6 +185,11 @@
           <theme>@style/Theme.AttendanceApp</theme>
         </config>
       </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/layout_statistic_header.xml">
+        <config>
+          <theme>@style/Theme.AttendanceApp</theme>
+        </config>
+      </layout>
       <layout url="file://$PROJECT_DIR$/app/src/main/res/menu/menu_bottom_manager.xml">
         <config>
           <theme>@style/Theme.AttendanceApp</theme>
@@ -196,14 +211,27 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f266c859-d2e1-495b-9007-94bd9ef85a91" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="f266c859-d2e1-495b-9007-94bd9ef85a91" name="Changes" comment="sua cac loi crash va them nd profile qly">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/domain/model/ApprovalRequestType.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/domain/model/ApprovalRequestType.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/employee/EmployeeMainActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/employee/EmployeeMainActivity.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/profile/ManagerProfileFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/profile/ManagerProfileFragment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/employee/checkin/EmployeeCheckInFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/employee/checkin/EmployeeCheckInFragment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/employee/home/EmployeeHomeFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/employee/home/EmployeeHomeFragment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/employee/home/statistic/EmployeeStatisticsFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/employee/home/statistic/EmployeeStatisticsFragment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/ManagerMainActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/ManagerMainActivity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/ManagerMainViewModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/ManagerMainViewModel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/home/ManagerHomeFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/home/ManagerHomeFragment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/human/ManagerJoinRequestFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/human/ManagerJoinRequestFragment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/payroll/ManagerPayrollFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/payroll/ManagerPayrollFragment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/profile/ManagerHelpCenterFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/profile/ManagerHelpCenterFragment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/reward/ManagerRewardPunishFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/reward/ManagerRewardPunishFragment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/fragment_manager_help_center.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/fragment_manager_help_center.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/fragment_manager_join_request.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/fragment_manager_join_request.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/fragment_manager_profile.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/fragment_manager_profile.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/layout_manager_home_header.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/layout_manager_home_header.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/res/navigation/nav_manager.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/navigation/nav_manager.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gradle/libs.versions.toml" beforeDir="false" afterPath="$PROJECT_DIR$/gradle/libs.versions.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" beforeDir="false" afterPath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/values-en/strings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/values-en/strings.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/values/strings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/values/strings.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -213,7 +241,7 @@
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[DeviceId(pluginId=PhysicalDevice, isTemplate=false, identifier=serial=90c20d0e)]" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[DeviceId(pluginId=Default, isTemplate=false, identifier=serial=10.6.3.177:42419;connection=ca48daf2)]" />
   <component name="ExternalProjectsData">
     <projectState path="$PROJECT_DIR$">
       <ProjectState />
@@ -252,13 +280,16 @@
     &quot;assignee&quot;: &quot;NgVietSon04&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/haiandklinh/Project_N10.git",
-    "accountId": "ab9f9a08-42f9-4389-8e10-e7f522eca614"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/haiandklinh/Project_N10.git&quot;,
+    &quot;accountId&quot;: &quot;ab9f9a08-42f9-4389-8e10-e7f522eca614&quot;
   }
-}]]></component>
+}</component>
   <component name="GradleScriptDefinitionsStorage" workingDir="$PROJECT_DIR$" gradleHome="C:\Users\NITRO\.gradle\wrapper\dists\gradle-8.13-bin\5xuhj0ry160q40clulazy9h7d\gradle-8.13" javaHome="D:\android\jbr" gradleVersion="8.13" />
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="ProjectErrors" />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
   &quot;associatedIndex&quot;: 4
@@ -267,23 +298,24 @@
   <component name="ProjectViewState">
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Android App.app.executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.readMode.enableVisualFormatting": "true",
-    "cf.first.check.clang-format": "false",
-    "cidr.known.project.marker": "true",
-    "com.google.services.firebase.aqiPopupShown": "true",
-    "git-widget-placeholder": "frontend-son",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "D:/Project !/Hoanthien/frontend"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Android App.app.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;com.google.services.firebase.aqiPopupShown&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;frontend-son&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/Project !/Hoanthien/frontend&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;templates.modelproviders.configurable&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager">
     <configuration name="app" type="AndroidRunConfigurationType" factoryName="Android App" activateToolWindowBeforeRun="false">
       <module name="Attendance_App.app" />
@@ -366,7 +398,20 @@
       <option name="presentableId" value="Default" />
       <updated>1790144208680</updated>
     </task>
+    <task id="LOCAL-00001" summary="sua cac loi crash va them nd profile qly">
+      <option name="closed" value="true" />
+      <created>1790526077216</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1790526077216</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="sua cac loi crash va them nd profile qly" />
+    <option name="LAST_COMMIT_MESSAGE" value="sua cac loi crash va them nd profile qly" />
   </component>
   <component name="play_dynamic_filters_status">
     <option name="appIdToCheckInfo">

@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?android:attr/colorBackground">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <com.example.attendanceapp.core.utils.ToolbarApp
+            android:id="@+id/toolbar_app"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_l">
+
+            <!-- Employee Header Info -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/ItemCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="?attr/colorPrimaryContainer">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/spacing_l"
+                    android:gravity="center_vertical">
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/iv_avatar"
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:src="@drawable/ic_profile"
+                        app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"/>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_m"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            android:id="@+id/tv_detail_name"
+                            style="@style/TitleTextMediumStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textStyle="bold"
+                            tools:text="Nguyễn Văn A" />
+                        <TextView
+                            android:id="@+id/tv_detail_code"
+                            style="@style/BodyTextSmallStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            tools:text="Mã NV: NV001" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- BẢNG LỊCH CÁC NGÀY TRONG THÁNG CHẤM CÔNG -->
+            <TextView
+                style="@style/TitleTextMediumStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_l"
+                android:layout_marginBottom="@dimen/spacing_s"
+                android:text="Lịch sử chi tiết ngày công" />
+
+            <com.google.android.material.card.MaterialCardView
+                style="@style/ItemCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_m">
+                    
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rv_payroll_calendar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <!-- Row ghi chú trạng thái khi bấm vào ngày -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginVertical="@dimen/spacing_s"
+                        android:background="?attr/colorOutlineVariant" />
+
+                    <LinearLayout
+                        android:id="@+id/layout_calendar_note"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:paddingHorizontal="@dimen/spacing_xs">
+                        <TextView
+                            android:id="@+id/tv_note_selected_day"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textStyle="bold"
+                            android:textColor="?attr/colorOnSurface"
+                            android:text="Chọn một ngày để xem ca chi tiết" />
+                        <TextView
+                            android:id="@+id/tv_note_shifts"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:text="Ca làm: Chưa chọn ngày" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Working Stats -->
+            <TextView
+                style="@style/TitleTextMediumStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_l"
+                android:layout_marginBottom="@dimen/spacing_s"
+                android:text="Thống kê làm việc" />
+
+            <com.google.android.material.card.MaterialCardView
+                style="@style/ItemCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <GridLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:columnCount="2"
+                    android:padding="@dimen/spacing_m">
+                    
+                    <include layout="@layout/item_salary_stat_row" android:id="@+id/row_shifts" />
+                    <include layout="@layout/item_salary_stat_row" android:id="@+id/row_paid_leave" />
+                    <include layout="@layout/item_salary_stat_row" android:id="@+id/row_unpaid_leave" />
+                    <include layout="@layout/item_salary_stat_row" android:id="@+id/row_basic_salary" />
+
+                </GridLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Bonus & Penalty Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_l"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+                <TextView
+                    style="@style/TitleTextMediumStyle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Thưởng &amp; Khấu trừ" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_add_adjustment"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="+ Thêm" />
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_adjustments"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"
+                tools:listitem="@layout/item_salary_adjustment" />
+
+            <!-- Summary -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/ItemCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_l"
+                app:cardBackgroundColor="?attr/colorSurfaceVariant">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_l">
+                    
+                    <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content">
+                        <TextView android:text="Tổng thưởng" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                        <TextView android:id="@+id/tv_total_bonus" android:layout_alignParentEnd="true" android:textColor="?attr/colorPrimary" android:layout_width="wrap_content" android:layout_height="wrap_content" tools:text="+500.000đ" />
+                    </RelativeLayout>
+
+                    <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="@dimen/spacing_s">
+                        <TextView android:text="Tổng khấu trừ" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                        <TextView android:id="@+id/tv_total_deduction" android:layout_alignParentEnd="true" android:textColor="?attr/colorError" android:layout_width="wrap_content" android:layout_height="wrap_content" tools:text="-100.000đ" />
+                    </RelativeLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/colorOutline" android:layout_marginVertical="@dimen/spacing_m" />
+
+                    <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content">
+                        <TextView android:text="THỰC NHẬN" android:textStyle="bold" android:textSize="16sp" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                        <TextView android:id="@+id/tv_final_salary" android:layout_alignParentEnd="true" android:textStyle="bold" android:textSize="20sp" android:textColor="?attr/colorPrimary" android:layout_width="wrap_content" android:layout_height="wrap_content" tools:text="7.600.000đ" />
+                    </RelativeLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_confirm_salary"
+                style="@style/ButtonMaxWidthStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_xl"
+                android:layout_marginBottom="@dimen/spacing_l"
+                android:text="XÁC NHẬN &amp; LƯU" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

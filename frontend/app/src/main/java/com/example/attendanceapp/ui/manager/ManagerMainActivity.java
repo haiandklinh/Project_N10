@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
-
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.NavOptions;
@@ -30,9 +29,15 @@ public class ManagerMainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // Đọc theme trực tiếp từ SharedPreferences TRƯỚC super.onCreate()
-        SharedPreferences pref = getSharedPreferences("SHARE_PREFERENCES_APP", MODE_PRIVATE);
-        String theme = pref.getString("app_theme", "avocado");
+        // Sử dụng sharedPreferences được inject để đồng bộ cấu hình app
+        String theme = "avocado";
+        if (sharedPreferences != null) {
+            theme = sharedPreferences.getString("app_theme", "avocado");
+        } else {
+            // Fallback nếu inject gặp vấn đề (hiếm gặp với Hilt)
+            SharedPreferences pref = getSharedPreferences("SHARE_PREFERENCES_APP", MODE_PRIVATE);
+            theme = pref.getString("app_theme", "avocado");
+        }
         applyAppTheme(theme);
 
         super.onCreate(savedInstanceState);
@@ -82,6 +87,7 @@ public class ManagerMainActivity extends AppCompatActivity {
 
         // Đồng bộ trạng thái tab khi chuyển màn hình
         navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
+            if (binding == null) return;
             int id = destination.getId();
 
             // Highlight tab tương ứng với màn hình
@@ -98,45 +104,40 @@ public class ManagerMainActivity extends AppCompatActivity {
             }
 
             // Ẩn/Hiện Custom BottomBar dựa trên ViewModel Logic
-            boolean isFullscreen = viewModel.isFullscreenDestination(id);
-            updateBottomBarVisibility(!isFullscreen);
+            if (viewModel != null) {
+                boolean isFullscreen = viewModel.isFullscreenDestination(id);
+                updateBottomBarVisibility(!isFullscreen);
+            }
         });
     }
 
     private void setupCustomBottomNavListeners() {
-        // Tab 1: Dashboard / Home
-        binding.tabHome.setOnClickListener(v -> navigateToTab(R.id.managerHomeFragment));
-
-        // Tab 2: Approvals
-        binding.tabApproval.setOnClickListener(v -> navigateToTab(R.id.managerApprovalFragment));
-
-        // Tab 3: Schedule
-        binding.tabSchedule.setOnClickListener(v -> navigateToTab(R.id.managerScheduleFragment));
-
-        // Tab 4: Employees
-        binding.tabEmployee.setOnClickListener(v -> navigateToTab(R.id.managerHumanFragment));
-
-        // Tab 5: Profile
-        binding.tabProfile.setOnClickListener(v -> navigateToTab(R.id.managerProfileFragment));
+        // Gán sự kiện click cho các custom tab với check null an toàn
+        if (binding.tabHome != null) binding.tabHome.setOnClickListener(v -> navigateToTab(R.id.managerHomeFragment));
+        if (binding.tabApproval != null) binding.tabApproval.setOnClickListener(v -> navigateToTab(R.id.managerApprovalFragment));
+        if (binding.tabSchedule != null) binding.tabSchedule.setOnClickListener(v -> navigateToTab(R.id.managerScheduleFragment));
+        if (binding.tabEmployee != null) binding.tabEmployee.setOnClickListener(v -> navigateToTab(R.id.managerHumanFragment));
+        if (binding.tabProfile != null) binding.tabProfile.setOnClickListener(v -> navigateToTab(R.id.managerProfileFragment));
     }
 
     private void navigateToTab(int destinationId) {
         if (navController == null) return;
 
-        // Bỏ qua nếu đang đứng ở chính destination đó
+        // Bỏ qua nếu đang đứng ở chính destination đó (Tránh lặp điều hướng)
         if (navController.getCurrentDestination() != null
                 && navController.getCurrentDestination().getId() == destinationId) {
             return;
         }
 
-        // Cấu hình NavOptions chuẩn cho Bottom Navigation (Không đè lặp BackStack)
+        // Cấu hình NavOptions chuẩn cho Bottom Navigation
+        // Tối ưu: setSaveState(true) để giữ trạng thái các tab khi chuyển đổi
         NavOptions navOptions = new NavOptions.Builder()
                 .setLaunchSingleTop(true)
                 .setRestoreState(true)
                 .setPopUpTo(
                         R.id.managerHomeFragment,
                         false,
-                        true
+                        true // quan trọng: saveState = true
                 )
                 .build();
 
@@ -144,31 +145,33 @@ public class ManagerMainActivity extends AppCompatActivity {
     }
 
     private void updateSelectedTab(View selectedTab) {
-        // Tab 1
+        if (binding == null) return;
+
+        // Tab 1: Dashboard
         boolean isHome = (selectedTab == binding.tabHome);
         binding.tabHome.setSelected(isHome);
         binding.iconHome.setSelected(isHome);
         binding.labelHome.setSelected(isHome);
 
-        // Tab 2
+        // Tab 2: Approvals
         boolean isApproval = (selectedTab == binding.tabApproval);
         binding.tabApproval.setSelected(isApproval);
         binding.iconApproval.setSelected(isApproval);
         binding.labelApproval.setSelected(isApproval);
 
-        // Tab 3
+        // Tab 3: Schedule
         boolean isSchedule = (selectedTab == binding.tabSchedule);
         binding.tabSchedule.setSelected(isSchedule);
         binding.iconSchedule.setSelected(isSchedule);
         binding.labelSchedule.setSelected(isSchedule);
 
-        // Tab 4
+        // Tab 4: Employees
         boolean isEmployee = (selectedTab == binding.tabEmployee);
         binding.tabEmployee.setSelected(isEmployee);
         binding.iconEmployee.setSelected(isEmployee);
         binding.labelEmployee.setSelected(isEmployee);
 
-        // Tab 5
+        // Tab 5: Profile
         boolean isProfile = (selectedTab == binding.tabProfile);
         binding.tabProfile.setSelected(isProfile);
         binding.iconProfile.setSelected(isProfile);
@@ -176,7 +179,22 @@ public class ManagerMainActivity extends AppCompatActivity {
     }
 
     private void updateBottomBarVisibility(boolean show) {
-        binding.bottomNavigation.setVisibility(show ? View.VISIBLE : View.GONE);
+        if (binding != null && binding.bottomNavigation != null) {
+            binding.bottomNavigation.setVisibility(show ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        // Tối ưu UX: Nếu không ở màn hình Home, nhấn Back sẽ quay về Home trước khi thoát
+        if (navController != null && navController.getCurrentDestination() != null) {
+            int currentId = navController.getCurrentDestination().getId();
+            if (currentId != R.id.managerHomeFragment) {
+                navigateToTab(R.id.managerHomeFragment);
+                return;
+            }
+        }
+        super.onBackPressed();
     }
 
     @Override

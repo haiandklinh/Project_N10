@@ -31,6 +31,7 @@ import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.github.mikephil.charting.formatter.ValueFormatter;
 
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,6 +57,9 @@ public class EmployeeStatisticsFragment extends Fragment {
     private int colorNotChecked;
     private int colorNotCheckedContainer;
     private int colorWeekend;
+
+    private YearMonth currentMonth = YearMonth.now();
+
 
     @Nullable
     @Override
@@ -86,7 +90,7 @@ public class EmployeeStatisticsFragment extends Fragment {
         setupRecyclerView();
         setupStatCards();
         setupToggleListener();
-
+        setupMonthNavigation();
         // Mặc định nạp chế độ Tuần
         loadWeekData();
     }
@@ -156,6 +160,26 @@ public class EmployeeStatisticsFragment extends Fragment {
                 } else if (checkedId == R.id.btn_mode_month) {
                     loadMonthData();
                 }
+            }
+        });
+    }
+
+    private void updateMonthLabel() {
+        binding.includeHeader.tvHeaderSubtitle.setText(
+                getString(R.string.statistic_month_format,
+                        currentMonth.getMonthValue(), currentMonth.getYear()));
+    }
+
+    private void setupMonthNavigation() {
+        updateMonthLabel();
+        binding.includeHeader.btnPrevMonth.setOnClickListener(v -> {
+            currentMonth = currentMonth.minusMonths(1);
+            updateMonthLabel();
+        });
+        binding.includeHeader.btnNextMonth.setOnClickListener(v -> {
+            if (currentMonth.isBefore(YearMonth.now())) {   // không cho xem tháng tương lai
+                currentMonth = currentMonth.plusMonths(1);
+                updateMonthLabel();
             }
         });
     }

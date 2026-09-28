@@ -20,7 +20,8 @@ import dagger.hilt.android.AndroidEntryPoint;
 public class ManagerRewardPunishFragment extends Fragment {
 
     private FragmentManagerRewardPunishBinding binding;
-
+    private static final String[] MOCK_EMPLOYEES =
+            {"Trần Thị Bình", "Lê Văn Cường", "Phạm Thu Hà", "Đỗ Minh Khoa", "Ngô Thị Lan"};
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -44,9 +45,15 @@ public class ManagerRewardPunishFragment extends Fragment {
     }
 
     private void setupListeners() {
-        binding.tvSelectEmployee.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Mở danh sách chọn nhân viên", Toast.LENGTH_SHORT).show();
-        });
+// ManagerRewardPunishFragment — thay listener của tvSelectEmployee
+
+
+        binding.tvSelectEmployee.setOnClickListener(v ->
+                new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                        .setTitle("Chọn nhân sự")
+                        .setItems(MOCK_EMPLOYEES, (d, i) ->
+                                binding.tvSelectEmployee.setText(MOCK_EMPLOYEES[i]))
+                        .show());
 
         binding.btnSubmit.setOnClickListener(v -> {
             String amount = binding.etAmount.getText().toString().trim();

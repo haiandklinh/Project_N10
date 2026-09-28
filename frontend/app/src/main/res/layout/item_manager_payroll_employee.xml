@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/ItemCard"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/spacing_s">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/spacing_l">
+
+        <!-- Avatar hoặc Chữ cái đầu của tên -->
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/iv_avatar"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/colorPrimaryContainer"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_profile"
+            app:tint="?attr/colorPrimary"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <!-- Thông tin nhân viên -->
+        <LinearLayout
+            android:id="@+id/layout_info"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_m"
+            android:layout_marginEnd="@dimen/spacing_s"
+            android:orientation="vertical"
+            app:layout_constraintStart_toEndOf="@id/iv_avatar"
+            app:layout_constraintEnd_toStartOf="@id/layout_action"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <TextView
+                android:id="@+id/tv_employee_name"
+                style="@style/TitleTextMediumStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                tools:text="Nguyễn Văn A" />
+
+            <TextView
+                android:id="@+id/tv_employee_role"
+                style="@style/BodyTextSmallStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                tools:text="Nhân viên Thu ngân • Mã: NV001" />
+
+            <TextView
+                android:id="@+id/tv_employee_stats"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textSize="12sp"
+                android:textColor="?attr/colorPrimary"
+                tools:text="24 ca làm • 1 nghỉ có phép" />
+        </LinearLayout>
+
+        <!-- Trạng thái hoặc Nút Hành động Tính lương -->
+        <LinearLayout
+            android:id="@+id/layout_action"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="end"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_calculate_salary"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tính lương"
+                android:textSize="12sp"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="6dp" />
+
+            <TextView
+                android:id="@+id/tv_salary_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textSize="11sp"
+                android:text="Chưa tính"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                tools:text="Đã chốt: 7.200.000đ"
+                android:visibility="gone"/>
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>

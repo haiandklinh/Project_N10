@@ -366,5 +366,8 @@
     <!-- ================================================================= -->
     <!-- 5. CẤU HÌNH BÊN THỨ 3 & SDK TOKENS (THIRD-PARTY TOKENS)            -->
     <!-- ================================================================= -->
+
     <string name="mapbox_access_token">pk.eyJ1Ijoic29uYmFuZGExMSIsImEiOiJjbW51MThxejIwdHRyMnBwd2p2OHhvMzFxIn0.XsxPqOqD9upAvTzh5iI3ZA</string>
+    <string name="statistic_month_format">Month %1$d/%2$d</string>
+
 </resources>

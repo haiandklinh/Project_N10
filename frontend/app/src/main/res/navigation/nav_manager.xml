@@ -105,7 +105,18 @@
         android:id="@+id/managerPayrollFragment"
         android:name="com.example.attendanceapp.ui.manager.payroll.ManagerPayrollFragment"
         android:label="Quản lý tiền lương"
-        tools:layout="@layout/fragment_manager_payroll" />
+        tools:layout="@layout/fragment_manager_payroll">
+        <action
+            android:id="@+id/action_managerPayrollFragment_to_managerPayrollDetailFragment"
+            app:destination="@id/managerPayrollDetailFragment" />
+    </fragment>
+
+    <!-- Chi tiết tính lương nhân sự -->
+    <fragment
+        android:id="@+id/managerPayrollDetailFragment"
+        android:name="com.example.attendanceapp.ui.manager.payroll.ManagerPayrollDetailFragment"
+        android:label="Chi tiết tính lương"
+        tools:layout="@layout/fragment_manager_payroll_detail" />
 
     <!-- Ghi nhận Thưởng Phạt -->
     <fragment

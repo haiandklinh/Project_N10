@@ -1,5 +1,8 @@
 package com.example.attendanceapp.ui.manager.home;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,7 +14,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
-import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -32,6 +34,8 @@ public class ManagerHomeFragment extends Fragment {
 
     private FragmentManagerHomeBinding binding;
     private ManagerHomeViewModel viewModel;
+    private List<ManagerApprovalItem> pendingList;
+    private ManagerApprovalAdapter approvalAdapter;
 
     @Nullable
     @Override
@@ -44,7 +48,6 @@ public class ManagerHomeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         viewModel = new ViewModelProvider(this).get(ManagerHomeViewModel.class);
-
 
         setupOverview();
         setupQuickActions();
@@ -61,13 +64,8 @@ public class ManagerHomeFragment extends Fragment {
     }
 
     private void setupQuickActions() {
+        // Loại bỏ các tính năng đã có dưới BottomBar (Xếp ca, Duyệt đơn, Mã mời) để tránh lặp và tối ưu UI
         List<ManagerQuickAction> actions = Arrays.asList(
-                new ManagerQuickAction("Xếp ca", R.drawable.ic_calendar,
-                        () -> navigateTo(R.id.action_managerHomeFragment_to_managerScheduleFragment)),
-                new ManagerQuickAction("Duyệt đơn", R.drawable.ic_approval,
-                        () -> navigateTo(R.id.action_managerHomeFragment_to_managerApprovalFragment)),
-                new ManagerQuickAction("Mã mời & Duyệt", R.drawable.ic_profile,
-                        () -> navigateTo(R.id.action_managerHomeFragment_to_managerJoinRequestFragment)),
                 new ManagerQuickAction("Bảng lương", R.drawable.ic_payroll,
                         () -> navigateTo(R.id.action_managerHomeFragment_to_managerPayrollFragment)),
                 new ManagerQuickAction("Thưởng & phạt", R.drawable.ic_gift,
@@ -90,6 +88,7 @@ public class ManagerHomeFragment extends Fragment {
             }
         });
     }
+
     private void updateScrollThumb() {
         if (binding == null) return;
         RecyclerView rv = binding.includeQuickActions.rvQuickActions;
@@ -114,39 +113,85 @@ public class ManagerHomeFragment extends Fragment {
                 navigateTo(R.id.action_managerHomeFragment_to_notificationFragment));
         binding.includeHeader.ivAvatar.setOnClickListener(v ->
                 navigateTo(R.id.action_managerHomeFragment_to_managerProfileFragment));
+        binding.includePending.tvSeeAllPending.setOnClickListener(v ->
+                navigateTo(R.id.action_managerHomeFragment_to_managerApprovalFragment));
+
+        // Logic xử lý nút sao chép Mã mời ngay trên Trang chủ
+        if (binding.includeHeader.btnHomeCopyCode != null) {
+            binding.includeHeader.btnHomeCopyCode.setOnClickListener(v -> {
+                ClipboardManager clipboard = (ClipboardManager) requireContext().getSystemService(Context.CLIPBOARD_SERVICE);
+                ClipData clip = ClipData.newPlainText("Invite Code", binding.includeHeader.tvHomeInviteCode.getText().toString());
+                clipboard.setPrimaryClip(clip);
+                Toast.makeText(requireContext(), getString(R.string.manager_profile_copy_success), Toast.LENGTH_SHORT).show();
+            });
+        }
     }
+
     private void setupPendingPreview() {
-        List<ManagerApprovalItem> pending = new ArrayList<>();
-        pending.add(new ManagerApprovalItem("1", "Trần Thị Bình", null, "Nhân viên bán hàng",
+        pendingList = new ArrayList<>();
+        
+        // VÍ DỤ 1: Yêu cầu gia nhập bằng mã mời (Mới bổ sung)
+        pendingList.add(new ManagerApprovalItem("join_1", "Nguyễn Minh Hoàng", null, "Ứng viên mới",
+                ApprovalRequestType.JOIN_REQUEST, "Mã mời sử dụng: BKS-CODE-2024", "Yêu cầu gia nhập",
+                "Chào quản lý, tôi là nhân viên mới phòng Sale, tôi xin tham gia hệ thống.", ManagerApprovalItem.STATUS_PENDING,
+                System.currentTimeMillis()));
+
+        // VÍ DỤ 2: Đơn nghỉ phép
+        pendingList.add(new ManagerApprovalItem("1", "Trần Thị Bình", null, "Nhân viên bán hàng",
                 ApprovalRequestType.LEAVE, "Ngày áp dụng: 20/09/2026", "Nghỉ cả ngày",
                 "Bị ốm đột xuất cần nghỉ để đi khám bệnh.", ManagerApprovalItem.STATUS_PENDING,
                 System.currentTimeMillis()));
-        pending.add(new ManagerApprovalItem("2", "Lê Văn Cường", null, "Nhân viên kho",
+
+        // VÍ DỤ 3: Giải trình công
+        pendingList.add(new ManagerApprovalItem("2", "Lê Văn Cường", null, "Nhân viên kho",
                 ApprovalRequestType.ADJUSTMENT, "Ngày áp dụng: 19/09/2026", "Bổ sung check-out",
                 "Quên bấm check-out lúc tan ca do sự cố máy chấm công.", ManagerApprovalItem.STATUS_PENDING,
                 System.currentTimeMillis()));
 
         RecyclerView rv = binding.includePending.rvPendingPreview;
         rv.setLayoutManager(new LinearLayoutManager(getContext()));
-        rv.setAdapter(new ManagerApprovalAdapter(pending, new ManagerApprovalAdapter.OnActionListener() {
+        
+        approvalAdapter = new ManagerApprovalAdapter(pendingList, new ManagerApprovalAdapter.OnActionListener() {
             @Override
             public void onApprove(ManagerApprovalItem item, int position) {
-                Toast.makeText(getContext(), "Đã duyệt yêu cầu của " + item.getEmployeeName(), Toast.LENGTH_SHORT).show();
-                navigateTo(R.id.managerApprovalFragment);
+                if (item.getId().startsWith("join")) {
+                    Toast.makeText(requireContext(), "Đã chấp nhận nhân viên " + item.getEmployeeName() + " vào doanh nghiệp", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getContext(), "Đã duyệt yêu cầu của " + item.getEmployeeName(), Toast.LENGTH_SHORT).show();
+                }
+                removeItemFromPreview(position);
             }
 
             @Override
             public void onReject(ManagerApprovalItem item, int position) {
-                Toast.makeText(getContext(), "Đã từ chối yêu cầu của " + item.getEmployeeName(), Toast.LENGTH_SHORT).show();
-                navigateTo(R.id.managerApprovalFragment);
+                if (item.getId().startsWith("join")) {
+                    Toast.makeText(requireContext(), "Đã từ chối yêu cầu gia nhập của " + item.getEmployeeName(), Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getContext(), "Đã từ chối yêu cầu của " + item.getEmployeeName(), Toast.LENGTH_SHORT).show();
+                }
+                removeItemFromPreview(position);
             }
-        }));
+        });
+        
+        rv.setAdapter(approvalAdapter);
 
-        boolean isEmpty = pending.isEmpty();
-        rv.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+        updateEmptyState();
+    }
+
+    private void removeItemFromPreview(int position) {
+        if (pendingList != null && position >= 0 && position < pendingList.size()) {
+            pendingList.remove(position);
+            approvalAdapter.notifyItemRemoved(position);
+            approvalAdapter.notifyItemRangeChanged(position, pendingList.size());
+            updateEmptyState();
+        }
+    }
+
+    private void updateEmptyState() {
+        if (binding == null) return;
+        boolean isEmpty = pendingList == null || pendingList.isEmpty();
+        binding.includePending.rvPendingPreview.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
         binding.includePending.includeEmptyState.getRoot().setVisibility(isEmpty ? View.VISIBLE : View.GONE);
-
-        binding.includePending.tvSeeAllPending.setOnClickListener(v -> navigateTo(R.id.managerApprovalFragment));
     }
 
     private void navigateTo(int destinationId) {

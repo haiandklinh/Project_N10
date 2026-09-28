@@ -4,12 +4,13 @@ import com.example.attendanceapp.R;
 
 /**
  * Loại yêu cầu mà Quản lý cần xử lý trong màn "Duyệt yêu cầu".
- * Gộp từ các use case: Xử lý yêu cầu điều chỉnh chấm công, Xử lý yêu cầu nghỉ phép/đổi ca.
+ * Gộp từ các use case: Xử lý yêu cầu điều chỉnh chấm công, Xử lý yêu cầu nghỉ phép/đổi ca, Yêu cầu gia nhập.
  */
 public enum ApprovalRequestType {
     LEAVE("Nghỉ phép", R.drawable.ic_leave),
     ADJUSTMENT("Điều chỉnh công", R.drawable.ic_adjust),
-    SWAP("Đổi ca", R.drawable.ic_refresh);
+    SWAP("Đổi ca", R.drawable.ic_refresh),
+    JOIN_REQUEST("Gia nhập", R.drawable.ic_profile);
 
     private final String title;
     private final int iconResId;

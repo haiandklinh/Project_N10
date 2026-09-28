@@ -1,5 +1,6 @@
 package com.example.attendanceapp.ui.employee.home;
 
+import android.content.Context;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -41,7 +42,8 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class EmployeeHomeFragment extends Fragment {
 
-    private static final long CLOCK_TICK_INTERVAL_MS = 1000L;
+    // Tối ưu hóa pin: Giao diện tvClock chỉ hiển thị Giờ:Phút (HH:mm) nên tăng chu kỳ lên 60 giây để tránh lag UI và hao pin gánh chịu requestLayout liên tục
+    private static final long CLOCK_TICK_INTERVAL_MS = 60000L;
 
     private FragmentEmployeeHomeBinding binding;
     private EmployeeHomeViewModel viewModel;
@@ -49,11 +51,13 @@ public class EmployeeHomeFragment extends Fragment {
     private EmployeeWeekDayAdapter weekDayAdapter;
     private EmployeeRecentAttendanceAdapter employeeRecentAttendanceAdapter;
 
-    private final IntervalTicker clockTicker = new IntervalTicker(CLOCK_TICK_INTERVAL_MS, this::updateClock);
+    private IntervalTicker clockTicker;
 
-    // =====================================================================
-    // 1. LIFECYCLE MANAGEMENT
-    // =====================================================================
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        clockTicker = new IntervalTicker(CLOCK_TICK_INTERVAL_MS, this::updateClock);
+    }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -65,84 +69,76 @@ public class EmployeeHomeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Khởi tạo ViewModel bằng Hilt / AndroidX ViewModelProvider
         viewModel = new ViewModelProvider(this).get(EmployeeHomeViewModel.class);
 
         setupStaticViews();
         setupListeners();
         setupObservers();
+        
+        // Cập nhật đồng hồ hiển thị tức thì lần đầu tiên
+        updateClock();
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        clockTicker.start();
+        if (clockTicker != null) clockTicker.start();
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        clockTicker.stop();
+        if (clockTicker != null) clockTicker.stop();
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        binding = null; // Bắt buộc để giải phóng bộ nhớ tránh Memory Leak View Binding
+        binding = null; // Giải phóng View Binding triệt để chống rò rỉ bộ nhớ RAM (Memory Leak)
     }
 
-    // =====================================================================
-    // 2. OBSERVERS (LẮNG NGHE UISTATE TỪ VIEWMODEL)
-    // =====================================================================
-
     private void setupObservers() {
-        // A. Đăng ký observer cho LiveData
+        if (viewModel == null) return;
         viewModel.getUiState().observe(getViewLifecycleOwner(), state -> {
-            // B. Null safety check
             if (state == null || binding == null) return;
 
-            // C. Update từng phần UI
             updateNotificationBadge(state.shouldShowNotificationBadge());
-
-                // Cards UI State
             renderTodayAttendanceCard(state);
             renderTodayShiftCard(state.getTodayShift());
 
-                 // Lists UI State (Dùng submitList cho ListAdapter/DiffUtil)
             updateWeekDaysAdapter(state.getWeekDays());
             updateRecentAttendancesAdapter(state.getRecentAttendances());
         });
     }
 
     private void updateNotificationBadge(boolean visible) {
-        binding.includeHeader.notificationBadge.setVisibility(
-                visible ? View.VISIBLE : View.GONE
-        );
+        if (binding != null && binding.includeHeader != null) {
+            binding.includeHeader.notificationBadge.setVisibility(visible ? View.VISIBLE : View.GONE);
+        }
     }
 
     private void updateWeekDaysAdapter(List<WeekDay> weekDays) {
         if (weekDays != null && weekDayAdapter != null) {
-            // Update data cho adapter
             weekDayAdapter.submitList(weekDays);
         }
     }
 
     private void updateRecentAttendancesAdapter(List<RecentAttendance> recentAttendances) {
-        if (recentAttendances != null && employeeRecentAttendanceAdapter != null) {
+        if (binding == null || employeeRecentAttendanceAdapter == null) return;
+        
+        // Tối ưu hóa UI Trống (Empty State): Hiển thị hình ảnh minh họa thay vì khoảng trắng vô nghĩa nếu chưa có ngày công
+        if (recentAttendances == null || recentAttendances.isEmpty()) {
+            binding.includeRecent.rvRecent.setVisibility(View.GONE);
+            binding.includeRecent.includeEmptyState.getRoot().setVisibility(View.VISIBLE);
+        } else {
+            binding.includeRecent.rvRecent.setVisibility(View.VISIBLE);
+            binding.includeRecent.includeEmptyState.getRoot().setVisibility(View.GONE);
             employeeRecentAttendanceAdapter.submitList(recentAttendances);
-
-            boolean isEmpty = recentAttendances.isEmpty();
-            binding.includeRecent.rvRecent.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
-            binding.includeRecent.includeEmptyState.getRoot().setVisibility(isEmpty ? View.VISIBLE : View.GONE);
         }
     }
 
-    // =====================================================================
-    // 3. RENDERERS (RENDER DỮ LIỆU TỪ STATE LÊN VIEW)
-    // =====================================================================
-
     private void renderTodayAttendanceCard(EmployeeHomeUiState state) {
-        // Lấy dữ liệu từ state
+        if (binding == null) return;
         LocalTime checkInTime = state.getCheckInTime();
         LocalTime checkOutTime = state.getCheckOutTime();
         boolean hasShiftToday = state.getTodayShift() != null;
@@ -153,7 +149,6 @@ public class EmployeeHomeFragment extends Fragment {
             binding.includeTodayCard.tvCheckOutTime.setText(DateTimeFormatUtils.formatTime(checkOutTime));
             binding.includeTodayCard.tvWorkedHours.setText(DateTimeFormatUtils.formatWorkedHours(checkInTime, checkOutTime));
 
-            // Cập nhật nút Check-in/Check-out trenj TodayCard
             CheckState checkState = CheckState.from(checkInTime, checkOutTime);
             binding.includeTodayCard.btnCheckInCta.setText(checkState.getButtonText());
             binding.includeTodayCard.btnCheckInCta.setEnabled(checkState.isButtonEnabled());
@@ -163,6 +158,7 @@ public class EmployeeHomeFragment extends Fragment {
     }
 
     private void renderTodayShiftCard(Shift todayShift) {
+        if (binding == null) return;
         if (todayShift != null && todayShift.getDate().equals(LocalDate.now())) {
             binding.includeShiftToday.getRoot().setVisibility(View.VISIBLE);
             binding.includeShiftToday.tvShiftName.setText(todayShift.getShiftName());
@@ -176,11 +172,15 @@ public class EmployeeHomeFragment extends Fragment {
     }
 
     private void bindShiftStatusChip(ShiftStatus status) {
+        if (binding == null) return;
+        Context context = getContext();
+        if (context == null) return;
+
         ShiftStatus currentStatus = (status != null) ? status : ShiftStatus.PENDING;
         binding.includeShiftToday.tagShiftStatus.setText(currentStatus.getDisplayName());
 
-        int bgColor = ColorUtil.getThemeColor(requireContext(), currentStatus.getBgAttrRes());
-        int textColor = ColorUtil.getThemeColor(requireContext(), currentStatus.getTextColorAttrRes());
+        int bgColor = ColorUtil.getThemeColor(context, currentStatus.getBgAttrRes());
+        int textColor = ColorUtil.getThemeColor(context, currentStatus.getTextColorAttrRes());
 
         binding.includeShiftToday.tagShiftStatus.setChipBackgroundColor(ColorStateList.valueOf(bgColor));
         binding.includeShiftToday.tagShiftStatus.setTextColor(textColor);
@@ -188,17 +188,9 @@ public class EmployeeHomeFragment extends Fragment {
 
     private void updateClock() {
         if (binding == null) return;
-        // Đảm bảo chạy cập nhật UI trên Main Thread
-        binding.getRoot().post(() -> {
-            if (binding != null) {
-                binding.includeTodayCard.tvClock.setText(DateTimeFormatUtils.formatTime(LocalTime.now()));
-            }
-        });
+        // Đảm bảo cập nhật chữ trên Main Thread mượt mà an toàn không rò rỉ runnables
+        binding.includeTodayCard.tvClock.setText(DateTimeFormatUtils.formatTime(LocalTime.now()));
     }
-
-    // =====================================================================
-    // 4. SETUP VIEWS & LISTENERS
-    // =====================================================================
 
     private void setupStaticViews() {
         setupCategoryRecyclerView();
@@ -207,18 +199,16 @@ public class EmployeeHomeFragment extends Fragment {
     }
 
     private void setupCategoryRecyclerView() {
-        // Khởi tạo Adapter theo chuẩn ListAdapter + Consumer Click Callback
-        employeeCategoryTypeAdapter = new EmployeeCategoryTypeAdapter(this::onCategoryClicked);
+        Context context = getContext();
+        if (context == null) return;
 
+        employeeCategoryTypeAdapter = new EmployeeCategoryTypeAdapter(this::onCategoryClicked);
         RecyclerView rv = binding.includeCategories.rvCategories;
-        rv.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
+        rv.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
         rv.setHasFixedSize(true);
         rv.setAdapter(employeeCategoryTypeAdapter);
-
-        // Đổ danh sách Enum cố định ban đầu bằng submitList
         employeeCategoryTypeAdapter.submitList(Arrays.asList(CategoryType.values()));
 
-        // Scroll Indicator setup
         rv.post(this::updateScrollThumb);
         rv.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -230,14 +220,18 @@ public class EmployeeHomeFragment extends Fragment {
     }
 
     private void setupWeekRecyclerView() {
-        binding.includeWeek.rvWeekDays.setLayoutManager(new GridLayoutManager(requireContext(), 7));
+        Context context = getContext();
+        if (context == null) return;
+        binding.includeWeek.rvWeekDays.setLayoutManager(new GridLayoutManager(context, 7));
         binding.includeWeek.rvWeekDays.setHasFixedSize(true);
         weekDayAdapter = new EmployeeWeekDayAdapter();
         binding.includeWeek.rvWeekDays.setAdapter(weekDayAdapter);
     }
 
     private void setupRecentRecyclerView() {
-        binding.includeRecent.rvRecent.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false));
+        Context context = getContext();
+        if (context == null) return;
+        binding.includeRecent.rvRecent.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false));
         binding.includeRecent.rvRecent.setHasFixedSize(true);
         employeeRecentAttendanceAdapter = new EmployeeRecentAttendanceAdapter();
         binding.includeRecent.rvRecent.setAdapter(employeeRecentAttendanceAdapter);
@@ -250,10 +244,6 @@ public class EmployeeHomeFragment extends Fragment {
         binding.includeShiftToday.tvExchangeShift.setOnClickListener(v -> navigateTo(R.id.action_employeeHomeFragment_to_employeeShiftExchangeFragment));
         binding.includeRecent.tvSeeAll.setOnClickListener(v -> navigateTo(R.id.action_employeeHomeFragment_to_employeeScheduleFragment));
     }
-
-// =====================================================================
-// 5. HELPER & NAVIGATION METHODS
-// =====================================================================
 
     private void onCategoryClicked(CategoryType categoryType) {
         if (categoryType == null) return;
@@ -268,8 +258,9 @@ public class EmployeeHomeFragment extends Fragment {
     }
 
     private void navigateTo(int actionId) {
+        if (!isAdded() || binding == null) return;
         NavController navController = NavHostFragment.findNavController(this);
-        // Safe check destination hiện tại để tránh Crash do click đúp (Double-click)
+        // Sửa lỗi Click đúp gây Crash: Chỉ thực thi lệnh điều hướng nếu người dùng đang đứng ở đúng màn hình Home chủ quản
         if (navController.getCurrentDestination() != null
                 && navController.getCurrentDestination().getId() == R.id.employeeHomeFragment) {
             navController.navigate(actionId);
