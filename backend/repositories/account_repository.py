@@ -24,18 +24,21 @@ class AccountRepository :
         token = create_token(account_id,"refresh_token")
         refresh_token = RefreshToken(
             token=hash_token(token),
-            account_id=account_id,
+            id_account=account_id
         )
         self.db.add(refresh_token)
 
         await self.db.commit()
         await self.db.refresh(refresh_token)
 
+        return token
+
     async def create_account(self,phone_number , password):
         new_account = Account(
             phone_number = phone_number ,
             password = get_password_hash(password)  ,
-            created_at =datetime.now()
+            created_at =datetime.now(),
+            status = 'ON'
         )
         try:
             self.db.add(new_account)

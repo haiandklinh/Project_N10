@@ -16,18 +16,18 @@ def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 
-def create_token(data:str, token_type:str):
+def create_token(data, token_type:str):
     exp =settings.REFRESH_TOKEN_EXPIRE_DAYS
     if token_type=="access_token":
         exp =settings.ACCESS_TOKEN_EXPIRE_MINUTES
         payload = {
-            "sub": data,
+            "sub": str(data),
             "type": token_type,
             "exp": datetime.now(timezone.utc) +  timedelta(minutes=exp)
         }
     else:
         payload = {
-            "sub": data,
+            "sub": str(data),
             "type": token_type,
             "exp": datetime.now(timezone.utc) +  timedelta(days=exp)
         }

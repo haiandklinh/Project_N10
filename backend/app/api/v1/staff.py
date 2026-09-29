@@ -5,8 +5,8 @@ from schemas.manager import CreateProfileRequest
 from schemas.staff import ProfileResponse
 
 router = APIRouter(
-    prefix="/tenants",
-    tags=["Tenant"]
+    prefix="/staffs",
+    tags=["Staff"]
 )
 
 
