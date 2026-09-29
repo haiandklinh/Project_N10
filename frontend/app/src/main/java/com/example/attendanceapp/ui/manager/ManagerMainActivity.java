@@ -120,7 +120,7 @@ public class ManagerMainActivity extends AppCompatActivity {
         if (binding.tabProfile != null) binding.tabProfile.setOnClickListener(v -> navigateToTab(R.id.managerProfileFragment));
     }
 
-    private void navigateToTab(int destinationId) {
+    public void navigateToTab(int destinationId) {
         if (navController == null) return;
 
         // Bỏ qua nếu đang đứng ở chính destination đó (Tránh lặp điều hướng)
@@ -186,12 +186,18 @@ public class ManagerMainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        // Tối ưu UX: Nếu không ở màn hình Home, nhấn Back sẽ quay về Home trước khi thoát
-        if (navController != null && navController.getCurrentDestination() != null) {
-            int currentId = navController.getCurrentDestination().getId();
-            if (currentId != R.id.managerHomeFragment) {
-                navigateToTab(R.id.managerHomeFragment);
+        if (navController != null) {
+            // 1. Nếu có thể quay lại trong backstack của fragment hiện tại (ví dụ từ sub-fragment về Home)
+            if (navController.popBackStack()) {
                 return;
+            }
+            // 2. Nếu đang ở gốc của tab khác, nhấn Back sẽ quay về tab Home trước khi thoát
+            if (navController.getCurrentDestination() != null) {
+                int currentId = navController.getCurrentDestination().getId();
+                if (currentId != R.id.managerHomeFragment) {
+                    navigateToTab(R.id.managerHomeFragment);
+                    return;
+                }
             }
         }
         super.onBackPressed();

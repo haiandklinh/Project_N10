@@ -93,6 +93,9 @@
         <action
             android:id="@+id/action_managerProfileFragment_to_managerAboutFragment"
             app:destination="@id/managerAboutFragment" />
+        <action
+            android:id="@+id/action_managerProfileFragment_to_managerSalaryConfigFragment"
+            app:destination="@id/managerSalaryConfigFragment" />
     </fragment>
 
 
@@ -110,6 +113,13 @@
             android:id="@+id/action_managerPayrollFragment_to_managerPayrollDetailFragment"
             app:destination="@id/managerPayrollDetailFragment" />
     </fragment>
+
+    <!-- Thiết lập đơn giá ca -->
+    <fragment
+        android:id="@+id/managerSalaryConfigFragment"
+        android:name="com.example.attendanceapp.ui.manager.profile.ManagerSalaryConfigFragment"
+        android:label="Thiết lập đơn giá ca"
+        tools:layout="@layout/fragment_manager_salary_config" />
 
     <!-- Chi tiết tính lương nhân sự -->
     <fragment

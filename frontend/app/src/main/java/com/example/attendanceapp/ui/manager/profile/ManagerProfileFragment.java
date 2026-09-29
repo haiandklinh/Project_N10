@@ -128,9 +128,8 @@ public class ManagerProfileFragment extends Fragment {
         binding.rowStatistics.getRoot().setOnClickListener(v -> 
             Navigation.findNavController(v).navigate(R.id.action_managerProfileFragment_to_managerStatisticFragment));
         
-        binding.rowSalaryConfig.getRoot().setOnClickListener(v -> {
-            Toast.makeText(requireContext(), "Chức năng Cấu hình lương ca làm", Toast.LENGTH_SHORT).show();
-        });
+        binding.rowSalaryConfig.getRoot().setOnClickListener(v -> 
+            Navigation.findNavController(v).navigate(R.id.action_managerProfileFragment_to_managerSalaryConfigFragment));
 
         // ----- Điều hướng Nhóm Cá nhân -----
         binding.rowEditProfile.getRoot().setOnClickListener(v -> 

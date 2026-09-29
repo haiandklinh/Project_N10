@@ -31,7 +31,14 @@ public class ManagerMainViewModel extends ViewModel {
             R.id.managerPayrollFragment,
             R.id.managerPayrollDetailFragment,
             R.id.managerRewardPunishFragment,
-            R.id.managerStatisticFragment
+            R.id.managerStatisticFragment,
+            R.id.managerSalaryConfigFragment,
+            R.id.notificationFragment,
+            R.id.managerEditProfileFragment,
+            R.id.managerChangePasswordFragment,
+            R.id.managerHelpCenterFragment,
+            R.id.managerAboutFragment,
+            R.id.managerPolicyFragment
     );
 
     @Inject

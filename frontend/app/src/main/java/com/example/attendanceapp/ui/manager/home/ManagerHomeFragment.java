@@ -21,6 +21,7 @@ import com.example.attendanceapp.R;
 import com.example.attendanceapp.databinding.FragmentManagerHomeBinding;
 import com.example.attendanceapp.domain.model.ApprovalRequestType;
 import com.example.attendanceapp.domain.model.ManagerApprovalItem;
+import com.example.attendanceapp.ui.manager.ManagerMainActivity;
 import com.example.attendanceapp.ui.manager.approval.ManagerApprovalAdapter;
 
 import java.util.ArrayList;
@@ -111,10 +112,22 @@ public class ManagerHomeFragment extends Fragment {
     private void setupListeners(){
         binding.includeHeader.btnNotification.setOnClickListener(v ->
                 navigateTo(R.id.action_managerHomeFragment_to_notificationFragment));
-        binding.includeHeader.ivAvatar.setOnClickListener(v ->
-                navigateTo(R.id.action_managerHomeFragment_to_managerProfileFragment));
-        binding.includePending.tvSeeAllPending.setOnClickListener(v ->
-                navigateTo(R.id.action_managerHomeFragment_to_managerApprovalFragment));
+        
+        binding.includeHeader.ivAvatar.setOnClickListener(v -> {
+            if (requireActivity() instanceof ManagerMainActivity) {
+                ((ManagerMainActivity) requireActivity()).navigateToTab(R.id.managerProfileFragment);
+            } else {
+                navigateTo(R.id.action_managerHomeFragment_to_managerProfileFragment);
+            }
+        });
+
+        binding.includePending.tvSeeAllPending.setOnClickListener(v -> {
+            if (requireActivity() instanceof ManagerMainActivity) {
+                ((ManagerMainActivity) requireActivity()).navigateToTab(R.id.managerApprovalFragment);
+            } else {
+                navigateTo(R.id.action_managerHomeFragment_to_managerApprovalFragment);
+            }
+        });
 
         // Logic xử lý nút sao chép Mã mời ngay trên Trang chủ
         if (binding.includeHeader.btnHomeCopyCode != null) {

@@ -244,7 +244,7 @@
     <!-- Employee History Fragment -->
     <string name="history_title">Lịch sử chấm công</string>
     <string name="history_select_month">Chọn tháng</string>
-    <string name="history_month_format">Tháng 10 2026</string>
+    <string name="history_month_format">Tháng %1$d %2$d</string>
     <string name="history_total_working_days">Tổng ngày công: %s ngày</string>
     <string name="history_total_late">Đi muộn: %s lần</string>
     <string name="history_total_early">Về sớm: %s lần</string>
@@ -374,6 +374,22 @@
     <string name="manager_profile_invite_description">Dùng mã này để nhân viên mới gia nhập</string>
     <string name="manager_profile_copy_success">Đã sao chép mã mời</string>
 
+    <!-- Manager Salary Config -->
+    <string name="salary_config_title">Thiết lập đơn giá ca</string>
+    <string name="salary_config_notice">Lưu ý: Đơn giá mới sẽ được áp dụng cho tất cả các ca làm việc từ thời điểm này trở đi.</string>
+    <string name="salary_config_group_rates">Đơn giá ca làm việc</string>
+    <string name="salary_config_shift_morning">Ca Sáng (08:00 - 12:00)</string>
+    <string name="salary_config_shift_afternoon">Ca Chiều (13:30 - 17:30)</string>
+    <string name="salary_config_shift_night">Ca Tối (18:00 - 22:00)</string>
+    <string name="salary_config_shift_fulltime">Hành chính Fulltime (08:00 - 17:30)</string>
+    <string name="salary_config_group_adjustments">Phụ cấp &amp; Khấu trừ tự động</string>
+    <string name="salary_config_penalty_late">Phạt đi muộn / về sớm</string>
+    <string name="salary_config_penalty_helper">Số tiền trừ trực tiếp vào đơn giá ca nếu vi phạm</string>
+    <string name="salary_config_multiplier_weekend">Hệ số lương ngày nghỉ (OT)</string>
+    <string name="salary_config_multiplier_helper">Ví dụ: 1.5 nghĩa là lương gấp rưỡi ca thường</string>
+    <string name="salary_config_action_update">CẬP NHẬT ĐƠN GIÁ</string>
+    <string name="salary_config_success">Đã lưu cấu hình đơn giá mới thành công!</string>
+    <string name="salary_config_error_empty">Vui lòng nhập đầy đủ đơn giá</string>
 
     <!-- ================================================================= -->
     <!-- 5. CẤU HÌNH BÊN THỨ 3 & SDK TOKENS (THIRD-PARTY TOKENS)            -->

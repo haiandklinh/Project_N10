@@ -15,6 +15,16 @@
           <theme>@style/Theme.AttendanceApp</theme>
         </config>
       </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/drawable/ic_calendar.xml">
+        <config>
+          <theme>@style/Theme.AttendanceApp</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/drawable/ic_chart.xml">
+        <config>
+          <theme>@style/Theme.AttendanceApp</theme>
+        </config>
+      </layout>
       <layout url="file://$PROJECT_DIR$/app/src/main/res/drawable/ic_search.xml">
         <config>
           <theme>@style/Theme.AttendanceApp</theme>
@@ -96,6 +106,11 @@
         </config>
       </layout>
       <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/fragment_manager_reward_punish.xml">
+        <config>
+          <theme>@style/Theme.AttendanceApp</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/fragment_manager_salary_config.xml">
         <config>
           <theme>@style/Theme.AttendanceApp</theme>
         </config>
@@ -211,26 +226,14 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f266c859-d2e1-495b-9007-94bd9ef85a91" name="Changes" comment="sua cac loi crash va them nd profile qly">
+    <list default="true" id="f266c859-d2e1-495b-9007-94bd9ef85a91" name="Changes" comment="thêm phần bảng lương ở giao diện quản lý , xoá các quickaction đã có sẳn ở bottombar">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/domain/model/ApprovalRequestType.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/domain/model/ApprovalRequestType.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/employee/EmployeeMainActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/employee/EmployeeMainActivity.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/employee/checkin/EmployeeCheckInFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/employee/checkin/EmployeeCheckInFragment.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/employee/home/EmployeeHomeFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/employee/home/EmployeeHomeFragment.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/employee/home/statistic/EmployeeStatisticsFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/employee/home/statistic/EmployeeStatisticsFragment.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/ManagerMainActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/ManagerMainActivity.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/ManagerMainViewModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/ManagerMainViewModel.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/home/ManagerHomeFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/home/ManagerHomeFragment.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/human/ManagerJoinRequestFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/human/ManagerJoinRequestFragment.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/payroll/ManagerPayrollFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/payroll/ManagerPayrollFragment.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/profile/ManagerHelpCenterFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/profile/ManagerHelpCenterFragment.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/reward/ManagerRewardPunishFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/reward/ManagerRewardPunishFragment.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/fragment_manager_help_center.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/fragment_manager_help_center.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/fragment_manager_join_request.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/fragment_manager_join_request.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/fragment_manager_profile.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/fragment_manager_profile.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/layout_manager_home_header.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/layout_manager_home_header.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/profile/ManagerProfileFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/profile/ManagerProfileFragment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/ic_chart.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable/ic_chart.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/res/navigation/nav_manager.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/navigation/nav_manager.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/values-en/strings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/values-en/strings.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/res/values/strings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/values/strings.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -241,7 +244,7 @@
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[DeviceId(pluginId=Default, isTemplate=false, identifier=serial=10.6.3.177:42419;connection=ca48daf2)]" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[DeviceId(pluginId=Default, isTemplate=false, identifier=serial=10.6.7.209:38253;connection=2f486498)]" />
   <component name="ExternalProjectsData">
     <projectState path="$PROJECT_DIR$">
       <ProjectState />
@@ -406,24 +409,33 @@
       <option name="project" value="LOCAL" />
       <updated>1790526077216</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="thêm phần bảng lương ở giao diện quản lý , xoá các quickaction đã có sẳn ở bottombar">
+      <option name="closed" value="true" />
+      <created>1790590833358</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1790590833358</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="sua cac loi crash va them nd profile qly" />
-    <option name="LAST_COMMIT_MESSAGE" value="sua cac loi crash va them nd profile qly" />
+    <MESSAGE value="thêm phần bảng lương ở giao diện quản lý , xoá các quickaction đã có sẳn ở bottombar" />
+    <option name="LAST_COMMIT_MESSAGE" value="thêm phần bảng lương ở giao diện quản lý , xoá các quickaction đã có sẳn ở bottombar" />
   </component>
   <component name="play_dynamic_filters_status">
     <option name="appIdToCheckInfo">
       <map>
         <entry key="com.example.attendanceapp">
           <value>
-            <CheckInfo lastCheckTimestamp="1790524387991" />
+            <CheckInfo lastCheckTimestamp="1790672397455" />
           </value>
         </entry>
         <entry key="com.example.attendanceapp.test">
           <value>
-            <CheckInfo lastCheckTimestamp="1790524387700" />
+            <CheckInfo lastCheckTimestamp="1790672397454" />
           </value>
         </entry>
       </map>
