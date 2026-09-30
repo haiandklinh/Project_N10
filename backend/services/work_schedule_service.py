@@ -107,7 +107,7 @@ class WorkScheduleService:
             data=result
         )
 
-    async def assign_work_shifts(self,request:StaffWorkScheduleRequest,id_account)->StaffWorkScheduleResponse:
+    async def assign_work_shifts(self,request:StaffWorkScheduleRequest)->StaffWorkScheduleResponse:
         work_shifts = await self.repository.get_work_shift_by_id(request.id_work_shift)
         if len(work_shifts) < len(request.id_work_shift) :
             raise HTTPException(404, f"{len(request.id_work_shift)-len(work_shifts)} Work Shift is not exist in system")

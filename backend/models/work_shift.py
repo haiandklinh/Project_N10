@@ -1,7 +1,7 @@
 from datetime import time
 import uuid
 
-from sqlalchemy import Float, ForeignKey, String,  Time
+from sqlalchemy import Float, ForeignKey, String, Time
 from sqlalchemy.orm import Mapped, mapped_column
 
 from db.base import Base

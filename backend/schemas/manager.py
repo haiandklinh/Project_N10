@@ -1,13 +1,13 @@
-from datetime import date, datetime
+from datetime import date as Date
 
-from pydantic import BaseModel
+from datetime import datetime
 
 from schemas.base import BaseSchema
 
 
 class CreateProfileRequest(BaseSchema):
     fullName :str
-    date :date
+    date :  Date
     gender : str
     avatar : str
 
@@ -15,7 +15,7 @@ class CreateProfileRequest(BaseSchema):
 class ProfileResponse(BaseSchema) :
     fullName :str
     status :str
-    date :date
+    date : Date
     gender : str
     avatar : str
 
@@ -23,7 +23,7 @@ class UpdateProfileRequest(BaseSchema):
     full_name: str | None = None
     gender: str | None = None
     avatar: str | None = None
-    date: date | None = None
+    date: Date | None = None
 
 
 class  NotificationResponse(BaseSchema) :
