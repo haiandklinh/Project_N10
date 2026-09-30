@@ -1,7 +1,7 @@
-import datetime
+from datetime import time
 import uuid
 
-from sqlalchemy import Float, ForeignKey, String, DateTime
+from sqlalchemy import Float, ForeignKey, String,  Time
 from sqlalchemy.orm import Mapped, mapped_column
 
 from db.base import Base
@@ -25,18 +25,18 @@ class WorkShift(Base):
         nullable=False
     )
 
-    start_time: Mapped[datetime] = mapped_column(
-        DateTime,
+    start_time: Mapped[time] = mapped_column(
+        Time,
         nullable=False
     )
 
-    end_time: Mapped[datetime] = mapped_column(
-        DateTime,
+    end_time: Mapped[time] = mapped_column(
+        Time,
         nullable=False
     )
 
-    allowed_check_in_time: Mapped[datetime] = mapped_column(
-        DateTime,
+    allowed_check_in_time: Mapped[time] = mapped_column(
+        Time,
         nullable=False
     )
 

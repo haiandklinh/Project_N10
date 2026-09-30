@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import ForeignKey, String, DateTime
+from sqlalchemy import ForeignKey, String, DateTime, JSON
 from sqlalchemy.orm import Mapped, mapped_column
 
 from db.base import Base
@@ -29,8 +29,8 @@ class Notification(Base):
         nullable=False
     )
 
-    content: Mapped[str] = mapped_column(
-        String(255),
+    content: Mapped[dict] = mapped_column(
+        JSON,
         nullable=False
     )
 

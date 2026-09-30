@@ -2,6 +2,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.manager import Manager
+from models.notification import Notification
+from models.staff import Staff
 
 
 class ManagerRepository :
@@ -32,3 +34,37 @@ class ManagerRepository :
         await self.db.refresh(staff)
 
         return staff
+
+    async def update_profile(self,full_name,gender,avatar,date,id_account):
+
+        profile = await self.get_profile_by_id_account(id_account)
+
+        if profile is None:
+            return None
+
+        if full_name is not None:
+            profile.full_name = full_name
+
+        if gender is not None:
+            profile.gender = gender
+
+        if avatar is not None:
+            profile.avatar = avatar
+
+        if date is not None:
+            profile.date_of_birth = date
+
+        await self.db.commit()
+        await self.db.refresh(profile)
+
+        return profile
+
+    async def get_notification(self, id_manager):
+        result = await self.db.execute(
+            select(Notification, Staff)
+            .join(Staff, Notification.id_staff == Staff.id)
+            .where(Notification.id_manager == id_manager ,
+                   Notification.notification_type !='Response')
+            )
+
+        return result.all()

@@ -20,7 +20,7 @@ class Payroll(Base):
         nullable=False
     )
 
-    time: Mapped[datetime] = mapped_column(
+    time_create: Mapped[datetime] = mapped_column(
         DateTime,
         nullable=False
     )

@@ -1,6 +1,9 @@
 from datetime import datetime, timezone, timedelta
 import hashlib
+from uuid import UUID
+
 import jwt
+from fastapi import HTTPException
 from passlib.context import CryptContext
 
 from core.config import settings
@@ -38,4 +41,34 @@ def decode_token(token: str):
 
 def hash_token(token: str):
     return hashlib.sha256(token.encode()).hexdigest()
+def verify_token(token: str):
+    try:
+        payload = decode_token(token)
 
+        if payload.get("type") != "access_token":
+            raise HTTPException(
+                status_code=401,
+                detail="Access token required"
+            )
+
+        user_id = payload.get("sub")
+
+        if user_id is None:
+            raise HTTPException(
+                status_code=401,
+                detail="Token does not contain user identifier"
+            )
+
+        return UUID(user_id)
+
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(
+            status_code=401,
+            detail="Token đã hết hạn. Hãy dùng refresh token!"
+        )
+
+    except jwt.InvalidTokenError:
+        raise HTTPException(
+            status_code=401,
+            detail="Token không hợp lệ hoặc bị làm giả!"
+        )
