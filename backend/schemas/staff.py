@@ -1,14 +1,12 @@
-from datetime import  date, time
+from datetime import  date as Date, time
 from uuid import UUID
-
-from pydantic.v1 import UUID1
 
 from schemas.base import BaseSchema
 
 
 class CreateProfileRequest(BaseSchema):
     fullName :str
-    date :date
+    date :Date
     gender : str
     avatar : str
 
@@ -16,7 +14,7 @@ class CreateProfileRequest(BaseSchema):
 class ProfileResponse(BaseSchema) :
     fullName :str
     status :str
-    date :date
+    date :Date
     gender : str
     avatar : str
 
@@ -24,13 +22,13 @@ class UpdateProfileRequest(BaseSchema):
     full_name: str | None = None
     gender: str | None = None
     avatar: str | None = None
-    date: date | None = None
+    date: Date | None = None
 class StaffWorkShiftResponse(BaseSchema):
     name_shift : str
     start_time: time
     end_time : time
 class StaffWorkScheduleResponse(BaseSchema) :
-    workday : date
+    workday : Date
     workshits : list[StaffWorkShiftResponse]
 
 class ListStaffWorkScheduleResponse(BaseSchema) :
@@ -39,11 +37,11 @@ class ListStaffWorkScheduleResponse(BaseSchema) :
 class StaffShiftChangeRequest(BaseSchema) :
     id_work_shift_current : UUID
     id_work_shift_change : UUID
-    workday :date
+    workday :Date
     reason : str
 
 class StaffLeaveRequest(BaseSchema) :
-    work_day_off :date
+    work_day_off :Date
     id_work_shift_off :UUID
     reason :str
 

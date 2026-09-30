@@ -1,44 +1,45 @@
-from pydantic import BaseModel
 
 
+from schemas.base import BaseSchema
 
-class CheckPhoneRequest(BaseModel) :
+
+class CheckPhoneRequest(BaseSchema) :
     phone_number :str
-class CheckPhoneResponse(BaseModel) :
+class CheckPhoneResponse(BaseSchema) :
     exist : bool
 
-class LoginResponse(BaseModel) :
+class LoginResponse(BaseSchema) :
     access_token :str
     refresh_token : str
 
-class LoginRequest(BaseModel) :
+class LoginRequest(BaseSchema) :
     phone_number : str
     password : str
 
-class SendOTPRequest(BaseModel) :
+class SendOTPRequest(BaseSchema) :
     phone_number :str
 
-class SendOTPResponse(BaseModel) :
+class SendOTPResponse(BaseSchema) :
     OTP:str
 
-class VerifyOTPResponse(BaseModel) :
+class VerifyOTPResponse(BaseSchema) :
     is_verified :bool
-class VerifyOTPRequest(BaseModel) :
+class VerifyOTPRequest(BaseSchema) :
     phone_number :str
     OTP :str
-class MessageResponse(BaseModel) :
+class MessageResponse(BaseSchema) :
     message :str
 
-class RegisterRequest(BaseModel) :
+class RegisterRequest(BaseSchema) :
     phone_number :str
     password :str
 
-class ResetPasswordRequest(BaseModel) :
+class ResetPasswordRequest(BaseSchema) :
     phone_number :str
     password :str
 
-class RefreshResponse(BaseModel) :
+class RefreshResponse(BaseSchema) :
     access_token :str
 
-class RefreshRequest(BaseModel) :
+class RefreshRequest(BaseSchema) :
     refresh_token :str
