@@ -1,8 +1,12 @@
 package com.example.attendanceapp.domain.usecase.auth;
 
+import com.example.attendanceapp.domain.model.OtpPurpose;
 import com.example.attendanceapp.domain.repository.AuthRepository;
 
 import javax.inject.Inject;
+
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Single;
 
 public class ForgotPasswordUseCase {
 
@@ -16,61 +20,30 @@ public class ForgotPasswordUseCase {
     /**
      * Gửi mã OTP cho luồng Quên mật khẩu (luôn dùng OtpPurpose.FORGOT_PASSWORD)
      */
-    public void sendOtp(String phoneNumber, AuthCallback<Void> callback) {
+    public Completable sendOtp(String phoneNumber) {
         if (phoneNumber == null || !phoneNumber.matches("^0\\d{9}$")) {
-            if (callback != null) callback.onError("Số điện thoại không hợp lệ");
-            return;
+            return Completable.error(new IllegalArgumentException("Số điện thoại không hợp lệ"));
         }
-
-        authRepository.sendOtp(phoneNumber, AuthRepository.OtpPurpose.FORGOT_PASSWORD, new AuthRepository.DataCallback<Void>() {
-            @Override
-            public void onSuccess(Void result) {
-                if (callback != null) callback.onSuccess(result);
-            }
-
-            @Override
-            public void onError(String errorMessage) {
-                if (callback != null) callback.onError(errorMessage);
-            }
-        });
+        return authRepository.sendOtp(phoneNumber, OtpPurpose.FORGOT_PASSWORD);
     }
 
     /**
      * Xác thực mã OTP cho luồng Quên mật khẩu (luôn dùng OtpPurpose.FORGOT_PASSWORD)
      */
-    public void verifyOtp(String phoneNumber, String otp, AuthCallback<String> callback) {
-        authRepository.verifyOtp(phoneNumber, otp, AuthRepository.OtpPurpose.FORGOT_PASSWORD, new AuthRepository.DataCallback<String>() {
-            @Override
-            public void onSuccess(String result) {
-                if (callback != null) callback.onSuccess(result);
-            }
-
-            @Override
-            public void onError(String errorMessage) {
-                if (callback != null) callback.onError(errorMessage);
-            }
-        });
+    public Single<String> verifyOtp(String phoneNumber, String otp) {
+        return authRepository.verifyOtp(phoneNumber, otp, OtpPurpose.FORGOT_PASSWORD);
     }
 
     /**
      * Đặt lại mật khẩu mới
      */
-    public void resetPassword(String phoneNumber, String newPassword, AuthCallback<Void> callback) {
-        if (newPassword == null || newPassword.length() < 6) {
-            if (callback != null) callback.onError("Mật khẩu phải chứa ít nhất 6 ký tự");
-            return;
+    public Completable resetPassword(String resetToken, String newPassword) {
+        if (resetToken == null || resetToken.isEmpty()) {
+            return Completable.error(new IllegalArgumentException("Token xác thực không hợp lệ"));
         }
-
-        authRepository.resetPassword(phoneNumber, newPassword, new AuthRepository.DataCallback<Void>() {
-            @Override
-            public void onSuccess(Void result) {
-                if (callback != null) callback.onSuccess(result);
-            }
-
-            @Override
-            public void onError(String errorMessage) {
-                if (callback != null) callback.onError(errorMessage);
-            }
-        });
+        if (newPassword == null || newPassword.length() < 6) {
+            return Completable.error(new IllegalArgumentException("Mật khẩu phải chứa ít nhất 6 ký tự"));
+        }
+        return authRepository.resetPassword(resetToken, newPassword);
     }
 }

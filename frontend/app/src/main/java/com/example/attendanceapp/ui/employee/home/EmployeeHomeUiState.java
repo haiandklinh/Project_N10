@@ -9,6 +9,10 @@ import java.util.Collections;
 import java.util.List;
 
 public class EmployeeHomeUiState {
+    private final String userName;
+    private final String companyName;
+    private final String avatarUrl;
+
     private final Shift todayShift;
     private final LocalTime checkInTime;
     private final LocalTime checkOutTime;
@@ -20,9 +24,13 @@ public class EmployeeHomeUiState {
     private final boolean isLoading;
     private final String errorMessage;
 
-    public EmployeeHomeUiState(Shift todayShift, LocalTime checkInTime, LocalTime checkOutTime,
+    public EmployeeHomeUiState(String userName, String companyName, String avatarUrl,
+                               Shift todayShift, LocalTime checkInTime, LocalTime checkOutTime,
                                List<WeekDay> weekDays, List<RecentAttendance> recentAttendances,
                                boolean showNotificationBadge, boolean isLoading, String errorMessage) {
+        this.userName = userName;
+        this.companyName = companyName;
+        this.avatarUrl = avatarUrl;
         this.todayShift = todayShift;
         this.checkInTime = checkInTime;
         this.checkOutTime = checkOutTime;
@@ -35,24 +43,28 @@ public class EmployeeHomeUiState {
 
     // --- State khởi tạo nhanh trong ViewModel ---
     public static EmployeeHomeUiState loading() {
-        return new EmployeeHomeUiState(null, null, null, null,
-                null, false, true, null);
+        return new EmployeeHomeUiState(null, null, null, null, null, null,
+                null, null, false, true, null);
     }
 
     public static EmployeeHomeUiState error(String message) {
-        return new EmployeeHomeUiState(null, null, null, null,
-                null, false, false, message);
+        return new EmployeeHomeUiState(null, null, null, null, null, null,
+                null, null, false, false, message);
     }
 
     // TODO: Sử dụng khi tích hợp UseCase - tạo state success từ dữ liệu thực
-    public static EmployeeHomeUiState success(Shift todayShift, LocalTime checkInTime, LocalTime checkOutTime,
+    public static EmployeeHomeUiState success(String userName, String companyName, String avatarUrl,
+                                              Shift todayShift, LocalTime checkInTime, LocalTime checkOutTime,
                                               List<WeekDay> weekDays, List<RecentAttendance> recentAttendances,
                                               boolean showNotificationBadge) {
-        return new EmployeeHomeUiState(todayShift, checkInTime, checkOutTime, weekDays,
+        return new EmployeeHomeUiState(userName, companyName, avatarUrl, todayShift, checkInTime, checkOutTime, weekDays,
                 recentAttendances, showNotificationBadge, false, null);
     }
 
     // --- Getters ---
+    public String getUserName() { return userName; }
+    public String getCompanyName() { return companyName; }
+    public String getAvatarUrl() { return avatarUrl; }
     public Shift getTodayShift() { return todayShift; }
     public LocalTime getCheckInTime() { return checkInTime; }
     public LocalTime getCheckOutTime() { return checkOutTime; }

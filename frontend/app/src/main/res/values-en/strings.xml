@@ -17,6 +17,7 @@
     <string name="action_get_started">Get Started</string>
     <string name="action_next">Continue</string>
     <string name="action_back">Back</string>
+    <string name="action_back_to_login">Back to login</string>
 
     <!-- General Navigation Bar Titles -->
     <string name="nav_home">Home</string>

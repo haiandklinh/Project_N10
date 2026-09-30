@@ -1,9 +1,14 @@
 package com.example.attendanceapp.domain.usecase.auth;
 
+import com.example.attendanceapp.domain.model.OtpPurpose;
+import com.example.attendanceapp.domain.model.UserStatus;
 import com.example.attendanceapp.domain.repository.AppStateRepository;
 import com.example.attendanceapp.domain.repository.AuthRepository;
 
 import javax.inject.Inject;
+
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Single;
 
 public class RegisterUseCase {
     private final AuthRepository authRepository;
@@ -18,72 +23,36 @@ public class RegisterUseCase {
     /**
      * Kiểm tra số điện thoại đã tồn tại chưa
      */
-    public void checkPhoneExists(String phoneNumber, AuthCallback<Boolean> callback) {
-        authRepository.checkPhoneExists(phoneNumber, new AuthRepository.DataCallback<Boolean>() {
-            @Override
-            public void onSuccess(Boolean result) {
-                if (callback != null) callback.onSuccess(result);
-            }
-
-            @Override
-            public void onError(String errorMessage) {
-                if (callback != null) callback.onError(errorMessage);
-            }
-        });
+    public Single<Boolean> checkPhoneExists(String phoneNumber) {
+        return authRepository.checkPhoneExists(phoneNumber);
     }
 
     /**
      * Gửi mã OTP về Số điện thoại
      */
-    public void sendOtp(String phoneNumber, AuthCallback<Void> callback) {
-        authRepository.sendOtp(phoneNumber, AuthRepository.OtpPurpose.REGISTER, new AuthRepository.DataCallback<Void>() {
-            @Override
-            public void onSuccess(Void result) {
-                if (callback != null) callback.onSuccess(result);
-            }
-
-            @Override
-            public void onError(String errorMessage) {
-                if (callback != null) callback.onError(errorMessage);
-            }
-        });
+    public Completable sendOtp(String phoneNumber) {
+        return authRepository.sendOtp(phoneNumber, OtpPurpose.REGISTER);
     }
 
     /**
      * Xác thực mã OTP cho Đăng ký
      */
-    public void verifyOtp(String account, String otp, AuthCallback<String> callback) {
-        authRepository.verifyOtp(account, otp, AuthRepository.OtpPurpose.REGISTER, new AuthRepository.DataCallback<String>() {
-            @Override
-            public void onSuccess(String result) {
-                if (callback != null) callback.onSuccess(result);
-            }
-
-            @Override
-            public void onError(String errorMessage) {
-                if (callback != null) callback.onError(errorMessage);
-            }
-        });
+    public Single<String> verifyOtp(String account, String otp) {
+        return authRepository.verifyOtp(account, otp, OtpPurpose.REGISTER);
     }
 
     /**
-     * Đăng ký tài khoản (Khớp với AuthRepository.register trả về Void)
+     * Đăng ký tài khoản
+     * Lưu ý: Không lưu vào Room DB ở đây vì user chưa có profile đầy đủ (tên, công ty)
+     * Thông tin đầy đủ sẽ được lưu khi user login lần đầu (API getMe)
      */
-    public void execute(String phoneNumber, String password, AuthCallback<Void> callback) {
-        authRepository.register(phoneNumber, password, new AuthRepository.DataCallback<Void>() {
-            @Override
-            public void onSuccess(Void result) {
-                if (callback != null) callback.onSuccess(result);
-            }
-
-            @Override
-            public void onError(String errorMessage) {
-                if (callback != null) callback.onError(errorMessage);
-            }
-        });
-    }
-
-    public void saveAccountSaved() {
-        appStateRepository.setAccountSaved(true);
+    public Completable execute(String phoneNumber, String password) {
+        return authRepository.register(phoneNumber, password)
+                .doOnComplete(() -> {
+                    // Chỉ lưu trạng thái tài khoản đã đăng ký vào SharedPreferences
+                    // Không lưu vào Room DB vì chưa có thông tin profile
+                    appStateRepository.setAccountSaved(true);
+                    appStateRepository.saveUserStatus(UserStatus.PENDING_APPROVAL);
+                });
     }
 }

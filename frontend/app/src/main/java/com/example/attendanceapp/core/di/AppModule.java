@@ -17,6 +17,12 @@ public abstract class AppModule {
 
     @Provides
     @Singleton
+    static Context provideContext(@ApplicationContext Context context) {
+        return context;
+    }
+
+    @Provides
+    @Singleton
     static SharedPreferences provideSharedPreferences(@ApplicationContext Context context) {
         return context.getSharedPreferences("SHARE_PREFERENCES_APP", Context.MODE_PRIVATE);
     }

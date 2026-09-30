@@ -33,12 +33,6 @@
         app:layout_constraintTop_toTopOf="@id/iv_avatar"
         app:layout_constraintBottom_toBottomOf="@id/iv_avatar">
 
-        <TextView
-            android:id="@+id/tv_welcome"
-            style="@style/BodyTextMediumStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Chào buổi sáng 👋" />
 
         <TextView
             android:id="@+id/tv_greeting"
@@ -47,6 +41,15 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_3xs"
             android:text="Nguyễn Viet Son"/>
+
+
+        <TextView
+            android:id="@+id/tv_company_name"
+            style="@style/BodyTextSmallStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="1dp"
+            android:text="Công ty TNHH ABC" />
 
     </LinearLayout>
 

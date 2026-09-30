@@ -5,19 +5,21 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.example.attendanceapp.domain.model.SavedAccountData;
-import com.example.attendanceapp.domain.model.UserAccount;
-import com.example.attendanceapp.domain.usecase.auth.AuthCallback;
 import com.example.attendanceapp.domain.usecase.auth.GetSavedAccountUseCase;
 import com.example.attendanceapp.domain.usecase.auth.LoginUseCase;
 
 import javax.inject.Inject;
 
 import dagger.hilt.android.lifecycle.HiltViewModel;
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 @HiltViewModel
 public class LoginSavedAccountViewModel extends ViewModel {
     private final LoginUseCase loginUseCase;
     private final GetSavedAccountUseCase getSavedAccountUseCase;
+    private final CompositeDisposable disposables = new CompositeDisposable();
 
     private final MutableLiveData<LoginState> loginState = new MutableLiveData<>();
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
@@ -43,11 +45,8 @@ public class LoginSavedAccountViewModel extends ViewModel {
 
     public void loadSavedAccount() {
         SavedAccountData data = getSavedAccountUseCase.execute();
-        if (data != null) {
-            savedAccountData.setValue(data);
-        } else {
-            loginState.setValue(new LoginState.Error("Không tìm thấy thông tin tài khoản đã lưu"));
-        }
+        savedAccountData.setValue(data);
+        // Fragment sẽ xử lý khi data == null bằng cách chuyển về Login thường
     }
 
     public void loginWithPassword(String password) {
@@ -60,20 +59,24 @@ public class LoginSavedAccountViewModel extends ViewModel {
             return;
         }
 
-        loginUseCase.execute(saved.phone, password,
-                new AuthCallback<UserAccount>() {
-                    @Override
-                    public void onSuccess(UserAccount result) {
-                        loginUseCase.setLoggedIn(true);
-                        isLoading.setValue(false);
-                        loginState.setValue(new LoginState.Success(result));
-                    }
+        disposables.add(loginUseCase.execute(saved.phone, password)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        result -> {
+                            isLoading.setValue(false);
+                            loginState.setValue(new LoginState.Success(result));
+                        },
+                        error -> {
+                            isLoading.setValue(false);
+                            loginState.setValue(new LoginState.Error(error.getMessage()));
+                        }
+                ));
+    }
 
-                    @Override
-                    public void onError(String error) {
-                        isLoading.setValue(false);
-                        loginState.setValue(new LoginState.Error(error));
-                    }
-                });
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        disposables.clear();
     }
 }

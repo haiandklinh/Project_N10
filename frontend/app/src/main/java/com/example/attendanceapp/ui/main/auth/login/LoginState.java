@@ -39,4 +39,13 @@ public abstract class LoginState {
             this.message = message;
         }
     }
+
+    /** Trạng thái số điện thoại chưa đăng ký */
+    public static final class PhoneNotRegistered extends LoginState {
+        public final String phone;
+
+        public PhoneNotRegistered(String phone) {
+            this.phone = phone;
+        }
+    }
 }

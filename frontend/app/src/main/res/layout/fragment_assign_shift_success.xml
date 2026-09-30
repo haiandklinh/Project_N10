@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?android:attr/colorBackground"
+    android:padding="@dimen/spacing_m">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toTopOf="@id/layout_actions"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingTop="@dimen/spacing_xl">
+
+            <!-- 1. ICON SUCCESS CHECKMARK BO TRÒN -->
+            <ImageView
+                android:id="@+id/iv_success_check"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:src="@drawable/ic_check_circle"
+                app:tint="?attr/colorPrimary" />
+
+            <!-- 2. TIÊU ĐỀ THÀNH CÔNG -->
+            <TextView
+                android:id="@+id/tv_success_title"
+                style="@style/TitleTextLargeStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_l"
+                android:text="Xếp ca thành công!"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <!-- 3. MÔ TẢ THÔNG TIN CA VỪA XẾP -->
+            <TextView
+                android:id="@+id/tv_success_desc"
+                style="@style/BodyTextMediumStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_s"
+                android:gravity="center"
+                android:lineSpacingExtra="4dp"
+                android:textColor="?android:attr/textColorSecondary"
+                tools:text="Đã xếp ca cho 3 nhân viên vào ngày\n28/09/2026 (Thứ 2) - Ca sáng\n(08:00 - 12:00)." />
+
+            <!-- 4. CARD DANH SÁCH NHÂN VIÊN -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/ItemCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_l">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_m">
+
+                    <TextView
+                        android:id="@+id/tv_label_employee_list"
+                        style="@style/TitleTextSmallStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Danh sách nhân viên"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textStyle="bold" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rv_assigned_employees"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_s"
+                        android:nestedScrollingEnabled="false"
+                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                        tools:itemCount="3"
+                        tools:listitem="@layout/item_assigned_employee_chip" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 5. NÚT XUẤT RA BẢNG TÍNH (NẰM Ở TRÊN) -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_export_excel"
+                style="@style/ButtonOutlinedSmallStyle"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/button_height_m"
+                android:layout_marginTop="@dimen/spacing_s"
+                android:text="Xuất ra bảng tính"
+                android:textColor="?attr/colorPrimary"
+                app:icon="@drawable/ic_schedule"
+                app:iconGravity="textStart"
+                app:iconPadding="8dp"
+                app:iconSize="18dp"
+                app:iconTint="?attr/colorPrimary"
+                app:strokeColor="?attr/colorPrimary" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- 6. CỤM NÚT ĐÁY MÀN HÌNH (DẠNG 2 NÚT SONG SONG) -->
+    <LinearLayout
+        android:id="@+id/layout_actions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <!-- Nút 1: Quay lại lịch -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_back_to_schedule"
+            style="@style/ButtonFilledSmallStyle"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/button_height_l"
+            android:layout_marginEnd="@dimen/spacing_xs"
+            android:layout_weight="1"
+            android:text="Quay lại lịch"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <!-- Nút 2: Xếp ca khác -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_assign_another"
+            style="@style/ButtonOutlinedSmallStyle"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/button_height_l"
+            android:layout_marginStart="@dimen/spacing_xs"
+            android:layout_weight="1"
+            android:text="Xếp ca khác"
+            android:textColor="?attr/colorOnSurface"
+            app:strokeColor="?attr/colorOutlineVariant" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

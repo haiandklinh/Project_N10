@@ -2,24 +2,26 @@ package com.example.attendanceapp.domain.model;
 
 public class Salary {
     private String month;
-    private long basicSalary; // For Full-time: Monthly salary; For Part-time: target or base if any
-    private long allowance;
-    private long bonus;
-    private long deductions;
-    private long totalSalary;
-    
+    private long basicSalary; // Full-time: Lương cứng hàng tháng
+    private long allowance;   // Phụ cấp
+    private long bonus;       // Thưởng
+    private long deductions;  // Khấu trừ / Phạt
+    private long totalSalary; // Tổng thực nhận
+
     // Full-time specific
     private int totalWorkingDays;
     private int actualWorkingDays;
-    
+
     // Part-time specific
     private double totalHours;
     private long hourlyRate;
-    
-    private boolean isPartTime;
 
-    // Constructor for Full-time
-    public Salary(String month, long basicSalary, long allowance, long bonus, long deductions, int totalWorkingDays, int actualWorkingDays) {
+    private EmploymentType employmentType; // Refactor: boolean isPartTime -> EmploymentType
+    private PaymentStatus paymentStatus;   // Thêm trạng thái thanh toán
+
+    // Constructor cho Full-time
+    public Salary(String month, long basicSalary, long allowance, long bonus, long deductions,
+                  int totalWorkingDays, int actualWorkingDays, PaymentStatus paymentStatus) {
         this.month = month;
         this.basicSalary = basicSalary;
         this.allowance = allowance;
@@ -27,24 +29,27 @@ public class Salary {
         this.deductions = deductions;
         this.totalWorkingDays = totalWorkingDays;
         this.actualWorkingDays = actualWorkingDays;
-        this.isPartTime = false;
+        this.employmentType = EmploymentType.FULL_TIME;
+        this.paymentStatus = paymentStatus != null ? paymentStatus : PaymentStatus.UNPAID;
         calculateTotal();
     }
 
-    // Constructor for Part-time
-    public Salary(String month, long hourlyRate, double totalHours, long allowance, long bonus, long deductions) {
+    // Constructor cho Part-time
+    public Salary(String month, long hourlyRate, double totalHours, long allowance,
+                  long bonus, long deductions, PaymentStatus paymentStatus) {
         this.month = month;
         this.hourlyRate = hourlyRate;
         this.totalHours = totalHours;
         this.allowance = allowance;
         this.bonus = bonus;
         this.deductions = deductions;
-        this.isPartTime = true;
+        this.employmentType = EmploymentType.PART_TIME;
+        this.paymentStatus = paymentStatus != null ? paymentStatus : PaymentStatus.UNPAID;
         calculateTotal();
     }
 
     private void calculateTotal() {
-        if (isPartTime) {
+        if (employmentType == EmploymentType.PART_TIME) {
             this.totalSalary = (long) (hourlyRate * totalHours) + allowance + bonus - deductions;
         } else {
             if (totalWorkingDays > 0) {
@@ -67,5 +72,8 @@ public class Salary {
     public int getActualWorkingDays() { return actualWorkingDays; }
     public double getTotalHours() { return totalHours; }
     public long getHourlyRate() { return hourlyRate; }
-    public boolean isPartTime() { return isPartTime; }
+    public EmploymentType getEmploymentType() { return employmentType; }
+    public boolean isPartTime() { return employmentType == EmploymentType.PART_TIME; }
+    public PaymentStatus getPaymentStatus() { return paymentStatus; }
+    public void setPaymentStatus(PaymentStatus paymentStatus) { this.paymentStatus = paymentStatus; }
 }

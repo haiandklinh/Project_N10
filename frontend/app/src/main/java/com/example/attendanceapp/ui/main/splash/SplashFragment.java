@@ -38,8 +38,7 @@ public class SplashFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentAuthSplashBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
@@ -47,17 +46,18 @@ public class SplashFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
         viewModel = new ViewModelProvider(this).get(SplashViewModel.class);
 
-        observeDestination();
-
-        delayedCheckRunnable = viewModel::checkAppState;
-        handler.postDelayed(delayedCheckRunnable, SPLASH_DELAY_MS);
+        setupObservers();
+        startSplashDelay();
     }
 
-    private void observeDestination() {
+    private void setupObservers() {
         viewModel.getDestination().observe(getViewLifecycleOwner(), this::navigateTo);
+    }
+    private void startSplashDelay() {
+        delayedCheckRunnable = viewModel::checkAppState;
+        handler.postDelayed(delayedCheckRunnable, SPLASH_DELAY_MS);
     }
 
     private void navigateTo(SplashDestination destination) {

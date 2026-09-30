@@ -55,7 +55,7 @@
             android:layout_height="48dp"
             android:layout_gravity="center"
             android:contentDescription="Dark Mode Logo"
-            android:src="@drawable/ic_dark_mode"
+            android:src="@drawable/ic_night"
             app:tint="?attr/colorOnPrimary" />
 
     </com.google.android.material.card.MaterialCardView>

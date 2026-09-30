@@ -74,6 +74,10 @@ public class LoginSavedAccountFragment extends Fragment {
                 binding.tvUserName.setText(data.fullName);
                 binding.tvCompany.setText(data.companyName);
                 binding.tvMaskedPhone.setText(maskPhone(data.phone));
+            } else {
+                // Không có tài khoản đã lưu -> chuyển về màn hình Login thường
+                Navigation.findNavController(requireView())
+                        .navigate(R.id.action_loginSavedAccountFragment_to_loginFragment);
             }
         });
     }

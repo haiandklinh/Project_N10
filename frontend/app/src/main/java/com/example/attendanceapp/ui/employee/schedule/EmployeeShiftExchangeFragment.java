@@ -13,6 +13,8 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.attendanceapp.databinding.FragmentShiftExchangeBinding;
+import com.example.attendanceapp.domain.model.ApprovalRequestType;
+import com.example.attendanceapp.domain.model.ApprovalStatus;
 import com.example.attendanceapp.domain.model.LeaveRequest;
 import com.example.attendanceapp.domain.model.Shift;
 import com.example.attendanceapp.domain.model.ShiftStatus;
@@ -101,23 +103,21 @@ public class EmployeeShiftExchangeFragment extends Fragment {
     private void loadMyShiftsData() {
         List<Shift> myShifts = new ArrayList<>();
         myShifts.add(new Shift(
-                "200",
-                "1000",
+                "s200",
+                "u1000",
                 LocalDate.now(),
                 "Ca Sáng",
-                LocalTime.of(10,2),
-                LocalTime.of(12, 3),
-                "08:00 - 17:00",
+                LocalTime.of(8, 0),
+                LocalTime.of(12, 0),
                 "Văn phòng chính · Tầng 3",
                 ShiftStatus.PENDING));
         myShifts.add(new Shift(
-                "200",
-                "1000",
-                LocalDate.now(),
-                "Ca Sáng",
-                LocalTime.of(10,2),
-                LocalTime.of(12, 3),
-                "08:00 - 17:00",
+                "s201",
+                "u1000",
+                LocalDate.now().plusDays(1),
+                "Ca Chiều",
+                LocalTime.of(13, 30),
+                LocalTime.of(17, 30),
                 "Văn phòng chính · Tầng 3",
                 ShiftStatus.PENDING));
 
@@ -129,13 +129,12 @@ public class EmployeeShiftExchangeFragment extends Fragment {
 
         // Giả lập ca trống trùng ngày hoặc ngày khác
         availableShifts.add(new Shift(
-                "200",
-                "1000",
-                LocalDate.now(),
-                "Ca Sáng",
-                LocalTime.of(10,2),
-                LocalTime.of(12, 3),
-                "08:00 - 17:00",
+                "s300",
+                "u9999",
+                myShift.getDate(),
+                "Ca Hành Chính",
+                LocalTime.of(8, 0),
+                LocalTime.of(17, 0),
                 "Văn phòng chính · Tầng 3",
                 ShiftStatus.PENDING));
 
@@ -179,14 +178,14 @@ public class EmployeeShiftExchangeFragment extends Fragment {
                 binding.tilReason.setError(null);
             }
 
-            // Tạo đối tượng LeaveRequest
+            // Khởi tạo LeaveRequest với Enum ApprovalRequestType và ApprovalStatus
             LeaveRequest request = new LeaveRequest();
             request.setId(String.valueOf(System.currentTimeMillis()));
-            request.setType("Đổi ca / Đổi lịch");
+            request.setType(ApprovalRequestType.SWAP);
             request.setTargetDate(mySelectedShift.getDate().toString());
             request.setShiftId(targetShift.getShiftName());
             request.setReason(reason);
-            request.setStatus("PENDING");
+            request.setStatus(ApprovalStatus.PENDING);
             request.setCreatedAt(System.currentTimeMillis());
 
             // Trừ 1 lượt hạn mức sau khi tạo thành công

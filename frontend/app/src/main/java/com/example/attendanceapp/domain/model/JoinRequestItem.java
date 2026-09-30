@@ -6,20 +6,16 @@ package com.example.attendanceapp.domain.model;
  */
 public class JoinRequestItem {
 
-    public static final String STATUS_PENDING = "PENDING";
-    public static final String STATUS_APPROVED = "APPROVED";
-    public static final String STATUS_REJECTED = "REJECTED";
-
     private final String id;
     private final String fullName;
     private final String avatarUrl;
     private final String phoneNumber;
     private final String invitationCode;
     private final String requestedAtLabel; // "5 phút trước", "Hôm qua"...
-    private String status;
+    private ApprovalStatus status;
 
     public JoinRequestItem(String id, String fullName, String avatarUrl, String phoneNumber,
-                            String invitationCode, String requestedAtLabel, String status) {
+                           String invitationCode, String requestedAtLabel, ApprovalStatus status) {
         this.id = id;
         this.fullName = fullName;
         this.avatarUrl = avatarUrl;
@@ -35,6 +31,6 @@ public class JoinRequestItem {
     public String getPhoneNumber() { return phoneNumber; }
     public String getInvitationCode() { return invitationCode; }
     public String getRequestedAtLabel() { return requestedAtLabel; }
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public ApprovalStatus getStatus() { return status; }
+    public void setStatus(ApprovalStatus status) { this.status = status; }
 }

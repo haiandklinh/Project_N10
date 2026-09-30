@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.attendanceapp.databinding.FragmentManagerApprovalBinding;
 import com.example.attendanceapp.domain.model.ApprovalRequestType;
+import com.example.attendanceapp.domain.model.ApprovalStatus;
 import com.example.attendanceapp.domain.model.ManagerApprovalItem;
 import com.google.android.material.tabs.TabLayout;
 
@@ -62,33 +63,33 @@ public class ManagerApprovalFragment extends Fragment {
     private void loadMockData() {
         allRequests.add(new ManagerApprovalItem("1", "Trần Thị Bình", null, "Nhân viên bán hàng",
                 ApprovalRequestType.LEAVE, "Ngày áp dụng: 20/09/2026", "Nghỉ cả ngày",
-                "Bị ốm đột xuất cần nghỉ để đi khám bệnh.", ManagerApprovalItem.STATUS_PENDING, 3));
+                "Bị ốm đột xuất cần nghỉ để đi khám bệnh.", ApprovalStatus.PENDING, 3));
         allRequests.add(new ManagerApprovalItem("2", "Lê Văn Cường", null, "Nhân viên kho",
                 ApprovalRequestType.ADJUSTMENT, "Ngày áp dụng: 19/09/2026", "Bổ sung check-out",
-                "Quên bấm check-out lúc tan ca do sự cố máy chấm công.", ManagerApprovalItem.STATUS_PENDING, 2));
+                "Quên bấm check-out lúc tan ca do sự cố máy chấm công.", ApprovalStatus.PENDING, 2));
         allRequests.add(new ManagerApprovalItem("3", "Phạm Thu Hà", null, "Thu ngân",
                 ApprovalRequestType.SWAP, "Ngày áp dụng: 22/09/2026", "Đổi sang Ca Chiều",
-                "Có việc gia đình buổi sáng nên xin đổi sang ca chiều.", ManagerApprovalItem.STATUS_PENDING, 1));
+                "Có việc gia đình buổi sáng nên xin đổi sang ca chiều.", ApprovalStatus.PENDING, 1));
         allRequests.add(new ManagerApprovalItem("4", "Đỗ Minh Khoa", null, "Nhân viên bảo vệ",
                 ApprovalRequestType.LEAVE, "Ngày áp dụng: 15/09/2026", "Nghỉ nửa ngày sáng",
-                "Đi khám sức khỏe định kỳ.", ManagerApprovalItem.STATUS_APPROVED, 5));
+                "Đi khám sức khỏe định kỳ.", ApprovalStatus.APPROVED, 5));
         allRequests.add(new ManagerApprovalItem("5", "Ngô Thị Lan", null, "Nhân viên pha chế",
                 ApprovalRequestType.ADJUSTMENT, "Ngày áp dụng: 14/09/2026", "Chỉnh giờ check-in",
-                "Check-in bị sai do định vị GPS chập chờn.", ManagerApprovalItem.STATUS_REJECTED, 6));
+                "Check-in bị sai do định vị GPS chập chờn.", ApprovalStatus.REJECTED, 6));
     }
 
     private void setupList() {
         adapter = new ManagerApprovalAdapter(new ArrayList<>(), new ManagerApprovalAdapter.OnActionListener() {
             @Override
             public void onApprove(ManagerApprovalItem item, int position) {
-                item.setStatus(ManagerApprovalItem.STATUS_APPROVED);
+                item.setStatus(ApprovalStatus.APPROVED);
                 Toast.makeText(getContext(), "Đã duyệt yêu cầu của " + item.getEmployeeName(), Toast.LENGTH_SHORT).show();
                 applyFilters();
             }
 
             @Override
             public void onReject(ManagerApprovalItem item, int position) {
-                item.setStatus(ManagerApprovalItem.STATUS_REJECTED);
+                item.setStatus(ApprovalStatus.REJECTED);
                 Toast.makeText(getContext(), "Đã từ chối yêu cầu của " + item.getEmployeeName(), Toast.LENGTH_SHORT).show();
                 applyFilters();
             }
@@ -143,16 +144,16 @@ public class ManagerApprovalFragment extends Fragment {
             boolean matchStatus;
             switch (selectedStatusTab) {
                 case 1:
-                    matchStatus = ManagerApprovalItem.STATUS_APPROVED.equals(item.getStatus());
+                    matchStatus = item.getStatus() == ApprovalStatus.APPROVED;
                     break;
                 case 2:
-                    matchStatus = ManagerApprovalItem.STATUS_REJECTED.equals(item.getStatus());
+                    matchStatus = item.getStatus() == ApprovalStatus.REJECTED;
                     break;
                 case 3:
                     matchStatus = true;
                     break;
                 default:
-                    matchStatus = ManagerApprovalItem.STATUS_PENDING.equals(item.getStatus());
+                    matchStatus = item.getStatus() == ApprovalStatus.PENDING;
                     break;
             }
             boolean matchType = (selectedType == null) || (item.getType() == selectedType);

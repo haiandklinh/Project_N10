@@ -29,16 +29,12 @@ public class ManagerMainViewModel extends ViewModel {
     private final List<Integer> fullscreenDestinations = Arrays.asList(
             R.id.managerJoinRequestFragment,
             R.id.managerPayrollFragment,
-            R.id.managerPayrollDetailFragment,
             R.id.managerRewardPunishFragment,
             R.id.managerStatisticFragment,
-            R.id.managerSalaryConfigFragment,
-            R.id.notificationFragment,
-            R.id.managerEditProfileFragment,
-            R.id.managerChangePasswordFragment,
-            R.id.managerHelpCenterFragment,
-            R.id.managerAboutFragment,
-            R.id.managerPolicyFragment
+            R.id.assignShiftFragment,
+            R.id.assignShiftSuccessFragment,
+            R.id.selectEmployeeFragment
+
     );
 
     @Inject

@@ -2,10 +2,16 @@ package com.example.attendanceapp.core.di;
 
 import android.content.Context;
 
-import com.example.attendanceapp.data.remote.ApiService;
+import com.example.attendanceapp.BuildConfig;
+import com.example.attendanceapp.data.remote.AuthApi;
 import com.example.attendanceapp.data.remote.AuthInterceptor;
 import com.example.attendanceapp.data.remote.MockInterceptor;
+import com.example.attendanceapp.data.remote.ScheduleApi;
+import com.example.attendanceapp.data.remote.ShiftApi;
 import com.example.attendanceapp.data.remote.TokenAuthenticator;
+import com.example.attendanceapp.data.remote.UserApi;
+
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Singleton;
 
@@ -17,6 +23,7 @@ import dagger.hilt.components.SingletonComponent;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
@@ -27,17 +34,16 @@ import retrofit2.converter.gson.GsonConverterFactory;
 @InstallIn(SingletonComponent.class)
 public class NetworkModule {
 
-    // TODO: đổi thành URL API thật của bạn
-    private static final String BASE_URL = "http://192.168.1.226:8000/auth/";
-
     @Provides
     @Singleton
     public HttpLoggingInterceptor provideLoggingInterceptor() {
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-        // Chỉ log BODY ở bản debug để tránh lộ password/OTP/token ra Logcat ở bản release.
-        // Nếu chưa dùng BuildConfig của app module ở đây, có thể truyền cờ BuildConfig.DEBUG
-        // từ module app xuống qua một class wrapper, hoặc set trực tiếp:
-        logging.setLevel(HttpLoggingInterceptor.Level.BODY); // TODO: gate theo BuildConfig.DEBUG
+        // Chỉ log BODY ở bản debug để tránh lộ password/OTP/token ra Logcat ở bản release
+        if (BuildConfig.DEBUG) {
+            logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+        } else {
+            logging.setLevel(HttpLoggingInterceptor.Level.NONE);
+        }
         return logging;
     }
 
@@ -56,27 +62,51 @@ public class NetworkModule {
             TokenAuthenticator tokenAuthenticator,
             HttpLoggingInterceptor loggingInterceptor
     ) {
-        return new OkHttpClient.Builder()
-                .addInterceptor(mockInterceptor) // Thêm dòng này để mock
+        OkHttpClient.Builder builder = new OkHttpClient.Builder()
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .writeTimeout(30, TimeUnit.SECONDS)
                 .addInterceptor(authInterceptor)
                 .addInterceptor(loggingInterceptor)
-                .authenticator(tokenAuthenticator)
-                .build();
+                .authenticator(tokenAuthenticator);
+
+        // Chỉ add MockInterceptor trong DEBUG build
+        // TODO: Uncomment dòng dưới khi cần test mock, comment lại khi production
+        builder.addInterceptor(mockInterceptor);
+
+        return builder.build();
     }
 
     @Provides
     @Singleton
     public Retrofit provideRetrofit(OkHttpClient okHttpClient) {
         return new Retrofit.Builder()
-                .baseUrl(BASE_URL)
+                .baseUrl(BuildConfig.BASE_URL)
                 .client(okHttpClient)
                 .addConverterFactory(GsonConverterFactory.create())
+                .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
                 .build();
     }
 
     @Provides
     @Singleton
-    public ApiService provideApiService(Retrofit retrofit) {
-        return retrofit.create(ApiService.class);
+    public AuthApi provideApiService(Retrofit retrofit) {
+        return retrofit.create(AuthApi.class);
+    }
+    @Provides
+    @Singleton
+    public UserApi provideUserApi(Retrofit retrofit) {
+        return retrofit.create(UserApi.class);
+    }
+
+    @Provides
+    @Singleton
+    public ScheduleApi provideScheduleApi(Retrofit retrofit) {
+        return retrofit.create(ScheduleApi.class);
+    }
+    @Provides
+    @Singleton
+    public ShiftApi provideShiftApi(Retrofit retrofit) {
+        return retrofit.create(ShiftApi.class);
     }
 }

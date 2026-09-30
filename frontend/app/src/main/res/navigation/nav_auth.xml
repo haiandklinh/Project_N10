@@ -115,6 +115,12 @@
             app:destination="@id/loginFragment"
             app:popUpTo="@id/loginFragment"
             app:popUpToInclusive="false" />
+
+        <action
+            android:id="@+id/action_forgotPasswordFragment_to_registerFragment"
+            app:destination="@id/registerFragment"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="false" />
     </fragment>
 
     <!-- Màn hình Đang chờ phê duyệt -->
@@ -129,6 +135,18 @@
             app:destination="@id/loginFragment"
             app:popUpTo="@id/loginFragment"
             app:popUpToInclusive="true" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/guestModeFragment"
+        android:name="com.example.attendanceapp.ui.main.auth.login.GuestModeFragment"
+        android:label="GuestModeFragment"
+        tools:layout="@layout/fragment_guest_mode">
+
+        <action
+            android:id="@+id/action_guestModeFragment_to_pendingApprovalFragment"
+            app:destination="@id/pendingApprovalFragment" />
     </fragment>
 
 </navigation>

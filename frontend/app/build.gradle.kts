@@ -21,12 +21,16 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField("String", "BASE_URL", "\"http://192.168.1.226:8000/\"")
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            buildConfigField("String", "BASE_URL", "\"https://api.example.com/\"")
         }
     }
     compileOptions {
@@ -37,6 +41,7 @@ android {
 
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 }
 
@@ -99,6 +104,9 @@ dependencies {
 
     // Desugaring
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.3")
+
+//    Flexbox
+    implementation("com.google.android.flexbox:flexbox:3.0.0")
 
     // Testing
     testImplementation(libs.junit)

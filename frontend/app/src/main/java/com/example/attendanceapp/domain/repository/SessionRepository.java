@@ -10,10 +10,6 @@ import com.example.attendanceapp.domain.model.UserStatus;
  */
 public interface SessionRepository {
 
-    // =========================================================
-    // SESSION & PREFERENCES (LOCAL MEMORY / SHARED PREFERENCES)
-    // =========================================================
-
     /** Lấy Vai trò (Role) của người dùng đang đăng nhập đã được lưu trong bộ nhớ */
     UserRole getSavedUserRole();
 

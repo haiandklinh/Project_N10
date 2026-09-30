@@ -4,23 +4,26 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.example.attendanceapp.domain.repository.AuthRepository;
-import com.example.attendanceapp.domain.usecase.auth.AuthCallback;
 import com.example.attendanceapp.domain.usecase.auth.ForgotPasswordUseCase;
 
 import javax.inject.Inject;
 
 import dagger.hilt.android.lifecycle.HiltViewModel;
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 @HiltViewModel
 public class ForgotPasswordViewModel extends ViewModel {
 
     private final ForgotPasswordUseCase forgotPasswordUseCase;
+    private final CompositeDisposable disposables = new CompositeDisposable();
 
     private final MutableLiveData<ForgotPasswordState> forgotPasswordState = new MutableLiveData<>();
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
 
     private String currentAccount = "";
+    private String resetToken = "";
 
     @Inject
     public ForgotPasswordViewModel(ForgotPasswordUseCase forgotPasswordUseCase) {
@@ -44,20 +47,38 @@ public class ForgotPasswordViewModel extends ViewModel {
         currentAccount = account.trim();
         isLoading.setValue(true);
 
-        forgotPasswordUseCase.sendOtp(currentAccount, new AuthCallback<Void>() {
-            @Override
-            public void onSuccess(Void result) {
-                isLoading.setValue(false);
-                forgotPasswordState.setValue(new ForgotPasswordState.OtpSent(currentAccount));
-            }
+        disposables.add(forgotPasswordUseCase.sendOtp(currentAccount)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        () -> {
+                            isLoading.setValue(false);
+                            forgotPasswordState.setValue(new ForgotPasswordState.OtpSent(currentAccount));
+                        },
+                        throwable -> {
+                            isLoading.setValue(false);
+                            String message = throwable.getMessage();
 
-            @Override
-            public void onError(String error) {
-                isLoading.setValue(false);
-                forgotPasswordState.setValue(new ForgotPasswordState.Error(error));
-            }
-        });
+                            // Kiểm tra nếu lỗi chỉ ra rằng tài khoản không tồn tại (Backend thật hoặc Mock)
+                            if (throwable instanceof com.example.attendanceapp.domain.exception.AppException) {
+                                com.example.attendanceapp.domain.exception.AppException appEx =
+                                        (com.example.attendanceapp.domain.exception.AppException) throwable;
+                                if (appEx.getHttpCode() == 404 || "USER_NOT_FOUND".equals(appEx.getErrorCode())) {
+                                    forgotPasswordState.setValue(new ForgotPasswordState.PhoneNotRegistered(currentAccount));
+                                    return;
+                                }
+                            }
+
+                            // Fallback: Nếu backend trả về message chứa text đặc trưng hoặc ta muốn chắc chắn hơn
+                            if (message != null && (message.contains("không tồn tại") || message.contains("chưa đăng ký") || message.contains("not found"))) {
+                                forgotPasswordState.setValue(new ForgotPasswordState.PhoneNotRegistered(currentAccount));
+                            } else {
+                                forgotPasswordState.setValue(new ForgotPasswordState.Error(message));
+                            }
+                        }
+                ));
     }
+
     public void verifyOtp(String otp) {
         if (otp == null || otp.length() < 6) {
             forgotPasswordState.setValue(new ForgotPasswordState.Error("Vui lòng nhập mã OTP 6 số"));
@@ -66,20 +87,20 @@ public class ForgotPasswordViewModel extends ViewModel {
 
         isLoading.setValue(true);
 
-        // Đã sửa AuthCallback<Void> thành AuthCallback<String> khớp với UseCase
-        forgotPasswordUseCase.verifyOtp(currentAccount, otp, new AuthCallback<String>() {
-            @Override
-            public void onSuccess(String result) {
-                isLoading.setValue(false);
-                forgotPasswordState.setValue(new ForgotPasswordState.OtpVerified());
-            }
-
-            @Override
-            public void onError(String error) {
-                isLoading.setValue(false);
-                forgotPasswordState.setValue(new ForgotPasswordState.Error(error));
-            }
-        });
+        disposables.add(forgotPasswordUseCase.verifyOtp(currentAccount, otp)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        result -> {
+                            isLoading.setValue(false);
+                            resetToken = result; // Lưu resetToken từ server
+                            forgotPasswordState.setValue(new ForgotPasswordState.OtpVerified());
+                        },
+                        throwable -> {
+                            isLoading.setValue(false);
+                            forgotPasswordState.setValue(new ForgotPasswordState.Error(throwable.getMessage()));
+                        }
+                ));
     }
 
     public void resetPassword(String newPassword, String confirmPassword) {
@@ -98,21 +119,27 @@ public class ForgotPasswordViewModel extends ViewModel {
             return;
         }
 
+        if (resetToken == null || resetToken.isEmpty()) {
+            forgotPasswordState.setValue(new ForgotPasswordState.Error("Phiên xác thực đã hết hạn. Vui lòng gửi lại OTP"));
+            return;
+        }
+
         isLoading.setValue(true);
 
-        forgotPasswordUseCase.resetPassword(currentAccount, newPassword, new AuthCallback<Void>() {
-            @Override
-            public void onSuccess(Void result) {
-                isLoading.setValue(false);
-                forgotPasswordState.setValue(new ForgotPasswordState.Success());
-            }
-
-            @Override
-            public void onError(String error) {
-                isLoading.setValue(false);
-                forgotPasswordState.setValue(new ForgotPasswordState.Error(error));
-            }
-        });
+        disposables.add(forgotPasswordUseCase.resetPassword(resetToken, newPassword)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        () -> {
+                            isLoading.setValue(false);
+                            resetToken = ""; // Clear resetToken sau khi dùng
+                            forgotPasswordState.setValue(new ForgotPasswordState.Success());
+                        },
+                        throwable -> {
+                            isLoading.setValue(false);
+                            forgotPasswordState.setValue(new ForgotPasswordState.Error(throwable.getMessage()));
+                        }
+                ));
     }
 
     public void resendOtp() {
@@ -123,19 +150,25 @@ public class ForgotPasswordViewModel extends ViewModel {
 
         isLoading.setValue(true);
 
-        forgotPasswordUseCase.sendOtp(currentAccount, new AuthCallback<Void>() {
-            @Override
-            public void onSuccess(Void result) {
-                isLoading.setValue(false);
-                forgotPasswordState.setValue(new ForgotPasswordState.OtpResent());
-            }
+        disposables.add(forgotPasswordUseCase.sendOtp(currentAccount)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        () -> {
+                            isLoading.setValue(false);
+                            forgotPasswordState.setValue(new ForgotPasswordState.OtpResent());
+                        },
+                        throwable -> {
+                            isLoading.setValue(false);
+                            forgotPasswordState.setValue(new ForgotPasswordState.Error(throwable.getMessage()));
+                        }
+                ));
+    }
 
-            @Override
-            public void onError(String error) {
-                isLoading.setValue(false);
-                forgotPasswordState.setValue(new ForgotPasswordState.Error(error));
-            }
-        });
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        disposables.clear();
     }
 
     // --- State Classes ---
@@ -152,6 +185,13 @@ public class ForgotPasswordViewModel extends ViewModel {
         public static class OtpResent extends ForgotPasswordState {}
 
         public static class Success extends ForgotPasswordState {}
+
+        public static class PhoneNotRegistered extends ForgotPasswordState {
+            public final String phone;
+            public PhoneNotRegistered(String phone) {
+                this.phone = phone;
+            }
+        }
 
         public static class Error extends ForgotPasswordState {
             public final String message;

@@ -6,9 +6,6 @@ package com.example.attendanceapp.domain.model;
  */
 public class ManagerEmployeeItem {
 
-    public static final String STATUS_ACTIVE = "ACTIVE";       // Đang làm
-    public static final String STATUS_ON_LEAVE = "ON_LEAVE";   // Đang nghỉ phép
-
     private final String userId;
     private final String employeeCode; // "NV001"
     private final String fullName;
@@ -17,7 +14,7 @@ public class ManagerEmployeeItem {
     private final String department;
     private final String phoneNumber;
     private final String joinDateLabel;
-    private final String status;
+    private final EmployeeStatus status; // Refactor: String -> EmployeeStatus
     private final int shiftCountThisMonth;
     private final int leaveCountThisMonth;
     private final long estimatedSalaryThisMonth;
@@ -27,9 +24,9 @@ public class ManagerEmployeeItem {
     private String assignedShiftTime;
 
     public ManagerEmployeeItem(String userId, String employeeCode, String fullName, String avatarUrl,
-                                String position, String department, String phoneNumber, String joinDateLabel,
-                                String status, int shiftCountThisMonth, int leaveCountThisMonth,
-                                long estimatedSalaryThisMonth) {
+                               String position, String department, String phoneNumber, String joinDateLabel,
+                               EmployeeStatus status, int shiftCountThisMonth, int leaveCountThisMonth,
+                               long estimatedSalaryThisMonth) {
         this.userId = userId;
         this.employeeCode = employeeCode;
         this.fullName = fullName;
@@ -52,7 +49,7 @@ public class ManagerEmployeeItem {
     public String getDepartment() { return department; }
     public String getPhoneNumber() { return phoneNumber; }
     public String getJoinDateLabel() { return joinDateLabel; }
-    public String getStatus() { return status; }
+    public EmployeeStatus getStatus() { return status; }
     public int getShiftCountThisMonth() { return shiftCountThisMonth; }
     public int getLeaveCountThisMonth() { return leaveCountThisMonth; }
     public long getEstimatedSalaryThisMonth() { return estimatedSalaryThisMonth; }

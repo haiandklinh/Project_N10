@@ -7,6 +7,22 @@
     android:background="?android:attr/colorBackground"
     android:padding="@dimen/spacing_xl">
 
+    <!-- Guest Button ở góc trên bên phải -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnContinueAsGuest"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_s"
+        
+        android:text="Khách"
+        android:textColor="?attr/colorPrimary"
+        app:icon="@drawable/ic_user"
+        app:iconGravity="textStart"
+        app:iconPadding="@dimen/spacing_xs"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <!-- Header / Illustration Section -->
     <LinearLayout
         android:id="@+id/layoutHeader"
@@ -14,10 +30,11 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:orientation="vertical"
+        android:paddingTop="@dimen/spacing_l"
         app:layout_constraintBottom_toTopOf="@id/cardInfo"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btnContinueAsGuest"
         app:layout_constraintVertical_chainStyle="packed">
 
         <!-- Glowing Clock Icon Container -->
@@ -60,7 +77,7 @@
             android:textSize="@dimen/text_size_body_medium" />
     </LinearLayout>
 
-    <!-- Info Card Group (Sịn hơn, liền khối) -->
+    <!-- Info Card Group -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardInfo"
         style="@style/MainCard"
@@ -122,7 +139,6 @@
                     android:textSize="@dimen/text_size_body_small" />
 
                 <!-- Code Badge -->
-                <!-- Code Badge dạng Material Chip -->
                 <com.google.android.material.chip.Chip
                     android:id="@+id/tvInviteCode"
                     style="@style/ChipStatusStyle"
@@ -167,9 +183,6 @@
             android:layout_marginTop="@dimen/spacing_s"
             android:text="Hủy yêu cầu"
             android:textColor="@color/md_theme_light_error"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/card_app_settings"
             app:strokeColor="@color/md_theme_light_error"
             app:strokeWidth="1dp" />
     </LinearLayout>
@@ -178,12 +191,12 @@
         android:id="@+id/progressBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:visibility="gone"
         android:indeterminate="true"
-        app:layout_constraintTop_toTopOf="parent"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         tools:visibility="visible" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

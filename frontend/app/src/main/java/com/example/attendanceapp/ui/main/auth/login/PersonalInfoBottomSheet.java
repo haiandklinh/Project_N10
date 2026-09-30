@@ -1,20 +1,32 @@
 package com.example.attendanceapp.ui.main.auth.login;
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.DatePickerDialog;
+import android.content.ContentValues;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 
 import com.example.attendanceapp.R;
 import com.example.attendanceapp.databinding.BottomSheetAuthPersonalInfoBinding;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.Calendar;
 import java.util.Locale;
@@ -33,9 +45,39 @@ public class PersonalInfoBottomSheet extends BottomSheetDialogFragment {
     public static final String BUNDLE_KEY_NAME = "bundle_key_name";
     public static final String BUNDLE_KEY_DOB = "bundle_key_dob";
     public static final String BUNDLE_KEY_GENDER = "bundle_key_gender";
+    public static final String BUNDLE_KEY_AVATAR_URI = "bundle_key_avatar_uri";
 
     private BottomSheetAuthPersonalInfoBinding binding;
     private final Calendar calendar = Calendar.getInstance();
+    private Uri imageUri;
+
+    // Launchers cho việc chọn ảnh
+    private final ActivityResultLauncher<Intent> galleryLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                    imageUri = result.getData().getData();
+                    binding.ivEditAvatar.setImageURI(imageUri);
+                }
+            });
+
+    private final ActivityResultLauncher<Intent> cameraLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    binding.ivEditAvatar.setImageURI(imageUri);
+                }
+            });
+
+    private final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(
+            new ActivityResultContracts.RequestPermission(),
+            isGranted -> {
+                if (isGranted) {
+                    openCamera();
+                } else {
+                    Toast.makeText(requireContext(), "Cần quyền camera để chụp ảnh", Toast.LENGTH_SHORT).show();
+                }
+            });
 
     public static PersonalInfoBottomSheet newInstance() {
         return new PersonalInfoBottomSheet();
@@ -56,6 +98,8 @@ public class PersonalInfoBottomSheet extends BottomSheetDialogFragment {
 
     private void setupViews() {
         binding.edtDob.setOnClickListener(v -> showDatePicker());
+        binding.btnChangePhoto.setOnClickListener(v -> showImageSourceDialog());
+        binding.ivEditAvatar.setOnClickListener(v -> showImageSourceDialog());
 
         binding.btnSubmit.setOnClickListener(v -> {
             String name = binding.edtFullName.getText().toString().trim();
@@ -97,6 +141,9 @@ public class PersonalInfoBottomSheet extends BottomSheetDialogFragment {
             result.putString(BUNDLE_KEY_NAME, name);
             result.putString(BUNDLE_KEY_DOB, dob);
             result.putString(BUNDLE_KEY_GENDER, gender);
+            if (imageUri != null) {
+                result.putString(BUNDLE_KEY_AVATAR_URI, imageUri.toString());
+            }
             getParentFragmentManager().setFragmentResult(REQUEST_KEY, result);
 
             dismiss();
@@ -140,6 +187,45 @@ public class PersonalInfoBottomSheet extends BottomSheetDialogFragment {
                 calendar.get(Calendar.MONTH),
                 calendar.get(Calendar.DAY_OF_MONTH))
                 .show();
+    }
+
+    private void showImageSourceDialog() {
+        String[] options = {"Chụp ảnh", "Chọn từ thư viện"};
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Thay đổi ảnh đại diện")
+                .setItems(options, (dialog, which) -> {
+                    if (which == 0) {
+                        checkCameraPermissionAndOpen();
+                    } else {
+                        openGallery();
+                    }
+                })
+                .show();
+    }
+
+    private void checkCameraPermissionAndOpen() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
+                == PackageManager.PERMISSION_GRANTED) {
+            openCamera();
+        } else {
+            requestPermissionLauncher.launch(Manifest.permission.CAMERA);
+        }
+    }
+
+    private void openCamera() {
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Images.Media.TITLE, "New Picture");
+        values.put(MediaStore.Images.Media.DESCRIPTION, "From Camera");
+        imageUri = requireContext().getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+        cameraLauncher.launch(intent);
+    }
+
+    private void openGallery() {
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        galleryLauncher.launch(intent);
     }
 
     @Override

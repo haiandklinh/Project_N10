@@ -10,12 +10,16 @@ import com.example.attendanceapp.domain.repository.AuthRepository;
 import javax.inject.Inject;
 
 import dagger.hilt.android.lifecycle.HiltViewModel;
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 @HiltViewModel
 public class PendingApprovalViewModel extends ViewModel {
 
     private final AuthRepository authRepository;
     private final AppStateRepository appStateRepository;
+    private final CompositeDisposable disposables = new CompositeDisposable();
 
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
     private final MutableLiveData<ApprovalStatusState> approvalStatusState = new MutableLiveData<>();
@@ -38,8 +42,7 @@ public class PendingApprovalViewModel extends ViewModel {
     public void checkApprovalStatus() {
         isLoading.setValue(true);
 
-        // TODO: Khi có API thật, thay bằng hàm authRepository.checkApprovalStatus(...)
-        // Hiện tại dùng delay giả lập API
+        // Giả lập API bằng RxJava delay hoặc timer nếu muốn đồng bộ luồng RxJava
         new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
             isLoading.setValue(false);
 
@@ -56,21 +59,30 @@ public class PendingApprovalViewModel extends ViewModel {
         }, 1500);
     }
 
-    /** Đăng xuất tài khoản */
+    /** Đăng xuất tài khoản sử dụng RxJava 3 Completable */
     public void logout() {
-        authRepository.logout(new AuthRepository.DataCallback<Void>() {
-            @Override
-            public void onSuccess(Void result) {
-                // TODO: điều hướng về màn hình Login sau khi logout thành công
-            }
-
-            @Override
-            public void onError(String errorMessage) {
-                // Session local đã được clear trong AuthRepositoryImpl dù lỗi,
-                // nên vẫn có thể điều hướng về Login ở đây nếu muốn
-            }
-        });
+        isLoading.setValue(true);
+        disposables.add(authRepository.logout()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        () -> {
+                            isLoading.setValue(false);
+                            // TODO: điều hướng về màn hình Login sau khi logout thành công từ View/Fragment lắng nghe state
+                        },
+                        throwable -> {
+                            isLoading.setValue(false);
+                            // Session local đã được clear trong AuthRepositoryImpl dù lỗi, nên vẫn có thể cho về Login
+                        }
+                ));
     }
+
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        disposables.clear();
+    }
+
     // --- State Classes ---
     public static abstract class ApprovalStatusState {
         public static class Approved extends ApprovalStatusState {}

@@ -3,17 +3,20 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/card_root"
     style="@style/ItemCard"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="@dimen/spacing_xs">
+    android:layout_marginBottom="@dimen/spacing_xs"
+    android:clickable="true"
+    android:focusable="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="@dimen/spacing_s">
 
-        <!-- Avatar giảm cỡ xuống size small/dùng cỡ nhỏ hơn -->
+        <!-- Avatar nhân viên -->
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/iv_avatar"
             android:layout_width="@dimen/avatar_size_m"
@@ -21,56 +24,81 @@
             android:contentDescription="@null"
             android:scaleType="centerCrop"
             android:src="@drawable/ic_avatar"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:shapeAppearanceOverlay="@style/ImageCircleStyle" />
 
+        <!-- Tên nhân viên -->
         <TextView
             android:id="@+id/tv_name"
             style="@style/TitleTextSmallStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/spacing_s"
+            android:layout_marginEnd="@dimen/spacing_xs"
             android:ellipsize="end"
             android:maxLines="1"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:textColor="?attr/colorOnSurface"
+            app:layout_constraintBottom_toTopOf="@id/tv_code"
+            app:layout_constraintEnd_toStartOf="@id/chip_shift_info"
             app:layout_constraintStart_toEndOf="@id/iv_avatar"
-            app:layout_constraintTop_toTopOf="@id/iv_avatar"
-            tools:text="Lê Văn Cường" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="packed"
+            tools:text="Trần Thị Bình" />
 
+        <!-- Mã nhân viên -->
+        <TextView
+            android:id="@+id/tv_code"
+            style="@style/BodyTextSmallStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="?android:attr/textColorSecondary"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="@id/tv_name"
+            app:layout_constraintTop_toBottomOf="@id/tv_name"
+            tools:text="NV001" />
+
+        <!-- Dấu phân cách (Dấu chấm tròn giữa Mã NV và Chức vụ) -->
+        <TextView
+            android:id="@+id/tv_divider"
+            style="@style/BodyTextSmallStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_xs"
+            android:text="•"
+            android:textColor="?android:attr/textColorSecondary"
+            app:layout_constraintBottom_toBottomOf="@id/tv_code"
+            app:layout_constraintStart_toEndOf="@id/tv_code"
+            app:layout_constraintTop_toTopOf="@id/tv_code" />
+
+        <!-- Chức vụ (Thu gọn nếu dài bằng ellipsize) -->
         <TextView
             android:id="@+id/tv_position"
             style="@style/BodyTextSmallStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_xs"
+            android:layout_marginEnd="@dimen/spacing_xs"
             android:ellipsize="end"
             android:maxLines="1"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@id/tv_name"
-            app:layout_constraintTop_toBottomOf="@id/tv_name"
-            tools:text="Nhân viên kho · Kho vận" />
+            android:textColor="?android:attr/textColorSecondary"
+            app:layout_constraintBottom_toBottomOf="@id/tv_code"
+            app:layout_constraintEnd_toStartOf="@id/chip_shift_info"
+            app:layout_constraintStart_toEndOf="@id/tv_divider"
+            app:layout_constraintTop_toTopOf="@id/tv_code"
+            tools:text="Nhân viên bán hàng" />
 
+        <!-- Chip ca làm việc -->
         <com.google.android.material.chip.Chip
-            android:id="@+id/chip_shift_status"
+            android:id="@+id/chip_shift_info"
             style="@style/ChipStatusStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_xs"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="@id/tv_name"
-            app:layout_constraintTop_toBottomOf="@id/tv_position"
-            tools:text="Chưa xếp ca" />
-
-        <!-- Chuyển nút bấm lên song song hàng với Chip status để giảm chiều cao Card -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_assign_shift"
-            style="@style/ButtonFilledSmallStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="@dimen/button_height_xs"
-            android:text="Xếp ca"
-            app:layout_constraintBottom_toBottomOf="@id/chip_shift_status"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/chip_shift_status" />
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Ca Sáng" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

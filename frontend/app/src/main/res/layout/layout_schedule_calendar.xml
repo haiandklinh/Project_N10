@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layout_calendar_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingBottom="@dimen/spacing_m">
+
+    <!-- Header Thứ trong tuần với Background và Vách ngăn -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/calendar_week_header"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorSecondary"
+        android:paddingVertical="@dimen/spacing_s"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <!-- T2 -->
+        <TextView
+            android:id="@+id/tv_mon"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="T2"
+            android:textColor="?attr/colorOnSecondary"
+            android:textSize="@dimen/text_size_label_medium"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@id/v_div_header_1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <View
+            android:id="@+id/v_div_header_1"
+            android:layout_width="1dp"
+            android:layout_height="0dp"
+            android:alpha="0.3"
+            android:background="?attr/colorOnSecondary"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/tv_tue"
+            app:layout_constraintStart_toEndOf="@id/tv_mon"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- T3 -->
+        <TextView
+            android:id="@+id/tv_tue"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="T3"
+            android:textColor="?attr/colorOnSecondary"
+            android:textSize="@dimen/text_size_label_medium"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@id/v_div_header_2"
+            app:layout_constraintStart_toEndOf="@id/v_div_header_1"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <View
+            android:id="@+id/v_div_header_2"
+            android:layout_width="1dp"
+            android:layout_height="0dp"
+            android:alpha="0.3"
+            android:background="?attr/colorOnSecondary"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/tv_wed"
+            app:layout_constraintStart_toEndOf="@id/tv_tue"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- T4 -->
+        <TextView
+            android:id="@+id/tv_wed"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="T4"
+            android:textColor="?attr/colorOnSecondary"
+            android:textSize="@dimen/text_size_label_medium"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@id/v_div_header_3"
+            app:layout_constraintStart_toEndOf="@id/v_div_header_2"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <View
+            android:id="@+id/v_div_header_3"
+            android:layout_width="1dp"
+            android:layout_height="0dp"
+            android:alpha="0.3"
+            android:background="?attr/colorOnSecondary"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/tv_thu"
+            app:layout_constraintStart_toEndOf="@id/tv_wed"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- T5 -->
+        <TextView
+            android:id="@+id/tv_thu"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="T5"
+            android:textColor="?attr/colorOnSecondary"
+            android:textSize="@dimen/text_size_label_medium"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@id/v_div_header_4"
+            app:layout_constraintStart_toEndOf="@id/v_div_header_3"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <View
+            android:id="@+id/v_div_header_4"
+            android:layout_width="1dp"
+            android:layout_height="0dp"
+            android:alpha="0.3"
+            android:background="?attr/colorOnSecondary"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/tv_fri"
+            app:layout_constraintStart_toEndOf="@id/tv_thu"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- T6 -->
+        <TextView
+            android:id="@+id/tv_fri"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="T6"
+            android:textColor="?attr/colorOnSecondary"
+            android:textSize="@dimen/text_size_label_medium"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@id/v_div_header_5"
+            app:layout_constraintStart_toEndOf="@id/v_div_header_4"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <View
+            android:id="@+id/v_div_header_5"
+            android:layout_width="1dp"
+            android:layout_height="0dp"
+            android:alpha="0.3"
+            android:background="?attr/colorOnSecondary"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/tv_sat"
+            app:layout_constraintStart_toEndOf="@id/tv_fri"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- T7 -->
+        <TextView
+            android:id="@+id/tv_sat"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="T7"
+            android:textColor="?attr/colorOnSecondary"
+            android:textSize="@dimen/text_size_label_medium"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@id/v_div_header_6"
+            app:layout_constraintStart_toEndOf="@id/v_div_header_5"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <View
+            android:id="@+id/v_div_header_6"
+            android:layout_width="1dp"
+            android:layout_height="0dp"
+            android:alpha="0.3"
+            android:background="?attr/colorOnSecondary"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/tv_sun"
+            app:layout_constraintStart_toEndOf="@id/tv_sat"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- CN -->
+        <TextView
+            android:id="@+id/tv_sun"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="CN"
+            android:textColor="?attr/colorError"
+            android:textSize="@dimen/text_size_label_medium"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/v_div_header_6"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Đường gạch chân Header -->
+    <View
+        android:id="@+id/divider_header"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="?attr/colorPrimary"
+        app:layout_constraintTop_toBottomOf="@id/calendar_week_header" />
+
+    <!-- Lưới Ngày (6x7) -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_calendar_grid"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_xs"
+        android:nestedScrollingEnabled="false"
+        android:paddingHorizontal="@dimen/spacing_3xs"
+        app:layout_constraintTop_toBottomOf="@id/divider_header"
+        tools:itemCount="35"
+        tools:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+        tools:spanCount="7"
+        tools:listitem="@layout/item_history_calendar_day" />
+
+    <!-- Đường phân cách Legend -->
+    <View
+        android:id="@+id/divider_legend"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="@dimen/spacing_s"
+        android:alpha="0.2"
+        android:background="?attr/colorOutline"
+        app:layout_constraintTop_toBottomOf="@id/rv_calendar_grid" />
+
+    <!-- Chú thích Legend chuyên nghiệp -->
+    <GridLayout
+        android:id="@+id/layout_calendar_legend"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/spacing_m"
+        android:layout_marginTop="@dimen/spacing_s"
+        android:columnCount="3"
+        app:layout_constraintTop_toBottomOf="@id/divider_legend">
+
+        <!-- Thành công -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+            <View
+                android:layout_width="8dp"
+                android:layout_height="8dp"
+                android:background="@drawable/bg_status_dot"
+                android:backgroundTint="?attr/colorAttendancePresent" />
+            <TextView
+                style="@style/BodyTextSmallStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:text="Đủ quân số"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+        </LinearLayout>
+
+        <!-- Cảnh báo -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+            <View
+                android:layout_width="8dp"
+                android:layout_height="8dp"
+                android:background="@drawable/bg_status_dot"
+                android:backgroundTint="?attr/colorAttendanceLate" />
+            <TextView
+                style="@style/BodyTextSmallStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:text="Chờ duyệt"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+        </LinearLayout>
+
+        <!-- Critical -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+            <View
+                android:layout_width="8dp"
+                android:layout_height="8dp"
+                android:background="@drawable/bg_status_dot"
+                android:backgroundTint="?attr/colorAttendanceAbsent" />
+            <TextView
+                style="@style/BodyTextSmallStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:text="Thiếu ca"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+        </LinearLayout>
+
+    </GridLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

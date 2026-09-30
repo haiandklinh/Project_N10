@@ -54,20 +54,19 @@ public class RoleSelectionDialog extends DialogFragment {
     @Override
     public void onStart() {
         super.onStart();
-        Dialog dialog = getDialog();
-        if (dialog == null || dialog.getWindow() == null) return;
-
-        Window window = dialog.getWindow();
-        window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-
-        // Tính toán chiều rộng màn hình minus 48dp (24dp mỗi bên)
-        int marginPx = (int) (24 * getResources().getDisplayMetrics().density);
-        int width = getResources().getDisplayMetrics().widthPixels - (marginPx * 2);
-
-        window.setLayout(width, WindowManager.LayoutParams.WRAP_CONTENT);
     }
 
     private void setupViews() {
+        Dialog dialog = getDialog();
+        if (dialog == null || dialog.getWindow() == null) return;
+        Window window = dialog.getWindow();
+        window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        // Tính toán chiều rộng màn hình minus 48dp (24dp mỗi bên)
+        int marginPx = (int) (24 * getResources().getDisplayMetrics().density);
+        int width = getResources().getDisplayMetrics().widthPixels - (marginPx * 2);
+        window.setLayout(width, WindowManager.LayoutParams.WRAP_CONTENT);
+
+
         // Chọn Quản lý -> Báo về Fragment cha là MANAGER
         binding.cardManager.setOnClickListener(v -> sendResultAndDismiss(UserRole.MANAGER));
 

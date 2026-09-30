@@ -49,6 +49,9 @@ public class ManagerMainActivity extends AppCompatActivity {
         binding = ActivityManagerMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        // Chạy hiệu ứng mở rèm nếu vừa đổi Dark Mode
+        com.example.attendanceapp.core.utils.DarkModeAnimationHelper.checkAndRunOpenCurtainAnimation(this);
+
         setupNavigation();
         setupCustomBottomNavListeners();
     }

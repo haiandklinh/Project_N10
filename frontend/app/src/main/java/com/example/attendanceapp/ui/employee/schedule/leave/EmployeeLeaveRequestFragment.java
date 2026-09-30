@@ -2,8 +2,8 @@ package com.example.attendanceapp.ui.employee.schedule.leave;
 
 import android.os.Bundle;
 import android.text.Editable;
-import android.text.TextWatcher;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,17 +16,20 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import com.example.attendanceapp.databinding.FragmentLeaveRequestBinding;
+import com.example.attendanceapp.domain.model.ApprovalRequestType;
+import com.example.attendanceapp.domain.model.ApprovalStatus;
 import com.example.attendanceapp.domain.model.LeaveRequest;
 import com.google.android.material.datepicker.MaterialDatePicker;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class EmployeeLeaveRequestFragment extends Fragment {
 
     private FragmentLeaveRequestBinding binding;
-    private final String[] requestTypes = {"Xin nghỉ phép", "Đổi ca / Đổi lịch", "Làm ngoài giờ (OT)", "Đi muộn", "Về sớm"};
     private final String[] availableShifts = {"Ca sáng (08:00 - 12:00)", "Ca chiều (13:30 - 17:30)", "Ca hành chính (08:00 - 17:30)", "Ca tối (18:00 - 22:00)"};
 
     @Nullable
@@ -57,17 +60,22 @@ public class EmployeeLeaveRequestFragment extends Fragment {
     }
 
     private void setupDropdowns() {
-        // 1. Dropdown Loại đơn
+        // 1. Dropdown Loại đơn động từ Enum ApprovalRequestType
+        List<String> requestTypeTitles = new ArrayList<>();
+        for (ApprovalRequestType type : ApprovalRequestType.values()) {
+            requestTypeTitles.add(type.getTitle());
+        }
+
         ArrayAdapter<String> adapterType = new ArrayAdapter<>(
                 requireContext(),
                 android.R.layout.simple_dropdown_item_1line,
-                requestTypes
+                requestTypeTitles
         );
         binding.actRequestType.setAdapter(adapterType);
 
         binding.actRequestType.setOnItemClickListener((parent, view, position, id) -> {
-            String selectedType = requestTypes[position];
-            if ("Đổi ca / Đổi lịch".equals(selectedType)) {
+            ApprovalRequestType selectedType = ApprovalRequestType.values()[position];
+            if (selectedType == ApprovalRequestType.SWAP) {
                 binding.tilShiftInfo.setVisibility(View.VISIBLE);
             } else {
                 binding.tilShiftInfo.setVisibility(View.GONE);
@@ -75,7 +83,7 @@ public class EmployeeLeaveRequestFragment extends Fragment {
             }
         });
 
-        // 2. Dropdown Ca làm việc (Khớp với actShiftInfo trong XML mới)
+        // 2. Dropdown Ca làm việc
         ArrayAdapter<String> adapterShift = new ArrayAdapter<>(
                 requireContext(),
                 android.R.layout.simple_dropdown_item_1line,
@@ -87,15 +95,15 @@ public class EmployeeLeaveRequestFragment extends Fragment {
     private void readArgumentsBundle() {
         if (getArguments() != null) {
             String selectedDate = getArguments().getString("selectedDate");
-            String defaultType = getArguments().getString("defaultType");
+            String defaultTypeTitle = getArguments().getString("defaultType");
 
             if (!TextUtils.isEmpty(selectedDate)) {
                 binding.etDate.setText(selectedDate);
             }
 
-            if (!TextUtils.isEmpty(defaultType)) {
-                binding.actRequestType.setText(defaultType, false);
-                if ("Đổi ca / Đổi lịch".equals(defaultType)) {
+            if (!TextUtils.isEmpty(defaultTypeTitle)) {
+                binding.actRequestType.setText(defaultTypeTitle, false);
+                if (ApprovalRequestType.SWAP.getTitle().equals(defaultTypeTitle)) {
                     binding.tilShiftInfo.setVisibility(View.VISIBLE);
                 }
             }
@@ -120,7 +128,6 @@ public class EmployeeLeaveRequestFragment extends Fragment {
     }
 
     private void setupInputWatchers() {
-        // Xóa thông báo lỗi khi người dùng bắt đầu gõ
         TextWatcher clearErrorWatcher = new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -145,14 +152,14 @@ public class EmployeeLeaveRequestFragment extends Fragment {
 
     private void setupSubmitButton() {
         binding.btnSubmit.setOnClickListener(v -> {
-            String type = binding.actRequestType.getText().toString().trim();
+            String typeTitle = binding.actRequestType.getText().toString().trim();
             String date = binding.etDate.getText().toString().trim();
             String shiftInfo = binding.actShiftInfo.getText().toString().trim();
             String reason = binding.etReason.getText() != null ? binding.etReason.getText().toString().trim() : "";
             boolean isEmergency = binding.cbIsEmergency.isChecked();
 
             // Validate dữ liệu
-            if (TextUtils.isEmpty(type)) {
+            if (TextUtils.isEmpty(typeTitle)) {
                 binding.tilRequestType.setError("Vui lòng chọn loại đơn từ");
                 return;
             }
@@ -172,24 +179,37 @@ public class EmployeeLeaveRequestFragment extends Fragment {
                 return;
             }
 
-            sendRequest(type, date, shiftInfo, reason, isEmergency);
+            // Parse từ tiêu đề được chọn sang Enum ApprovalRequestType
+            ApprovalRequestType requestType = null;
+            for (ApprovalRequestType type : ApprovalRequestType.values()) {
+                if (type.getTitle().equalsIgnoreCase(typeTitle)) {
+                    requestType = type;
+                    break;
+                }
+            }
+
+            if (requestType == null) {
+                requestType = ApprovalRequestType.LEAVE; // Mặc định nếu không tìm thấy
+            }
+
+            sendRequest(requestType, date, shiftInfo, reason, isEmergency);
         });
     }
 
-    private void sendRequest(String type, String date, String shiftInfo, String reason, boolean isEmergency) {
+    private void sendRequest(ApprovalRequestType type, String date, String shiftInfo, String reason, boolean isEmergency) {
         LeaveRequest request = new LeaveRequest();
         request.setId(String.valueOf(System.currentTimeMillis()));
-        request.setType(type);
+        request.setType(type); // Refactor: Dùng Enum ApprovalRequestType
         request.setTargetDate(date);
         request.setShiftId(shiftInfo);
         request.setReason(reason);
         request.setEmergency(isEmergency);
-        request.setStatus("PENDING");
+        request.setStatus(ApprovalStatus.PENDING); // Refactor: Dùng Enum ApprovalStatus.PENDING
         request.setCreatedAt(System.currentTimeMillis());
 
         // TODO: Gọi ViewModel gửi dữ liệu lên Room DB / API Server ở đây
 
-        Toast.makeText(requireContext(), "Gửi đơn " + type + " thành công!", Toast.LENGTH_SHORT).show();
+        Toast.makeText(requireContext(), "Gửi đơn " + type.getTitle() + " thành công!", Toast.LENGTH_SHORT).show();
         Navigation.findNavController(requireView()).navigateUp();
     }
 

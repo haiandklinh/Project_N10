@@ -1,41 +1,26 @@
 package com.example.attendanceapp.domain.repository;
 
+import com.example.attendanceapp.domain.model.OtpPurpose;
 import com.example.attendanceapp.domain.model.UserAccount;
-import com.example.attendanceapp.domain.model.UserRole;
+
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Single;
+
+/** Chỉ lo xác thực. Hồ sơ, vai trò, công ty nằm ở UserRepository. */
 public interface AuthRepository {
 
-    // CALLBACK DÙNG CHUNG CHO MỌI THAO TÁC BẤT ĐỒNG BỘ
-    interface DataCallback<T> {
-        void onSuccess(T result);
-        void onError(String errorMessage);
-    }
-    enum OtpPurpose { REGISTER, RESET_PASSWORD, FORGOT_PASSWORD }
+    Single<Boolean> checkPhoneExists(String phoneNumber);
 
+    Completable register(String phoneNumber, String password);
 
-    void register(String phoneNumber, String password, DataCallback<Void> callback);
+    /** Đăng nhập, lưu token, lấy thông tin hiện tại và lưu phiên. status của tài khoản quyết định màn tiếp theo. */
+    Single<UserAccount> login(String phoneNumber, String password);
 
-    void checkPhoneExists(String phoneNumber, DataCallback<Boolean> callback);
+    Completable logout();
 
-    void login(String phoneNumber, String password, DataCallback<UserAccount> callback);
+    Completable sendOtp(String phoneNumber, OtpPurpose purpose);
 
-    void sendOtp(String phoneNumber, OtpPurpose purpose, DataCallback<Void> callback);
+    Single<String> verifyOtp(String phoneNumber, String otp, OtpPurpose purpose);
 
-    void verifyOtp(String phoneNumber, String otp, OtpPurpose purpose, DataCallback<String> callback);
-
-    void resetPassword(String phone, String newPassword, DataCallback<Void> callback);
-
-    void logout(DataCallback<Void> callback);
-
-
-    /** 3. Chọn/cập nhật vai trò sau khi đăng nhập/đăng ký thành công */
-    void selectRole(UserRole role, DataCallback<Void> callback);
-
-    /** Cập nhật thông tin cá nhân */
-    void updatePersonalInfo(String fullName, String dob, String gender, DataCallback<Void> callback);
-
-
-    // XỬ LÝ CÔNG TY THEO VAI TRÒ
-    void createCompany(String companyName, DataCallback<String> callback);
-    void joinCompanyWithCode(String invitationCode, DataCallback<String> callback);
-
+    Completable resetPassword(String resetToken, String newPassword);
 }

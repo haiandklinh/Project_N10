@@ -62,7 +62,43 @@
         android:id="@+id/managerScheduleFragment"
         android:name="com.example.attendanceapp.ui.manager.schedule.ManagerScheduleFragment"
         android:label="@string/nav_manager_schedule"
-        tools:layout="@layout/fragment_manager_schedule" />
+        tools:layout="@layout/fragment_manager_schedule" >
+
+        <action
+            android:id="@+id/action_managerScheduleFragment_to_selectEmployee"
+            app:destination="@id/selectEmployeeFragment" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/selectEmployeeFragment"
+        android:name="com.example.attendanceapp.ui.manager.schedule.select_employee.SelectEmployeeFragment"
+        android:label="Chọn nhân viên"
+        tools:layout="@layout/fragment_select_employee" >
+
+        <action
+            android:id="@+id/action_selectEmployeeFragment_to_assignShiftFragment"
+            app:destination="@id/assignShiftFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/assignShiftFragment"
+        android:name="com.example.attendanceapp.ui.manager.schedule.assign.AssignShiftFragment"
+        android:label="Thiết lập ca làm việc"
+        tools:layout="@layout/fragment_assign_shift" >
+
+        <action
+            android:id="@+id/action_assignShiftFragment_to_assignShiftSuccessFragment"
+            app:destination="@id/assignShiftSuccessFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/assignShiftSuccessFragment"
+        android:name="com.example.attendanceapp.ui.manager.schedule.assign.AssignShiftSuccessFragment"
+        android:label="Thiết lập ca làm việc"
+        tools:layout="@layout/fragment_assign_shift_success" />
+
+
 
     <!-- Tab 4: Nhân sự (Employee Management) -->
     <fragment

@@ -17,6 +17,7 @@
     <string name="action_get_started">Bắt đầu</string>
     <string name="action_next">Tiếp tục</string>
     <string name="action_back">Quay lại</string>
+    <string name="action_back_to_login">Quay lại đăng nhập</string>
 
     <!-- General Navigation Bar Titles -->
     <string name="nav_home">Trang chủ</string>
@@ -75,8 +76,8 @@
     <string name="auth_logout_confirm_msg">Bạn có chắc chắn muốn đăng xuất khỏi tài khoản?</string>
 
     <!-- Register Fragment -->
-    <string name="auth_register_title">Đăng ký tài khoản Quản lý</string>
-    <string name="auth_register_subtitle">Tạo tài khoản để quản lý doanh nghiệp của bạn</string>
+    <string name="auth_register_title">Đăng ký tài khoản</string>
+    <string name="auth_register_subtitle">Đăng ký tài khoản để kết nối với tổ chức của bạn</string>
     <string name="auth_step1_title">Thông tin cá nhân</string>
     <string name="auth_step1_subtitle">Nhập thông tin cơ bản của bạn</string>
     <string name="auth_step2_title">Xác thực liên hệ</string>

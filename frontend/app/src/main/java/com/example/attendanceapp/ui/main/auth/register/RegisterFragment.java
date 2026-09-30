@@ -14,6 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
 import com.example.attendanceapp.R;
@@ -27,7 +28,7 @@ public class RegisterFragment extends Fragment {
     private static final String OTP_REQUEST_KEY = "otp_verify_request";
 
     private FragmentAuthRegisterBinding binding;
-    private RegisterViewModel viewModel;
+    private RegisterViewModel registerViewModel;
 
     private boolean isPhoneVerified = false;
 
@@ -40,48 +41,66 @@ public class RegisterFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        viewModel = new ViewModelProvider(this).get(RegisterViewModel.class);
+        registerViewModel = new ViewModelProvider(this).get(RegisterViewModel.class);
 
         observeViewModel();
         setupOtpResultListener();
         setupSteps();
+        handleArguments();
         showStep(1);
     }
 
+    private void handleArguments() {
+        if (getArguments() != null) {
+            String phone = getArguments().getString("phone_number");
+            if (TextUtils.isEmpty(phone)) {
+                phone = getArguments().getString("phone");
+            }
+            if (!TextUtils.isEmpty(phone)) {
+                binding.layoutStep1.edtPhone.setText(phone);
+            }
+        }
+    }
+
     private void observeViewModel() {
-        viewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
-            if (binding.progressBar != null) {
-                binding.progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
-            }
-            if (binding.layoutStep2 != null && binding.layoutStep2.btnRegisterFinal != null) {
-                // Nút chỉ enable khi không load VÀ đã tích checkbox
-                binding.layoutStep2.btnRegisterFinal.setEnabled(!isLoading && binding.layoutStep2.cbAcceptTerms.isChecked());
-            }
-            if (binding.layoutStep1 != null && binding.layoutStep1.btnNextStep1 != null) {
-                binding.layoutStep1.btnNextStep1.setEnabled(!isLoading);
-            }
+        registerViewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
+            binding.progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+
+            // Nút chỉ enable khi không load VÀ đã tích checkbox
+            binding.layoutStep2.btnRegisterFinal.setEnabled(!isLoading && binding.layoutStep2.cbAcceptTerms.isChecked());
+            binding.layoutStep1.btnNextStep1.setEnabled(!isLoading);
         });
 
-        viewModel.getRegisterState().observe(getViewLifecycleOwner(), state -> {
-            if (state instanceof RegisterViewModel.RegisterState.Success) {
+        registerViewModel.getRegisterState().observe(getViewLifecycleOwner(), state -> {
+            if (state instanceof RegisterState.Success) {
                 clearAllErrors();
                 Toast.makeText(requireContext(), R.string.auth_register_success, Toast.LENGTH_SHORT).show();
-                Navigation.findNavController(requireView()).popBackStack();
-            } else if (state instanceof RegisterViewModel.RegisterState.Error) {
-                String error = ((RegisterViewModel.RegisterState.Error) state).message;
+
+                String phone = binding.layoutStep1.edtPhone.getText().toString().trim();
+                NavController navController = Navigation.findNavController(requireView());
+
+                // Sử dụng getPreviousBackStackEntry() an toàn và chuẩn Product hơn
+                if (navController.getPreviousBackStackEntry() != null) {
+                    navController.getPreviousBackStackEntry()
+                            .getSavedStateHandle()
+                            .set("registered_phone", phone);
+                }
+
+                navController.popBackStack();
+            } else if (state instanceof RegisterState.Error) {
+                String error = ((RegisterState.Error) state).message;
                 showErrorOnInput(error);
             }
         });
 
-        // BỔ SUNG: Observe OTP state (Lắng nghe kết quả gửi OTP và lỗi kiểm tra SĐT)
-        viewModel.getOtpState().observe(getViewLifecycleOwner(), state -> {
-            if (state instanceof RegisterViewModel.OtpState.Sent) {
+        registerViewModel.getOtpState().observe(getViewLifecycleOwner(), state -> {
+            if (state instanceof OtpState.Sent) {
                 // SĐT hợp lệ và không trùng -> Tiến hành mở BottomSheet OTP
-                String phone = ((RegisterViewModel.OtpState.Sent) state).phone;
+                String phone = ((OtpState.Sent) state).phone;
                 openOtpBottomSheet(phone);
-            } else if (state instanceof RegisterViewModel.OtpState.Error) {
-                // Trùng SĐT hoặc lỗi gửi OTP -> Hiển thị lỗi ngay Step 2
-                String error = ((RegisterViewModel.OtpState.Error) state).message;
+            } else if (state instanceof OtpState.Error) {
+                // Trùng SĐT hoặc lỗi gửi OTP -> Hiển thị lỗi ngay Step 1
+                String error = ((OtpState.Error) state).message;
                 showErrorOnStep2(error);
             }
         });
@@ -134,7 +153,7 @@ public class RegisterFragment extends Fragment {
         if (!isPhoneVerified) {
             if (!validateStep1()) return;
             String phone = binding.layoutStep1.edtPhone.getText().toString().trim();
-            viewModel.checkPhoneAndSendOtp(phone);
+            registerViewModel.checkPhoneAndSendOtp(phone);
         } else {
             showStep(2);
         }
@@ -216,8 +235,7 @@ public class RegisterFragment extends Fragment {
         String phone = binding.layoutStep1.edtPhone.getText().toString().trim();
         String password = binding.layoutStep2.edtPassword.getText().toString();
 
-        // FullName để null, sẽ cập nhật ở Profile Completion sau
-        viewModel.register( phone, password);
+        registerViewModel.register(phone, password);
     }
 
     private String maskPhone(String phone) {
@@ -243,7 +261,6 @@ public class RegisterFragment extends Fragment {
                 binding.layoutStep2.tilPassword.setError(errorMsg);
             }
         } else {
-            // Giữ nguyên step hiện tại nếu là lỗi không xác định (như sai OTP)
             if (!isPhoneVerified) {
                 showStep(1);
             }

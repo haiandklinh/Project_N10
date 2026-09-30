@@ -23,7 +23,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="@dimen/spacing_xl"
-        android:text="Xếp ca cho nhân viên"
         android:textSize="@dimen/text_size_title_medium"
         android:textStyle="bold"
         tools:text="Xếp ca cho Trần Thị Bình" />
@@ -42,64 +41,30 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/spacing_xl"
-        android:text="Chọn ca làm cố định"
-        android:textStyle="bold"
-        android:textSize="@dimen/text_size_label_large" />
+        android:text="Chọn ca làm việc"
+        android:textSize="@dimen/text_size_label_large"
+        android:textStyle="bold" />
 
-    <!-- CA SÁNG -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/card_shift_morning"
-        style="@style/ItemCard"
-        app:strokeWidth="@dimen/border_width_m"
+    <!-- RecyclerView hiển thị danh sách ca động + Tùy chọn "Không xếp ca" -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_shifts"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/spacing_m">
+        android:layout_marginTop="@dimen/spacing_m"
+        android:nestedScrollingEnabled="false"
+        tools:itemCount="3"
+        tools:listitem="@layout/layout_shift_option_row" />
 
-        <include layout="@layout/layout_shift_option_row"
-            android:id="@+id/row_morning" />
-    </com.google.android.material.card.MaterialCardView>
-
-    <!-- CA CHIỀU -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/card_shift_afternoon"
-        style="@style/ItemCard"
-        app:strokeWidth="@dimen/border_width_m"
+    <!-- Empty State khi hệ thống chưa tạo ca làm việc nào -->
+    <include
+        android:id="@+id/layout_empty_state"
+        layout="@layout/layout_empty_state"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/spacing_s">
+        android:layout_marginTop="@dimen/spacing_m"
+        android:visibility="gone" />
 
-        <include layout="@layout/layout_shift_option_row"
-            android:id="@+id/row_afternoon" />
-    </com.google.android.material.card.MaterialCardView>
-
-    <!-- CA TỐI -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/card_shift_night"
-        style="@style/ItemCard"
-        app:strokeWidth="@dimen/border_width_m"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/spacing_s">
-
-        <include layout="@layout/layout_shift_option_row"
-            android:id="@+id/row_night" />
-    </com.google.android.material.card.MaterialCardView>
-
-    <!-- KHÔNG XẾP CA -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/card_shift_none"
-        style="@style/ItemCard"
-        app:strokeWidth="@dimen/border_width_m"
-        app:cardBackgroundColor="?attr/colorSurfaceVariant"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/spacing_s">
-
-        <include layout="@layout/layout_shift_option_row"
-            android:id="@+id/row_none" />
-    </com.google.android.material.card.MaterialCardView>
-
-    <!-- Buttons -->
+    <!-- Buttons Action -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -111,8 +76,8 @@
             style="@style/ButtonOutlinedSmallStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:layout_marginEnd="@dimen/spacing_s"
+            android:layout_weight="1"
             android:text="Hủy" />
 
         <com.google.android.material.button.MaterialButton

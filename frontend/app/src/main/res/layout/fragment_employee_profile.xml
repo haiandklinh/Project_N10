@@ -16,6 +16,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
+        <androidx.constraintlayout.widget.Group
+            android:id="@+id/groupRealProfileContent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="visible"
+            app:constraint_referenced_ids="layout_profile_header,layout_profile_content,card_attendance_summary" />
+
         <!-- ==================== PROFILE HEADER ================== -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/layout_profile_header"
@@ -309,6 +316,19 @@
 
         </com.google.android.material.card.MaterialCardView>
 
+
+        <include
+            android:id="@+id/layoutGuestMode"
+            layout="@layout/fragment_guest_mode"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
+
 
 </androidx.core.widget.NestedScrollView>

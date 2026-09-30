@@ -8,10 +8,10 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 
-import com.example.attendanceapp.R;
-import com.example.attendanceapp.core.utils.ColorUtil;
 import com.example.attendanceapp.databinding.BottomSheetEmployeeDetailBinding;
+import com.example.attendanceapp.domain.model.EmployeeStatus;
 import com.example.attendanceapp.domain.model.ManagerEmployeeItem;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
@@ -19,8 +19,6 @@ import java.text.NumberFormat;
 import java.util.Locale;
 
 public class EmployeeDetailBottomSheet extends BottomSheetDialogFragment {
-
-    private static final String ARG_EMPLOYEE_CODE = "employee_code";
 
     private BottomSheetEmployeeDetailBinding binding;
     private ManagerEmployeeItem employee;
@@ -46,6 +44,7 @@ public class EmployeeDetailBottomSheet extends BottomSheetDialogFragment {
             return;
         }
 
+        // 1. Gán thông tin nhân viên
         binding.tvName.setText(employee.getFullName());
         binding.tvPosition.setText(employee.getPosition() + " · " + employee.getDepartment());
         binding.tvPhone.setText(employee.getPhoneNumber());
@@ -53,15 +52,17 @@ public class EmployeeDetailBottomSheet extends BottomSheetDialogFragment {
         binding.tvShiftCount.setText(String.valueOf(employee.getShiftCountThisMonth()));
         binding.tvLeaveCount.setText(String.valueOf(employee.getLeaveCountThisMonth()));
 
+        // 2. Định dạng lương
         NumberFormat currencyFormat = NumberFormat.getInstance(new Locale("vi", "VN"));
         binding.tvSalary.setText(currencyFormat.format(employee.getEstimatedSalaryThisMonth()) + " đ");
 
-        boolean isActive = ManagerEmployeeItem.STATUS_ACTIVE.equals(employee.getStatus());
-        binding.chipStatus.setText(isActive ? "Đang làm" : "Đang nghỉ phép");
-        int bgAttr = isActive ? R.attr.colorAttendancePresentContainer : R.attr.colorAttendanceLeaveContainer;
-        int textAttr = isActive ? R.attr.colorAttendancePresent : R.attr.colorAttendanceLeave;
-        binding.chipStatus.setChipBackgroundColor(ColorStateList.valueOf(ColorUtil.getThemeColor(requireContext(), bgAttr)));
-        binding.chipStatus.setTextColor(ColorUtil.getThemeColor(requireContext(), textAttr));
+        // 3. Hiển thị Chip trạng thái trực tiếp từ Enum EmployeeStatus
+        EmployeeStatus status = employee.getStatus() != null ? employee.getStatus() : EmployeeStatus.ACTIVE;
+        binding.chipStatus.setText(status.getLabel());
+        binding.chipStatus.setTextColor(ContextCompat.getColor(requireContext(), status.getTextColorRes()));
+        binding.chipStatus.setChipBackgroundColor(ColorStateList.valueOf(
+                ContextCompat.getColor(requireContext(), status.getContainerColorRes())
+        ));
 
         binding.btnClose.setOnClickListener(v -> dismiss());
     }

@@ -13,6 +13,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.attendanceapp.R;
 import com.example.attendanceapp.databinding.FragmentLeaveHistoryBinding;
+import com.example.attendanceapp.domain.model.ApprovalRequestType;
+import com.example.attendanceapp.domain.model.ApprovalStatus;
 import com.example.attendanceapp.domain.model.LeaveRequest;
 import com.google.android.material.tabs.TabLayout;
 
@@ -84,16 +86,16 @@ public class EmployeeLeaveHistoryFragment extends Fragment {
 
     private void loadData() {
         binding.swipeRefreshLayout.setRefreshing(true);
-        
-        // Mock data - Trong thực tế sẽ gọi từ ViewModel/Repository
+
+        // Mock data - Sử dụng Enum ApprovalRequestType và ApprovalStatus
         allRequests.clear();
-        allRequests.add(new LeaveRequest("1", "user1", "Nghỉ phép", "20/05/2024", null, "Việc gia đình", false, "APPROVED", System.currentTimeMillis()));
-        allRequests.add(new LeaveRequest("2", "user1", "Nghỉ ốm", "22/05/2024", null, "Sốt xuất huyết", false, "PENDING", System.currentTimeMillis()));
-        allRequests.add(new LeaveRequest("3", "user1", "Đổi ca", "25/05/2024", "S1", "Đi đám cưới", false, "REJECTED", System.currentTimeMillis()));
-        allRequests.add(new LeaveRequest("4", "user1", "Nghỉ phép", "28/05/2024", null, "Giải quyết việc riêng", false, "PENDING", System.currentTimeMillis()));
+        allRequests.add(new LeaveRequest("1", "user1", ApprovalRequestType.LEAVE, "20/05/2026", null, "Việc gia đình", false, ApprovalStatus.APPROVED, System.currentTimeMillis()));
+        allRequests.add(new LeaveRequest("2", "user1", ApprovalRequestType.LEAVE, "22/05/2026", null, "Sốt xuất huyết", false, ApprovalStatus.PENDING, System.currentTimeMillis()));
+        allRequests.add(new LeaveRequest("3", "user1", ApprovalRequestType.SWAP, "25/05/2026", "S1", "Đi đám cưới", false, ApprovalStatus.REJECTED, System.currentTimeMillis()));
+        allRequests.add(new LeaveRequest("4", "user1", ApprovalRequestType.LEAVE, "28/05/2026", null, "Giải quyết việc riêng", false, ApprovalStatus.PENDING, System.currentTimeMillis()));
 
         filterData(binding.tabLayoutStatus.getSelectedTabPosition());
-        
+
         binding.swipeRefreshLayout.setRefreshing(false);
     }
 
@@ -102,21 +104,28 @@ public class EmployeeLeaveHistoryFragment extends Fragment {
         if (tabPosition == 0) { // Tab "Tất cả"
             displayList.addAll(allRequests);
         } else {
-            String status = "";
+            ApprovalStatus targetStatus;
             switch (tabPosition) {
-                case 1: status = "PENDING"; break;  // Tab "Chờ duyệt"
-                case 2: status = "APPROVED"; break; // Tab "Đã duyệt"
-                case 3: status = "REJECTED"; break; // Tab "Từ chối"
+                case 1:
+                    targetStatus = ApprovalStatus.PENDING; // Tab "Chờ duyệt"
+                    break;
+                case 2:
+                    targetStatus = ApprovalStatus.APPROVED; // Tab "Đã duyệt"
+                    break;
+                case 3:
+                default:
+                    targetStatus = ApprovalStatus.REJECTED; // Tab "Từ chối"
+                    break;
             }
-            
+
             for (LeaveRequest req : allRequests) {
-                if (req.getStatus().equals(status)) {
+                if (req.getStatus() == targetStatus) {
                     displayList.add(req);
                 }
             }
         }
-        
-        adapter.notifyDataSetChanged();
+
+        adapter.updateData(displayList);
         updateEmptyState();
     }
 

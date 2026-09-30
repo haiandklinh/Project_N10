@@ -1,11 +1,12 @@
 package com.example.attendanceapp.domain.usecase.auth;
 
-import com.example.attendanceapp.domain.model.SavedAccountData;
 import com.example.attendanceapp.domain.model.UserAccount;
 import com.example.attendanceapp.domain.repository.AppStateRepository;
 import com.example.attendanceapp.domain.repository.AuthRepository;
 
 import javax.inject.Inject;
+
+import io.reactivex.rxjava3.core.Single;
 
 public class LoginUseCase {
 
@@ -19,37 +20,29 @@ public class LoginUseCase {
     }
 
     /**
-     * Thực hiện Đăng nhập bằng Số điện thoại và Mật khẩu.
+     * Thực hiện Đăng nhập bằng Số điện thoại và Mật khẩu theo chuẩn RxJava.
      */
-    public void execute(String phone, String password, AuthCallback<UserAccount> callback) {
+    public Single<UserAccount> execute(String phone, String password) {
         if (phone == null || phone.trim().isEmpty()) {
-            if (callback != null) callback.onError("Vui lòng nhập số điện thoại");
-            return;
+            return Single.error(new IllegalArgumentException("Vui lòng nhập số điện thoại"));
         }
         if (password == null || password.isEmpty()) {
-            if (callback != null) callback.onError("Vui lòng nhập mật khẩu");
-            return;
+            return Single.error(new IllegalArgumentException("Vui lòng nhập mật khẩu"));
         }
 
-        authRepository.login(phone, password, new AuthRepository.DataCallback<UserAccount>() {
-            @Override
-            public void onSuccess(UserAccount user) {
-                appStateRepository.setLoggedIn(true);
-                if (callback != null) callback.onSuccess(user);
-            }
-
-            @Override
-            public void onError(String errorMessage) {
-                if (callback != null) callback.onError(errorMessage);
-            }
-        });
+        return authRepository.login(phone, password)
+                .doOnSuccess(user -> {
+                    appStateRepository.setLoggedIn(true);
+                    appStateRepository.setAccountSaved(true);
+                });
     }
 
-    public void setLoggedIn(boolean loggedIn) {
-        appStateRepository.setLoggedIn(loggedIn);
+    public Single<Boolean> checkPhoneExists(String phone) {
+        if (phone == null || phone.trim().isEmpty()) {
+            return Single.error(new IllegalArgumentException("Vui lòng nhập số điện thoại"));
+        }
+        return authRepository.checkPhoneExists(phone);
     }
 
-    public void setAccountSaved(boolean saved) {
-        appStateRepository.setAccountSaved(saved);
-    }
+    // Xóa các method set trực tiếp, vì UseCase nên quản lý logic này thông qua execute
 }

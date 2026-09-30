@@ -4,6 +4,8 @@ import com.example.attendanceapp.domain.repository.AuthRepository;
 
 import javax.inject.Inject;
 
+import io.reactivex.rxjava3.core.Completable;
+
 public class LogoutUseCase {
     private final AuthRepository authRepository;
 
@@ -12,17 +14,10 @@ public class LogoutUseCase {
         this.authRepository = authRepository;
     }
 
-    public void execute(AuthCallback<Void> callback) {
-        authRepository.logout(new AuthRepository.DataCallback<Void>() {
-            @Override
-            public void onSuccess(Void result) {
-                callback.onSuccess(result);
-            }
-
-            @Override
-            public void onError(String errorMessage) {
-                callback.onError(errorMessage);
-            }
-        });
+    /**
+     * Thực hiện đăng xuất theo chuẩn RxJava.
+     */
+    public Completable execute() {
+        return authRepository.logout();
     }
 }

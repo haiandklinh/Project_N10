@@ -1,6 +1,9 @@
 package com.example.attendanceapp.data.repository;
 
+import com.example.attendanceapp.data.local.dao.UserDao;
+import com.example.attendanceapp.data.local.entity.UserEntity;
 import com.example.attendanceapp.data.local.pref.SharedPreferenceApp;
+import com.example.attendanceapp.data.mapper.UserMapper;
 import com.example.attendanceapp.domain.model.UserAccount;
 import com.example.attendanceapp.domain.model.UserRole;
 import com.example.attendanceapp.domain.model.UserStatus;
@@ -9,18 +12,31 @@ import com.example.attendanceapp.domain.repository.SessionRepository;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import io.reactivex.rxjava3.core.Completable;
+
+/**
+ * SessionRepositoryImpl - Quản lý Session State & Profile Data
+ * 
+ * Session State (SharedPreferences):
+ * - is_logged_in, user_role, user_status, user_id
+ * 
+ * Profile Data (Room DB):
+ * - full_name, gender, date_of_birth, avatar_url, phone
+ */
 @Singleton
 public class SessionRepositoryImpl implements SessionRepository {
 
     private final SharedPreferenceApp sharedPreferenceApp;
+    private final UserDao userDao;
 
     @Inject
-    public SessionRepositoryImpl(SharedPreferenceApp sharedPreferenceApp) {
+    public SessionRepositoryImpl(SharedPreferenceApp sharedPreferenceApp, UserDao userDao) {
         this.sharedPreferenceApp = sharedPreferenceApp;
+        this.userDao = userDao;
     }
 
     // =========================================================
-    // SESSION & PREFERENCES MANAGEMENT
+    // SESSION STATE (SharedPreferences)
     // =========================================================
 
     @Override
@@ -37,24 +53,6 @@ public class SessionRepositoryImpl implements SessionRepository {
     public void saveUserRole(UserRole role) {
         if (role == null) return;
         sharedPreferenceApp.setUserRole(role.name());
-    }
-
-    @Override
-    public UserAccount getCurrentUser() {
-        if (!isLoggedIn()) return null;
-        return sharedPreferenceApp.getUserInfo();
-    }
-
-    @Override
-    public void saveUserSession(UserAccount userAccount, boolean isLoggedIn) {
-        if (userAccount == null) return;
-        
-        sharedPreferenceApp.setLoggedIn(isLoggedIn);
-        sharedPreferenceApp.saveUserInfo(userAccount);
-        sharedPreferenceApp.savePhone(userAccount.getPhoneNumber());
-        if (userAccount.getRole() != null) {
-            sharedPreferenceApp.setUserRole(userAccount.getRole().name());
-        }
     }
 
     @Override
@@ -75,5 +73,40 @@ public class SessionRepositoryImpl implements SessionRepository {
     @Override
     public void clearUserSession() {
         sharedPreferenceApp.clearSession();
+        userDao.clearAllUsers();
+    }
+
+    // =========================================================
+    // PROFILE DATA (Room DB)
+    // =========================================================
+
+    @Override
+    public UserAccount getCurrentUser() {
+        if (!isLoggedIn()) return null;
+        try {
+            UserEntity entity = userDao.getCurrentUserSingle().blockingGet();
+            return UserMapper.fromEntity(entity);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    @Override
+    public void saveUserSession(UserAccount userAccount, boolean isLoggedIn) {
+        if (userAccount == null) return;
+        
+        // Lưu session state vào SharedPreferences
+        sharedPreferenceApp.setLoggedIn(isLoggedIn);
+        sharedPreferenceApp.setUserId(userAccount.getProfile().getUserId());
+        if (userAccount.getRole() != null) {
+            sharedPreferenceApp.setUserRole(userAccount.getRole().name());
+        }
+        if (userAccount.getStatus() != null) {
+            sharedPreferenceApp.saveUserStatus(userAccount.getStatus());
+        }
+        
+        // Lưu profile data vào Room DB
+        UserEntity entity = UserMapper.toEntity(userAccount);
+        userDao.insertOrUpdateUser(entity);
     }
 }

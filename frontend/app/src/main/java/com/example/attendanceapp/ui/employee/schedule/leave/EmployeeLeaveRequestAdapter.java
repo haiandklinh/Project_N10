@@ -6,13 +6,15 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.attendanceapp.R;
-import com.example.attendanceapp.databinding.ItemLeaveRequestBinding; // Cần tạo layout item này
+import com.example.attendanceapp.databinding.ItemLeaveRequestBinding;
+import com.example.attendanceapp.domain.model.ApprovalRequestType;
+import com.example.attendanceapp.domain.model.ApprovalStatus;
 import com.example.attendanceapp.domain.model.LeaveRequest;
-import com.example.attendanceapp.core.utils.ColorUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class EmployeeLeaveRequestAdapter extends RecyclerView.Adapter<EmployeeLeaveRequestAdapter.ViewHolder> {
@@ -20,7 +22,15 @@ public class EmployeeLeaveRequestAdapter extends RecyclerView.Adapter<EmployeeLe
     private final List<LeaveRequest> list;
 
     public EmployeeLeaveRequestAdapter(List<LeaveRequest> list) {
-        this.list = list;
+        this.list = list != null ? new ArrayList<>(list) : new ArrayList<>();
+    }
+
+    public void updateData(List<LeaveRequest> newList) {
+        list.clear();
+        if (newList != null) {
+            list.addAll(newList);
+        }
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -36,32 +46,25 @@ public class EmployeeLeaveRequestAdapter extends RecyclerView.Adapter<EmployeeLe
         LeaveRequest item = list.get(position);
         Context context = holder.itemView.getContext();
 
-        holder.binding.tvRequestType.setText(item.getType());
-        holder.binding.tvTargetDate.setText(item.getTargetDate());
-        holder.binding.tvReason.setText(item.getReason());
-
-        // Xử lý Badge trạng thái (APPROVED / PENDING / REJECTED)
-        switch (item.getStatus()) {
-            case "APPROVED":
-                holder.binding.chipStatus.setText("Đã duyệt");
-                holder.binding.chipStatus.setChipBackgroundColor(ColorStateList.valueOf(
-                        ColorUtil.getThemeColor(context, R.attr.colorAttendancePresentContainer)));
-                holder.binding.chipStatus.setTextColor(
-                        ColorUtil.getThemeColor(context, R.attr.colorAttendancePresent));
-                break;
-            case "REJECTED":
-                holder.binding.chipStatus.setText("Từ chối");
-                holder.binding.chipStatus.setChipBackgroundColor(ColorStateList.valueOf(
-                        ColorUtil.getThemeColor(context, R.attr.colorAttendanceLateContainer)));
-                holder.binding.chipStatus.setTextColor(
-                        ColorUtil.getThemeColor(context, R.attr.colorAttendanceLate));
-                break;
-            default: // PENDING
-                holder.binding.chipStatus.setText("Chờ duyệt");
-                holder.binding.chipStatus.setChipBackgroundColor(ColorStateList.valueOf(0xFFFFF8E1));
-                holder.binding.chipStatus.setTextColor(0xFFF57F17);
-                break;
+        // 1. Gán loại yêu cầu (Tiêu đề và Icon nếu layout có ImageView)
+        ApprovalRequestType type = item.getType();
+        if (type != null) {
+            holder.binding.tvRequestType.setText(type.getTitle());
+        } else {
+            holder.binding.tvRequestType.setText("");
         }
+
+        // 2. Gán ngày áp dụng và lý do
+        holder.binding.tvTargetDate.setText(item.getTargetDate() != null ? item.getTargetDate() : "");
+        holder.binding.tvReason.setText(item.getReason() != null ? item.getReason() : "");
+
+        // 3. Xử lý Chip trạng thái (Lấy trực tiếp nhãn và màu từ Enum ApprovalStatus)
+        ApprovalStatus status = item.getStatus() != null ? item.getStatus() : ApprovalStatus.PENDING;
+        holder.binding.chipStatus.setText(status.getLabel());
+        holder.binding.chipStatus.setTextColor(ContextCompat.getColor(context, status.getTextColorRes()));
+        holder.binding.chipStatus.setChipBackgroundColor(ColorStateList.valueOf(
+                ContextCompat.getColor(context, status.getContainerColorRes())
+        ));
     }
 
     @Override

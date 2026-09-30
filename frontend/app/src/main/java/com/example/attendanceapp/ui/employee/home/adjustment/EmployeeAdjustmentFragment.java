@@ -18,6 +18,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.attendanceapp.R;
 import com.example.attendanceapp.databinding.FragmentAdjustmentBinding;
 import com.example.attendanceapp.databinding.LayoutCreateAdjustmentBinding;
+import com.example.attendanceapp.domain.model.AdjustmentReasonType;
+import com.example.attendanceapp.domain.model.ApprovalStatus;
 import com.example.attendanceapp.domain.model.AttendanceAdjustment;
 import com.google.android.material.tabs.TabLayout;
 
@@ -65,32 +67,31 @@ public class EmployeeAdjustmentFragment extends Fragment {
         binding.rvAdjustments.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.rvAdjustments.setAdapter(adapter);
     }
-    private void setupToolbar() {
-        // Trong Activity hoặc Fragment:
-        binding.toolbarApp.setTitle(getString(R.string.adjustment_title));
 
-        // Bấm nút back -> Nút quay lại của Activity/Fragment
+    private void setupToolbar() {
+        binding.toolbarApp.setTitle(getString(R.string.adjustment_title));
         binding.toolbarApp.setOnBackClickListener(() -> {
             requireActivity().getOnBackPressedDispatcher().onBackPressed();
         });
     }
+
     private void setupListeners() {
         // 1. Lắng nghe sự kiện Bấm nút FAB để mở Form tạo yêu cầu mới
         binding.fabCreateAdjustment.setOnClickListener(v -> showCreateView());
 
-        // 2. Tự động thu gọn FAB thành icon (+) khi cuộn RecyclerView xuống và xòe chữ khi cuộn lên
+        // 2. Tự động thu gọn FAB khi cuộn danh sách
         binding.rvAdjustments.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 if (dy > 0 && binding.fabCreateAdjustment.isExtended()) {
-                    binding.fabCreateAdjustment.shrink(); // Thu gọn thành icon (+)
+                    binding.fabCreateAdjustment.shrink();
                 } else if (dy < 0 && !binding.fabCreateAdjustment.isExtended()) {
-                    binding.fabCreateAdjustment.extend(); // Xòe chữ "Tạo yêu cầu"
+                    binding.fabCreateAdjustment.extend();
                 }
             }
         });
 
-        // 3. Bắt sự kiện chuyển Tab trong TabLayout để lọc danh sách
+        // 3. Lọc danh sách theo Tab
         binding.tabLayoutStats.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
@@ -106,20 +107,20 @@ public class EmployeeAdjustmentFragment extends Fragment {
     }
 
     /**
-     * Lọc danh sách RecyclerView theo vị trí Tab được chọn
+     * Lọc danh sách RecyclerView theo vị trí Tab bằng Enum ApprovalStatus
      */
     private void filterListByCurrentTab(int tabPosition) {
-        AttendanceAdjustment.Status targetStatus;
+        ApprovalStatus targetStatus;
         switch (tabPosition) {
             case 1:
-                targetStatus = AttendanceAdjustment.Status.APPROVED;
+                targetStatus = ApprovalStatus.APPROVED;
                 break;
             case 2:
-                targetStatus = AttendanceAdjustment.Status.REJECTED;
+                targetStatus = ApprovalStatus.REJECTED;
                 break;
             case 0:
             default:
-                targetStatus = AttendanceAdjustment.Status.PENDING;
+                targetStatus = ApprovalStatus.PENDING;
                 break;
         }
 
@@ -138,11 +139,9 @@ public class EmployeeAdjustmentFragment extends Fragment {
         binding.layoutListView.setVisibility(View.VISIBLE);
         binding.layoutCreateView.setVisibility(View.GONE);
 
-        // Hiển thị lại TabLayout và nút FAB
         binding.tabLayoutStats.setVisibility(View.VISIBLE);
         binding.fabCreateAdjustment.show();
 
-        // Refresh lại danh sách theo Tab đang chọn
         filterListByCurrentTab(binding.tabLayoutStats.getSelectedTabPosition());
     }
 
@@ -150,24 +149,19 @@ public class EmployeeAdjustmentFragment extends Fragment {
         binding.layoutListView.setVisibility(View.GONE);
         binding.layoutCreateView.setVisibility(View.VISIBLE);
 
-        // Ẩn TabLayout và nút FAB khi ở giao diện nhập Form
         binding.tabLayoutStats.setVisibility(View.GONE);
         binding.fabCreateAdjustment.hide();
     }
 
-    /**
-     * Khởi tạo logic Form nhập liệu điều chỉnh chấm công
-     */
     private void setupCreateForm() {
         LayoutCreateAdjustmentBinding createBinding = binding.includeCreateAdjustment;
 
-        // Dropdown loại điều chỉnh
-        String[] adjustmentTypes = new String[]{
-                getString(R.string.adjustment_type_missing_checkin),
-                getString(R.string.adjustment_type_missing_checkout),
-                getString(R.string.adjustment_type_late_early),
-                getString(R.string.adjustment_type_add_working_day)
-        };
+        // Dropdown lấy nhãn hiển thị trực tiếp từ Enum AdjustmentReasonType
+        List<String> adjustmentTypes = new ArrayList<>();
+        for (AdjustmentReasonType type : AdjustmentReasonType.values()) {
+            adjustmentTypes.add(type.getLabel());
+        }
+
         ArrayAdapter<String> dropdownAdapter = new ArrayAdapter<>(
                 requireContext(),
                 android.R.layout.simple_dropdown_item_1line,
@@ -249,38 +243,38 @@ public class EmployeeAdjustmentFragment extends Fragment {
     private void loadSampleData() {
         adjustmentList.clear();
 
-        // Dữ liệu mẫu test đủ 3 trạng thái
+        // Dữ liệu mẫu dùng Enum AdjustmentReasonType & ApprovalStatus
         adjustmentList.add(new AttendanceAdjustment(
                 "1",
-                "Thiếu check-in",
+                AdjustmentReasonType.MISSING_CHECK_IN,
                 LocalDate.of(2026, 9, 10),
                 LocalTime.of(8, 5),
                 null,
                 "Quên chấm công vào do họp khách hàng ngay đầu giờ sáng.",
                 LocalDate.of(2026, 9, 11),
-                AttendanceAdjustment.Status.PENDING
+                ApprovalStatus.PENDING
         ));
 
         adjustmentList.add(new AttendanceAdjustment(
                 "2",
-                "Thiếu check-out",
+                AdjustmentReasonType.MISSING_CHECK_OUT,
                 LocalDate.of(2026, 9, 8),
                 null,
                 LocalTime.of(17, 30),
                 "Mất điện công ty cuối giờ không checkout được.",
                 LocalDate.of(2026, 9, 9),
-                AttendanceAdjustment.Status.APPROVED
+                ApprovalStatus.APPROVED
         ));
 
         adjustmentList.add(new AttendanceAdjustment(
                 "3",
-                "Đi muộn",
+                AdjustmentReasonType.SUPPLEMENT_ATTENDANCE,
                 LocalDate.of(2026, 9, 5),
                 LocalTime.of(8, 30),
                 LocalTime.of(17, 30),
                 "Xe hỏng giữa đường.",
                 LocalDate.of(2026, 9, 6),
-                AttendanceAdjustment.Status.REJECTED
+                ApprovalStatus.REJECTED
         ));
 
         updateTabTitlesAndStats();
@@ -288,12 +282,12 @@ public class EmployeeAdjustmentFragment extends Fragment {
     }
 
     /**
-     * Cập nhật số lượng lên tiêu đề từng Tab
+     * Cập nhật số lượng đếm lên từng Tab từ Enum ApprovalStatus
      */
     private void updateTabTitlesAndStats() {
-        long pending = adjustmentList.stream().filter(a -> a.getStatus() == AttendanceAdjustment.Status.PENDING).count();
-        long approved = adjustmentList.stream().filter(a -> a.getStatus() == AttendanceAdjustment.Status.APPROVED).count();
-        long rejected = adjustmentList.stream().filter(a -> a.getStatus() == AttendanceAdjustment.Status.REJECTED).count();
+        long pending = adjustmentList.stream().filter(a -> a.getStatus() == ApprovalStatus.PENDING).count();
+        long approved = adjustmentList.stream().filter(a -> a.getStatus() == ApprovalStatus.APPROVED).count();
+        long rejected = adjustmentList.stream().filter(a -> a.getStatus() == ApprovalStatus.REJECTED).count();
 
         TabLayout.Tab tabPending = binding.tabLayoutStats.getTabAt(0);
         TabLayout.Tab tabApproved = binding.tabLayoutStats.getTabAt(1);

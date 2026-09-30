@@ -5,6 +5,9 @@ import com.example.attendanceapp.domain.repository.AppStateRepository;
 
 import javax.inject.Inject;
 
+// Kiểm tra trạng thái hiện tại của ứng dụng trong bộ nhớ
+// (đã đăng nhập chưa, đã lưu tài khoản chưa, có phải lần đầu mở app không)
+// để quyết định xem màn hình tiếp theo sau Splash Screen sẽ là màn hình nào (SplashDestination).
 public class CheckAppStateUseCase {
 
     private final AppStateRepository repository;
@@ -17,6 +20,7 @@ public class CheckAppStateUseCase {
     public SplashDestination execute() {
         boolean isLoggedIn = repository.isLoggedIn();
         boolean isAccountSaved = repository.isAccountSaved();
+
         boolean isFirstLaunch = repository.isFirstLaunch();
 
         android.util.Log.d("APP_STATE_DEBUG", "isLoggedIn: " + isLoggedIn

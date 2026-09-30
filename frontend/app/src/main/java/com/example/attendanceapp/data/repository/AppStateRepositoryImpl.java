@@ -1,6 +1,9 @@
 package com.example.attendanceapp.data.repository;
 
+import com.example.attendanceapp.data.local.dao.UserDao;
+import com.example.attendanceapp.data.local.entity.UserEntity;
 import com.example.attendanceapp.data.local.pref.SharedPreferenceApp;
+import com.example.attendanceapp.data.mapper.UserMapper;
 import com.example.attendanceapp.domain.model.SavedAccountData;
 import com.example.attendanceapp.domain.model.UserRole;
 import com.example.attendanceapp.domain.model.UserStatus;
@@ -9,15 +12,28 @@ import com.example.attendanceapp.domain.repository.AppStateRepository;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * AppStateRepositoryImpl - Quản lý AppState & Profile Data
+ * 
+ * Session State (SharedPreferences):
+ * - is_logged_in, is_account_saved, is_first_launch, user_role, user_status
+ * 
+ * Profile Data (Room DB):
+ * - user_id, full_name, phone, company_name, invitation_code
+ */
 @Singleton
 public class AppStateRepositoryImpl implements AppStateRepository {
 
     private final SharedPreferenceApp sharedPreferenceApp;
+    private final UserDao userDao;
 
     @Inject
-    public AppStateRepositoryImpl(SharedPreferenceApp sharedPreferenceApp) {
+    public AppStateRepositoryImpl(SharedPreferenceApp sharedPreferenceApp, UserDao userDao) {
         this.sharedPreferenceApp = sharedPreferenceApp;
+        this.userDao = userDao;
     }
+
+    // ===== SESSION STATE (SharedPreferences) =====
 
     @Override
     public boolean isLoggedIn() {
@@ -56,7 +72,7 @@ public class AppStateRepositoryImpl implements AppStateRepository {
 
     @Override
     public void saveUserStatus(UserStatus status) {
-        sharedPreferenceApp.saveUserStatus(status); // convert UserStatus -> String, gửi xuống tầng dưới
+        sharedPreferenceApp.saveUserStatus(status);
     }
 
     @Override
@@ -73,32 +89,29 @@ public class AppStateRepositoryImpl implements AppStateRepository {
     }
 
     @Override
-    public String getAuthToken() {
-        return sharedPreferenceApp.getAuthToken();
+    public void clearSession() {
+        sharedPreferenceApp.clearSession();
     }
 
-    @Override
-    public void saveAuthToken(String token) {
-        sharedPreferenceApp.saveAuthToken(token);
-    }
+    // ===== PROFILE DATA (Room DB) =====
 
     @Override
     public SavedAccountData getSavedAccountData() {
-        String userId = sharedPreferenceApp.getUserId();
-        String username = sharedPreferenceApp.getFullName();
-        String phone = sharedPreferenceApp.getPhone();
+        try {
+            UserEntity entity = userDao.getCurrentUserSingle().blockingGet();
+            if (entity == null) {
+                return null;
+            }
 
-        if (userId == null || phone == null) {
+            return new SavedAccountData(
+                    entity.getName() != null ? entity.getName() : "Người dùng",
+                    entity.getCompanyName() != null ? entity.getCompanyName() : "Công ty",
+                    entity.getInvitationCode() != null ? entity.getInvitationCode() : "CODE",
+                    entity.getPhone()
+            );
+        } catch (Exception e) {
             return null;
         }
-
-        // Đọc dữ liệu tài khoản đã lưu từ SharedPreferences
-        return new SavedAccountData(
-                username != null ? username : "Người dùng",
-                "Công ty", // TODO: Lưu tên công ty vào SharedPreferences khi tạo công ty
-                "CODE", // TODO: Lưu mã công ty vào SharedPreferences khi tham gia công ty
-                phone
-        );
     }
 
     @Override
@@ -108,8 +121,18 @@ public class AppStateRepositoryImpl implements AppStateRepository {
         }
     }
 
+    // ===== TOKEN MANAGEMENT (TokenManager - EncryptedSharedPreferences) =====
+    // Note: Token management should be handled by TokenManager directly
+    // These methods are deprecated and should be removed in favor of TokenManager
+
     @Override
-    public void clearSession() {
-        sharedPreferenceApp.clearSession();
+    public String getAuthToken() {
+        // TODO: Use TokenManager instead
+        return null;
+    }
+
+    @Override
+    public void saveAuthToken(String token) {
+        // TODO: Use TokenManager instead
     }
 }

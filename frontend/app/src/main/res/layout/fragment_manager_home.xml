@@ -17,7 +17,7 @@
         <!-- ==================== HEADER ==================== -->
         <include
             android:id="@+id/include_header"
-            layout="@layout/layout_manager_home_header"
+            layout="@layout/layout_home_header"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layout_constraintTop_toTopOf="parent"

@@ -1,0 +1,82 @@
+{
+  "manager_get_all_schedules": [
+    {
+      "employee_id": "221230988",
+      "name": "Trình Minh Hiếu",
+      "position": "Thu ngân",
+      "work_date": "2026-04-01",
+      "avatar": "https://cdn-media.sforum.vn/storage/app/media/anh-dep-83.jpg",
+      "status": "ACTIVE",
+      "shift": {
+        "shift_id": "shift_01",
+        "shift_name": "Ca Sáng",
+        "start_time": "08:00",
+        "end_time": "12:00"
+      }
+    },
+    {
+      "employee_id": "2212309876",
+      "name": "Trần Văn Nguyên",
+      "position": "Pha chế",
+      "work_date": "2026-04-01",
+      "avatar": "https://cdn-media.sforum.vn/storage/app/media/anh-dep-83.jpg",
+      "status": "ACTIVE",
+      "shift": {
+        "shift_id": "shift_02",
+        "shift_name": "Ca Chiều",
+        "start_time": "13:00",
+        "end_time": "17:00"
+      }
+    },
+    {
+      "employee_id": "2212309876",
+      "name": "Tung Tung ShaHua",
+      "position": "Trộm",
+      "work_date": "2026-04-01",
+      "avatar": "https://cdn-media.sforum.vn/storage/app/media/anh-dep-83.jpg",
+      "status": "ACTIVE",
+      "shift": {
+        "shift_id": "shift_02",
+        "shift_name": "Ca Chiều",
+        "start_time": "13:00",
+        "end_time": "17:00"
+      }
+    }
+  ],
+  "assign_schedule_success": {
+    "employee_id": "emp_001",
+    "name": "Trình Minh Hiếu",
+    "position": "Thu ngân",
+    "work_date": "2026-04-01",
+    "avatar": "https://example.com/avatar1.jpg",
+    "status": "ACTIVE",
+    "shift": {
+      "shift_id": "shift_01",
+      "shift_name": "Ca Sáng",
+      "start_time": "08:00",
+      "end_time": "12:00"
+    }
+  },
+  "staff_get_my_schedules": [
+    {
+      "work_date": "2026-04-01",
+      "shifts": [
+        {
+          "shift_name": "Ca Sáng",
+          "start_time": "08:00",
+          "end_time": "12:00"
+        }
+      ]
+    },
+    {
+      "work_date": "2026-04-02",
+      "shifts": [
+        {
+          "shift_name": "Ca Chiều",
+          "start_time": "13:00",
+          "end_time": "17:00"
+        }
+      ]
+    }
+  ]
+}

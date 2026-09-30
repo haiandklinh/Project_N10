@@ -9,6 +9,11 @@ import com.example.attendanceapp.domain.model.RecentAttendance;
 import com.example.attendanceapp.domain.model.Shift;
 import com.example.attendanceapp.domain.model.ShiftStatus;
 import com.example.attendanceapp.domain.model.WeekDay;
+import com.example.attendanceapp.domain.repository.UserRepository;
+
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -22,6 +27,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel;
 @HiltViewModel
 public class EmployeeHomeViewModel extends ViewModel {
 
+    private final UserRepository userRepository;
+    private final CompositeDisposable disposables = new CompositeDisposable();
+
     // Single Source of Truth chứa toàn bộ UI State của màn hình
     private final MutableLiveData<EmployeeHomeUiState> _uiState = new MutableLiveData<>(EmployeeHomeUiState.loading());
 
@@ -31,12 +39,47 @@ public class EmployeeHomeViewModel extends ViewModel {
 
     @Inject
     public EmployeeHomeViewModel(
+            UserRepository userRepository
             /* TODO: Inject các UseCase/Repository từ Domain Layer tại đây
              * GetTodayShiftUseCase getTodayShiftUseCase,
              * GetWeeklyAttendanceUseCase getWeeklyAttendanceUseCase
              */
     ) {
+        this.userRepository = userRepository;
         loadHomeData();
+        observeUserAccount();
+    }
+
+    private void observeUserAccount() {
+        disposables.add(userRepository.observeCurrentUser()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(user -> {
+                    EmployeeHomeUiState current = _uiState.getValue();
+                    if (current != null) {
+                        _uiState.setValue(new EmployeeHomeUiState(
+                                user.getDisplayName(),
+                                user.getCompanyName(),
+                                user.getAvatarUrl(),
+                                current.getTodayShift(),
+                                current.getCheckInTime(),
+                                current.getCheckOutTime(),
+                                current.getWeekDays(),
+                                current.getRecentAttendances(),
+                                current.shouldShowNotificationBadge(),
+                                current.isLoading(),
+                                current.getErrorMessage()
+                        ));
+                    }
+                }, throwable -> {
+                    // Handle error if needed
+                }));
+    }
+
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        disposables.clear();
     }
 
     // =====================================================================
@@ -65,30 +108,35 @@ public class EmployeeHomeViewModel extends ViewModel {
         // Đặt trạng thái Loading ban đầu
         _uiState.setValue(EmployeeHomeUiState.loading());
 
-        try {
-            // Trong thực tế sẽ gọi UseCase (Async)
-            LocalTime checkIn = LocalTime.of(8, 2);
-            LocalTime checkOut = null;
+        disposables.add(userRepository.getCurrentUser()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(user -> {
+                    // Trong thực tế sẽ gọi UseCase (Async)
+                    LocalTime checkIn = LocalTime.of(8, 2);
+                    LocalTime checkOut = null;
 
-            Shift mockShift = createMockShiftToday();
-            List<WeekDay> weekDays = createMockWeekDays();
-            List<RecentAttendance> recentAttendances = createMockRecentAttendances();
+                    Shift mockShift = createMockShiftToday();
+                    List<WeekDay> weekDays = createMockWeekDays();
+                    List<RecentAttendance> recentAttendances = createMockRecentAttendances();
 
-            // Emit State thành công về Main Thread
-            _uiState.setValue(new EmployeeHomeUiState(
-                    mockShift,
-                    checkIn,
-                    checkOut,
-                    weekDays,
-                    recentAttendances,
-                    true,  // showNotificationBadge
-                    false, // isLoading
-                    null   // errorMessage
-            ));
-        } catch (Exception e) {
-            // Nếu có lỗi, phát State Error
-            _uiState.setValue(EmployeeHomeUiState.error(e.getLocalizedMessage()));
-        }
+                    // Emit State thành công về Main Thread
+                    _uiState.setValue(new EmployeeHomeUiState(
+                            user.getDisplayName(),
+                            user.getCompanyName(),
+                            user.getAvatarUrl(),
+                            mockShift,
+                            checkIn,
+                            checkOut,
+                            weekDays,
+                            recentAttendances,
+                            true,  // showNotificationBadge
+                            false, // isLoading
+                            null   // errorMessage
+                    ));
+                }, throwable -> {
+                    _uiState.setValue(EmployeeHomeUiState.error(throwable.getLocalizedMessage()));
+                }));
     }
 
     // =====================================================================

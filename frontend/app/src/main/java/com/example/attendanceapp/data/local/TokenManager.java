@@ -3,18 +3,17 @@ package com.example.attendanceapp.data.local;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import androidx.security.crypto.EncryptedSharedPreferences;
+import androidx.security.crypto.MasterKey;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import dagger.hilt.android.qualifiers.ApplicationContext;
 
 /**
- * LƯU Ý: đây là bản mẫu dựng lại theo Hilt, dựa trên giả định TokenManager của bạn
- * dùng SharedPreferences. Hãy ghép các trường/khóa/logic thật của bạn vào đây,
- * điểm quan trọng là:
- *  - Bỏ pattern getInstance(context) thủ công.
- *  - Dùng @Inject constructor + @ApplicationContext để Hilt tự cấp phát,
- *    tránh leak Activity context.
+ * TokenManager sử dụng EncryptedSharedPreferences để lưu token an toàn.
+ * Mã hóa AES256-GCM bảo vệ token khỏi bị đọc khi device bị root.
  */
 @Singleton
 public class TokenManager {
@@ -27,9 +26,21 @@ public class TokenManager {
 
     @Inject
     public TokenManager(@ApplicationContext Context context) {
-        // @ApplicationContext đảm bảo luôn dùng application context,
-        // không bao giờ leak Activity context.
-        this.sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        try {
+            MasterKey masterKey = new MasterKey.Builder(context)
+                    .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                    .build();
+
+            this.sharedPreferences = EncryptedSharedPreferences.create(
+                    context,
+                    PREF_NAME,
+                    masterKey,
+                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            );
+        } catch (Exception e) {
+            throw new RuntimeException("Không thể khởi tạo EncryptedSharedPreferences", e);
+        }
     }
 
     public String getAccessToken() {

@@ -3,11 +3,11 @@ package com.example.attendanceapp.domain.model;
 public class ProfileChangeRequest {
     private String id;
     private String userId;
-    private String fieldType; // e.g., "Họ và tên", "Số tài khoản ngân hàng", etc.
+    private ProfileFieldType fieldType; // Refactor: String -> ProfileFieldType
     private String oldValue;
     private String newValue;
-    private String proofUrl;  // Path or URL to the uploaded proof photo
-    private String status;    // "PENDING", "APPROVED", "REJECTED"
+    private String proofUrl;
+    private ApprovalStatus status;      // Refactor: String -> ApprovalStatus
     private String rejectReason;
     private long createdAt;
     private long updatedAt;
@@ -15,8 +15,10 @@ public class ProfileChangeRequest {
     public ProfileChangeRequest() {
     }
 
-    public ProfileChangeRequest(String id, String userId, String fieldType, String oldValue, String newValue, 
-                                String proofUrl, String status, String rejectReason, long createdAt, long updatedAt) {
+    public ProfileChangeRequest(String id, String userId, ProfileFieldType fieldType,
+                                String oldValue, String newValue, String proofUrl,
+                                ApprovalStatus status, String rejectReason,
+                                long createdAt, long updatedAt) {
         this.id = id;
         this.userId = userId;
         this.fieldType = fieldType;
@@ -45,11 +47,11 @@ public class ProfileChangeRequest {
         this.userId = userId;
     }
 
-    public String getFieldType() {
+    public ProfileFieldType getFieldType() {
         return fieldType;
     }
 
-    public void setFieldType(String fieldType) {
+    public void setFieldType(ProfileFieldType fieldType) {
         this.fieldType = fieldType;
     }
 
@@ -77,11 +79,11 @@ public class ProfileChangeRequest {
         this.proofUrl = proofUrl;
     }
 
-    public String getStatus() {
+    public ApprovalStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(ApprovalStatus status) {
         this.status = status;
     }
 

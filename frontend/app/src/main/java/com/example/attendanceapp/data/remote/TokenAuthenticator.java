@@ -3,8 +3,8 @@ package com.example.attendanceapp.data.remote;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.example.attendanceapp.data.dto.request.RefreshTokenRequest;
-import com.example.attendanceapp.data.dto.response.RefreshTokenResponse;
+import com.example.attendanceapp.data.dto.request.auth.RefreshTokenRequest;
+import com.example.attendanceapp.data.dto.response.auth.RefreshTokenResponse;
 import com.example.attendanceapp.data.local.TokenManager;
 
 import java.io.IOException;
@@ -23,15 +23,13 @@ import retrofit2.Call;
 public class TokenAuthenticator implements Authenticator {
 
     private final TokenManager tokenManager;
-    // Provider<ApiService> phá vỡ vòng lặp phụ thuộc:
-    // ApiService -> Retrofit -> OkHttpClient -> Authenticator -> ApiService.
-    // Hilt tự cung cấp Provider này, không cần code thủ công.
-    private final Provider<ApiService> apiServiceProvider;
+    // Sử dụng Provider<AuthApi> để tránh vòng lặp phụ thuộc (Circular Dependency)
+    private final Provider<AuthApi> authApiProvider;
 
     @Inject
-    public TokenAuthenticator(TokenManager tokenManager, Provider<ApiService> apiServiceProvider) {
+    public TokenAuthenticator(TokenManager tokenManager, Provider<AuthApi> authApiProvider) {
         this.tokenManager = tokenManager;
-        this.apiServiceProvider = apiServiceProvider;
+        this.authApiProvider = authApiProvider;
     }
 
     @Nullable
@@ -42,37 +40,51 @@ public class TokenAuthenticator implements Authenticator {
             return null;
         }
 
-        String refreshToken = tokenManager.getRefreshToken();
-        if (refreshToken == null || refreshToken.isEmpty()) {
-            tokenManager.clearTokens();
-            return null;
-        }
+        // Đồng bộ hóa để tránh nhiều API đồng thời cùng đi Refresh Token một lúc
+        synchronized (this) {
+            String currentAccessToken = tokenManager.getAccessToken();
+            String requestToken = response.request().header("Authorization");
 
-        // 2. Lấy ApiService từ Provider và gọi API Refresh Token đồng bộ
-        ApiService apiService = apiServiceProvider.get();
-        Call<RefreshTokenResponse> call =
-                apiService.refreshToken(new RefreshTokenRequest(refreshToken));
+            // Nếu Access Token hiện tại trong TokenManager đã khác với Token của Request bị lỗi,
+            // nghĩa là có một luồng khác đã thực hiện Refresh Token thành công trước đó rồi.
+            if (requestToken != null && !requestToken.equals("Bearer " + currentAccessToken)) {
+                return response.request().newBuilder()
+                        .header("Authorization", "Bearer " + currentAccessToken)
+                        .build();
+            }
 
-        retrofit2.Response<RefreshTokenResponse> retrofitResponse = call.execute();
+            String refreshToken = tokenManager.getRefreshToken();
+            if (refreshToken == null || refreshToken.isEmpty()) {
+                tokenManager.clearTokens();
+                return null;
+            }
 
-        if (retrofitResponse.isSuccessful() && retrofitResponse.body() != null) {
+            // 2. Lấy AuthApi từ Provider và gọi API Refresh Token đồng bộ
+            AuthApi authApi = authApiProvider.get();
+            Call<RefreshTokenResponse> call = authApi.refreshToken(new RefreshTokenRequest(refreshToken));
 
-            RefreshTokenResponse newTokenData = retrofitResponse.body();
+            retrofit2.Response<RefreshTokenResponse> retrofitResponse = call.execute();
 
-            // Lưu Access Token mới, giữ nguyên Refresh Token cũ
-            tokenManager.saveTokens(
-                    newTokenData.getAccessToken(),
-                    refreshToken
-            );
+            if (retrofitResponse.isSuccessful() && retrofitResponse.body() != null) {
+                RefreshTokenResponse newTokenData = retrofitResponse.body();
+                
+                String nextRefreshToken = (newTokenData.getRefreshToken() != null && !newTokenData.getRefreshToken().isEmpty()) 
+                        ? newTokenData.getRefreshToken() 
+                        : refreshToken;
 
-            // Tạo lại Request bị lỗi trước đó với Access Token mới
-            return response.request().newBuilder()
-                    .header("Authorization", "Bearer " + newTokenData.getAccessToken())
-                    .build();
-        } else {
-            // Refresh Token hết hạn hoặc không hợp lệ -> Xóa Token (Yêu cầu đăng nhập lại)
-            tokenManager.clearTokens();
-            return null;
+                // Lưu cặp token mới vào bộ nhớ cục bộ
+                tokenManager.saveTokens(newTokenData.getAccessToken(), nextRefreshToken);
+
+                // Tạo lại Request bị lỗi trước đó với Access Token mới
+                return response.request().newBuilder()
+                        .header("Authorization", "Bearer " + newTokenData.getAccessToken())
+                        .build();
+            } else {
+                // Refresh Token hết hạn hoặc không hợp lệ -> Xóa Token và yêu cầu đăng nhập lại
+                tokenManager.clearTokens();
+                // TODO: Phát một Event hoặc gọi hàm chuyển vùng giao diện về AuthActivity/Login tại đây nếu cần
+                return null;
+            }
         }
     }
 

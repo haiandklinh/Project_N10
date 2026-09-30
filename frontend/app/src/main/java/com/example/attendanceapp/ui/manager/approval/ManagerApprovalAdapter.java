@@ -7,13 +7,14 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.attendanceapp.R;
-import com.example.attendanceapp.core.utils.ColorUtil;
 import com.example.attendanceapp.databinding.ItemManagerApprovalRequestBinding;
+import com.example.attendanceapp.domain.model.ApprovalStatus;
 import com.example.attendanceapp.domain.model.ManagerApprovalItem;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ManagerApprovalAdapter extends RecyclerView.Adapter<ManagerApprovalAdapter.ViewHolder> {
@@ -27,7 +28,7 @@ public class ManagerApprovalAdapter extends RecyclerView.Adapter<ManagerApproval
     private final OnActionListener listener;
 
     public ManagerApprovalAdapter(List<ManagerApprovalItem> list, OnActionListener listener) {
-        this.list = new java.util.ArrayList<>(list);
+        this.list = list != null ? new ArrayList<>(list) : new ArrayList<>();
         this.listener = listener;
     }
 
@@ -51,41 +52,30 @@ public class ManagerApprovalAdapter extends RecyclerView.Adapter<ManagerApproval
         ManagerApprovalItem item = list.get(position);
         Context context = holder.itemView.getContext();
 
+        // 1. Gán thông tin nhân viên & yêu cầu
         holder.binding.tvEmployeeName.setText(item.getEmployeeName());
         holder.binding.tvEmployeePosition.setText(item.getPosition());
         holder.binding.tvRequestType.setText(item.getType().getTitle());
         holder.binding.ivTypeIcon.setImageResource(item.getType().getIconResId());
-        holder.binding.tvTargetDate.setText(item.getTargetDateLabel() +
-                (item.getDetailLabel() != null && !item.getDetailLabel().isEmpty() ? " · " + item.getDetailLabel() : ""));
+
+        String targetText = item.getTargetDateLabel() +
+                (item.getDetailLabel() != null && !item.getDetailLabel().isEmpty() ? " · " + item.getDetailLabel() : "");
+        holder.binding.tvTargetDate.setText(targetText);
         holder.binding.tvReason.setText("Lý do: " + item.getReason());
 
-        switch (item.getStatus()) {
-            case ManagerApprovalItem.STATUS_APPROVED:
-                holder.binding.chipStatus.setText("Đã duyệt");
-                holder.binding.chipStatus.setChipBackgroundColor(ColorStateList.valueOf(
-                        ColorUtil.getThemeColor(context, R.attr.colorAttendancePresentContainer)));
-                holder.binding.chipStatus.setTextColor(
-                        ColorUtil.getThemeColor(context, R.attr.colorAttendancePresent));
-                holder.binding.layoutActions.setVisibility(View.GONE);
-                break;
-            case ManagerApprovalItem.STATUS_REJECTED:
-                holder.binding.chipStatus.setText("Từ chối");
-                holder.binding.chipStatus.setChipBackgroundColor(ColorStateList.valueOf(
-                        ColorUtil.getThemeColor(context, R.attr.colorAttendanceAbsentContainer)));
-                holder.binding.chipStatus.setTextColor(
-                        ColorUtil.getThemeColor(context, R.attr.colorAttendanceAbsent));
-                holder.binding.layoutActions.setVisibility(View.GONE);
-                break;
-            default: // PENDING
-                holder.binding.chipStatus.setText("Chờ duyệt");
-                holder.binding.chipStatus.setChipBackgroundColor(ColorStateList.valueOf(
-                        ColorUtil.getThemeColor(context, R.attr.colorAttendanceLateContainer)));
-                holder.binding.chipStatus.setTextColor(
-                        ColorUtil.getThemeColor(context, R.attr.colorAttendanceLate));
-                holder.binding.layoutActions.setVisibility(View.VISIBLE);
-                break;
-        }
+        // 2. Xử lý UI Trạng thái (Gọn gàng từ Enum ApprovalStatus)
+        ApprovalStatus status = item.getStatus();
+        holder.binding.chipStatus.setText(status.getLabel());
+        holder.binding.chipStatus.setTextColor(ContextCompat.getColor(context, status.getTextColorRes()));
+        holder.binding.chipStatus.setChipBackgroundColor(ColorStateList.valueOf(
+                ContextCompat.getColor(context, status.getContainerColorRes())
+        ));
 
+        // 3. Hiện nút duyệt/từ chối CHỈ KHI trạng thái là PENDING
+        boolean isPending = status == ApprovalStatus.PENDING;
+        holder.binding.layoutActions.setVisibility(isPending ? View.VISIBLE : View.GONE);
+
+        // 4. Bắt sự kiện click
         holder.binding.btnApprove.setOnClickListener(v -> {
             if (listener != null) listener.onApprove(item, holder.getBindingAdapterPosition());
         });

@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?android:attr/colorBackground">
+
+    <!-- 1. TOOLBAR APP -->
+    <com.example.attendanceapp.core.utils.ToolbarApp
+        android:id="@+id/toolbar_app"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- NỘI DUNG CUỘN (SCROLLABLE) -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:paddingBottom="@dimen/spacing_l"
+        app:layout_constraintBottom_toTopOf="@id/card_bottom_action"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbar_app">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/spacing_m"
+            android:paddingTop="@dimen/spacing_s">
+
+            <!-- Subtitle Header -->
+            <TextView
+                android:id="@+id/tv_subtitle"
+                style="@style/BodyTextSmallStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Thiết lập ca làm việc"
+                android:textColor="?android:attr/textColorSecondary" />
+
+            <!-- SECTION 1: NHÂN VIÊN ĐƯỢC CHỌN -->
+            <TextView
+                android:id="@+id/tv_label_employees"
+                style="@style/TitleTextSmallStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_m"
+                android:text="Nhân viên được chọn (3)"
+                android:textColor="?attr/colorOnSurface"
+                android:textStyle="bold" />
+
+            <com.google.android.material.card.MaterialCardView
+                style="@style/ItemCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_xs">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_selected_employees"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    tools:itemCount="3"
+                    tools:listitem="@layout/item_assigned_employee_chip" />
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- SECTION 2: NGÀY LÀM VIỆC -->
+            <TextView
+                android:id="@+id/tv_label_date"
+                style="@style/TitleTextSmallStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_m"
+                android:text="Ngày làm việc"
+                android:textColor="?attr/colorOnSurface"
+                android:textStyle="bold" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_select_date"
+                style="@style/ItemCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_xs"
+                app:cardBackgroundColor="?attr/colorPrimaryContainer">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/spacing_m">
+
+                    <ImageView
+                        android:id="@+id/iv_calendar"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_calendar"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:tint="?attr/colorPrimary" />
+
+                    <TextView
+                        android:id="@+id/tv_selected_date"
+                        style="@style/BodyTextMediumStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_s"
+                        android:text="28/09/2026 (Thứ 2)"
+                        android:textStyle="bold"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toStartOf="@id/iv_arrow_date"
+                        app:layout_constraintStart_toEndOf="@id/iv_calendar"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <ImageView
+                        android:id="@+id/iv_arrow_date"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_chevron_right"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:tint="?android:attr/textColorSecondary" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- SECTION 3: CA LÀM VIỆC -->
+            <TextView
+                android:id="@+id/tv_label_shifts"
+                style="@style/TitleTextSmallStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_m"
+                android:text="Ca làm việc"
+                android:textColor="?attr/colorOnSurface"
+                android:textStyle="bold" />
+
+            <!-- CONTAINER CHỨA TRẠNG THÁI CA LÀM VIỆC -->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_xs">
+
+                <!-- 1. Danh sách ca làm việc (RecyclerView) -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_shift_options"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    android:visibility="gone"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    tools:itemCount="3"
+                    tools:listitem="@layout/item_select_shift_option"
+                    tools:visibility="visible" />
+
+                <!-- 2. Card hiển thị khi chưa có ca làm việc -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_empty_shift_options"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="@dimen/radius_l"
+                    app:cardElevation="0dp"
+                    app:strokeColor="?attr/colorOutlineVariant"
+                    app:strokeWidth="1dp"
+                    tools:visibility="gone">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_m">
+
+                        <TextView
+                            style="@style/TitleTextSmallStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Chưa có ca làm việc, vui lòng thêm ca"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            style="@style/BodyTextSmallStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Bấm nút phía dưới để tạo ca làm việc mới"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+            </FrameLayout>
+
+            <!-- Nút Thêm ca khác (Luôn nằm ngay bên dưới FrameLayout) -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_add_other_shift"
+                style="@style/ButtonOutlinedSmallStyle"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/button_height_m"
+                android:layout_marginTop="@dimen/spacing_s"
+                android:text="Thêm ca khác"
+                app:iconGravity="textStart"
+                app:icon="@drawable/ic_add"/>
+
+            <!-- SECTION 4: GHI CHÚ -->
+            <TextView
+                android:id="@+id/tv_label_note"
+                style="@style/TitleTextSmallStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_m"
+                android:text="Ghi chú (không bắt buộc)"
+                android:textColor="?attr/colorOnSurface"
+                android:textStyle="bold" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/til_note"
+                style="@style/AppTextInputLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_xs"
+                android:hint="Nhập ghi chú...">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/edt_note"
+                    style="@style/AppTextInputEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="top"
+                    android:inputType="textMultiLine"
+                    android:minLines="3" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- 5. BOTTOM BAR BUTTON XÁC NHẬN -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/card_bottom_action"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?android:attr/colorBackground"
+        android:padding="@dimen/spacing_l"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_confirm_assign"
+            style="@style/ButtonMaxWidthStyle"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/button_height_default"
+            android:text="Xác nhận xếp ca"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

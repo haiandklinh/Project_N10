@@ -19,6 +19,7 @@ import androidx.core.os.LocaleListCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 
 import com.example.attendanceapp.R;
@@ -28,14 +29,8 @@ import com.example.attendanceapp.databinding.ItemProfileMenuRowBinding;
 import com.example.attendanceapp.databinding.ItemProfileSwitchRowBinding;
 import com.example.attendanceapp.databinding.ItemThemeOptionBinding;
 import com.example.attendanceapp.databinding.LayoutBottomSheetThemeBinding;
-import com.example.attendanceapp.domain.usecase.auth.AuthCallback;
-import com.example.attendanceapp.domain.usecase.auth.LogoutUseCase;
 import com.example.attendanceapp.ui.main.auth.AuthActivity;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
-
-import java.util.Locale;
-
-import javax.inject.Inject;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -43,9 +38,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 public class ManagerProfileFragment extends Fragment {
 
     private FragmentManagerProfileBinding binding;
-
-    @Inject
-    LogoutUseCase logoutUseCase;
+    private ManagerProfileViewModel viewModel;
 
     public ManagerProfileFragment() {}
 
@@ -58,6 +51,7 @@ public class ManagerProfileFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        viewModel = new ViewModelProvider(this).get(ManagerProfileViewModel.class);
 
         // Xử lý Status Bar Padding
         ViewCompat.setOnApplyWindowInsetsListener(binding.layoutProfileHeader, (v, insets) -> {
@@ -73,6 +67,7 @@ public class ManagerProfileFragment extends Fragment {
 
         setupViews();
         setupListeners();
+        observeViewModel();
         loadBusinessSummary();
     }
 
@@ -108,15 +103,11 @@ public class ManagerProfileFragment extends Fragment {
     }
 
     private void loadBusinessSummary() {
-        if (binding.tvTotalEmployees != null) {
-            binding.tvTotalEmployees.setOnClickListener(v -> {
-                // Chuyển sang tab Nhân sự nếu cần
-            });
-        }
+        binding.tvTotalEmployees.setOnClickListener(v -> {
+        });
     }
 
     private void setupListeners() {
-        // Sao chép mã mời
         binding.btnCopyCode.setOnClickListener(v -> {
             ClipboardManager clipboard = (ClipboardManager) requireContext().getSystemService(Context.CLIPBOARD_SERVICE);
             ClipData clip = ClipData.newPlainText("Invite Code", binding.tvInviteCode.getText().toString());
@@ -124,35 +115,64 @@ public class ManagerProfileFragment extends Fragment {
             Toast.makeText(requireContext(), getString(R.string.manager_profile_copy_success), Toast.LENGTH_SHORT).show();
         });
 
-        // ----- Điều hướng Nhóm Quản lý -----
         binding.rowStatistics.getRoot().setOnClickListener(v -> 
             Navigation.findNavController(v).navigate(R.id.action_managerProfileFragment_to_managerStatisticFragment));
         
-        binding.rowSalaryConfig.getRoot().setOnClickListener(v -> 
-            Navigation.findNavController(v).navigate(R.id.action_managerProfileFragment_to_managerSalaryConfigFragment));
+        binding.rowSalaryConfig.getRoot().setOnClickListener(v -> {
+            Toast.makeText(requireContext(), "Chức năng Cấu hình lương ca làm", Toast.LENGTH_SHORT).show();
+        });
 
-        // ----- Điều hướng Nhóm Cá nhân -----
         binding.rowEditProfile.getRoot().setOnClickListener(v -> 
             Navigation.findNavController(v).navigate(R.id.action_managerProfileFragment_to_managerEditProfileFragment));
         
         binding.rowChangePassword.getRoot().setOnClickListener(v -> 
             Navigation.findNavController(v).navigate(R.id.action_managerProfileFragment_to_managerChangePasswordFragment));
 
-        // ----- Nhóm Ứng dụng -----
         binding.rowLanguage.getRoot().setOnClickListener(v -> showLanguagePicker());
         binding.rowThemes.getRoot().setOnClickListener(v -> showThemePickerBottomSheet());
         binding.rowDarkMode.switchRow.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (buttonView.isPressed()) DarkModeAnimationHelper.startCloseCurtainAnimation(requireActivity(), isChecked);
         });
 
-        // Trợ giúp và Hỗ trợ & Giới thiệu ứng dụng
-        binding.rowHelpSupport.getRoot().setOnClickListener(v -> 
-            Navigation.findNavController(v).navigate(R.id.action_managerProfileFragment_to_managerHelpCenterFragment));
-        
-        binding.rowAboutApp.getRoot().setOnClickListener(v -> 
-            Navigation.findNavController(v).navigate(R.id.action_managerProfileFragment_to_managerAboutFragment));
-
         binding.btnLogout.setOnClickListener(v -> showLogoutConfirmDialog());
+    }
+
+    private void observeViewModel() {
+        viewModel.getUserAccount().observe(getViewLifecycleOwner(), user -> {
+            if (user != null && user.getProfile() != null) {
+                updateUI(user);
+            }
+        });
+
+        viewModel.getLogoutSuccess().observe(getViewLifecycleOwner(), success -> {
+            if (Boolean.TRUE.equals(success)) {
+                navigateToLoginAndFinish();
+            }
+        });
+    }
+
+    private void updateUI(com.example.attendanceapp.domain.model.UserAccount user) {
+        com.example.attendanceapp.domain.model.UserProfile profile = user.getProfile();
+
+        // Cập nhật tên quản lý
+        binding.tvUserName.setText(profile.getFullName() != null ? profile.getFullName() : getString(R.string.profile_user_name));
+
+        // Cập nhật tên công ty
+        binding.tvUserPosition.setText(profile.getCompanyName() != null ? profile.getCompanyName() : getString(R.string.profile_user_position));
+
+        // Cập nhật mã mời
+        binding.tvInviteCode.setText(user.getInvitationCode() != null ? user.getInvitationCode() : "------");
+
+        // Cập nhật ảnh đại diện
+        if (profile.getAvatarUrl() != null && !profile.getAvatarUrl().isEmpty()) {
+            com.bumptech.glide.Glide.with(this)
+                    .load(profile.getAvatarUrl())
+                    .placeholder(R.drawable.ic_avatar)
+                    .error(R.drawable.ic_avatar)
+                    .into(binding.ivAvatar);
+        } else {
+            binding.ivAvatar.setImageResource(R.drawable.ic_avatar);
+        }
     }
 
     private void showThemePickerBottomSheet() {
@@ -180,23 +200,14 @@ public class ManagerProfileFragment extends Fragment {
     }
 
     private void applyNewTheme(SharedPreferences pref, BottomSheetDialog dialog, String themeKey) {
-        pref.edit().putString("app_theme", themeKey).apply();
+        pref.edit().putString("app_theme", themeKey).commit();
         dialog.dismiss();
         requireActivity().recreate();
     }
 
     private void showLanguagePicker() {
         String[] languages = {getString(R.string.profile_language_vietnamese), getString(R.string.profile_language_english)};
-        
-        LocaleListCompat locales = AppCompatDelegate.getApplicationLocales();
-        int selectedIndex = 0;
-        if (!locales.isEmpty()) {
-            Locale currentLocale = locales.get(0);
-            if (currentLocale != null && "en".equals(currentLocale.getLanguage())) {
-                selectedIndex = 1;
-            }
-        }
-        
+        int selectedIndex = AppCompatDelegate.getApplicationLocales().isEmpty() || !AppCompatDelegate.getApplicationLocales().get(0).getLanguage().equals("en") ? 0 : 1;
         new AlertDialog.Builder(requireContext()).setTitle(getString(R.string.profile_select_language)).setSingleChoiceItems(languages, selectedIndex, (dialog, which) -> {
             AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(which == 0 ? "vi" : "en"));
             dialog.dismiss();
@@ -204,25 +215,7 @@ public class ManagerProfileFragment extends Fragment {
     }
 
     private void showLogoutConfirmDialog() {
-        new AlertDialog.Builder(requireContext()).setTitle(getString(R.string.profile_logout_title)).setMessage(getString(R.string.profile_logout_message)).setPositiveButton(getString(R.string.profile_logout_title), (dialog, which) -> performLogout()).setNegativeButton(getString(R.string.action_cancel), null).show();
-    }
-
-    private void performLogout() {
-        if (logoutUseCase != null) {
-            logoutUseCase.execute(new AuthCallback<>() {
-                @Override
-                public void onSuccess(Void result) {
-                    navigateToLoginAndFinish();
-                }
-
-                @Override
-                public void onError(String errorMessage) {
-                    navigateToLoginAndFinish();
-                }
-            });
-        } else {
-            navigateToLoginAndFinish();
-        }
+        new AlertDialog.Builder(requireContext()).setTitle(getString(R.string.profile_logout_title)).setMessage(getString(R.string.profile_logout_message)).setPositiveButton(getString(R.string.profile_logout_title), (dialog, which) -> viewModel.logout()).setNegativeButton(getString(R.string.action_cancel), null).show();
     }
 
     private void navigateToLoginAndFinish() {

@@ -18,20 +18,16 @@ public class AuthActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // 1. Phải gọi super.onCreate() ĐẦU TIÊN
         super.onCreate(savedInstanceState);
 
-        // 2. Khởi tạo ViewModel SAU super.onCreate()
         viewModel = new ViewModelProvider(this).get(AuthViewModel.class);
 
-        // 3. Apply Theme
+        //Apply Theme
         applyAppTheme(viewModel.getCurrentTheme().getValue());
 
         // 4. Setup UI & ViewBinding
         binding = ActivityAuthBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
-        // Navigation được xử lý bởi SplashFragment (start destination)
     }
 
     private void applyAppTheme(String theme) {

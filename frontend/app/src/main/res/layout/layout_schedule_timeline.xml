@@ -15,7 +15,7 @@
         android:background="@drawable/bg_card_gradient"
         android:padding="@dimen/spacing_m">
 
-        <!-- ==================== HEADER NAVIGATION ==================== -->
+        <!-- ==================== HEADER NAVIGATION (CÂN GIỮA ĐỀU) ==================== -->
         <ImageView
             android:id="@+id/btn_prev_week"
             android:layout_width="@dimen/icon_size_m"
@@ -34,14 +34,15 @@
         <TextView
             android:id="@+id/tv_week_range"
             style="@style/BodyTextLargeStyle"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="15/09 – 21/09, 2026"
+            android:gravity="center"
             android:textColor="?attr/colorOnPrimary"
             android:textStyle="bold"
             app:layout_constraintEnd_toStartOf="@id/btn_next_week"
             app:layout_constraintStart_toEndOf="@id/btn_prev_week"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="15/09 – 21/09, 2026" />
 
         <ImageView
             android:id="@+id/btn_next_week"
@@ -58,7 +59,7 @@
             app:layout_constraintTop_toTopOf="@id/tv_week_range"
             app:tint="?attr/colorOnPrimary" />
 
-        <!-- Divider Ngăn Cách Header Navigation & Lịch Tuần -->
+        <!-- Divider 1 -->
         <View
             android:id="@+id/divider_header"
             android:layout_width="0dp"
@@ -70,33 +71,35 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tv_week_range" />
 
-        <!-- ==================== STRIP 7 NGÀY TRONG TUẦN ==================== -->
+        <!-- ==================== STRIP 7 NGÀY TRONG TUẦN (CHIA 7 CỘT BẰNG NHAU) ==================== -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_week_days"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_s"
             android:clipToPadding="false"
-            android:orientation="horizontal"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+            app:spanCount="7"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/divider_header"
             tools:itemCount="7"
             tools:listitem="@layout/item_schedule_week_day" />
 
-        <!-- Divider Ngăn Cách Lịch Tuần & Thống Kê -->
+        <!-- Divider 2 -->
         <View
             android:id="@+id/divider_summary"
             android:layout_width="0dp"
             android:layout_height="1dp"
-            android:layout_marginTop="@dimen/spacing_m"
+            android:layout_marginTop="@dimen/spacing_s"
             android:alpha="0.2"
             android:background="?attr/colorOnPrimary"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/rv_week_days" />
 
-        <!-- ==================== THỐNG KÊ TỔNG QUAN (CÓ DIVIDER DỌC) ==================== -->
-        <!-- Card Con 1: Tổng Ca -->
+        <!-- ==================== THỐNG KÊ TỔNG QUAN (CÂN BẰNG CHIỀU DỌC & NGANG) ==================== -->
+        <!-- Chỉ số 1: Tổng Ca -->
         <TextView
             android:id="@+id/tv_total_shifts"
             style="@style/TitleTextMediumStyle"
@@ -104,12 +107,12 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_s"
             android:gravity="center"
-            android:text="5 ca"
             android:textColor="?attr/colorOnPrimary"
             android:textStyle="bold"
             app:layout_constraintEnd_toStartOf="@id/divider_vertical"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/divider_summary" />
+            app:layout_constraintTop_toBottomOf="@id/divider_summary"
+            tools:text="5 ca" />
 
         <TextView
             android:id="@+id/tv_label_total_shifts"
@@ -119,11 +122,12 @@
             android:gravity="center"
             android:text="Tổng ca tuần"
             android:textColor="?attr/colorOnPrimary"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="@id/tv_total_shifts"
             app:layout_constraintStart_toStartOf="@id/tv_total_shifts"
             app:layout_constraintTop_toBottomOf="@id/tv_total_shifts" />
 
-        <!-- Divider Ngăn Cách Dọc Giữa 2 Chỉ Số -->
+        <!-- Divider Dọc -->
         <View
             android:id="@+id/divider_vertical"
             android:layout_width="1dp"
@@ -135,19 +139,19 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@id/tv_total_shifts" />
 
-        <!-- Card Con 2: Dự Kiến Làm -->
+        <!-- Chỉ số 2: Dự Kiến Làm -->
         <TextView
             android:id="@+id/tv_total_hours"
             style="@style/TitleTextMediumStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="40.0 giờ"
             android:textColor="?attr/colorOnPrimary"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/divider_vertical"
-            app:layout_constraintTop_toTopOf="@id/tv_total_shifts" />
+            app:layout_constraintTop_toTopOf="@id/tv_total_shifts"
+            tools:text="40.0 giờ" />
 
         <TextView
             android:id="@+id/tv_label_total_hours"
@@ -157,6 +161,7 @@
             android:gravity="center"
             android:text="Dự kiến làm"
             android:textColor="?attr/colorOnPrimary"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="@id/tv_total_hours"
             app:layout_constraintStart_toStartOf="@id/tv_total_hours"
             app:layout_constraintTop_toBottomOf="@id/tv_total_hours" />

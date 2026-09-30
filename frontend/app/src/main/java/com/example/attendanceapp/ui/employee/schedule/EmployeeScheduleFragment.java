@@ -12,10 +12,13 @@ import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.attendanceapp.R;
+import com.example.attendanceapp.core.utils.ColorUtil;
+import com.example.attendanceapp.data.dto.response.schedule.StaffWorkScheduleResponse;
 import com.example.attendanceapp.databinding.FragmentEmployeeScheduleBinding;
 import com.example.attendanceapp.databinding.LayoutScheduleTimelineBinding;
 import com.example.attendanceapp.domain.model.AttendanceStatus;
@@ -24,7 +27,6 @@ import com.example.attendanceapp.domain.model.ShiftStatus;
 import com.example.attendanceapp.domain.model.WeekDay;
 import com.example.attendanceapp.ui.employee.schedule.shift.EmployeeUpcomingShiftAdapter;
 import com.example.attendanceapp.ui.employee.schedule.weekday.EmployeeScheduleWeekDayAdapter;
-import com.example.attendanceapp.core.utils.ColorUtil;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -43,6 +45,7 @@ public class EmployeeScheduleFragment extends Fragment {
     private FragmentEmployeeScheduleBinding binding;
     private EmployeeScheduleWeekDayAdapter employeeScheduleWeekDayAdapter;
     private EmployeeUpcomingShiftAdapter shiftAdapter;
+    private EmployeeScheduleViewModel viewModel;
 
     private LocalDate selectedDate;
     private LocalDate currentWeekStart;
@@ -66,6 +69,8 @@ public class EmployeeScheduleFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        viewModel = new ViewModelProvider(this).get(EmployeeScheduleViewModel.class);
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.employeeScheduleFragment, (v, insets) -> {
             int statusBarHeight = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
@@ -92,10 +97,6 @@ public class EmployeeScheduleFragment extends Fragment {
     private void setupWeekDaysRecyclerView() {
         LayoutScheduleTimelineBinding timelineBinding = binding.includeCardTimeline;
 
-        timelineBinding.rvWeekDays.setLayoutManager(
-                new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-        );
-
         employeeScheduleWeekDayAdapter = new EmployeeScheduleWeekDayAdapter(new ArrayList<>());
         timelineBinding.rvWeekDays.setAdapter(employeeScheduleWeekDayAdapter);
 
@@ -106,19 +107,19 @@ public class EmployeeScheduleFragment extends Fragment {
     }
 
     // =====================================================================
-    // BIND DỮ LIỆU CA LÀM HÔM NAY (dùng Shift model + ShiftStatus enum)
+    // BIND DỮ LIỆU CA LÀM HÔM NAY (dùng Shift model mới + ShiftStatus enum)
     // =====================================================================
     private void setupTodayShiftCard() {
         if (binding.includeShiftToday == null || binding.includeShiftToday.cardTodayShift == null) return;
 
+        // Khởi tạo Shift với constructor mới, đã loại bỏ các tham số String thừa
         Shift todayShift = new Shift(
-                "200",
-                "1000",
+                "s100",
+                "u1000",
                 LocalDate.now(),
                 "Ca Sáng",
-                LocalTime.of(10,2),
-                LocalTime.of(12, 3),
-                "08:00 - 17:00",
+                LocalTime.of(8, 0),
+                LocalTime.of(17, 0),
                 "Văn phòng chính · Tầng 3",
                 ShiftStatus.PENDING
         );
@@ -192,34 +193,33 @@ public class EmployeeScheduleFragment extends Fragment {
 
         List<Shift> list = new ArrayList<>();
         list.add(new Shift(
-                "200",
-                "1000",
-                LocalDate.now(),
+                "s101",
+                "u1000",
+                LocalDate.now().plusDays(1),
                 "Ca Sáng",
-                LocalTime.of(10,2),
-                LocalTime.of(12, 3),
-                "08:00 - 17:00",
+                LocalTime.of(8, 0),
+                LocalTime.of(12, 0),
                 "Văn phòng chính · Tầng 3",
                 ShiftStatus.PENDING));
         list.add(new Shift(
-                "200",
-                "1000",
-                LocalDate.now(),
-                "Ca Sáng",
-                LocalTime.of(10,2),
-                LocalTime.of(12, 3),
-                "08:00 - 17:00",
-                "Văn phòng chính · Tầng 3",
-                ShiftStatus.PENDING)); list.add(new Shift(
-                "200",
-                "1000",
-                LocalDate.now(),
-                "Ca Sáng",
-                LocalTime.of(10,2),
-                LocalTime.of(12, 3),
-                "08:00 - 17:00",
+                "s102",
+                "u1000",
+                LocalDate.now().plusDays(2),
+                "Ca Chiều",
+                LocalTime.of(13, 30),
+                LocalTime.of(17, 30),
                 "Văn phòng chính · Tầng 3",
                 ShiftStatus.PENDING));
+        list.add(new Shift(
+                "s103",
+                "u1000",
+                LocalDate.now().plusDays(3),
+                "Ca Hành Chính",
+                LocalTime.of(8, 0),
+                LocalTime.of(17, 0),
+                "Văn phòng chính · Tầng 3",
+                ShiftStatus.PENDING));
+
         shiftAdapter.submitList(list);
     }
 
@@ -298,11 +298,24 @@ public class EmployeeScheduleFragment extends Fragment {
     }
 
     private void onDaySelected(LocalDate date) {
-        Toast.makeText(requireContext(), "Ngày đã chọn: " + date.toString(), Toast.LENGTH_SHORT).show();
+        selectedDate = date;
+        viewModel.loadScheduleByDate(date.toString());
     }
 
     private void setupObservers() {
-        // ViewModel Observers
+        viewModel.getScheduleUiState().observe(getViewLifecycleOwner(), state -> {
+            if (state.isLoading()) {
+                // Show loading indicator
+            } else if (state.getError() != null) {
+                Toast.makeText(requireContext(), "Lỗi: " + state.getError(), Toast.LENGTH_SHORT).show();
+            } else if (state.getSchedules() != null) {
+                updateScheduleUI(state.getSchedules());
+            }
+        });
+    }
+
+    private void updateScheduleUI(List<StaffWorkScheduleResponse> schedules) {
+        // Cập nhật UI từ phản hồi thực tế của UseCase / ViewModel
     }
 
     @Override

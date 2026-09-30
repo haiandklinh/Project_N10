@@ -15,6 +15,8 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.attendanceapp.databinding.FragmentManagerHumanBinding;
+import com.example.attendanceapp.domain.model.ApprovalStatus;
+import com.example.attendanceapp.domain.model.EmployeeStatus;
 import com.example.attendanceapp.domain.model.JoinRequestItem;
 import com.example.attendanceapp.domain.model.ManagerEmployeeItem;
 import com.google.android.material.tabs.TabLayout;
@@ -65,26 +67,28 @@ public class ManagerHumanFragment extends Fragment {
     }
 
     private void loadMockData() {
+        // Refactor: Thay thế String STATUS_ACTIVE & STATUS_ON_LEAVE bằng Enum EmployeeStatus
         employees.add(new ManagerEmployeeItem("u1", "NV001", "Trần Thị Bình", null,
                 "Nhân viên bán hàng", "Cửa hàng Q1", "0901 111 222", "03/01/2025",
-                ManagerEmployeeItem.STATUS_ACTIVE, 20, 1, 7200000));
+                EmployeeStatus.ACTIVE, 20, 1, 7200000));
         employees.add(new ManagerEmployeeItem("u2", "NV002", "Lê Văn Cường", null,
                 "Nhân viên kho", "Kho vận", "0902 222 333", "12/03/2024",
-                ManagerEmployeeItem.STATUS_ACTIVE, 22, 0, 7850000));
+                EmployeeStatus.ACTIVE, 22, 0, 7850000));
         employees.add(new ManagerEmployeeItem("u3", "NV003", "Phạm Thu Hà", null,
                 "Thu ngân", "Cửa hàng Q1", "0903 333 444", "20/06/2025",
-                ManagerEmployeeItem.STATUS_ACTIVE, 18, 2, 6500000));
+                EmployeeStatus.ACTIVE, 18, 2, 6500000));
         employees.add(new ManagerEmployeeItem("u4", "NV004", "Đỗ Minh Khoa", null,
                 "Nhân viên bảo vệ", "Cửa hàng Q3", "0904 444 555", "05/11/2023",
-                ManagerEmployeeItem.STATUS_ACTIVE, 24, 0, 8100000));
+                EmployeeStatus.ACTIVE, 24, 0, 8100000));
         employees.add(new ManagerEmployeeItem("u5", "NV005", "Ngô Thị Lan", null,
                 "Nhân viên pha chế", "Cửa hàng Q1", "0905 555 666", "18/08/2025",
-                ManagerEmployeeItem.STATUS_ON_LEAVE, 15, 3, 5200000));
+                EmployeeStatus.ON_LEAVE, 15, 3, 5200000));
 
+        // Khởi tạo JoinRequestItem với Enum ApprovalStatus.PENDING
         joinRequests.add(new JoinRequestItem("j1", "Vũ Đức Anh", null, "0912 345 678",
-                "NV-8823", "12 phút trước", JoinRequestItem.STATUS_PENDING));
+                "NV-8823", "12 phút trước", ApprovalStatus.PENDING));
         joinRequests.add(new JoinRequestItem("j2", "Bùi Thị Mai", null, "0987 654 321",
-                "NV-8823", "Hôm qua", JoinRequestItem.STATUS_PENDING));
+                "NV-8823", "Hôm qua", ApprovalStatus.PENDING));
     }
 
     private void setupAdapters() {
@@ -94,6 +98,7 @@ public class ManagerHumanFragment extends Fragment {
         joinRequestAdapter = new ManagerJoinRequestAdapter(new ArrayList<>(), new ManagerJoinRequestAdapter.OnActionListener() {
             @Override
             public void onApprove(JoinRequestItem item, int position) {
+                item.setStatus(ApprovalStatus.APPROVED);
                 joinRequests.remove(item);
                 Toast.makeText(getContext(), "Đã chấp nhận " + item.getFullName() + " vào công ty", Toast.LENGTH_SHORT).show();
                 applyFilters();
@@ -101,6 +106,7 @@ public class ManagerHumanFragment extends Fragment {
 
             @Override
             public void onReject(JoinRequestItem item, int position) {
+                item.setStatus(ApprovalStatus.REJECTED);
                 joinRequests.remove(item);
                 Toast.makeText(getContext(), "Đã từ chối yêu cầu của " + item.getFullName(), Toast.LENGTH_SHORT).show();
                 applyFilters();

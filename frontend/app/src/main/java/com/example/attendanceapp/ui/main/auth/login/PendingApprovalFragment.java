@@ -69,6 +69,11 @@ public class PendingApprovalFragment extends Fragment {
 
         binding.btnCheckStatus.setOnClickListener(v -> viewModel.checkApprovalStatus());
         binding.btnLogout.setOnClickListener(v -> logout());
+
+        // Sự kiện chuyển sang chế độ Khách (Bắt nút từ Layout góc trên bên phải hoặc bên dưới)
+        if (binding.btnContinueAsGuest != null) {
+            binding.btnContinueAsGuest.setOnClickListener(v -> navigateToGuestMode());
+        }
     }
 
     private void observeViewModel() {
@@ -77,6 +82,9 @@ public class PendingApprovalFragment extends Fragment {
             binding.progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
             binding.btnCheckStatus.setEnabled(!isLoading);
             binding.btnLogout.setEnabled(!isLoading);
+            if (binding.btnContinueAsGuest != null) {
+                binding.btnContinueAsGuest.setEnabled(!isLoading);
+            }
         });
 
         // Observe kết quả kiểm tra phê duyệt
@@ -95,6 +103,16 @@ public class PendingApprovalFragment extends Fragment {
 
     private void navigateToEmployeeHome() {
         Intent intent = new Intent(requireContext(), EmployeeMainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        requireActivity().finish();
+    }
+
+    // Sửa hàm này để mở thẳng EmployeeMainActivity thay vì navigate sang GuestModeFragment
+    private void navigateToGuestMode() {
+        Intent intent = new Intent(requireContext(), EmployeeMainActivity.class);
+        // (Tùy chọn) Chèn extra flag nếu muốn EmployeeMainActivity biết đây là luồng test Guest
+        intent.putExtra("IS_GUEST_TEST_MODE", true);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         requireActivity().finish();

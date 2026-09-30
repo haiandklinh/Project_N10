@@ -18,6 +18,7 @@ import androidx.navigation.Navigation;
 
 import com.example.attendanceapp.R;
 import com.example.attendanceapp.databinding.FragmentAuthForgotPasswordBinding;
+import com.example.attendanceapp.ui.main.auth.login.PhoneNotRegisteredDialog;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -50,15 +51,15 @@ public class ForgotPasswordFragment extends Fragment {
 
     private void observeViewModel() {
         viewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
-            if (binding.progressBar != null) {
-                binding.progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
-            }
-            if (binding.layoutStep2 != null && binding.layoutStep2.btnResetPasswordFinal != null) {
-                binding.layoutStep2.btnResetPasswordFinal.setEnabled(!isLoading);
-            }
-            if (binding.layoutStep1 != null && binding.layoutStep1.btnNextStep1 != null) {
-                binding.layoutStep1.btnNextStep1.setEnabled(!isLoading);
-            }
+            binding.progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+
+            binding.layoutStep2.btnResetPasswordFinal.setEnabled(!isLoading);
+
+            binding.layoutStep1.btnNextStep1.setEnabled(!isLoading);
+
+            binding.layoutStep1.btnBackToLogin.setOnClickListener(v ->
+                    Navigation.findNavController(requireView()).navigateUp()
+            );
         });
 
         viewModel.getForgotPasswordState().observe(getViewLifecycleOwner(), state -> {
@@ -68,7 +69,22 @@ public class ForgotPasswordFragment extends Fragment {
             } else if (state instanceof ForgotPasswordViewModel.ForgotPasswordState.Success) {
                 clearAllErrors();
                 Toast.makeText(requireContext(), R.string.msg_password_reset_success, Toast.LENGTH_SHORT).show();
-                Navigation.findNavController(requireView()).popBackStack();
+                
+                // Lấy số điện thoại đã nhập ở Step 1
+                String phone = binding.layoutStep1.edtPhone.getText().toString().trim();
+                androidx.navigation.NavController navController = Navigation.findNavController(requireView());
+                
+                // Gửi số điện thoại về màn hình Login để tự động điền
+                if (navController.getPreviousBackStackEntry() != null) {
+                    navController.getPreviousBackStackEntry()
+                            .getSavedStateHandle()
+                            .set("registered_phone", phone);
+                }
+                
+                navController.popBackStack();
+            } else if (state instanceof ForgotPasswordViewModel.ForgotPasswordState.PhoneNotRegistered) {
+                String phone = ((ForgotPasswordViewModel.ForgotPasswordState.PhoneNotRegistered) state).phone;
+                showPhoneNotRegisteredDialog(phone);
             } else if (state instanceof ForgotPasswordViewModel.ForgotPasswordState.Error) {
                 String error = ((ForgotPasswordViewModel.ForgotPasswordState.Error) state).message;
                 showErrorOnInput(error);
@@ -193,6 +209,21 @@ public class ForgotPasswordFragment extends Fragment {
         String confirmPassword = binding.layoutStep2.edtConfirmPassword.getText().toString();
 
         viewModel.resetPassword(password, confirmPassword);
+    }
+
+    private void showPhoneNotRegisteredDialog(String phone) {
+        if (!isAdded() || getContext() == null) return;
+
+        PhoneNotRegisteredDialog dialog = PhoneNotRegisteredDialog.newInstance(phone);
+        dialog.setOnActionListener(phoneToRegister -> {
+            Bundle bundle = new Bundle();
+            bundle.putString("phone_number", phoneToRegister);
+
+            Navigation.findNavController(requireView())
+                    .navigate(R.id.action_forgotPasswordFragment_to_registerFragment, bundle);
+        });
+
+        dialog.show(getChildFragmentManager(), PhoneNotRegisteredDialog.TAG);
     }
 
     private String maskPhone(String phone) {

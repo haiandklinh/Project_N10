@@ -1,0 +1,57 @@
+{
+  "profile_get_success": {
+    "full_name": "Nguyễn Văn A",
+    "date": "1990-01-01",
+    "gender": "male",
+    "status": "APPROVED",
+    "avatar_url": "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+  },
+  "profile_create_success": {
+    "message": "Tạo thông tin quản lý thành công",
+    "full_name": "Nguyễn Văn A",
+    "date": "1990-01-01",
+    "gender": "male",
+    "status": "APPROVED",
+    "avatar_url": "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+  },
+  "profile_update_success": {
+    "message": "Cập nhật thông tin quản lý thành công",
+    "full_name": "Nguyễn Văn A (Updated)",
+    "date": "1990-01-01",
+    "gender": "male",
+    "status": "APPROVED",
+    "avatar_url": "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+  },
+  "get_otp_success": {
+    "otp": "888999",
+    "expires_in": 300,
+    "message": "Tạo mã OTP gia nhập công ty thành công"
+  },
+  "change_request_action_success": {
+    "request_id": "req_001",
+    "status": "APPROVED",
+    "updated_at": "2026-03-30T14:30:00Z",
+    "message": "Xử lý yêu cầu thành công"
+  },
+  "get_invitation_code_success": {
+    "message": "ABCXYZ"
+  },
+  "regenerate_invitation_code_success": {
+    "message": "NEWMARK123"
+  },
+  "get_join_requests_success": {
+    "requests": [
+      {
+        "id": "req_001",
+        "full_name": "Trần Thị B",
+        "phone": "0123456789",
+        "status": "PENDING",
+        "created_at": "2024-03-20T10:00:00Z"
+      }
+    ]
+  },
+  "handle_join_request_success": {
+    "message": "Xử lý yêu cầu gia nhập thành công",
+    "status": "APPROVED"
+  }
+}

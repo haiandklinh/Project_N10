@@ -7,99 +7,199 @@
     style="@style/MainCard"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="@dimen/spacing_s"
-    app:cardCornerRadius="@dimen/radius_l">
+    app:cardCornerRadius="@dimen/radius_none">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingBottom="@dimen/spacing_m">
 
-        <!-- Header Thứ trong tuần -->
-        <GridLayout
+        <!-- Header Thứ trong tuần (Dùng ConstraintLayout để dễ chèn 6 divider dọc) -->
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/calendar_week_header"
             android:layout_width="0dp"
-            android:layout_height="36dp"
-            android:layout_marginHorizontal="@dimen/spacing_3xs"
-            android:alignmentMode="alignMargins"
-            android:background="?attr/colorSurface"
-            android:columnCount="7"
-            android:rowCount="1"
-            android:useDefaultMargins="false"
+            android:layout_height="wrap_content"
+            android:background="?attr/colorSecondary"
+            android:paddingVertical="@dimen/spacing_m"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
+            <!-- Thứ 2 -->
             <TextView
+                android:id="@+id/tv_mon"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_columnWeight="1"
+                android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="@string/schedule_day_mon"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="@dimen/text_size_label_medium"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                app:layout_constraintEnd_toStartOf="@id/v_div_header_1"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
+            <View
+                android:id="@+id/v_div_header_1"
+                android:layout_width="1dp"
+                android:layout_height="0dp"
+                android:alpha="0.3"
+                android:background="?attr/colorSurface"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/tv_tue"
+                app:layout_constraintStart_toEndOf="@id/tv_mon"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- Thứ 3 -->
             <TextView
+                android:id="@+id/tv_tue"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_columnWeight="1"
+                android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="@string/schedule_day_tue"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="@dimen/text_size_label_medium"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                app:layout_constraintEnd_toStartOf="@id/v_div_header_2"
+                app:layout_constraintStart_toEndOf="@id/v_div_header_1"
+                app:layout_constraintTop_toTopOf="parent" />
 
+            <View
+                android:id="@+id/v_div_header_2"
+                android:layout_width="1dp"
+                android:layout_height="0dp"
+                android:alpha="0.3"
+                android:background="?attr/colorSurface"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/tv_wed"
+                app:layout_constraintStart_toEndOf="@id/tv_tue"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- Thứ 4 -->
             <TextView
+                android:id="@+id/tv_wed"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_columnWeight="1"
+                android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="@string/schedule_day_wed"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="@dimen/text_size_label_medium"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                app:layout_constraintEnd_toStartOf="@id/v_div_header_3"
+                app:layout_constraintStart_toEndOf="@id/v_div_header_2"
+                app:layout_constraintTop_toTopOf="parent" />
 
+            <View
+                android:id="@+id/v_div_header_3"
+                android:layout_width="1dp"
+                android:layout_height="0dp"
+                android:alpha="0.3"
+                android:background="?attr/colorSurface"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/tv_thu"
+                app:layout_constraintStart_toEndOf="@id/tv_wed"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- Thứ 5 -->
             <TextView
+                android:id="@+id/tv_thu"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_columnWeight="1"
+                android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="@string/schedule_day_thu"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="@dimen/text_size_label_medium"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                app:layout_constraintEnd_toStartOf="@id/v_div_header_4"
+                app:layout_constraintStart_toEndOf="@id/v_div_header_3"
+                app:layout_constraintTop_toTopOf="parent" />
 
+            <View
+                android:id="@+id/v_div_header_4"
+                android:layout_width="1dp"
+                android:layout_height="0dp"
+                android:alpha="0.3"
+                android:background="?attr/colorSurface"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/tv_fri"
+                app:layout_constraintStart_toEndOf="@id/tv_thu"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- Thứ 6 -->
             <TextView
+                android:id="@+id/tv_fri"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_columnWeight="1"
+                android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="@string/schedule_day_fri"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="@dimen/text_size_label_medium"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                app:layout_constraintEnd_toStartOf="@id/v_div_header_5"
+                app:layout_constraintStart_toEndOf="@id/v_div_header_4"
+                app:layout_constraintTop_toTopOf="parent" />
 
+            <View
+                android:id="@+id/v_div_header_5"
+                android:layout_width="1dp"
+                android:layout_height="0dp"
+                android:alpha="0.3"
+                android:background="?attr/colorSurface"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/tv_sat"
+                app:layout_constraintStart_toEndOf="@id/tv_fri"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- Thứ 7 -->
             <TextView
+                android:id="@+id/tv_sat"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_columnWeight="1"
+                android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="@string/schedule_day_sat"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="@dimen/text_size_label_medium"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                app:layout_constraintEnd_toStartOf="@id/v_div_header_6"
+                app:layout_constraintStart_toEndOf="@id/v_div_header_5"
+                app:layout_constraintTop_toTopOf="parent" />
 
+            <View
+                android:id="@+id/v_div_header_6"
+                android:layout_width="1dp"
+                android:layout_height="0dp"
+                android:alpha="0.3"
+                android:background="?attr/colorSurface"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/tv_sun"
+                app:layout_constraintStart_toEndOf="@id/tv_sat"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- Chủ nhật -->
             <TextView
+                android:id="@+id/tv_sun"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_columnWeight="1"
+                android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="@string/schedule_day_sun"
                 android:textColor="?attr/colorError"
                 android:textSize="@dimen/text_size_label_medium"
-                android:textStyle="bold" />
-        </GridLayout>
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/v_div_header_6"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- 1. DIVIDER NGANG TÁCH THỨ VÀ NGÀY -->
+        <View
+            android:id="@+id/divider_header_to_grid"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:background="?attr/colorPrimary"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/calendar_week_header" />
 
         <!-- Lưới Ngày Trong Tháng -->
         <androidx.recyclerview.widget.RecyclerView
@@ -111,11 +211,22 @@
             android:nestedScrollingEnabled="false"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/calendar_week_header"
+            app:layout_constraintTop_toBottomOf="@id/divider_header_to_grid"
             tools:itemCount="31"
             tools:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
             tools:listitem="@layout/item_history_calendar_day"
             tools:spanCount="7" />
+
+        <!-- 2. DIVIDER NGANG TÁCH NGÀY VÀ MÔ TẢ (LEGEND) -->
+        <View
+            android:id="@+id/divider_grid_to_legend"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_marginTop="@dimen/spacing_s"
+            android:background="?attr/colorPrimary"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/rv_calendar_grid" />
 
         <!-- Chú thích trạng thái (Legend 3 cột x 2 hàng) -->
         <GridLayout
@@ -129,7 +240,7 @@
             android:rowCount="2"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/rv_calendar_grid">
+            app:layout_constraintTop_toBottomOf="@id/divider_grid_to_legend">
 
             <!-- HÀNG 1 -->
             <!-- 1. Đúng giờ -->

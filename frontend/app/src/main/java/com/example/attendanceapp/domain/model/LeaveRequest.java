@@ -3,18 +3,20 @@ package com.example.attendanceapp.domain.model;
 public class LeaveRequest {
     private String id;
     private String userId;
-    private String type;        // "LEAVE" (Nghỉ phép), "SWAP" (Đổi ca)
-    private String targetDate;  // Ngày xin nghỉ / Ngày đổi ca
-    private String shiftId;     // ID ca làm muốn đổi (nếu có)
+    private ApprovalRequestType type; // Refactor: String -> ApprovalRequestType
+    private String targetDate;        // Ngày xin nghỉ / Ngày đổi ca
+    private String shiftId;           // ID ca làm muốn đổi (nếu có)
     private String reason;
-    private boolean isEmergency; // Nghỉ đột xuất
-    private String status;      // PENDING, APPROVED, REJECTED
+    private boolean isEmergency;       // Nghỉ đột xuất
+    private ApprovalStatus status;    // Refactor: String -> ApprovalStatus
     private long createdAt;
 
     public LeaveRequest() {
     }
 
-    public LeaveRequest(String id, String userId, String type, String targetDate, String shiftId, String reason, boolean isEmergency, String status, long createdAt) {
+    public LeaveRequest(String id, String userId, ApprovalRequestType type, String targetDate,
+                        String shiftId, String reason, boolean isEmergency,
+                        ApprovalStatus status, long createdAt) {
         this.id = id;
         this.userId = userId;
         this.type = type;
@@ -42,11 +44,11 @@ public class LeaveRequest {
         this.userId = userId;
     }
 
-    public String getType() {
+    public ApprovalRequestType getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(ApprovalRequestType type) {
         this.type = type;
     }
 
@@ -82,11 +84,11 @@ public class LeaveRequest {
         isEmergency = emergency;
     }
 
-    public String getStatus() {
+    public ApprovalStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(ApprovalStatus status) {
         this.status = status;
     }
 

@@ -4,8 +4,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/card_day_item"
-    android:layout_width="54dp"
-    android:layout_height="72dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
     android:layout_marginHorizontal="@dimen/spacing_3xs"
     android:clickable="true"
     android:focusable="true"
@@ -15,12 +15,13 @@
     app:strokeWidth="0dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
         android:id="@+id/layout_day_item"
-        android:padding="@dimen/spacing_xs">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingVertical="@dimen/spacing_xs"
+        android:paddingHorizontal="2dp">
 
-        <!-- Tên Thứ (Góc trên bên phải) -->
+        <!-- Tên Thứ (Thứ 2, T3, T4...) - Căn giữa phía trên -->
         <TextView
             android:id="@+id/tv_day_of_week"
             style="@style/BodyTextSmallStyle"
@@ -29,14 +30,16 @@
             android:textColor="?attr/colorSecondary"
             android:textSize="@dimen/text_size_label_small"
             android:textStyle="bold"
+            android:layout_marginEnd="@dimen/spacing_2xs"
+            app:layout_constraintBottom_toTopOf="@id/tv_day_number"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="T3" />
 
-        <!-- Ngày Trong Tháng (Số to, nằm căn giữa trọng tâm) -->
+        <!-- Ngày Trong Tháng (Số to) -->
         <TextView
             android:id="@+id/tv_day_number"
-            style="@style/TitleTextLargeStyle"
+            style="@style/TitleTextMediumStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:includeFontPadding="false"
@@ -48,16 +51,18 @@
             app:layout_constraintTop_toBottomOf="@id/tv_day_of_week"
             tools:text="15" />
 
-        <!-- Icon / Dot chỉ báo trạng thái (Dưới cùng) -->
+        <!-- Icon chỉ báo trạng thái (Dưới cùng) -->
         <ImageView
             android:id="@+id/iv_day_status"
             android:layout_width="@dimen/icon_size_s"
             android:layout_height="@dimen/icon_size_s"
+            android:layout_marginTop="2dp"
             android:contentDescription="@null"
             android:scaleType="fitCenter"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_day_number"
             app:tint="?attr/colorPrimary"
             tools:src="@drawable/ic_check" />
 

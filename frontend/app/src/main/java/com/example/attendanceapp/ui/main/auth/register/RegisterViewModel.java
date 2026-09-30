@@ -4,22 +4,24 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.example.attendanceapp.domain.model.UserAccount;
-import com.example.attendanceapp.domain.repository.AuthRepository;
-import com.example.attendanceapp.domain.usecase.auth.AuthCallback;
 import com.example.attendanceapp.domain.usecase.auth.RegisterUseCase;
 
 import javax.inject.Inject;
 
 import dagger.hilt.android.lifecycle.HiltViewModel;
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 @HiltViewModel
 public class RegisterViewModel extends ViewModel {
 
     private final RegisterUseCase registerUseCase;
-    private final MutableLiveData<RegisterState> registerState = new MutableLiveData<>();
+    private final CompositeDisposable disposables = new CompositeDisposable();
+
+    private final MutableLiveData<RegisterState> registerState = new MutableLiveData<>(RegisterState.Idle.INSTANCE);
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
-    private final MutableLiveData<OtpState> otpState = new MutableLiveData<>();
+    private final MutableLiveData<OtpState> otpState = new MutableLiveData<>(OtpState.Idle.INSTANCE);
 
     @Inject
     public RegisterViewModel(RegisterUseCase registerUseCase) {
@@ -46,114 +48,87 @@ public class RegisterViewModel extends ViewModel {
         }
 
         isLoading.setValue(true);
+        otpState.setValue(OtpState.Loading.INSTANCE);
 
-        registerUseCase.checkPhoneExists(phone, new AuthCallback<Boolean>() {
-            @Override
-            public void onSuccess(Boolean isExists) {
-                if (isExists) {
-                    isLoading.setValue(false);
-                    otpState.setValue(new OtpState.Error("Số điện thoại này đã được đăng ký!"));
-                } else {
-                    sendOtpInternal(phone);
-                }
-            }
-
-            @Override
-            public void onError(String error) {
-                isLoading.setValue(false);
-                otpState.setValue(new OtpState.Error(error));
-            }
-        });
+        disposables.add(registerUseCase.checkPhoneExists(phone)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        isExists -> {
+                            if (isExists) {
+                                isLoading.setValue(false);
+                                otpState.setValue(new OtpState.Error("Số điện thoại này đã được đăng ký!"));
+                            } else {
+                                sendOtpInternal(phone);
+                            }
+                        },
+                        error -> {
+                            isLoading.setValue(false);
+                            otpState.setValue(new OtpState.Error(error.getMessage()));
+                        }
+                ));
     }
 
     /** Hàm gửi OTP thực tế sau khi đã kiểm tra trùng */
     private void sendOtpInternal(String phone) {
-        registerUseCase.sendOtp(phone, new AuthCallback<Void>() {
-            @Override
-            public void onSuccess(Void result) {
-                isLoading.setValue(false);
-                otpState.setValue(new OtpState.Sent(phone));
-            }
-
-            @Override
-            public void onError(String error) {
-                isLoading.setValue(false);
-                otpState.setValue(new OtpState.Error(error));
-            }
-        });
+        disposables.add(registerUseCase.sendOtp(phone)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        () -> {
+                            isLoading.setValue(false);
+                            otpState.setValue(new OtpState.Sent(phone));
+                        },
+                        error -> {
+                            isLoading.setValue(false);
+                            otpState.setValue(new OtpState.Error(error.getMessage()));
+                        }
+                ));
     }
 
     /** Xác thực OTP */
     public void verifyOtp(String phone, String otp) {
         isLoading.setValue(true);
-        // Đã sửa AuthCallback<Void> thành AuthCallback<String>
-        registerUseCase.verifyOtp(phone, otp, new AuthCallback<String>() {
-            @Override
-            public void onSuccess(String result) {
-                isLoading.setValue(false);
-                otpState.setValue(new OtpState.Verified());
-            }
+        otpState.setValue(OtpState.Loading.INSTANCE);
 
-            @Override
-            public void onError(String error) {
-                isLoading.setValue(false);
-                otpState.setValue(new OtpState.Error(error));
-            }
-        });
+        disposables.add(registerUseCase.verifyOtp(phone, otp)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        result -> {
+                            isLoading.setValue(false);
+                            otpState.setValue(OtpState.Verified.INSTANCE);
+                        },
+                        error -> {
+                            isLoading.setValue(false);
+                            otpState.setValue(new OtpState.Error(error.getMessage()));
+                        }
+                ));
     }
 
     /** Đăng ký tài khoản */
     public void register(String phone, String password) {
         isLoading.setValue(true);
+        registerState.setValue(RegisterState.Loading.INSTANCE);
 
-        registerUseCase.execute(phone, password, new AuthCallback<Void>() {
-            @Override
-            public void onSuccess(Void result) {
-                registerUseCase.saveAccountSaved();
-                isLoading.setValue(false);
-                registerState.setValue(new RegisterState.Success());
-            }
-
-            @Override
-            public void onError(String error) {
-                isLoading.setValue(false);
-                registerState.setValue(new RegisterState.Error(error));
-            }
-        });
+        disposables.add(registerUseCase.execute(phone, password)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        () -> {
+                            isLoading.setValue(false);
+                            registerState.setValue(new RegisterState.Success());
+                        },
+                        error -> {
+                            isLoading.setValue(false);
+                            registerState.setValue(new RegisterState.Error(error.getMessage()));
+                        }
+                ));
     }
 
-    // --- Sealed/State Classes ---
-
-    public static abstract class RegisterState {
-        public static class Success extends RegisterState {
-            // Không còn chứa UserAccount vì API /register không trả về thông tin user,
-            // chỉ trả message thành công. Sau khi Success, điều hướng người dùng
-            // về màn hình Login để họ tự đăng nhập lại (đúng theo mô tả API gốc).
-        }
-
-        public static class Error extends RegisterState {
-            public final String message;
-            public Error(String message) {
-                this.message = message;
-            }
-        }
-    }
-
-    public static abstract class OtpState {
-        public static class Sent extends OtpState {
-            public final String phone;
-            public Sent(String phone) {
-                this.phone = phone;
-            }
-        }
-
-        public static class Verified extends OtpState {}
-
-        public static class Error extends OtpState {
-            public final String message;
-            public Error(String message) {
-                this.message = message;
-            }
-        }
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        disposables.clear();
     }
 }

@@ -10,6 +10,10 @@ import javax.inject.Inject;
 
 import dagger.hilt.android.lifecycle.HiltViewModel;
 
+/**
+ * ThemeViewModel quản lý theme của ứng dụng.
+ * Được đổi tên từ AuthViewModel vì chỉ quản lý theme, không có logic Auth.
+ */
 @HiltViewModel
 public class AuthViewModel extends ViewModel {
 
@@ -28,6 +32,11 @@ public class AuthViewModel extends ViewModel {
 
     private void loadAppTheme() {
         String theme = sharedPreferences.getString("app_theme", "avocado");
+        _currentTheme.setValue(theme);
+    }
+
+    public void setTheme(String theme) {
+        sharedPreferences.edit().putString("app_theme", theme).apply();
         _currentTheme.setValue(theme);
     }
 }

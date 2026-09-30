@@ -1,27 +1,38 @@
 package com.example.attendanceapp.ui.employee.home.adjustment;
 
+import android.content.Context;
+import android.content.res.ColorStateList;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.attendanceapp.databinding.ItemAttendanceAdjustmentBinding;
+import com.example.attendanceapp.domain.model.AdjustmentReasonType;
+import com.example.attendanceapp.domain.model.ApprovalStatus;
 import com.example.attendanceapp.domain.model.AttendanceAdjustment;
 
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 public class EmployeeAdjustmentAdapter extends RecyclerView.Adapter<EmployeeAdjustmentAdapter.ViewHolder> {
 
-    private List<AttendanceAdjustment> list;
+    private final List<AttendanceAdjustment> list;
 
     public EmployeeAdjustmentAdapter(List<AttendanceAdjustment> list) {
-        this.list = list;
+        this.list = list != null ? new ArrayList<>(list) : new ArrayList<>();
     }
 
     public void updateData(List<AttendanceAdjustment> newList) {
-        this.list = newList;
+        this.list.clear();
+        if (newList != null) {
+            this.list.addAll(newList);
+        }
         notifyDataSetChanged();
     }
 
@@ -53,17 +64,28 @@ public class EmployeeAdjustmentAdapter extends RecyclerView.Adapter<EmployeeAdju
         }
 
         public void bind(AttendanceAdjustment item) {
-            binding.tvReasonType.setText(item.getReasonType());
-            binding.tvReasonDetail.setText(item.getReasonDetail());
+            Context context = itemView.getContext();
 
-            // Định dạng ngày yêu cầu
-            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("EEEE, dd/MM/yyyy", new Locale("vi", "VN"));
-            binding.tvRequestDate.setText(item.getRequestDate().format(dateFormatter));
+            // 1. Hiển thị loại lý do từ Enum AdjustmentReasonType
+            AdjustmentReasonType reasonType = item.getReasonType();
+            binding.tvReasonType.setText(reasonType != null ? reasonType.getLabel() : "");
+            binding.tvReasonDetail.setText(item.getReasonDetail() != null ? item.getReasonDetail() : "");
 
-            // Định dạng ngày gửi
-            binding.tvCreatedDate.setText("Gửi: " + item.getCreatedDate().format(DateTimeFormatter.ofPattern("dd/M/yyyy")));
+            // 2. Định dạng ngày yêu cầu & ngày gửi
+            if (item.getRequestDate() != null) {
+                DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("EEEE, dd/MM/yyyy", new Locale("vi", "VN"));
+                binding.tvRequestDate.setText(item.getRequestDate().format(dateFormatter));
+            } else {
+                binding.tvRequestDate.setText("");
+            }
 
-            // Check-in / Check-out Display
+            if (item.getCreatedDate() != null) {
+                binding.tvCreatedDate.setText("Gửi: " + item.getCreatedDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+            } else {
+                binding.tvCreatedDate.setText("");
+            }
+
+            // 3. Check-in / Check-out Display
             DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
             if (item.getCheckInTime() != null) {
                 binding.containerCheckIn.setVisibility(View.VISIBLE);
@@ -79,18 +101,13 @@ public class EmployeeAdjustmentAdapter extends RecyclerView.Adapter<EmployeeAdju
                 binding.containerCheckOut.setVisibility(View.GONE);
             }
 
-            // Status Badge
-            switch (item.getStatus()) {
-                case PENDING:
-                    binding.tvStatus.setText("Chờ duyệt");
-                    break;
-                case APPROVED:
-                    binding.tvStatus.setText("Đã duyệt");
-                    break;
-                case REJECTED:
-                    binding.tvStatus.setText("Từ chối");
-                    break;
-            }
+            // 4. Status Badge (Lấy trực tiếp nhãn và màu sắc từ Enum ApprovalStatus)
+            ApprovalStatus status = item.getStatus() != null ? item.getStatus() : ApprovalStatus.PENDING;
+            binding.tvStatus.setText(status.getLabel());
+            binding.tvStatus.setTextColor(ContextCompat.getColor(context, status.getTextColorRes()));
+            binding.tvStatus.setBackgroundTintList(ColorStateList.valueOf(
+                    ContextCompat.getColor(context, status.getContainerColorRes())
+            ));
         }
     }
 }

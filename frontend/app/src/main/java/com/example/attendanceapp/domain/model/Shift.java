@@ -2,10 +2,13 @@ package com.example.attendanceapp.domain.model;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.UUID;
 
 public class Shift {
+
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
 
     private final String id;
     private final String userId;        // Mã nhân viên sở hữu ca làm
@@ -13,22 +16,24 @@ public class Shift {
     private final String shiftName;     // "Ca Sáng", "Ca Chiều"
     private final LocalTime startTime;  // 08:00
     private final LocalTime endTime;    // 17:00
-    private final String shiftTime;     // "08:00 - 17:00" (dùng hiển thị UI)
     private final String location;
     private final ShiftStatus status;
 
-    public Shift(String number, String userId, LocalDate date, String shiftName, LocalTime startTime, LocalTime endTime, String s, String location, ShiftStatus status) {
+    // Constructor tự sinh UUID cho ID
+    public Shift(String userId, LocalDate date, String shiftName,
+                 LocalTime startTime, LocalTime endTime, String location, ShiftStatus status) {
         this(UUID.randomUUID().toString(), userId, date, shiftName, startTime, endTime, location, status);
     }
 
-    public Shift(String id, String userId, LocalDate date, String shiftName, LocalTime startTime, LocalTime endTime, String location, ShiftStatus status) {
-        this.id = id;
+    // Constructor đầy đủ
+    public Shift(String id, String userId, LocalDate date, String shiftName,
+                 LocalTime startTime, LocalTime endTime, String location, ShiftStatus status) {
+        this.id = id != null ? id : UUID.randomUUID().toString();
         this.userId = userId;
         this.date = date;
         this.shiftName = shiftName;
         this.startTime = startTime;
         this.endTime = endTime;
-        this.shiftTime = (startTime != null && endTime != null) ? startTime + " - " + endTime : "";
         this.location = location;
         this.status = status != null ? status : ShiftStatus.PENDING;
     }
@@ -40,9 +45,16 @@ public class Shift {
     public String getShiftName() { return shiftName; }
     public LocalTime getStartTime() { return startTime; }
     public LocalTime getEndTime() { return endTime; }
-    public String getShiftTime() { return shiftTime; }
     public String getLocation() { return location; }
     public ShiftStatus getStatus() { return status; }
+
+    /** Getter động trả về chuỗi hiển thị giờ dạng "08:00 - 17:00" */
+    public String getShiftTime() {
+        if (startTime != null && endTime != null) {
+            return startTime.format(TIME_FORMATTER) + " - " + endTime.format(TIME_FORMATTER);
+        }
+        return "";
+    }
 
     // =====================================================================
     // HELPER BUSINESS LOGIC METHODS

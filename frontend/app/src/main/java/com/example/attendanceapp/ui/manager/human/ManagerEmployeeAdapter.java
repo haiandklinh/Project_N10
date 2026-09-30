@@ -1,17 +1,19 @@
 package com.example.attendanceapp.ui.manager.human;
 
+import android.content.Context;
 import android.content.res.ColorStateList;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.attendanceapp.R;
-import com.example.attendanceapp.core.utils.ColorUtil;
 import com.example.attendanceapp.databinding.ItemManagerEmployeeBinding;
+import com.example.attendanceapp.domain.model.EmployeeStatus;
 import com.example.attendanceapp.domain.model.ManagerEmployeeItem;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ManagerEmployeeAdapter extends RecyclerView.Adapter<ManagerEmployeeAdapter.ViewHolder> {
@@ -24,7 +26,7 @@ public class ManagerEmployeeAdapter extends RecyclerView.Adapter<ManagerEmployee
     private final OnItemClickListener listener;
 
     public ManagerEmployeeAdapter(List<ManagerEmployeeItem> list, OnItemClickListener listener) {
-        this.list = new java.util.ArrayList<>(list);
+        this.list = list != null ? new ArrayList<>(list) : new ArrayList<>();
         this.listener = listener;
     }
 
@@ -45,18 +47,19 @@ public class ManagerEmployeeAdapter extends RecyclerView.Adapter<ManagerEmployee
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         ManagerEmployeeItem item = list.get(position);
+        Context context = holder.itemView.getContext();
 
         holder.binding.tvName.setText(item.getFullName());
         holder.binding.tvPosition.setText(item.getPosition() + " · " + item.getDepartment());
         holder.binding.tvPhone.setText(item.getPhoneNumber());
 
-        boolean isActive = ManagerEmployeeItem.STATUS_ACTIVE.equals(item.getStatus());
-        holder.binding.chipStatus.setText(isActive ? "Đang làm" : "Đang nghỉ phép");
-        int bgAttr = isActive ? R.attr.colorAttendancePresentContainer : R.attr.colorAttendanceLeaveContainer;
-        int textAttr = isActive ? R.attr.colorAttendancePresent : R.attr.colorAttendanceLeave;
+        // Binding thông tin trạng thái trực tiếp từ Enum EmployeeStatus
+        EmployeeStatus status = item.getStatus() != null ? item.getStatus() : EmployeeStatus.ACTIVE;
+        holder.binding.chipStatus.setText(status.getLabel());
+        holder.binding.chipStatus.setTextColor(ContextCompat.getColor(context, status.getTextColorRes()));
         holder.binding.chipStatus.setChipBackgroundColor(ColorStateList.valueOf(
-                ColorUtil.getThemeColor(holder.itemView.getContext(), bgAttr)));
-        holder.binding.chipStatus.setTextColor(ColorUtil.getThemeColor(holder.itemView.getContext(), textAttr));
+                ContextCompat.getColor(context, status.getContainerColorRes())
+        ));
 
         holder.binding.getRoot().setOnClickListener(v -> {
             if (listener != null) listener.onItemClick(item);

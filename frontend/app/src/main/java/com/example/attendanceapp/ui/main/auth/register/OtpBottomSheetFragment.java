@@ -109,12 +109,12 @@ public class OtpBottomSheetFragment extends BottomSheetDialogFragment {
     private void observeViewModel() {
         // Observe trạng thái OTP từ ViewModel
         viewModel.getOtpState().observe(getViewLifecycleOwner(), otpState -> {
-            if (otpState instanceof RegisterViewModel.OtpState.Verified) {
+            if (otpState instanceof OtpState.Verified) {
                 // Xác thực thành công -> Trả kết quả về RegisterFragment và đóng BottomSheet
                 sendResultAndDismiss();
-            } else if (otpState instanceof RegisterViewModel.OtpState.Error) {
+            } else if (otpState instanceof OtpState.Error) {
                 // Thất bại -> Xử lý UI lỗi chuyên nghiệp
-                handleOtpError(((RegisterViewModel.OtpState.Error) otpState).message);
+                handleOtpError(((OtpState.Error) otpState).message);
             }
         });
 

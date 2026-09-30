@@ -1,83 +1,62 @@
 package com.example.attendanceapp.domain.usecase.auth;
 
+import com.example.attendanceapp.domain.model.Gender;
 import com.example.attendanceapp.domain.model.UserRole;
-import com.example.attendanceapp.domain.repository.AuthRepository;
+import com.example.attendanceapp.domain.repository.UserRepository;
+
+import java.time.LocalDate;
 
 import javax.inject.Inject;
 
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Single;
+
 public class RoleSelectionUseCase {
-    private final AuthRepository authRepository;
+    private final UserRepository userRepository;
 
     @Inject
-    public RoleSelectionUseCase(AuthRepository authRepository) {
-        this.authRepository = authRepository;
+    public RoleSelectionUseCase(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     /**
-     * Chọn vai trò cho người dùng
+     * Chọn vai trò cho người dùng (gọi qua UserRepository theo Clean Architecture)
      */
-    public void selectRole(UserRole role, AuthCallback<Void> callback) {
-        authRepository.selectRole(role, new AuthRepository.DataCallback<Void>() {
-            @Override
-            public void onSuccess(Void result) {
-                callback.onSuccess(result);
-            }
-
-            @Override
-            public void onError(String errorMessage) {
-                callback.onError(errorMessage);
-            }
-        });
+    public Completable selectRole(UserRole role) {
+        return userRepository.selectRole(role);
     }
 
     /**
      * Cập nhật thông tin cá nhân
      */
-    public void updatePersonalInfo(String name, String dob, String gender, AuthCallback<Void> callback) {
-        authRepository.updatePersonalInfo(name, dob, gender, new AuthRepository.DataCallback<Void>() {
-            @Override
-            public void onSuccess(Void result) {
-                callback.onSuccess(result);
-            }
+    public Completable updatePersonalInfo(String name, String dob, String gender, String avatarUri, UserRole role) {
+        java.time.LocalDate date = null;
+        try {
+            date = java.time.LocalDate.parse(dob, java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        } catch (Exception ignored) {}
 
-            @Override
-            public void onError(String errorMessage) {
-                callback.onError(errorMessage);
-            }
-        });
+        com.example.attendanceapp.domain.model.Gender g = null;
+        try {
+            g = com.example.attendanceapp.domain.model.Gender.valueOf(gender.toUpperCase());
+        } catch (Exception ignored) {}
+
+        android.net.Uri uri = (avatarUri != null && !avatarUri.isEmpty()) ? android.net.Uri.parse(avatarUri) : null;
+        return userRepository.updatePersonalInfo(name, date, g, uri, role);
     }
 
     /**
      * Tạo công ty mới (cho Manager)
      */
-    public void createCompany(String companyName, AuthCallback<String> callback) {
-        authRepository.createCompany(companyName, new AuthRepository.DataCallback<String>() {
-            @Override
-            public void onSuccess(String result) {
-                callback.onSuccess(result);
-            }
-
-            @Override
-            public void onError(String errorMessage) {
-                callback.onError(errorMessage);
-            }
-        });
+    public Single<String> createCompany(String companyName) {
+        return userRepository.updateCompanyName(companyName)
+                .andThen(userRepository.getInvitationCode());
     }
 
     /**
      * Tham gia công ty bằng mã mời (cho Employee)
      */
-    public void joinCompanyWithCode(String invitationCode, AuthCallback<String> callback) {
-        authRepository.joinCompanyWithCode(invitationCode, new AuthRepository.DataCallback<String>() {
-            @Override
-            public void onSuccess(String result) {
-                callback.onSuccess(result);
-            }
-
-            @Override
-            public void onError(String errorMessage) {
-                callback.onError(errorMessage);
-            }
-        });
+    public Single<String> joinCompanyWithCode(String invitationCode, String name, String avatar) {
+        return userRepository.joinManagerWithCode(invitationCode, name, avatar)
+                .map(managerInfo -> managerInfo.getCompanyName());
     }
 }
