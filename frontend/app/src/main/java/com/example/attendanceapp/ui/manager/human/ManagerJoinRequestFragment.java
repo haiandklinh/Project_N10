@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.attendanceapp.R;
 import com.example.attendanceapp.databinding.FragmentManagerJoinRequestBinding;
+import com.example.attendanceapp.domain.model.ApprovalStatus;
 import com.example.attendanceapp.domain.model.JoinRequestItem;
 
 import java.util.ArrayList;
@@ -109,9 +110,9 @@ public class ManagerJoinRequestFragment extends Fragment {
     private void loadJoinRequests() {
         // Tạo vài ví dụ dữ liệu mẫu nhân viên nhập mã mời tham gia doanh nghiệp để kiểm thử Frontend
         sampleRequests.clear();
-        sampleRequests.add(new JoinRequestItem("1", "Nguyễn Minh Hoàng", null, "0912345678", "BKS-CODE-2024", "2 phút trước", JoinRequestItem.STATUS_PENDING));
-        sampleRequests.add(new JoinRequestItem("2", "Phạm Thanh Sơn", null, "0988776655", "BKS-CODE-2024", "10 phút trước", JoinRequestItem.STATUS_PENDING));
-        sampleRequests.add(new JoinRequestItem("3", "Hoàng Thu Thảo", null, "0945123789", "BKS-CODE-2024", "1 giờ trước", JoinRequestItem.STATUS_PENDING));
+        sampleRequests.add(new JoinRequestItem("1", "Nguyễn Minh Hoàng", null, "0912345678", "BKS-CODE-2024", "2 phút trước", ApprovalStatus.APPROVED));
+        sampleRequests.add(new JoinRequestItem("2", "Phạm Thanh Sơn", null, "0988776655", "BKS-CODE-2024", "10 phút trước", ApprovalStatus.PENDING));
+        sampleRequests.add(new JoinRequestItem("3", "Hoàng Thu Thảo", null, "0945123789", "BKS-CODE-2024", "1 giờ trước", ApprovalStatus.REJECTED));
 
         updateEmptyState();
     }

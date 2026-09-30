@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.attendanceapp.R;
 import com.example.attendanceapp.databinding.FragmentManagerPayrollBinding;
+import com.example.attendanceapp.domain.model.EmployeeStatus;
 import com.example.attendanceapp.domain.model.ManagerEmployeeItem;
 
 import java.util.ArrayList;
@@ -54,9 +55,9 @@ public class ManagerPayrollFragment extends Fragment {
 
         // Mock danh sách nhân sự cần tính lương chuẩn theo Use Case
         List<ManagerEmployeeItem> mockEmployees = new ArrayList<>();
-        mockEmployees.add(new ManagerEmployeeItem("1", "NV001", "Nguyễn Văn Hoàng", null, "Nhân viên Sale", "Phòng Kinh doanh", "0987654321", "01/01/2026", ManagerEmployeeItem.STATUS_ACTIVE, 24, 1, 7700000));
-        mockEmployees.add(new ManagerEmployeeItem("2", "NV002", "Trần Thị Bình", null, "Thu ngân", "Phòng Kế toán", "0912345678", "15/02/2026", ManagerEmployeeItem.STATUS_ACTIVE, 22, 0, 6600000));
-        mockEmployees.add(new ManagerEmployeeItem("3", "NV003", "Lê Văn Cường", null, "Nhân viên Kho", "Phòng Vận hành", "0933445566", "10/03/2026", ManagerEmployeeItem.STATUS_ACTIVE, 26, 2, 8200000));
+        mockEmployees.add(new ManagerEmployeeItem("1", "NV001", "Nguyễn Văn Hoàng", null, "Nhân viên Sale", "Phòng Kinh doanh", "0987654321", "01/01/2026", EmployeeStatus.ACTIVE, 24, 1, 7700000));
+        mockEmployees.add(new ManagerEmployeeItem("2", "NV002", "Trần Thị Bình", null, "Thu ngân", "Phòng Kế toán", "0912345678", "15/02/2026", EmployeeStatus.ON_LEAVE, 22, 0, 6600000));
+        mockEmployees.add(new ManagerEmployeeItem("3", "NV003", "Lê Văn Cường", null, "Nhân viên Kho", "Phòng Vận hành", "0933445566", "10/03/2026", EmployeeStatus.TERMINATED, 26, 2, 8200000));
 
         ManagerPayrollAdapter adapter = new ManagerPayrollAdapter(mockEmployees, employee -> {
             // Bước 3-5: Chọn nhân viên và chuyển tiếp sang màn hình tính toán lương chi tiết
