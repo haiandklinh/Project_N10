@@ -38,4 +38,4 @@ async def get_notification(
     id_account = Depends(get_current_account),
     service = Depends(get_manager_service)
 ) :
-    return service.get_notification(id_account)
+    return await service.get_notification(id_account)

@@ -27,7 +27,7 @@ class StaffRepository :
         if result is not None:
             return None  # Kiểm tra xem profile đã từng được tạo hay chưa
         staff = Staff(
-            fullname=fullName,
+            full_name=fullName,
             date_of_birth = date ,
             gender=gender,
             avatar=avatar,
@@ -94,6 +94,7 @@ class StaffRepository :
             select(WorkShift)
             .where(WorkShift.id == id_work_shift_current)
         )
+        return result.scalar_one_or_none()
 
     async def create_notification_change_shift(self, workday, reason, id_staff, id_manager, staff_name, name_shift_cur, id_work_shift_current, name_shift_change,
                                   id_work_shift_change):

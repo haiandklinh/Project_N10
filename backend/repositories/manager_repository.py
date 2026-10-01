@@ -18,15 +18,15 @@ class ManagerRepository :
 
         return result.scalar_one_or_none()
     async def create_profile(self, fullName, gender, avatar, date, id_account):
-        result = self.get_profile_by_id_account(id_account)
+        result = await self.get_profile_by_id_account(id_account)
         if result is not None:
             return None  # Kiểm tra xem profile đã từng được tạo hay chưa
         staff = Manager(
-            fullname=fullName,
+            full_name=fullName,
             date_of_birth = date ,
             gender=gender,
             avatar=avatar,
-            account_id=id_account
+            id_account=id_account
         )
         self.db.add(staff)
 
