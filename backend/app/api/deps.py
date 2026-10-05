@@ -11,7 +11,8 @@ from services.account_service import AccountService
 from services.manager_service import ManagerService
 from services.staff_service import StaffService
 from services.work_schedule_service import WorkScheduleService
-
+from repositories.shift_repository import ShiftRepository
+from services.shift_service import ShiftService
 security = HTTPBearer()
 
 async def get_db():
@@ -44,11 +45,14 @@ def get_work_schedule_service(
     repository = WorkScheduleRepository(db)
     return WorkScheduleService(repository)
 
+def get_shift_service(
+        db=Depends(get_db)
+):
+    repository = ShiftRepository(db)
+    return ShiftService(repository)
+
+
 def get_current_account(
     credentials: HTTPAuthorizationCredentials = Depends(security)
-) :
+):
     return verify_token(credentials.credentials)
-
-
-
-

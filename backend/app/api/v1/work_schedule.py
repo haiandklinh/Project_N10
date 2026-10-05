@@ -5,7 +5,7 @@ from schemas.work_schedule import ListStaffWorkScheduleResponse, StaffWorkSchedu
 
 router = APIRouter(
     prefix="/work-schedules",
-    tags=["Staff"]
+    tags=["WorkSchedule"]
 )
 
 
