@@ -1,9 +1,11 @@
 from fastapi import HTTPException
 
 from app.websocket.manager import websocket_manager
+from core.redis_custom import redis_client
 from repositories.staff_repository import StaffRepository
 from schemas.staff import CreateProfileRequest, ProfileResponse, UpdateProfileRequest, StaffWorkScheduleResponse, \
-    ListStaffWorkScheduleResponse, StaffWorkShiftResponse, StaffShiftChangeRequest, StaffLeaveRequest
+    ListStaffWorkScheduleResponse, StaffWorkShiftResponse, StaffShiftChangeRequest, StaffLeaveRequest, JoinRequest, \
+    JoinResponse
 
 
 class StaffService:
@@ -119,6 +121,7 @@ class StaffService:
                 "id_work_shift_cur" : str(request.id_work_shift_current),
                 "name_shift_change": change_shift.name,
                 "id_work_shift_change" : str(request.id_work_shift_change),
+                "id_staff" : str(staff.id) ,
                 "avatar_staff" :str(staff.avatar),
                 "name_staff": str(staff.full_name),
                 "workday": str(request.workday),
@@ -142,7 +145,8 @@ class StaffService:
         await websocket_manager.send_to_manager(
             manager.id_manager,
             {
-                "avatar_staff": str(staff.avatar),
+                "id_staff": str(staff.id),
+                "avatar_staff": staff.avatar,
                 "name_staff": staff.full_name,
                 "name_work_shift_off": work_shift_off.name,
                 "id_work_shift_off": str(work_shift_off.id),
@@ -150,5 +154,42 @@ class StaffService:
                 "reason": request.reason,
                 "type" : notification.notification_type
             }
+        )
+
+    async def send_join_request(self,request: JoinRequest,id_account):
+        staff = await self.repository.get_profile_by_id_account(id_account)
+        if staff is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Not found Staff in System"
+            )
+
+        # Lấy manager từ mã mời
+        manager_id = await redis_client.get(request.OTP)
+
+        if manager_id is None:
+            raise HTTPException(
+                status_code=400,
+                detail="Invitation code is invalid or expired"
+            )
+        manager = await self.repository.get_manager_by_id(manager_id)
+        if manager is None :
+            raise HTTPException(
+                status_code=404,
+                detail="Not found Manager"
+            )
+        notification = await self.repository.create_notification_request_join(staff.id,manager_id,request.fullname ,request.avatar)
+        await websocket_manager.send_to_manager(
+            manager_id,
+            {
+                "id_staff": str(staff.id),
+                "avatar_staff": staff.avatar,
+                "name_staff": staff.full_name,
+                "type" : notification.notification_type
+            }
+        )
+        return JoinResponse(
+            company =manager.company ,
+            OTP = request.OTP
         )
 

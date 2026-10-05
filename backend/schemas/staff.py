@@ -1,4 +1,4 @@
-from datetime import date as Date, time
+from datetime import  date as Date, time
 from uuid import UUID
 
 from schemas.base import BaseSchema
@@ -6,7 +6,7 @@ from schemas.base import BaseSchema
 
 class CreateProfileRequest(BaseSchema):
     fullName :str
-    date : Date
+    date :Date
     gender : str
     avatar : str
 
@@ -44,5 +44,14 @@ class StaffLeaveRequest(BaseSchema) :
     work_day_off :Date
     id_work_shift_off :UUID
     reason :str
+
+class JoinRequest(BaseSchema) :
+    OTP :str
+    fullname : str
+    avatar : str
+
+class JoinResponse(BaseSchema) :
+    company :str
+    OTP :str
 
 

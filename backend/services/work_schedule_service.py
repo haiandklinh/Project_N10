@@ -107,7 +107,7 @@ class WorkScheduleService:
             data=result
         )
 
-    async def assign_work_shifts(self,request:StaffWorkScheduleRequest)->StaffWorkScheduleResponse:
+    async def assign_work_schedules(self,request:StaffWorkScheduleRequest,id_account)->StaffWorkScheduleResponse:
         work_shifts = await self.repository.get_work_shift_by_id(request.id_work_shift)
         if len(work_shifts) < len(request.id_work_shift) :
             raise HTTPException(404, f"{len(request.id_work_shift)-len(work_shifts)} Work Shift is not exist in system")
@@ -115,14 +115,14 @@ class WorkScheduleService:
         staff = await self.repository.get_staff_by_id(request.id_staff)
         if staff is None :
             raise HTTPException(404, "User not exist in System")
-        await self.repository.assign_work_shifts(request.id_work_shift,request.id_staff,request.work_day)
+        await self.repository.assign_work_schedules(request.id_work_shift,request.id_staff,request.work_day)
         return StaffWorkScheduleResponse(
             id_staff= request.id_staff ,
             name_staff =request.name_staff ,
             position= request.position ,
             work_day= request.work_day,
             avatar= staff.avatar ,
-            status ="Tạo ca làm thành công" ,
+            status ="Tạo lịch làm cho nhân viên thành công" ,
             data = [
                 WorkShift(
                     id =work_shift.id ,

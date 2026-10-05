@@ -1,8 +1,10 @@
+from datetime import time
+
 from fastapi import APIRouter, Depends
 
 from app.api.deps import get_manager_service, get_current_account
 from schemas.manager import ProfileResponse, CreateProfileRequest, UpdateProfileRequest, NotificationResponse, \
-    ListNotificationResponse
+    ListNotificationResponse, InvitationCodeResponse, ShiftChangeRequest, LeaveDayRequest, JoinRequest
 
 router = APIRouter(
     prefix="/managers",
@@ -38,4 +40,41 @@ async def get_notification(
     id_account = Depends(get_current_account),
     service = Depends(get_manager_service)
 ) :
-    return await service.get_notification(id_account)
+    return service.get_notification(id_account)
+
+@router.get('/invitation-code',response_model=InvitationCodeResponse)
+async def get_invitation_code(
+    expires_in : time ,
+    id_account=Depends(get_current_account),
+    service=Depends(get_manager_service)
+):
+    return service.get_invitation_code(id_account,expires_in)
+
+# Quản lý xử lý yêu cầu đổi ca
+@router.patch("/shift-change-requests")
+async def handle_shift_change_request(
+    request: ShiftChangeRequest ,
+    service=Depends(get_manager_service),
+    id_account=Depends(get_current_account)
+):
+    return await service.handle_shift_change_request(request,id_account)
+
+
+# Quản lý xử lý yêu cầu nghỉ phép
+@router.patch("/leave-requests")
+async def handle_leave_request(
+    request :LeaveDayRequest,
+    service=Depends(get_manager_service),
+    id_account=Depends(get_current_account)
+):
+    return await service.handle_leave_request(request,id_account)
+
+
+# Quản lý xử lý yêu cầu tham gia
+@router.patch("/join-requests")
+async def handle_join_request(
+    request : JoinRequest ,
+    service=Depends(get_manager_service),
+    id_account=Depends(get_current_account)
+):
+    return await service.handle_join_request(request,id_account)

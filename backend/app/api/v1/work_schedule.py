@@ -17,9 +17,10 @@ async def get_list_staff_work_schedule(
    return await service.get_list_staff_work_schedule(id_account)
 
 @router.post('',response_model=StaffWorkScheduleResponse)
-async def assign_work_shifts(
+async def assign_work_schedules(
         request : StaffWorkScheduleRequest,
         service=Depends(get_work_schedule_service),
         id_account=Depends(get_current_account)
 ):
-    return await service.assign_work_shifts(request, id_account)
+    return await service.assign_work_schedules(request, id_account)
+
