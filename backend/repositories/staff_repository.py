@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from models.manager import Manager
 from models.manager_staff import ManagerStaff
 from models.notification import Notification
 from models.staff import Staff
@@ -27,11 +28,11 @@ class StaffRepository :
         if result is not None:
             return None  # Kiểm tra xem profile đã từng được tạo hay chưa
         staff = Staff(
-            fullname=fullName,
+            full_name=fullName,
             date_of_birth = date ,
             gender=gender,
             avatar=avatar,
-            account_id=id_account
+            id_account=id_account
         )
         self.db.add(staff)
 
@@ -76,7 +77,8 @@ class StaffRepository :
                 WorkShift,
                 WorkShift.id == WorkSchedule.id_work_shift
             )
-            .where(WorkSchedule.id_staff == id_staff)
+            .where(WorkSchedule.id_staff == id_staff,
+                   WorkSchedule.status== True )
         )
         return result.scalars().all()
 
@@ -94,6 +96,7 @@ class StaffRepository :
             select(WorkShift)
             .where(WorkShift.id == id_work_shift_current)
         )
+        return result.scalar_one_or_none()
 
     async def create_notification_change_shift(self, workday, reason, id_staff, id_manager, staff_name, name_shift_cur, id_work_shift_current, name_shift_change,
                                   id_work_shift_change):
@@ -139,5 +142,30 @@ class StaffRepository :
         await self.db.commit()
         await self.db.refresh(notification)
         return notification
+
+    async def create_notification_request_join(self, id_staff, manager_id, fullname, avatar):
+        content ={
+            "name_staff" : fullname,
+            "avatar_staff" :avatar ,
+        }
+        notification =Notification(
+            id_staff= id_staff,
+            id_manager= manager_id,
+            title ="Yêu cầu tham gia",
+            content =content,
+            created_at= datetime.now() ,
+            notification_type = "Join Request"
+        )
+        self.db.add(notification)
+        await self.db.commit()
+        await self.db.refresh(notification)
+        return notification
+
+    async def get_manager_by_id(self, manager_id):
+        result = await self.db.execute(
+            select(Manager)
+            .where(Manager.id == manager_id)
+        )
+        return result.scalar_one_or_none()
 
 

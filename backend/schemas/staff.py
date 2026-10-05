@@ -45,4 +45,13 @@ class StaffLeaveRequest(BaseSchema) :
     id_work_shift_off :UUID
     reason :str
 
+class JoinRequest(BaseSchema) :
+    OTP :str
+    fullname : str
+    avatar : str
+
+class JoinResponse(BaseSchema) :
+    company :str
+    OTP :str
+
 

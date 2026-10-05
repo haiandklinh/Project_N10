@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends
 from app.api.deps import get_current_account, get_staff_service
 from schemas.manager import CreateProfileRequest
 from schemas.staff import ProfileResponse, UpdateProfileRequest, ListStaffWorkScheduleResponse, StaffShiftChangeRequest, \
-    StaffLeaveRequest
+    StaffLeaveRequest, JoinRequest, JoinResponse
 
 router = APIRouter(
     prefix="/staffs",
@@ -33,6 +33,14 @@ async def update_profile(
 ):
     return await service.update_profile(request, id_account)
 
+@router.post('/join-requests',response_model=JoinResponse)
+async def send_join_request(
+    request: JoinRequest,
+    service=Depends(get_staff_service),
+    id_account=Depends(get_current_account)
+):
+    return await service.send_join_request(request,id_account)
+
 @router.get('/me/work-schedules',response_model=ListStaffWorkScheduleResponse)
 async def get_work_schedules(
     service=Depends(get_staff_service),
@@ -55,3 +63,4 @@ async def create_leave_request(
     id_account=Depends(get_current_account)
 ) :
     return await service.create_leave_request(request , id_account)
+

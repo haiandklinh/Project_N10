@@ -48,7 +48,8 @@ class WorkScheduleRepository :
                 WorkSchedule.id_work_shift == WorkShift.id
             )
             .where(
-                WorkSchedule.id_staff.in_(staff_ids)
+                WorkSchedule.id_staff.in_(staff_ids) ,
+                WorkSchedule.status == True # Kiểm tra xem workschedule có tồn tại ko
             )
         )
 
@@ -63,7 +64,7 @@ class WorkScheduleRepository :
         )
         return result.all()
 
-    async def assign_work_shifts(self, id_work_shift, id_staff, work_day):
+    async def assign_work_schedules(self, id_work_shift, id_staff, work_day):
         work_schedule =WorkSchedule(
             id_staff =id_staff,
             id_work_shift =id_work_shift,

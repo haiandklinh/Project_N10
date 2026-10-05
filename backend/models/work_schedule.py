@@ -1,7 +1,7 @@
 import uuid
 from datetime import date
 
-from sqlalchemy import ForeignKey, Date
+from sqlalchemy import ForeignKey, Date, Boolean
 from sqlalchemy.orm import Mapped, mapped_column
 
 from db.base import Base
@@ -24,4 +24,8 @@ class WorkSchedule(Base):
     work_day :Mapped[date] =mapped_column(
         Date ,
         nullable=False
+    )
+    status : Mapped[bool] = mapped_column(
+        Boolean ,
+        default=True
     )
