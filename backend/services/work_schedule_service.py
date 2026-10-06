@@ -16,7 +16,7 @@ class WorkScheduleService:
         manager = await self.repository.get_manager_by_id_account(id_account)
         if manager is None :
             raise HTTPException(404,"Not Found Manager")
-        staffs = await self.repository.get_staff_by_manager(manager.id)
+        staffs  = await self.repository.get_staff_by_manager(manager.id)
         if not staffs:
             return ListStaffWorkScheduleResponse(
                 data=[]
@@ -28,7 +28,7 @@ class WorkScheduleService:
 
         staff_ids = []
 
-        for staff in staffs:
+        for staff ,position in staffs:
             staff_ids.append(staff.id)
         # ==========================================
         # 3. Lấy toàn bộ WorkSchedule + WorkShift
@@ -46,7 +46,7 @@ class WorkScheduleService:
         for schedule, shift in schedules:
 
             key = (
-                schedule.staff_id,
+                schedule.id_staff,
                 schedule.work_day
             )
 
@@ -57,7 +57,7 @@ class WorkScheduleService:
 
         result = []
 
-        for staff in staffs:
+        for staff ,position in staffs:
 
             # --------------------------------------
             # Lấy tất cả ngày làm việc của Staff
@@ -75,8 +75,8 @@ class WorkScheduleService:
                 result.append(
                     StaffWorkScheduleResponse(
                         id_staff=staff.id,
-                        name_staff=staff.name,
-                        position=staff.position,
+                        name_staff=staff.full_name,
+                        position=position,
                         work_day=work_day,
                         avatar=staff.avatar,
                         status="Nhân viên có ca làm việc ",
@@ -94,8 +94,8 @@ class WorkScheduleService:
                 result.append(
                     StaffWorkScheduleResponse(
                         id_staff = staff.id,
-                        name_staff=staff.name,
-                        position=staff.position,
+                        name_staff=staff.full_name,
+                        position=position,
                         work_day=None,
                         avatar=staff.avatar,
                         status="Nhân viên chưa có ca làm việc",
@@ -111,15 +111,16 @@ class WorkScheduleService:
         work_shifts = await self.repository.get_work_shift_by_id(request.id_work_shift)
         if len(work_shifts) < len(request.id_work_shift) :
             raise HTTPException(404, f"{len(request.id_work_shift)-len(work_shifts)} Work Shift is not exist in system")
-
-        staff = await self.repository.get_staff_by_id(request.id_staff)
+        manager = await self.repository.get_manager_by_id_account(id_account)
+        staff ,position = await self.repository.get_staff_by_id(request.id_staff,manager.id)
         if staff is None :
             raise HTTPException(404, "User not exist in System")
+
         await self.repository.assign_work_schedules(request.id_work_shift,request.id_staff,request.work_day)
         return StaffWorkScheduleResponse(
             id_staff= request.id_staff ,
-            name_staff =request.name_staff ,
-            position= request.position ,
+            name_staff =staff.full_name ,
+            position= position ,
             work_day= request.work_day,
             avatar= staff.avatar ,
             status ="Tạo lịch làm cho nhân viên thành công" ,

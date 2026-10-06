@@ -23,7 +23,7 @@ class WorkScheduleRepository :
 
     async def get_staff_by_manager(self, id_manager):
         stmt = (
-            select(Staff)
+            select(Staff,ManagerStaff.position)
             .join(
                 ManagerStaff,
                 ManagerStaff.id_staff == Staff.id
@@ -35,7 +35,7 @@ class WorkScheduleRepository :
 
         result = await self.db.execute(stmt)
 
-        return result.scalars().all()
+        return result.all()
 
     async def get_by_staff_ids(self, staff_ids: list[UUID]):
         stmt = (
@@ -62,21 +62,29 @@ class WorkScheduleRepository :
             select(WorkShift)
             .where(WorkShift.id.in_(id_work_shift))
         )
-        return result.all()
+        return result.scalars().all()
 
-    async def assign_work_schedules(self, id_work_shift, id_staff, work_day):
-        work_schedule =WorkSchedule(
-            id_staff =id_staff,
-            id_work_shift =id_work_shift,
-            work_day =work_day
-        )
-        self.db.add(work_schedule)
+    async def assign_work_schedules(self, id_work_shifts, id_staff, work_day):
+        for id_work_shift in id_work_shifts:
+            work_schedule =WorkSchedule(
+                id_staff =id_staff,
+                id_work_shift =id_work_shift,
+                work_day =work_day
+            )
+            self.db.add(work_schedule)
         await self.db.commit()
-        await self.db.refresh(work_schedule)
 
-    async def get_staff_by_id(self, id_staff):
+    async def get_staff_by_id(self, id_staff,id_manager):
         result = await self.db.execute(
-            select(Staff)
-            .where(Staff.id == id_staff)
+            select(Staff, ManagerStaff.position)
+            .join(
+                ManagerStaff,
+                ManagerStaff.id_staff == Staff.id
+            )
+            .where(
+                Staff.id == id_staff,
+                ManagerStaff.id_manager == id_manager
+            )
         )
-        return result.scalar_one_or_none()
+
+        return result.one_or_none()

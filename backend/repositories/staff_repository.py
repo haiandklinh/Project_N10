@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.config import settings
 from models.manager import Manager
 from models.manager_staff import ManagerStaff
 from models.notification import Notification
@@ -65,36 +66,34 @@ class StaffRepository :
 
         return profile
 
-    async def get_work_schedule_by_staff(self, id_staff):
+    async def get_work_schedule_by_staff(
+            self,
+            id_staff,
+            id_manager
+    ):
         result = await self.db.execute(
-            select(
-                WorkSchedule.work_day ,
-                WorkShift.name ,
-                WorkShift.start_time ,
-                WorkShift.end_time
-            )
+            select(WorkSchedule.work_day ,
+                   WorkShift.start_time,
+                   WorkShift.end_time ,
+                   WorkShift.name)
             .join(
                 WorkShift,
-                WorkShift.id == WorkSchedule.id_work_shift
+                WorkSchedule.id_work_shift == WorkShift.id
             )
-            .where(WorkSchedule.id_staff == id_staff,
-                   WorkSchedule.status== True )
+            .where(
+                WorkSchedule.id_staff == id_staff,
+                WorkShift.id_manager == id_manager ,
+                WorkSchedule.status == True
+            )
         )
-        return result.scalars().all()
 
-    async def get_manager_by_staff(self, id_staff):
-        result = await self.db.execute(
-            select(ManagerStaff)
-            .where(ManagerStaff.id_staff == id_staff)
-        )
-        return result.scalar_one_or_none()
+        return result.all()
 
-
-
-    async def get_work_shift_by_id(self, id_work_shift_current):
+    async def get_work_shift_by_id(self, id_work_shift_current,id_manager):
         result = await self.db.execute(
             select(WorkShift)
-            .where(WorkShift.id == id_work_shift_current)
+            .where(WorkShift.id == id_work_shift_current ,
+                   WorkShift.id_manager== id_manager)
         )
         return result.scalar_one_or_none()
 
@@ -115,7 +114,7 @@ class StaffRepository :
             title ="Yêu cầu đổi ca",
             content =content,
             created_at= datetime.now() ,
-            notification_type = "Change Work Shift"
+            notification_type = settings.CHANGE_WORK_SHIFT_REQUEST
         )
         self.db.add(notification)
         await self.db.commit()
@@ -126,8 +125,8 @@ class StaffRepository :
         content ={
             "name_staff" : name_staff,
             "name_work_shift_off" : name_work_shift_off ,
-            "id_work_shift_off": id_work_shift_off ,
-            "work_day_off" : work_day_off,
+            "id_work_shift_off": str(id_work_shift_off) ,
+            "work_day_off" : work_day_off.isoformat(),
             "reason" : reason
         }
         notification =Notification(
@@ -136,7 +135,7 @@ class StaffRepository :
             title ="Yêu cầu xin nghỉ",
             content =content,
             created_at= datetime.now() ,
-            notification_type = "Leave Request"
+            notification_type = settings.CHANGE_LEAVE_REQUEST
         )
         self.db.add(notification)
         await self.db.commit()
@@ -154,7 +153,7 @@ class StaffRepository :
             title ="Yêu cầu tham gia",
             content =content,
             created_at= datetime.now() ,
-            notification_type = "Join Request"
+            notification_type = settings.JOIN_COMPANY_REQUEST
         )
         self.db.add(notification)
         await self.db.commit()
@@ -166,6 +165,49 @@ class StaffRepository :
             select(Manager)
             .where(Manager.id == manager_id)
         )
+        return result.scalar_one_or_none()
+
+    async def get_notification(self, id_manager, id_staff):
+        result = await self.db.execute(
+            select(Notification.notification_type)
+            .where(
+                Notification.id_manager == id_manager,
+                Notification.id_staff == id_staff,
+                Notification.notification_type.in_([
+                    settings.JOIN_COMPANY_RESPONSE,
+                    settings.CHANGE_LEAVE_RESPONSE,
+                    settings.CHANGE_WORK_SHIFT_RESPONSE,
+                    settings.ATTENDANCE_ADJUSTMENT_RESPONSE
+                ])
+            )
+        )
+
+        return result.scalars().all()
+
+    async def get_manager_staff(self, id_staff, id_manager):
+        result = await self.db.execute(
+            select(ManagerStaff)
+            .where(
+                ManagerStaff.id_staff == id_staff,
+                ManagerStaff.id_manager == id_manager
+            )
+        )
+
+        return result.scalar_one_or_none()
+
+    async def get_manager_by_invitation_code(self, invitation_code,id_staff):
+        result = await self.db.execute(
+            select(ManagerStaff)
+            .join(
+                Manager,
+                Manager.id == ManagerStaff.id_manager
+            )
+            .where(
+                Manager.invitation_code == invitation_code,
+                ManagerStaff.id_staff == id_staff
+            )
+        )
+
         return result.scalar_one_or_none()
 
 

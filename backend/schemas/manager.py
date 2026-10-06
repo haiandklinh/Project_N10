@@ -34,6 +34,7 @@ class  NotificationResponse(BaseSchema) :
     send_person :str
     content : dict
     send_at: datetime
+    notification_type :str
 class ListNotificationResponse(BaseSchema) :
     notifications: list[NotificationResponse]
 

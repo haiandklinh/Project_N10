@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.config import settings
 from models.manager import Manager
 from models.manager_staff import ManagerStaff
 from models.notification import Notification
@@ -11,7 +12,7 @@ from models.work_schedule import WorkSchedule
 from models.work_shift import WorkShift
 
 
-class ManagerRepository :
+class ManagerRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
@@ -22,14 +23,15 @@ class ManagerRepository :
         )
 
         return result.scalar_one_or_none()
-    async def create_profile(self, fullName, gender, avatar, date, id_account,company):
+
+    async def create_profile(self, fullName, gender, avatar, date, id_account, company):
         result = await self.get_profile_by_id_account(id_account)
         if result is not None:
             return None  # Kiểm tra xem profile đã từng được tạo hay chưa
         manager = Manager(
             full_name=fullName,
-            company = company,
-            date_of_birth = date ,
+            company=company,
+            date_of_birth=date,
             gender=gender,
             avatar=avatar,
             id_account=id_account
@@ -41,7 +43,7 @@ class ManagerRepository :
 
         return manager
 
-    async def update_profile(self,full_name,gender,avatar,date,id_account,company):
+    async def update_profile(self, full_name, gender, avatar, date, id_account, company):
 
         profile = await self.get_profile_by_id_account(id_account)
 
@@ -59,7 +61,7 @@ class ManagerRepository :
 
         if date is not None:
             profile.date_of_birth = date
-        if company is not None :
+        if company is not None:
             profile.company = company
 
         await self.db.commit()
@@ -70,27 +72,36 @@ class ManagerRepository :
     async def get_notification(self, id_manager):
         result = await self.db.execute(
             select(Notification, Staff)
-            .join(Staff, Notification.id_staff == Staff.id)
-            .where(Notification.id_manager == id_manager ,
-                   Notification.notification_type !='Response')
+            .join(Staff,
+                  Staff.id == Notification.id_staff)
+            .where(
+                Notification.id_manager == id_manager,
+                Notification.notification_type.in_([
+                    settings.JOIN_COMPANY_REQUEST,
+                    settings.CHANGE_LEAVE_REQUEST,
+                    settings.CHANGE_WORK_SHIFT_REQUEST,
+                    settings.ATTENDANCE_ADJUSTMENT_REQUEST
+                ])
             )
+        )
 
         return result.all()
 
-    async def get_staff_by_manager(self, id_manager,id_staff):
+    async def get_staff_by_manager(self, id_manager, id_staff):
         result = await self.db.execute(
             select(ManagerStaff)
             .where(ManagerStaff.id_manager == id_manager,
-                   ManagerStaff.id_staff==id_staff)
+                   ManagerStaff.id_staff == id_staff)
         )
         return result.scalar_one_or_none()
-    async def change_workshift(self,id_staff,id_work_shift_cur,id_work_shift_change,workday):
+
+    async def change_workshift(self, id_staff, id_work_shift_cur, id_work_shift_change, workday):
         result = await self.db.execute(
             select(WorkSchedule)
             .where(
-                WorkSchedule.id_staff ==id_staff ,
-                WorkSchedule.id_work_shift == id_work_shift_cur ,
-                WorkSchedule.work_day ==workday
+                WorkSchedule.id_staff == id_staff,
+                WorkSchedule.id_work_shift == id_work_shift_cur,
+                WorkSchedule.work_day == workday
             )
         )
         work_schedule = result.scalar_one_or_none()
@@ -103,13 +114,14 @@ class ManagerRepository :
 
         return True
 
-    async def create_notification_change_workshift(self, id_staff, name_work_shift_cur, name_work_shift_change, workday,id_manager,message ,reason):
-        content ={
+    async def create_notification_change_workshift(self, id_staff, name_work_shift_cur, name_work_shift_change, workday,
+                                                   id_manager, message, reason):
+        content = {
             "message ": message,
-            "reason" : reason if reason is not None else "" ,
-            "name_work_shift_cur" : name_work_shift_cur ,
-            "name_work_shift_change" : name_work_shift_change ,
-            "workday" : workday
+            "reason": reason if reason is not None else "",
+            "name_work_shift_cur": name_work_shift_cur,
+            "name_work_shift_change": name_work_shift_change,
+            "workday": workday.isoformat()
         }
         notification = Notification(
             id_staff=id_staff,
@@ -117,7 +129,7 @@ class ManagerRepository :
             title="Thông báo về yêu cầu xin đổi ca",
             content=content,
             created_at=datetime.now(),
-            notification_type="Response Change WorkShift"
+            notification_type=settings.CHANGE_WORK_SHIFT_RESPONSE
         )
         self.db.add(notification)
         await self.db.commit()
@@ -132,11 +144,11 @@ class ManagerRepository :
         return result.scalar_one_or_none()
 
     async def create_notification_leaveday(self, id_staff, name_shift_off, workday_off, id_manager, message, reason):
-        content ={
+        content = {
             "message ": message,
             "reason": reason if reason is not None else "",
             "name_work_shift_off": name_shift_off,
-            "workday": workday_off
+            "workday": workday_off.isoformat()
         }
         notification = Notification(
             id_staff=id_staff,
@@ -144,7 +156,7 @@ class ManagerRepository :
             title="Thông báo về yêu cầu xin nghỉ",
             content=content,
             created_at=datetime.now(),
-            notification_type="Response Leave"
+            notification_type=settings.CHANGE_LEAVE_RESPONSE
         )
         self.db.add(notification)
         await self.db.commit()
@@ -167,11 +179,11 @@ class ManagerRepository :
         await self.db.commit()
         return True
 
-    async def add_staff_in_company_by_manager(self, manager_id ,id_staff, position):
-        new_staff =ManagerStaff(
-            id_manager =manager_id,
-            id_staff =id_staff ,
-            position = position,
+    async def add_staff_in_company_by_manager(self, manager_id, id_staff, position):
+        new_staff = ManagerStaff(
+            id_manager=manager_id,
+            id_staff=id_staff,
+            position=position,
         )
         self.db.add(new_staff)
         await self.db.commit()

@@ -5,9 +5,6 @@ from core.config import settings
 
 class RedisClient:
     def __init__(self):
-        self._redis = None
-
-    async def initialize(self):
         self._redis = aioredis.from_url(
             settings.REDIS_URL,
             encoding="utf-8",
@@ -15,8 +12,8 @@ class RedisClient:
         )
 
     async def close(self):
-        if self._redis:
-            await self._redis.close()
+        if self._redis :
+            await self._redis.aclose()
 
     @property
     def client(self):

@@ -26,7 +26,7 @@ class ManagerService:
             status= new_profile.status ,
             avatar= new_profile.avatar,
             date= new_profile.date_of_birth,
-            company = new_profile.comany
+            company = new_profile.company
         )
 
     async def get_profile(self,id_account: str ) -> ProfileResponse:
@@ -47,7 +47,7 @@ class ManagerService:
             status=profile.status,
             avatar=profile.avatar,
             date=profile.date_of_birth,
-            company = profile.comany
+            company = profile.company
         )
 
     async def update_profile(self,request: UpdateProfileRequest,id_account: str) -> ProfileResponse:
@@ -73,7 +73,7 @@ class ManagerService:
             status=profile.status,
             avatar=profile.avatar,
             date=profile.date_of_birth ,
-            company=profile.comany
+            company=profile.company
         )
 
     async def get_notification(self,id_account )->ListNotificationResponse:
@@ -89,7 +89,8 @@ class ManagerService:
                 avatar_send_person = staff.avatar,
                 send_person = staff.full_name,
                 content=notification.content,
-                send_at=notification.created_at
+                send_at=notification.created_at ,
+                notification_type= notification.notification_type
             )
             for notification, staff in notifications
         ]
@@ -159,18 +160,18 @@ class ManagerService:
         if staff is None :
             raise HTTPException(404,"Staff not in Company")
         shift_off = await self.repository.get_work_shift_by_id(
-            request.id_work_shift_cur
+            request.id_work_shift_off
         )
 
         if shift_off is None :
             raise HTTPException(404, "Work shift not found")
         if request.status :
-            result = await self.repository.handle_leave_day_off(request.id_staff,request.id_work_shift_off,request.workday)
+            result = await self.repository.handle_leave_day_off(request.id_staff,request.id_work_shift_off,request.workday_off)
             if result is True:
                 message= "Update Successful"
             else :
                 message = "Update Failed"
-        notifications = await self.repository.create_notification_leaveday(request.id_staff,shift_off.name,request.workday,manager.id,message,request.reason)
+        notifications = await self.repository.create_notification_leaveday(request.id_staff,shift_off.name,request.workday_off,manager.id,message,request.reason)
 
         await websocket_staff.send_to_staff(
             staff.id_staff,
@@ -178,7 +179,7 @@ class ManagerService:
                 "Message" : message  ,
                 "Type" : notifications.notification_type ,
                 "NameWorkShiftOff" : shift_off.name ,
-                "workday" : str(request.workday) ,
+                "workday" : str(request.workday_off) ,
                 "created_at" : str(datetime.now()),
                 "reason" : request.reason
             }
@@ -188,14 +189,17 @@ class ManagerService:
         manager = await self.repository.get_profile_by_id_account(id_account)
         if manager is None :
             raise HTTPException(404,"Not found Manager")
-        staff = self.repository.get_staff_by_manager(manager.id,request.id_staff)
+        staff = await self.repository.get_staff_by_manager(manager.id,request.id_staff)
         if staff is not None :
             raise HTTPException(401,"Staff is in company ")
-        await self.repository.add_staff_in_company_by_manager(manager.id,request.id_staff,request.position)
+        if request.status is True :
+            await self.repository.add_staff_in_company_by_manager(manager.id,request.id_staff,request.position)
         await websocket_staff.send_to_staff(
             request.id_staff,
             {
                 "status" :str(request.status)
             }
         )
+
+
 

@@ -1,4 +1,4 @@
-from datetime import  date as Date, time
+from datetime import date as Date, time, datetime
 from uuid import UUID
 
 from schemas.base import BaseSchema
@@ -23,6 +23,16 @@ class UpdateProfileRequest(BaseSchema):
     gender: str | None = None
     avatar: str | None = None
     date: Date | None = None
+class  NotificationResponse(BaseSchema) :
+    send_person :str
+    company_name:str
+    content : dict
+    send_at: datetime
+    notification_type :str
+
+class ListNotificationResponse(BaseSchema) :
+    notifications: list[NotificationResponse]
+
 class StaffWorkShiftResponse(BaseSchema):
     name_shift : str
     start_time: time

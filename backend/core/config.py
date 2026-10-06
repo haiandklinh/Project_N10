@@ -22,7 +22,17 @@ class Settings(BaseSettings):
     CLOUDINARY_CLOUD_NAME: str
     CLOUDINARY_API_KEY: str
     CLOUDINARY_API_SECRET: str
+    # Type Notification for manager
+    CHANGE_WORK_SHIFT_REQUEST:str
+    CHANGE_LEAVE_REQUEST :str
+    ATTENDANCE_ADJUSTMENT_REQUEST :str
+    JOIN_COMPANY_REQUEST :str
 
+    # Type Notification for Staff
+    CHANGE_WORK_SHIFT_RESPONSE :str
+    CHANGE_LEAVE_RESPONSE :str
+    ATTENDANCE_ADJUSTMENT_RESPONSE :str
+    JOIN_COMPANY_RESPONSE :str
     class Config:
         env_file = ".env"
         case_sensitive = True # phân biệt hoa và thường

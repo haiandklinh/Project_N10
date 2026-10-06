@@ -40,15 +40,15 @@ async def get_notification(
     id_account = Depends(get_current_account),
     service = Depends(get_manager_service)
 ) :
-    return service.get_notification(id_account)
+    return await service.get_notification(id_account)
 
 @router.get('/invitation-code',response_model=InvitationCodeResponse)
 async def get_invitation_code(
-    expires_in : time ,
+    expires_in : int ,
     id_account=Depends(get_current_account),
     service=Depends(get_manager_service)
 ):
-    return service.get_invitation_code(id_account,expires_in)
+    return await service.get_invitation_code(id_account,expires_in)
 
 # Quản lý xử lý yêu cầu đổi ca
 @router.patch("/shift-change-requests")
