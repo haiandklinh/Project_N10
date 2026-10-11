@@ -34,6 +34,7 @@ class ListNotificationResponse(BaseSchema) :
     notifications: list[NotificationResponse]
 
 class StaffWorkShiftResponse(BaseSchema):
+    id_work_schedule : UUID
     name_shift : str
     start_time: time
     end_time : time

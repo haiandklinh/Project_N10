@@ -73,6 +73,7 @@ class StaffRepository :
     ):
         result = await self.db.execute(
             select(WorkSchedule.work_day ,
+                   WorkSchedule.id ,
                    WorkShift.start_time,
                    WorkShift.end_time ,
                    WorkShift.name)

@@ -82,3 +82,10 @@ async def create_leave_request(
 ) :
     return await service.create_leave_request(request , id_account,id_manager)
 
+@router.post('/attendance-adjustment-requests')
+async def request_adjustment_attendance(
+    id_manager :str ,
+    service=Depends(get_staff_service),
+    id_account=Depends(get_current_account)
+) :
+    pass

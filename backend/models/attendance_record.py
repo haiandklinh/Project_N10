@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import ForeignKey, Float, DateTime
+from sqlalchemy import ForeignKey, Float, DateTime, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from db.base import Base
@@ -14,17 +14,10 @@ class AttendanceRecord(Base):
         primary_key=True,
         default=uuid.uuid4,
     )
-
-    id_staff: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("staffs.id"),
+    id_work_schedule : Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("work_schedules.id"),
         nullable=False
     )
-
-    time: Mapped[datetime] = mapped_column(
-        DateTime,
-        nullable=False
-    )
-
     check_in_time: Mapped[datetime] = mapped_column(
         DateTime,
         nullable=True
@@ -48,4 +41,13 @@ class AttendanceRecord(Base):
     check_out_latitude: Mapped[float] = mapped_column(
         Float,
         nullable=True
+    )
+    check_out_longitude : Mapped[float] = mapped_column(
+        Float ,
+        nullable= True
+    )
+    status :Mapped[str] = mapped_column(
+        String(255) ,
+        default= "NOT ATTENDED" ,
+        nullable= True
     )

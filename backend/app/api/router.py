@@ -6,6 +6,7 @@ from app.api.v1.manager import router as manager_router
 from app.api.v1.ws import router as ws_router
 from app.api.v1.work_schedule import router as workschedule_router
 from app.api.v1.shift import router as shift_router
+from app.api.v1.attendance import router as attendance_router
 
 
 
@@ -17,5 +18,5 @@ api_router.include_router(manager_router)
 api_router.include_router(ws_router)
 api_router.include_router(workschedule_router)
 api_router.include_router(shift_router)
-
+api_router.include_router(attendance_router)
 

@@ -161,6 +161,7 @@ class StaffService:
 
             dict_work_schedules[work_schedule.work_day].append(
                 StaffWorkShiftResponse(
+                    id_work_schedule= work_schedule.id  ,
                     name_shift=work_schedule.name,
                     start_time=work_schedule.start_time,
                     end_time=work_schedule.end_time

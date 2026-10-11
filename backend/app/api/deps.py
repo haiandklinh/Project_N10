@@ -4,10 +4,12 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from core.config import SessionLocal
 from core.security import verify_token
 from repositories.account_repository import AccountRepository
+from repositories.attendance_repository import AttendanceRepository
 from repositories.manager_repository import ManagerRepository
 from repositories.staff_repository import StaffRepository
 from repositories.work_schedule_repository import WorkScheduleRepository
 from services.account_service import AccountService
+from services.attendance_service import AttendanceService
 from services.manager_service import ManagerService
 from services.staff_service import StaffService
 from services.work_schedule_service import WorkScheduleService
@@ -51,6 +53,11 @@ def get_shift_service(
     repository = ShiftRepository(db)
     return ShiftService(repository)
 
+def get_attendance_service(
+        db =Depends(get_db)
+):
+    repository = AttendanceRepository(db)
+    return AttendanceService(repository)
 
 def get_current_account(
     credentials: HTTPAuthorizationCredentials = Depends(security)
