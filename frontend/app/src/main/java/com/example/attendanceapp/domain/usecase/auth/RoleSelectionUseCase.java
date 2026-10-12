@@ -27,9 +27,9 @@ public class RoleSelectionUseCase {
     }
 
     /**
-     * Cập nhật thông tin cá nhân
+     * Cập nhật thông tin cá nhân (Tạo hồ sơ)
      */
-    public Completable updatePersonalInfo(String name, String dob, String gender, String avatarUri, UserRole role) {
+    public Completable updatePersonalInfo(String name, String dob, String gender, String avatarUri, UserRole role, String companyName) {
         java.time.LocalDate date = null;
         try {
             date = java.time.LocalDate.parse(dob, java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
@@ -41,7 +41,7 @@ public class RoleSelectionUseCase {
         } catch (Exception ignored) {}
 
         android.net.Uri uri = (avatarUri != null && !avatarUri.isEmpty()) ? android.net.Uri.parse(avatarUri) : null;
-        return userRepository.updatePersonalInfo(name, date, g, uri, role);
+        return userRepository.createProfile(name, date, g, uri, role, companyName);
     }
 
     /**

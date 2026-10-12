@@ -1,5 +1,6 @@
 package com.example.attendanceapp.ui.manager.schedule;
 
+import android.content.Context;
 import android.content.res.ColorStateList;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -48,16 +49,16 @@ public class ManagerScheduleEmployeeAdapter extends RecyclerView.Adapter<Manager
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         ManagerEmployeeItem item = list.get(position);
+        Context context = holder.itemView.getContext();
 
         // 1. Gán Tên nhân viên
         holder.binding.tvName.setText(item.getFullName());
 
-        // 2. Gán Mã NV
+        // 2. Gán Mã NV & Chức vụ
         String employeeCode = item.getEmployeeCode() != null ? item.getEmployeeCode() : "";
-        holder.binding.tvCode.setText(employeeCode);
-
-        // 3. Gán Chức vụ
         String positionName = item.getPosition() != null ? item.getPosition() : "";
+
+        holder.binding.tvCode.setText(employeeCode);
         holder.binding.tvPosition.setText(positionName);
 
         if (employeeCode.isEmpty() || positionName.isEmpty()) {
@@ -66,41 +67,43 @@ public class ManagerScheduleEmployeeAdapter extends RecyclerView.Adapter<Manager
             holder.binding.tvDivider.setVisibility(View.VISIBLE);
         }
 
-        // 4. LOAD AVATAR BẰNG GLIDE
+        // 3. LOAD AVATAR BẰNG GLIDE
         if (item.getAvatarUrl() != null && !item.getAvatarUrl().isEmpty()) {
-            Glide.with(holder.itemView.getContext())
+            Glide.with(context)
                     .load(item.getAvatarUrl())
                     .placeholder(R.drawable.ic_avatar)
-                    .error(R.drawable.ic_error)
-                    .into(holder.binding.ivAvatar); // Đảm bảo ID này đúng với XML của bạn
+                    .error(R.drawable.ic_avatar)
+                    .into(holder.binding.ivAvatar);
         } else {
             holder.binding.ivAvatar.setImageResource(R.drawable.ic_avatar);
         }
 
-        // 5. Thông tin Ca làm việc (Chip bên phải)
+        // 4. Thông tin Ca làm việc (Chip bên phải)
         boolean hasShift = item.getAssignedShiftName() != null && !item.getAssignedShiftName().isEmpty();
 
         if (hasShift) {
             holder.binding.chipShiftInfo.setText(item.getAssignedShiftName());
 
-            int primaryColor = ColorUtil.getThemeColor(holder.itemView.getContext(), R.attr.colorPrimary);
-            int containerColor = ColorUtil.getThemeColor(holder.itemView.getContext(), R.attr.colorAttendancePresentContainer);
+            int primaryColor = ColorUtil.getThemeColor(context, R.attr.colorPrimary);
+            int containerColor = ColorUtil.getThemeColor(context, R.attr.colorPrimaryContainer);
 
             holder.binding.chipShiftInfo.setChipBackgroundColor(ColorStateList.valueOf(containerColor));
             holder.binding.chipShiftInfo.setTextColor(ColorStateList.valueOf(primaryColor));
         } else {
             holder.binding.chipShiftInfo.setText("Chưa xếp");
 
-            int notCheckedColor = ColorUtil.getThemeColor(holder.itemView.getContext(), R.attr.colorAttendanceNotChecked);
-            int notCheckedContainer = ColorUtil.getThemeColor(holder.itemView.getContext(), R.attr.colorAttendanceNotCheckedContainer);
+            int outlineColor = ColorUtil.getThemeColor(context, com.google.android.material.R.attr.colorOutline);
+            int surfaceVariantColor = ColorUtil.getThemeColor(context, com.google.android.material.R.attr.colorSurfaceVariant);
 
-            holder.binding.chipShiftInfo.setChipBackgroundColor(ColorStateList.valueOf(notCheckedContainer));
-            holder.binding.chipShiftInfo.setTextColor(ColorStateList.valueOf(notCheckedColor));
+            holder.binding.chipShiftInfo.setChipBackgroundColor(ColorStateList.valueOf(surfaceVariantColor));
+            holder.binding.chipShiftInfo.setTextColor(ColorStateList.valueOf(outlineColor));
         }
 
+        // 5. Sự kiện Click an toàn
         holder.binding.cardRoot.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onAssignClick(item, holder.getBindingAdapterPosition());
+            int currentPos = holder.getBindingAdapterPosition();
+            if (currentPos != RecyclerView.NO_POSITION && listener != null) {
+                listener.onAssignClick(item, currentPos);
             }
         });
     }

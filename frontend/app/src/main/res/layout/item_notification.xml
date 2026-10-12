@@ -18,7 +18,7 @@
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_notification_icon"
-            style="@style/CircleIconCardStyle"
+            style="@style/CircleIconCard"
             android:layout_width="40dp"
             android:layout_height="40dp"
             app:cardCornerRadius="20dp"

@@ -3,6 +3,8 @@ import com.google.gson.annotations.SerializedName;
 
 public class SendOtpResponse {
     private String message;
+    
+    @SerializedName("OTP")
     private String otp;
 
     public String getMessage() { return message; }

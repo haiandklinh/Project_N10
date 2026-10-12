@@ -3,7 +3,10 @@ package com.example.attendanceapp.data.mapper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.example.attendanceapp.data.dto.response.profile.ProfileResponse;
+import com.example.attendanceapp.data.dto.response.profile.CreateEmployeeResponse;
+import com.example.attendanceapp.data.dto.response.profile.CreateManagerResponse;
+import com.example.attendanceapp.data.dto.response.profile.UpdateEmployeeResponse;
+import com.example.attendanceapp.data.dto.response.profile.UpdateManagerResponse;
 import com.example.attendanceapp.data.local.entity.UserEntity;
 import com.example.attendanceapp.domain.model.Gender;
 import com.example.attendanceapp.domain.model.UserAccount;
@@ -17,37 +20,74 @@ public final class UserMapper {
 
     private UserMapper() { }
 
-    /** Map trực tiếp từ ProfileResponse sang UserProfile domain */
+    /** Trả về UserProfile mặc định khi chưa có thông tin (vd: mới đăng ký) */
     @NonNull
-    public static UserProfile toUserProfile(@Nullable ProfileResponse response) {
-        if (response == null) {
-            return new UserProfile.Builder().status(UserStatus.NEEDS_ROLE_SELECTION).build();
-        }
+    public static UserProfile toUserProfile() {
+        return new UserProfile.Builder().status(UserStatus.NEEDS_ROLE_SELECTION).build();
+    }
 
+    /** Map từ CreateEmployeeResponse sang UserProfile domain */
+    @NonNull
+    public static UserProfile toUserProfile(@Nullable CreateEmployeeResponse response) {
+        if (response == null) return toUserProfile();
         return new UserProfile.Builder()
                 .fullName(response.getFullName())
                 .gender(parseGender(response.getGender()))
                 .dateOfBirth(parseDate(response.getDate()))
                 .avatarUrl(response.getAvatarUrl())
                 .status(parseStatus(response.getStatus()))
+                .role(UserRole.EMPLOYEE)
                 .build();
     }
 
-    /** Map từ ProfileResponse phẳng (kết quả GET /profile) sang UserAccount domain */
+    /** Map từ CreateManagerResponse sang UserProfile domain */
     @NonNull
-    public static UserAccount toDomain(@NonNull ProfileResponse response, @NonNull String phoneNumber, @Nullable String role) {
-        UserProfile profile = new UserProfile.Builder()
-                .userId(phoneNumber) // Giả định dùng số điện thoại làm ID tạm nếu BE không trả về user_id
+    public static UserProfile toUserProfile(@Nullable CreateManagerResponse response) {
+        if (response == null) return toUserProfile();
+        return new UserProfile.Builder()
                 .fullName(response.getFullName())
                 .gender(parseGender(response.getGender()))
                 .dateOfBirth(parseDate(response.getDate()))
                 .avatarUrl(response.getAvatarUrl())
-                .role(parseRole(role))
                 .status(parseStatus(response.getStatus()))
+                .companyName(response.getCompanyName())
+                .role(UserRole.MANAGER)
                 .build();
+    }
 
+    /** Map từ UpdateEmployeeResponse sang UserProfile domain */
+    @NonNull
+    public static UserProfile toUserProfile(@Nullable UpdateEmployeeResponse response) {
+        if (response == null) return toUserProfile();
+        return new UserProfile.Builder()
+                .fullName(response.getFullName())
+                .gender(parseGender(response.getGender()))
+                .dateOfBirth(parseDate(response.getDate()))
+                .avatarUrl(response.getAvatarUrl())
+                .status(parseStatus(response.getStatus()))
+                .role(UserRole.EMPLOYEE)
+                .build();
+    }
+
+    /** Map từ UpdateManagerResponse sang UserProfile domain */
+    @NonNull
+    public static UserProfile toUserProfile(@Nullable UpdateManagerResponse response) {
+        if (response == null) return toUserProfile();
+        return new UserProfile.Builder()
+                .fullName(response.getFullName())
+                .gender(parseGender(response.getGender()))
+                .dateOfBirth(parseDate(response.getDate()))
+                .avatarUrl(response.getAvatarUrl())
+                .status(parseStatus(response.getStatus()))
+                .companyName(response.getCompanyName())
+                .role(UserRole.MANAGER)
+                .build();
+    }
+
+    /** Helper to map from response fields to UserAccount */
+    @NonNull
+    public static UserAccount toDomain(@NonNull String phoneNumber, @Nullable String role, @NonNull UserProfile profile) {
         boolean isFirstLogin = role == null || profile.getStatus() == UserStatus.NEEDS_ROLE_SELECTION;
-
         return new UserAccount.Builder()
                 .phoneNumber(phoneNumber)
                 .firstLogin(isFirstLogin)
@@ -59,7 +99,6 @@ public final class UserMapper {
     @NonNull
     public static UserEntity toEntity(@NonNull UserAccount userAccount) {
         UserProfile profile = userAccount.getProfile();
-
         return new UserEntity(
                 profile.getUserId(),
                 profile.getFullName(),

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- Icon tìm kiếm trên Toolbar -->
+    <item
+        android:id="@+id/action_search"
+        android:icon="@drawable/ic_search"
+        android:title="@string/action_search"
+        app:iconTint="?attr/colorPrimary"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_join_requests"
+        android:title="@string/human_desc_join_requests"
+        app:actionLayout="@layout/layout_menu_badge_item"
+        app:showAsAction="always" />
+</menu>

@@ -363,7 +363,7 @@
     <!-- (Có thể bổ sung các chuỗi của Quản lý Nhân sự tại đây) -->
 
     <!-- Manager Profile Fragment & Settings -->
-    <string name="manager_profile_default_name">Quản lý</string>
+    <string name="manager_profile_default_name">Quản lý Con Ty</string>
     <string name="manager_profile_default_pos">Quản lý</string>
     <string name="manager_profile_section_business">QUẢN LÝ DOANH NGHIỆP</string>
     <string name="manager_profile_company_settings">Cài đặt doanh nghiệp</string>
@@ -391,6 +391,37 @@
     <string name="salary_config_action_update">CẬP NHẬT ĐƠN GIÁ</string>
     <string name="salary_config_success">Đã lưu cấu hình đơn giá mới thành công!</string>
     <string name="salary_config_error_empty">Vui lòng nhập đầy đủ đơn giá</string>
+
+    <!-- Manager Employees / Human Resource Fragment -->
+    <string name="human_title">Nhân sự</string>
+    <string name="human_tab_employees">Nhân viên</string>
+    <string name="human_tab_departments">Phòng ban</string>
+    <string name="human_tab_positions">Chức vụ</string>
+    <string name="human_search_hint_employee">Tìm theo tên, mã nhân viên...</string>
+    <string name="human_search_hint_department">Tìm tên phòng ban...</string>
+    <string name="human_search_hint_position">Tìm tên chức vụ...</string>
+    <string name="human_filter_all">Tất cả (%d)</string>
+    <string name="human_filter_active">Làm việc (%d)</string>
+    <string name="human_filter_on_leave">Nghỉ phép (%d)</string>
+    <string name="human_filter_terminated">Nghỉ việc (%d)</string>
+    <string name="human_total_count">%d nhân viên</string>
+    <string name="human_invite_employee">Mời nhân viên</string>
+    <string name="human_add_department">Thêm phòng ban</string>
+    <string name="human_add_position">Thêm chức vụ</string>
+    <string name="human_empty_employees">Chưa có nhân viên nào</string>
+    <string name="human_empty_departments">Chưa có phòng ban nào</string>
+    <string name="human_empty_positions">Chưa có chức vụ nào</string>
+    <string name="human_no_results">Không có kết quả phù hợp</string>
+    <string name="human_delete_dept_confirm">Xóa phòng ban này?</string>
+    <string name="human_delete_dept_error">Không thể xóa phòng ban đang có nhân viên.</string>
+    <string name="human_join_requests_title">Yêu cầu tham gia</string>
+    <string name="human_join_requests_empty">Không có yêu cầu nào đang chờ</string>
+    <string name="human_btn_approve">Duyệt</string>
+    <string name="human_btn_reject">Từ chối</string>
+    <string name="human_reject_confirm">Bạn có chắc muốn từ chối yêu cầu này?</string>
+    <string name="human_action_undo">Hoàn tác</string>
+    <string name="human_badge_limit">99+</string>
+    <string name="human_desc_join_requests">Yêu cầu tham gia công ty</string>
 
     <!-- ================================================================= -->
     <!-- 5. CẤU HÌNH BÊN THỨ 3 & SDK TOKENS (THIRD-PARTY TOKENS)            -->

@@ -56,7 +56,7 @@
     <!-- Nút thông báo -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/btn_notification"
-        style="@style/CircleIconCardStyle"
+        style="@style/CircleIconCard"
         android:layout_width="@dimen/icon_container_m"
         android:layout_height="@dimen/icon_container_m"
         android:layout_marginEnd="@dimen/spacing_2xs"

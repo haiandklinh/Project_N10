@@ -12,7 +12,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="@dimen/spacing_l">
+        android:padding="@dimen/spacing_m">
 
         <!-- ==================== HEADER ==================== -->
         <include
@@ -30,8 +30,19 @@
             layout="@layout/layout_manager_overview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_l"
+            android:layout_marginTop="@dimen/spacing_m"
             app:layout_constraintTop_toBottomOf="@id/include_header"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- ==================== CẦN XỬ LÝ (ACTION REQUIRED) ==================== -->
+        <include
+            android:id="@+id/include_action_required"
+            layout="@layout/layout_manager_action_required"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_m"
+            app:layout_constraintTop_toBottomOf="@id/include_overview"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
@@ -41,26 +52,38 @@
             layout="@layout/layout_manager_quick_actions"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_l"
-            app:layout_constraintTop_toBottomOf="@id/include_overview"
+            android:layout_marginTop="@dimen/spacing_m"
+            app:layout_constraintTop_toBottomOf="@id/include_action_required"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
-        <!-- ==================== YÊU CẦU CHỜ DUYỆT (PREVIEW) ==================== -->
+        <!-- ==================== CA LÀM VIỆC HÔM NAY ==================== -->
         <include
-            android:id="@+id/include_pending"
-            layout="@layout/layout_manager_pending_preview"
+            android:id="@+id/include_today_shifts"
+            layout="@layout/layout_manager_today_shifts"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_m"
+            app:layout_constraintTop_toBottomOf="@id/include_quick_actions"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+
+        <!-- ==================== CHECK-IN HÔM NAY (PREVIEW) ==================== -->
+        <include
+            android:id="@+id/include_recent_checkins"
+            layout="@layout/layout_manager_recent_checkins_preview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_l"
-            app:layout_constraintTop_toBottomOf="@id/include_quick_actions"
+            app:layout_constraintTop_toBottomOf="@id/include_today_shifts"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
         <View
             android:layout_width="match_parent"
             android:layout_height="100dp"
-            app:layout_constraintTop_toBottomOf="@id/include_pending"
+            app:layout_constraintTop_toBottomOf="@id/include_recent_checkins"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" />

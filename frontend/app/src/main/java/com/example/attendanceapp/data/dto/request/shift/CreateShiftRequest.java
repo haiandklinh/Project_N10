@@ -4,42 +4,32 @@ import com.google.gson.annotations.SerializedName;
 
 public class CreateShiftRequest {
 
-    @SerializedName("shiftName")
-    private final String shiftName;
+    @SerializedName("name")
+    private final String name;
 
-    @SerializedName("startTime")
-    private final String startTime; // "HH:mm"
+    @SerializedName("start_time")
+    private final String startTime;
 
-    @SerializedName("endTime")
-    private final String endTime;   // "HH:mm"
+    @SerializedName("end_time")
+    private final String endTime;
 
-    @SerializedName("description")
-    private final String description;
+    @SerializedName("latitude")
+    private final Double latitude;
 
-    public CreateShiftRequest(String shiftName, String startTime, String endTime, String description) {
-        this.shiftName = shiftName;
+    @SerializedName("longitude")
+    private final Double longitude;
+
+    public CreateShiftRequest(String name, String startTime, String endTime, Double latitude, Double longitude) {
+        this.name = name;
         this.startTime = startTime;
         this.endTime = endTime;
-        this.description = description;
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
-    public CreateShiftRequest(String shiftName, String startTime, String endTime) {
-        this(shiftName, startTime, endTime, null);
-    }
-
-    public String getShiftName() {
-        return shiftName;
-    }
-
-    public String getStartTime() {
-        return startTime;
-    }
-
-    public String getEndTime() {
-        return endTime;
-    }
-
-    public String getDescription() {
-        return description;
-    }
+    public String getShiftName() { return name; }
+    public String getStartTime() { return startTime; }
+    public String getEndTime() { return endTime; }
+    public Double getLatitude() { return latitude; }
+    public Double getLongitude() { return longitude; }
 }

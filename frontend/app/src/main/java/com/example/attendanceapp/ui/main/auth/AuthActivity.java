@@ -1,12 +1,20 @@
 package com.example.attendanceapp.ui.main.auth;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.attendanceapp.R;
 import com.example.attendanceapp.databinding.ActivityAuthBinding;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -21,6 +29,12 @@ public class AuthActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         viewModel = new ViewModelProvider(this).get(AuthViewModel.class);
+
+        // 1. Kiểm tra quyền thông báo (Android 13+)
+        requestNotificationPermission();
+
+        // 2. Lấy FCM Token để gửi cho Backend (Dùng để test)
+        getAndLogFCMToken();
 
         //Apply Theme
         applyAppTheme(viewModel.getCurrentTheme().getValue());
@@ -52,6 +66,27 @@ public class AuthActivity extends AppCompatActivity {
                 setTheme(R.style.Theme_AttendanceApp_Avocado);
                 break;
         }
+    }
+
+    private void requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, 101);
+            }
+        }
+    }
+
+    private void getAndLogFCMToken() {
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(task -> {
+                    if (!task.isSuccessful()) {
+                        Log.w("FCM_TOKEN", "Fetching FCM registration token failed", task.getException());
+                        return;
+                    }
+                    String token = task.getResult();
+                    Log.d("FCM_TOKEN", "Token của máy bạn là: " + token);
+                    // Dùng token này để test gửi từ Backend hoặc Postman
+                });
     }
 
     @Override

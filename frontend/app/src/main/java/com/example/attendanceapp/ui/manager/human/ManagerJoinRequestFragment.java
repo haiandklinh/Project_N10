@@ -12,6 +12,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.attendanceapp.R;
@@ -28,6 +29,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 public class ManagerJoinRequestFragment extends Fragment {
 
     private FragmentManagerJoinRequestBinding binding;
+    private ManagerHumanViewModel viewModel;
     private ManagerJoinRequestAdapter adapter;
     private List<JoinRequestItem> sampleRequests;
 
@@ -41,6 +43,8 @@ public class ManagerJoinRequestFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        // Shared ViewModel to update badge count
+        viewModel = new ViewModelProvider(requireActivity()).get(ManagerHumanViewModel.class);
 
         setupToolbar();
         setupRecyclerView();
@@ -52,11 +56,10 @@ public class ManagerJoinRequestFragment extends Fragment {
         binding.toolbarApp.setOnBackClickListener(() -> {
             requireActivity().getOnBackPressedDispatcher().onBackPressed();
         });
-        binding.toolbarApp.setTitle("Yêu cầu tham gia (Mã mời)");
+        binding.toolbarApp.setTitle(getString(R.string.human_join_requests_title));
     }
 
     private void setupListeners() {
-        // Sao chép mã mời ngay trong màn hình danh sách yêu cầu tham gia
         if (binding.btnJoinCopyCode != null) {
             binding.btnJoinCopyCode.setOnClickListener(v -> {
                 ClipboardManager clipboard = (ClipboardManager) requireContext().getSystemService(Context.CLIPBOARD_SERVICE);
@@ -91,8 +94,9 @@ public class ManagerJoinRequestFragment extends Fragment {
     private void removeItem(int position) {
         if (sampleRequests != null && position >= 0 && position < sampleRequests.size()) {
             sampleRequests.remove(position);
-            adapter.updateData(sampleRequests);
+            adapter.updateData(new ArrayList<>(sampleRequests));
             updateEmptyState();
+            viewModel.setJoinRequestCount(sampleRequests.size());
         }
     }
 
@@ -101,6 +105,8 @@ public class ManagerJoinRequestFragment extends Fragment {
         if (sampleRequests == null || sampleRequests.isEmpty()) {
             binding.rvJoinRequests.setVisibility(View.GONE);
             binding.includeEmptyState.getRoot().setVisibility(View.VISIBLE);
+            binding.includeEmptyState.tvEmptyTitle.setText("Không có yêu cầu nào");
+            binding.includeEmptyState.tvEmptySubtitle.setText("Tất cả đơn xin gia nhập đã được xử lý.");
         } else {
             binding.rvJoinRequests.setVisibility(View.VISIBLE);
             binding.includeEmptyState.getRoot().setVisibility(View.GONE);
@@ -108,13 +114,17 @@ public class ManagerJoinRequestFragment extends Fragment {
     }
 
     private void loadJoinRequests() {
-        // Tạo vài ví dụ dữ liệu mẫu nhân viên nhập mã mời tham gia doanh nghiệp để kiểm thử Frontend
         sampleRequests.clear();
-        sampleRequests.add(new JoinRequestItem("1", "Nguyễn Minh Hoàng", null, "0912345678", "BKS-CODE-2024", "2 phút trước", ApprovalStatus.APPROVED));
+        // Mock data cho danh sách đơn xin gia nhập đang chờ duyệt
+        sampleRequests.add(new JoinRequestItem("1", "Nguyễn Văn A", null, "0901234567", "BKS-2024", "2 phút trước", ApprovalStatus.PENDING));
         sampleRequests.add(new JoinRequestItem("2", "Phạm Thanh Sơn", null, "0988776655", "BKS-CODE-2024", "10 phút trước", ApprovalStatus.PENDING));
-        sampleRequests.add(new JoinRequestItem("3", "Hoàng Thu Thảo", null, "0945123789", "BKS-CODE-2024", "1 giờ trước", ApprovalStatus.REJECTED));
+        sampleRequests.add(new JoinRequestItem("3", "Trần Thị B", null, "0977665544", "BKS-2024", "15 phút trước", ApprovalStatus.PENDING));
+        sampleRequests.add(new JoinRequestItem("4", "Lê Thị Hồng", null, "0912345678", "BKS-CODE-2024", "30 phút trước", ApprovalStatus.PENDING));
+        sampleRequests.add(new JoinRequestItem("5", "Hoàng Văn C", null, "0966554433", "BKS-2024", "1 giờ trước", ApprovalStatus.PENDING));
 
+        adapter.updateData(new ArrayList<>(sampleRequests));
         updateEmptyState();
+        viewModel.setJoinRequestCount(sampleRequests.size());
     }
 
     @Override
@@ -123,3 +133,4 @@ public class ManagerJoinRequestFragment extends Fragment {
         binding = null;
     }
 }
+

@@ -16,7 +16,7 @@ public class AddShiftUseCase {
         this.shiftRepository = shiftRepository;
     }
 
-    public Single<ShiftOption> execute(String shiftName, String startTime, String endTime, String description) {
-        return shiftRepository.addShift(shiftName, startTime, endTime, description);
+    public Single<ShiftOption> execute(String shiftName, String startTime, String endTime, Double latitude, Double longitude) {
+        return shiftRepository.addShift(shiftName, startTime, endTime, latitude, longitude);
     }
 }

@@ -8,23 +8,30 @@
     android:background="?android:attr/colorBackground"
     tools:context=".ui.manager.human.ManagerHumanFragment">
 
-    <com.example.attendanceapp.core.utils.ToolbarApp
-        android:id="@+id/toolbar_app"
+    <!-- MaterialToolbar chuẩn Material 3 -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="@dimen/button_height_m"
+        app:title="Quản lý nhân lực"
+        app:titleTextAppearance="@style/TitleTextLargeStyle"
+        app:titleCentered="false"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- Search Bar (Mặc định GONE, khi bấm icon tìm kiếm sẽ VISIBLE) -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/til_search"
         style="@style/SearchStyle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="@dimen/spacing_l"
-        android:layout_marginTop="@dimen/spacing_s"
-        android:hint="Tìm theo tên, mã nhân viên..."
-        app:layout_constraintTop_toBottomOf="@id/toolbar_app"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/button_height_m"
+        android:hint="@string/human_search_hint_employee"
+        android:visibility="gone"
+        app:hintEnabled="true"
+        android:layout_marginTop="@dimen/spacing_xs"
+        android:layout_marginHorizontal="@dimen/spacing_m"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
@@ -33,61 +40,30 @@
             style="@style/AppTextInputEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:imeOptions="actionSearch"
             android:inputType="text"
             android:maxLines="1" />
     </com.google.android.material.textfield.TextInputLayout>
 
+    <!-- Tabs (Liên kết top_toBottomOf til_search để tự động đẩy xuống khi thanh tìm kiếm hiện ra) -->
     <com.google.android.material.tabs.TabLayout
-        android:id="@+id/tab_layout_human"
+        android:id="@+id/tab_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/spacing_s"
         app:tabMode="fixed"
+        app:tabGravity="fill"
+        app:tabIndicatorFullWidth="true"
         app:layout_constraintTop_toBottomOf="@id/til_search"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintEnd_toEndOf="parent" />
 
-        <com.google.android.material.tabs.TabItem
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Nhân viên" />
-
-        <com.google.android.material.tabs.TabItem
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Yêu cầu tham gia" />
-
-    </com.google.android.material.tabs.TabLayout>
-
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-        android:id="@+id/swipe_refresh_layout"
-        android:layout_width="0dp"
+    <!-- ViewPager -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/view_pager"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/tab_layout_human"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_list"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="@dimen/spacing_m"
-            android:clipToPadding="false"
-            tools:listitem="@layout/item_manager_employee" />
-
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-
-    <include
-        android:id="@+id/layout_empty_state"
-        layout="@layout/layout_empty_state"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/tab_layout_human"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        tools:visibility="visible" />
+        app:layout_constraintTop_toBottomOf="@id/tab_layout"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

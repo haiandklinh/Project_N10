@@ -45,8 +45,11 @@ public interface UserRepository {
     /** Chọn hoặc cập nhật vai trò trên server. */
     Completable selectRole(UserRole role);
 
-    /** Cập nhật thông tin cá nhân. */
-    Completable updatePersonalInfo(String fullName, java.time.LocalDate dob, com.example.attendanceapp.domain.model.Gender gender, android.net.Uri avatarUri, com.example.attendanceapp.domain.model.UserRole role);
+    /** Tạo hồ sơ cá nhân lần đầu (kèm Role và Company nếu là Manager) */
+    Completable createProfile(String fullName, java.time.LocalDate dob, com.example.attendanceapp.domain.model.Gender gender, android.net.Uri avatarUri, com.example.attendanceapp.domain.model.UserRole role, String companyName);
+
+    /** Cập nhật hồ sơ cá nhân hiện tại */
+    Completable updateProfile(String fullName, java.time.LocalDate dob, com.example.attendanceapp.domain.model.Gender gender, android.net.Uri avatarUri, com.example.attendanceapp.domain.model.UserRole role, String companyName);
 
     // ===== Dành cho Quản lý =====
 

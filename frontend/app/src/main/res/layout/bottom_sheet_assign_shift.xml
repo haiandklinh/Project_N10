@@ -6,8 +6,7 @@
     android:layout_height="wrap_content"
     android:background="@drawable/bg_bottom_sheet"
     android:orientation="vertical"
-    android:paddingHorizontal="@dimen/spacing_xl"
-    android:paddingBottom="@dimen/spacing_2xl">
+    android:padding="@dimen/spacing_m">
 
     <!-- Drag handle -->
     <View
@@ -22,7 +21,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="@dimen/spacing_xl"
+        android:layout_marginTop="@dimen/spacing_l"
         android:textSize="@dimen/text_size_title_medium"
         android:textStyle="bold"
         tools:text="Xếp ca cho Trần Thị Bình" />
@@ -40,7 +39,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/spacing_xl"
+        android:layout_marginTop="@dimen/spacing_l"
         android:text="Chọn ca làm việc"
         android:textSize="@dimen/text_size_label_large"
         android:textStyle="bold" />
@@ -50,10 +49,24 @@
         android:id="@+id/rv_shifts"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/spacing_m"
+        android:layout_marginTop="@dimen/spacing_s"
         android:nestedScrollingEnabled="false"
         tools:itemCount="3"
-        tools:listitem="@layout/layout_shift_option_row" />
+        tools:listitem="@layout/item_select_shift_option" />
+
+    <!-- Nút Thêm ca khác (Luôn nằm ngay bên dưới FrameLayout) -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_add_other_shift"
+        style="@style/ButtonMaxWidthStyle"
+        android:backgroundTint="?attr/colorPrimaryContainer"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/button_height_m"
+        android:layout_marginTop="@dimen/spacing_s"
+        android:text="Thêm ca khác"
+        android:textColor="?attr/colorPrimary"
+        app:iconGravity="textStart"
+        app:icon="@drawable/ic_add"
+        app:iconTint="?attr/colorPrimary"/>
 
     <!-- Empty State khi hệ thống chưa tạo ca làm việc nào -->
     <include

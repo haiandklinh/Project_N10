@@ -27,6 +27,24 @@ public class CheckAppStateUseCase {
                 + " | isAccountSaved: " + isAccountSaved
                 + " | isFirstLaunch: " + isFirstLaunch);
 
+        // Force clear nếu là lần đầu launch
+        if (isFirstLaunch) {
+            android.util.Log.d("APP_STATE_DEBUG", "Force clear session due to first launch");
+            repository.clearSession();
+            repository.setLoggedIn(false);
+            repository.setAccountSaved(false);
+            return SplashDestination.ONBOARDING;
+        }
+
+        // Force clear nếu isLoggedIn nhưng Room DB không có user (data mismatch)
+        if (isLoggedIn && !hasValidSession()) {
+            android.util.Log.d("APP_STATE_DEBUG", "Force clear session - invalid session");
+            repository.clearSession();
+            repository.setLoggedIn(false);
+            repository.setAccountSaved(false);
+            return SplashDestination.ONBOARDING;
+        }
+
         if (isLoggedIn) {
             String status = repository.getUserStatus();
             if ("PENDING_APPROVAL".equals(status)) {
@@ -37,8 +55,16 @@ public class CheckAppStateUseCase {
         if (isAccountSaved) {
             return SplashDestination.LOGIN_SAVED_ACCOUNT;
         }
-        
+
         // Nếu chưa từng login hoặc lưu tài khoản (chưa register/login) thì luôn hiển thị Onboarding
         return SplashDestination.ONBOARDING;
+    }
+
+    private boolean hasValidSession() {
+        try {
+            return repository.getSavedAccountData() != null;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

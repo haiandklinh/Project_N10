@@ -6,9 +6,11 @@ package com.example.attendanceapp.domain.model;
  * cho khớp.
  */
 public enum NotificationType {
+    HUMAN,
     PAYROLL,        // Bảng lương
     LEAVE,          // Nghỉ phép / Khiếu nại
     SCHEDULE,       // Ca làm việc
     ATTENDANCE,     // Nhắc nhở chấm công
-    SYSTEM          // Thông báo hệ thống chung
+    SYSTEM,         // Thông báo hệ thống chung
+    AUTH            // Xác thực / OTP
 }

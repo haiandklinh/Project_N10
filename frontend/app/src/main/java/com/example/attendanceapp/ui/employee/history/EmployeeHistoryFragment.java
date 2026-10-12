@@ -107,10 +107,6 @@ public class EmployeeHistoryFragment extends Fragment {
     }
 
     private void setupListeners() {
-        // Nút quay lại
-        binding.includeHeader.btnBack.setOnClickListener(v -> 
-            Navigation.findNavController(v).navigateUp()
-        );
 
         // Toggle chế độ Danh sách / Lịch
         binding.includeHeader.toggleViewMode.addOnButtonCheckedListener((group, checkedId, isChecked) -> {

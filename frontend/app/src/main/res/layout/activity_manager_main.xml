@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -9,245 +9,270 @@
     tools:context=".ui.manager.ManagerMainActivity">
 
     <!-- =========================
-         NAV HOST
+         NAV HOST (FULL MÀN HÌNH)
          ========================= -->
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/nav_host_fragment_manager"
         android:name="androidx.navigation.fragment.NavHostFragment"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         app:defaultNavHost="true"
-        app:navGraph="@navigation/nav_manager"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
+        app:navGraph="@navigation/nav_manager" />
 
     <!-- =========================
-         BOTTOM NAVIGATION (5 TABS)
+         BOTTOM NAVIGATION (5 TABS) - nổi phía trên nav host
          ========================= -->
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <FrameLayout
         android:id="@+id/bottom_navigation"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="58dp"
+        android:layout_gravity="bottom"
         android:layout_marginHorizontal="16dp"
         android:layout_marginBottom="16dp"
-        android:background="@drawable/bg_pill_bottom_bar"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent">
+        android:background="@drawable/bg_pill_bottom_bar">
 
-        <!-- TAB 1: TRANG CHỦ -->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/tab_home"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:paddingVertical="10dp"
-            android:clickable="true"
-            android:focusable="true"
-            android:background="@drawable/bg_bottom_item_selected"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/tab_approval"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:weightSum="5">
 
-            <ImageView
-                android:id="@+id/icon_home"
-                android:layout_width="22dp"
-                android:layout_height="22dp"
-                android:src="@drawable/ic_home"
-                android:contentDescription="Trang chủ"
-                app:tint="@color/selector_tab_item_color"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toTopOf="@id/label_home"
-                app:layout_constraintVertical_chainStyle="packed" />
+            <!-- TAB 1: TRANG CHỦ -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/tab_home"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="@drawable/bg_bottom_item_selected">
 
-            <TextView
-                android:id="@+id/label_home"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Trang chủ"
-                android:textSize="10sp"
-                android:layout_marginTop="2dp"
-                android:textColor="@color/selector_tab_item_color"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/icon_home"
-                app:layout_constraintBottom_toBottomOf="parent" />
+                <ImageView
+                    android:id="@+id/icon_home"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_home"
+                    android:contentDescription="Trang chủ"
+                    app:tint="@color/selector_tab_item_color"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toTopOf="@id/label_home"
+                    app:layout_constraintVertical_chainStyle="packed" />
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                <TextView
+                    android:id="@+id/label_home"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Trang chủ"
+                    android:textSize="10sp"
+                    android:layout_marginTop="2dp"
+                    android:textColor="@color/selector_tab_item_color"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/icon_home"
+                    app:layout_constraintBottom_toBottomOf="parent" />
 
-        <!-- TAB 2: PHÊ DUYỆT -->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/tab_approval"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:paddingVertical="10dp"
-            android:clickable="true"
-            android:focusable="true"
-            android:background="@drawable/bg_bottom_item_selected"
-            app:layout_constraintStart_toEndOf="@id/tab_home"
-            app:layout_constraintEnd_toStartOf="@id/tab_schedule"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent">
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <ImageView
-                android:id="@+id/icon_approval"
-                android:layout_width="22dp"
-                android:layout_height="22dp"
-                android:src="@drawable/ic_approval"
-                android:contentDescription="Duyệt đơn"
-                app:tint="@color/selector_tab_item_color"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toTopOf="@id/label_approval"
-                app:layout_constraintVertical_chainStyle="packed" />
+            <!-- TAB 2: PHÊ DUYỆT -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/tab_approval"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="@drawable/bg_bottom_item_selected">
 
-            <TextView
-                android:id="@+id/label_approval"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Duyệt"
-                android:textSize="10sp"
-                android:layout_marginTop="2dp"
-                android:textColor="@color/selector_tab_item_color"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/icon_approval"
-                app:layout_constraintBottom_toBottomOf="parent" />
+                <ImageView
+                    android:id="@+id/icon_approval"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_approval"
+                    android:contentDescription="Duyệt đơn"
+                    app:tint="@color/selector_tab_item_color"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toTopOf="@id/label_approval"
+                    app:layout_constraintVertical_chainStyle="packed" />
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                <!-- Badge: góc trên bên phải icon -->
+                <TextView
+                    android:id="@+id/tv_badge_approval"
+                    android:layout_width="wrap_content"
+                    android:layout_height="16dp"
+                    android:minWidth="16dp"
+                    android:background="@drawable/bg_badge_with_stroke"
+                    android:gravity="center"
+                    android:includeFontPadding="false"
+                    android:paddingHorizontal="4dp"
+                    android:textColor="?attr/colorOnPrimary"
+                    android:textSize="9sp"
+                    android:textStyle="bold"
+                    android:visibility="gone"
+                    android:maxLines="1"
+                    android:layout_marginStart="-11dp"
+                    android:layout_marginBottom="-9dp"
+                    app:layout_constraintStart_toEndOf="@id/icon_approval"
+                    app:layout_constraintBottom_toTopOf="@id/icon_approval"
+                    tools:text="3"
+                    tools:visibility="visible" />
 
-        <!-- TAB 3: LỊCH TRÌNH -->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/tab_schedule"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:paddingVertical="10dp"
-            android:clickable="true"
-            android:focusable="true"
-            android:background="@drawable/bg_bottom_item_selected"
-            app:layout_constraintStart_toEndOf="@id/tab_approval"
-            app:layout_constraintEnd_toStartOf="@id/tab_employee"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent">
+                <TextView
+                    android:id="@+id/label_approval"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Duyệt"
+                    android:textSize="10sp"
+                    android:layout_marginTop="2dp"
+                    android:textColor="@color/selector_tab_item_color"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/icon_approval"
+                    app:layout_constraintBottom_toBottomOf="parent" />
 
-            <ImageView
-                android:id="@+id/icon_schedule"
-                android:layout_width="22dp"
-                android:layout_height="22dp"
-                android:src="@drawable/ic_calendar"
-                android:contentDescription="Lịch làm việc"
-                app:tint="@color/selector_tab_item_color"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toTopOf="@id/label_schedule"
-                app:layout_constraintVertical_chainStyle="packed" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <TextView
-                android:id="@+id/label_schedule"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Lịch"
-                android:textSize="10sp"
-                android:layout_marginTop="2dp"
-                android:textColor="@color/selector_tab_item_color"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/icon_schedule"
-                app:layout_constraintBottom_toBottomOf="parent" />
+            <!-- TAB 3: LỊCH TRÌNH -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/tab_schedule"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="@drawable/bg_bottom_item_selected">
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                <ImageView
+                    android:id="@+id/icon_schedule"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_calendar"
+                    android:contentDescription="Lịch làm việc"
+                    app:tint="@color/selector_tab_item_color"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toTopOf="@id/label_schedule"
+                    app:layout_constraintVertical_chainStyle="packed" />
 
-        <!-- TAB 4: NHÂN SỰ -->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/tab_employee"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:paddingVertical="10dp"
-            android:clickable="true"
-            android:focusable="true"
-            android:background="@drawable/bg_bottom_item_selected"
-            app:layout_constraintStart_toEndOf="@id/tab_schedule"
-            app:layout_constraintEnd_toStartOf="@id/tab_profile"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent">
+                <TextView
+                    android:id="@+id/label_schedule"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Lịch"
+                    android:textSize="10sp"
+                    android:layout_marginTop="2dp"
+                    android:textColor="@color/selector_tab_item_color"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/icon_schedule"
+                    app:layout_constraintBottom_toBottomOf="parent" />
 
-            <ImageView
-                android:id="@+id/icon_employee"
-                android:layout_width="22dp"
-                android:layout_height="22dp"
-                android:src="@drawable/ic_user"
-                android:contentDescription="Nhân sự"
-                app:tint="@color/selector_tab_item_color"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toTopOf="@id/label_employee"
-                app:layout_constraintVertical_chainStyle="packed" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <TextView
-                android:id="@+id/label_employee"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Nhân sự"
-                android:textSize="10sp"
-                android:layout_marginTop="2dp"
-                android:textColor="@color/selector_tab_item_color"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/icon_employee"
-                app:layout_constraintBottom_toBottomOf="parent" />
+            <!-- TAB 4: NHÂN SỰ (có badge) -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/tab_employee"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="@drawable/bg_bottom_item_selected">
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                <ImageView
+                    android:id="@+id/icon_employee"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_user"
+                    android:contentDescription="Nhân sự"
+                    app:tint="@color/selector_tab_item_color"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toTopOf="@id/label_employee"
+                    app:layout_constraintVertical_chainStyle="packed" />
 
-        <!-- TAB 5: CÁ NHÂN -->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/tab_profile"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:paddingVertical="10dp"
-            android:clickable="true"
-            android:focusable="true"
-            android:background="@drawable/bg_bottom_item_selected"
-            app:layout_constraintStart_toEndOf="@id/tab_employee"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent">
+                <!-- Badge: góc trên bên phải icon, không tham gia chain dọc -->
+                <TextView
+                    android:id="@+id/tv_badge_employee"
+                    android:layout_width="wrap_content"
+                    android:layout_height="16dp"
+                    android:minWidth="16dp"
+                    android:background="@drawable/bg_badge_with_stroke"
+                    android:gravity="center"
+                    android:includeFontPadding="false"
+                    android:paddingHorizontal="4dp"
+                    android:textColor="?attr/colorOnPrimary"
+                    android:textSize="9sp"
+                    android:textStyle="bold"
+                    android:visibility="gone"
+                    android:maxLines="1"
+                    android:layout_marginStart="-11dp"
+                    android:layout_marginBottom="-9dp"
+                    app:layout_constraintStart_toEndOf="@id/icon_employee"
+                    app:layout_constraintBottom_toTopOf="@id/icon_employee"
+                    tools:text="9"
+                    tools:visibility="visible" />
 
-            <ImageView
-                android:id="@+id/icon_profile"
-                android:layout_width="22dp"
-                android:layout_height="22dp"
-                android:src="@drawable/ic_profile"
-                android:contentDescription="Cá nhân"
-                app:tint="@color/selector_tab_item_color"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toTopOf="@id/label_profile"
-                app:layout_constraintVertical_chainStyle="packed" />
+                <TextView
+                    android:id="@+id/label_employee"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Nhân sự"
+                    android:textSize="10sp"
+                    android:layout_marginTop="2dp"
+                    android:textColor="@color/selector_tab_item_color"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/icon_employee"
+                    app:layout_constraintBottom_toBottomOf="parent" />
 
-            <TextView
-                android:id="@+id/label_profile"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Cá nhân"
-                android:textSize="10sp"
-                android:layout_marginTop="2dp"
-                android:textColor="@color/selector_tab_item_color"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/icon_profile"
-                app:layout_constraintBottom_toBottomOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+            <!-- TAB 5: CÁ NHÂN -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/tab_profile"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="@drawable/bg_bottom_item_selected">
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+                <ImageView
+                    android:id="@+id/icon_profile"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_profile"
+                    android:contentDescription="Cá nhân"
+                    app:tint="@color/selector_tab_item_color"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toTopOf="@id/label_profile"
+                    app:layout_constraintVertical_chainStyle="packed" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+                <TextView
+                    android:id="@+id/label_profile"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Cá nhân"
+                    android:textSize="10sp"
+                    android:layout_marginTop="2dp"
+                    android:textColor="@color/selector_tab_item_color"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/icon_profile"
+                    app:layout_constraintBottom_toBottomOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+</FrameLayout>

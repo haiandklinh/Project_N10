@@ -2,49 +2,57 @@ package com.example.attendanceapp.ui.manager.schedule.assign;
 
 import android.app.TimePickerDialog;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.example.attendanceapp.core.utils.DateTimeFormatUtils;
+import com.example.attendanceapp.data.local.pref.SharedPreferenceApp;
 import com.example.attendanceapp.databinding.BottomSheetAddShiftBinding;
 import com.example.attendanceapp.domain.model.ShiftOption;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
-import java.util.Locale;
+import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 
+import javax.inject.Inject;
+
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
 public class AddShiftBottomSheet extends BottomSheetDialogFragment {
 
-    public interface OnShiftSubmitListener {
-        void onSubmit(String shiftName, String startTime, String endTime, String description);
-    }
+    public static final String REQUEST_KEY = "AddShiftBottomSheet_RequestKey";
+    public static final String EXTRA_RESULT_SHIFT = "extra_result_shift";
+    private static final String ARG_SHIFT_ITEM = "arg_shift_item";
+
+    @Inject
+    SharedPreferenceApp sharedPreferenceApp;
 
     private BottomSheetAddShiftBinding binding;
-    private OnShiftSubmitListener listener;
-    private ShiftOption editingShift;
 
-    private int startHour = 8, startMinute = 0;
-    private int endHour = 12, endMinute = 0;
+    private LocalTime startTime = LocalTime.of(8, 0);
+    private LocalTime endTime = LocalTime.of(12, 0);
+    private Double latitude = null;
+    private Double longitude = null;
+    private ShiftOption editingShift = null;
 
-    /**
-     * Khởi tạo cho trường hợp THÊM MỚI ca làm
-     */
-    public static AddShiftBottomSheet newInstance(OnShiftSubmitListener listener) {
-        AddShiftBottomSheet fragment = new AddShiftBottomSheet();
-        fragment.listener = listener;
-        return fragment;
+    public static AddShiftBottomSheet newInstance() {
+        return new AddShiftBottomSheet();
     }
 
-    /**
-     * Khởi tạo cho trường hợp CHỈNH SỬA ca làm hiện có
-     */
-    public static AddShiftBottomSheet newInstanceForEdit(ShiftOption shift, OnShiftSubmitListener listener) {
+    public static AddShiftBottomSheet newInstanceForEdit(ShiftOption shift) {
         AddShiftBottomSheet fragment = new AddShiftBottomSheet();
-        fragment.editingShift = shift;
-        fragment.listener = listener;
+        Bundle args = new Bundle();
+        args.putParcelable(ARG_SHIFT_ITEM, shift);
+        fragment.setArguments(args);
         return fragment;
     }
 
@@ -59,92 +67,129 @@ public class AddShiftBottomSheet extends BottomSheetDialogFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // 1. Populate dữ liệu nếu ở chế độ Chỉnh sửa (Edit Mode)
+        // 1. Kiểm tra dữ liệu truyền vào
+        Bundle args = getArguments();
+        if (args != null && args.containsKey(ARG_SHIFT_ITEM)) {
+            editingShift = args.getParcelable(ARG_SHIFT_ITEM);
+        }
+
         if (editingShift != null) {
+            binding.tvTitle.setText("Chỉnh sửa ca làm việc");
             binding.edtShiftName.setText(editingShift.getTitle());
-            parseAndSetTimes(editingShift.getStartTime(), editingShift.getEndTime());
+            latitude = editingShift.getLatitude();
+            longitude = editingShift.getLongitude();
+
+            parseTimes(editingShift.getStartTime(), editingShift.getEndTime());
             binding.btnSaveShift.setText("Cập nhật ca làm");
         } else {
-            updateTimeText(binding.edtStartTime, startHour, startMinute);
-            updateTimeText(binding.edtEndTime, endHour, endMinute);
+            binding.tvTitle.setText("Thêm ca làm việc mới");
+            // Tự động lấy vị trí công ty đã lưu từ SharedPreferences
+            latitude = sharedPreferenceApp.getCompanyLat();
+            longitude = sharedPreferenceApp.getCompanyLon();
         }
 
-        // 2. Lắng nghe sự kiện chọn giờ bắt đầu
-        binding.edtStartTime.setOnClickListener(v -> showTimePicker(startHour, startMinute, (h, m) -> {
-            startHour = h;
-            startMinute = m;
-            updateTimeText(binding.edtStartTime, startHour, startMinute);
-        }));
+        updateTimeText(binding.edtStartTime, startTime);
+        updateTimeText(binding.edtEndTime, endTime);
 
-        // 3. Lắng nghe sự kiện chọn giờ kết thúc
-        binding.edtEndTime.setOnClickListener(v -> showTimePicker(endHour, endMinute, (h, m) -> {
-            endHour = h;
-            endMinute = m;
-            updateTimeText(binding.edtEndTime, endHour, endMinute);
-        }));
+        // Xóa thông báo lỗi Tên ca khi người dùng bắt đầu nhập
+        binding.edtShiftName.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                binding.tilShiftName.setError(null);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
+        // 2. Lắng nghe chọn giờ bắt đầu
+        View.OnClickListener startPicker = v -> showTimePicker(startTime, selectedTime -> {
+            startTime = selectedTime;
+            updateTimeText(binding.edtStartTime, startTime);
+            binding.tilEndTime.setError(null);
+        });
+        binding.edtStartTime.setOnClickListener(startPicker);
+        binding.tilStartTime.setEndIconOnClickListener(startPicker);
+
+        // 3. Lắng nghe chọn giờ kết thúc
+        View.OnClickListener endPicker = v -> showTimePicker(endTime, selectedTime -> {
+            endTime = selectedTime;
+            updateTimeText(binding.edtEndTime, endTime);
+            binding.tilEndTime.setError(null);
+        });
+        binding.edtEndTime.setOnClickListener(endPicker);
+        binding.tilEndTime.setEndIconOnClickListener(endPicker);
 
         // 4. Nút Lưu / Cập nhật
-        binding.btnSaveShift.setOnClickListener(v -> {
-            String name = binding.edtShiftName.getText() != null ? binding.edtShiftName.getText().toString().trim() : "";
-            if (TextUtils.isEmpty(name)) {
-                binding.tilShiftName.setError("Vui lòng nhập tên ca!");
-                return;
-            }
-            binding.tilShiftName.setError(null);
-
-            String startTime = String.format(Locale.getDefault(), "%02d:%02d", startHour, startMinute);
-            String endTime = String.format(Locale.getDefault(), "%02d:%02d", endHour, endMinute);
-
-            String description = "";
-            if (binding.edtDescription != null && binding.edtDescription.getText() != null) {
-                description = binding.edtDescription.getText().toString().trim();
-            }
-
-            if (listener != null) {
-                listener.onSubmit(name, startTime, endTime, description);
-            }
-            dismiss();
-        });
+        binding.btnSaveShift.setOnClickListener(v -> handleSave());
     }
 
-    private void parseAndSetTimes(String startTimeStr, String endTimeStr) {
-        if (!TextUtils.isEmpty(startTimeStr) && startTimeStr.contains(":")) {
-            String[] startParts = startTimeStr.split(":");
-            try {
-                startHour = Integer.parseInt(startParts[0]);
-                startMinute = Integer.parseInt(startParts[1]);
-            } catch (NumberFormatException ignored) {}
+    private void handleSave() {
+        String name = binding.edtShiftName.getText() != null ? binding.edtShiftName.getText().toString().trim() : "";
+        if (TextUtils.isEmpty(name)) {
+            binding.tilShiftName.setError("Vui lòng nhập tên ca!");
+            return;
         }
 
-        if (!TextUtils.isEmpty(endTimeStr) && endTimeStr.contains(":")) {
-            String[] endParts = endTimeStr.split(":");
-            try {
-                endHour = Integer.parseInt(endParts[0]);
-                endMinute = Integer.parseInt(endParts[1]);
-            } catch (NumberFormatException ignored) {}
+        if (!endTime.isAfter(startTime)) {
+            binding.tilEndTime.setError("Giờ kết thúc phải lớn hơn giờ bắt đầu!");
+            return;
         }
 
-        updateTimeText(binding.edtStartTime, startHour, startMinute);
-        updateTimeText(binding.edtEndTime, endHour, endMinute);
+        // Kiểm tra vị trí đã được lấy từ SharedPreferences chưa
+        if (latitude == null || longitude == null || (latitude == 0.0 && longitude == 0.0)) {
+            Toast.makeText(requireContext(), "Lỗi: Không tìm thấy vị trí công ty. Vui lòng thiết lập trong cài đặt.", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        String startTimeStr = DateTimeFormatUtils.formatTime(startTime);
+        String endTimeStr = DateTimeFormatUtils.formatTime(endTime);
+
+        // QUAN TRỌNG: Để id = null khi tạo mới để các Fragment phân biệt là lệnh THÊM MỚI (addShift)
+        String id = editingShift != null ? editingShift.getId() : null;
+        ShiftOption resultShift = new ShiftOption(id, name, startTimeStr, endTimeStr, latitude, longitude);
+
+        Bundle result = new Bundle();
+        result.putParcelable(EXTRA_RESULT_SHIFT, resultShift);
+
+        // Trả kết quả về cho Fragment/Dialog cha
+        getParentFragmentManager().setFragmentResult(REQUEST_KEY, result);
+
+        dismiss();
+    }
+
+    private void parseTimes(String startTimeStr, String endTimeStr) {
+        if (!TextUtils.isEmpty(startTimeStr)) {
+            try {
+                startTime = LocalTime.parse(startTimeStr);
+            } catch (DateTimeParseException ignored) {}
+        }
+        if (!TextUtils.isEmpty(endTimeStr)) {
+            try {
+                endTime = LocalTime.parse(endTimeStr);
+            } catch (DateTimeParseException ignored) {}
+        }
     }
 
     private interface TimePickerCallback {
-        void onTimeSelected(int hour, int minute);
+        void onTimeSelected(LocalTime time);
     }
 
-    private void showTimePicker(int currentHour, int currentMinute, TimePickerCallback callback) {
-        TimePickerDialog timePickerDialog = new TimePickerDialog(
+    private void showTimePicker(LocalTime currentTime, TimePickerCallback callback) {
+        new TimePickerDialog(
                 requireContext(),
-                (view, hourOfDay, minute) -> callback.onTimeSelected(hourOfDay, minute),
-                currentHour,
-                currentMinute,
+                (view, hourOfDay, minute) -> callback.onTimeSelected(LocalTime.of(hourOfDay, minute)),
+                currentTime.getHour(),
+                currentTime.getMinute(),
                 true
-        );
-        timePickerDialog.show();
+        ).show();
     }
 
-    private void updateTimeText(android.widget.EditText editText, int hour, int minute) {
-        editText.setText(String.format(Locale.getDefault(), "%02d:%02d", hour, minute));
+    private void updateTimeText(android.widget.EditText editText, LocalTime time) {
+        editText.setText(DateTimeFormatUtils.formatTime(time));
     }
 
     @Override

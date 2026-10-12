@@ -7,10 +7,11 @@ public class CreateCompanyRequest {
     @SerializedName("company_name")
     private String companyName;
 
+
     public CreateCompanyRequest() {
     }
 
-    public CreateCompanyRequest(String companyName) {
+    public CreateCompanyRequest(String companyName, String address) {
         this.companyName = companyName;
     }
 
@@ -21,4 +22,5 @@ public class CreateCompanyRequest {
     public void setCompanyName(String companyName) {
         this.companyName = companyName;
     }
+
 }

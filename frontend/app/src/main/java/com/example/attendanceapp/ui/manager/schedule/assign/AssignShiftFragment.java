@@ -1,6 +1,7 @@
 package com.example.attendanceapp.ui.manager.schedule.assign;
 
 import android.app.DatePickerDialog;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,14 +16,13 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.attendanceapp.R;
-import com.example.attendanceapp.databinding.FragmentAssignShiftBinding;
+import com.example.attendanceapp.databinding.FragmentManagerAssignShiftBinding;
 import com.example.attendanceapp.domain.model.ShiftOption;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
@@ -31,7 +31,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class AssignShiftFragment extends Fragment {
 
-    private FragmentAssignShiftBinding binding;
+    private FragmentManagerAssignShiftBinding binding;
     private AssignShiftViewModel viewModel;
     private AssignedEmployeeAdapter employeeAdapter;
     private ShiftOptionAdapter shiftAdapter;
@@ -39,7 +39,7 @@ public class AssignShiftFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        binding = FragmentAssignShiftBinding.inflate(inflater, container, false);
+        binding = FragmentManagerAssignShiftBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
@@ -47,7 +47,7 @@ public class AssignShiftFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        viewModel = new ViewModelProvider(this).get(AssignShiftViewModel.class);
+        viewModel = new ViewModelProvider(requireActivity()).get(AssignShiftViewModel.class);
 
         setupToolbar();
         setupSelectedEmployeesRv();
@@ -55,15 +55,16 @@ public class AssignShiftFragment extends Fragment {
         setupShiftOptionsRv();
         setupActions();
 
+        // Đăng ký lắng nghe kết quả THÊM CA MỚI từ AddShiftBottomSheet
+        setupBottomSheetResultListener();
+
         observeViewModel();
     }
 
     private void setupToolbar() {
         binding.toolbarApp.setTitle("Xếp ca nhân viên");
         binding.toolbarApp.setOnBackClickListener(() -> {
-            if (getActivity() != null) {
-                getActivity().onBackPressed();
-            }
+            requireActivity().getOnBackPressedDispatcher().onBackPressed();
         });
     }
 
@@ -78,65 +79,76 @@ public class AssignShiftFragment extends Fragment {
 
     private void setupDatePicker() {
         binding.cardSelectDate.setOnClickListener(v -> {
-            LocalDate currentDate = viewModel.getSelectedDateLiveData().getValue();
-            if (currentDate == null) currentDate = LocalDate.now();
+            List<LocalDate> selectedDates = viewModel.getSelectedDatesLiveData().getValue();
+            LocalDate initialDate = (selectedDates != null && !selectedDates.isEmpty()) 
+                    ? selectedDates.get(0) : LocalDate.now();
 
-            Calendar cal = Calendar.getInstance();
-            cal.set(currentDate.getYear(), currentDate.getMonthValue() - 1, currentDate.getDayOfMonth());
-
-            DatePickerDialog dialog = new DatePickerDialog(requireContext(), (view1, year, month, dayOfMonth) -> {
-                viewModel.setSelectedDate(LocalDate.of(year, month + 1, dayOfMonth));
-            }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
-
+            DatePickerDialog dialog = new DatePickerDialog(
+                    requireContext(),
+                    (view1, year, month, dayOfMonth) -> {
+                        LocalDate picked = LocalDate.of(year, month + 1, dayOfMonth);
+                        viewModel.toggleDateSelection(picked);
+                    },
+                    initialDate.getYear(),
+                    initialDate.getMonthValue() - 1,
+                    initialDate.getDayOfMonth()
+            );
             dialog.show();
         });
     }
 
     private void setupShiftOptionsRv() {
-        shiftAdapter = new ShiftOptionAdapter(new ArrayList<>(), null, new ShiftOptionAdapter.OnShiftActionListener() {
-            @Override
-            public void onShiftSelected(ShiftOption shift) {
-                viewModel.selectShift(shift);
-            }
-
-            @Override
-            public void onShiftEdit(ShiftOption shift, int position) {
-                showEditShiftBottomSheet(shift);
-            }
-
-            @Override
-            public void onShiftDelete(ShiftOption shift, int position) {
-                showConfirmDeleteDialog(shift);
-            }
-        });
+        // Khởi tạo ShiftOptionAdapter chỉ với listener Chọn ca
+        shiftAdapter = new ShiftOptionAdapter(new ArrayList<>(), null, shift -> viewModel.selectShift(shift));
 
         binding.rvShiftOptions.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.rvShiftOptions.setAdapter(shiftAdapter);
 
-        // Mở BottomSheet thêm ca làm việc mới
+        // Nút mở BottomSheet để THÊM CA MỚI
         binding.btnAddOtherShift.setOnClickListener(v -> {
-            AddShiftBottomSheet bottomSheet = AddShiftBottomSheet.newInstance((shiftName, startTime, endTime, description) -> {
-                viewModel.addShift(shiftName, startTime, endTime, description);
-                Toast.makeText(getContext(), "Đang tạo " + shiftName, Toast.LENGTH_SHORT).show();
-            });
-
+            AddShiftBottomSheet bottomSheet = AddShiftBottomSheet.newInstance();
             bottomSheet.show(getChildFragmentManager(), "add_shift_bottom_sheet");
         });
     }
 
+    /**
+     * Lắng nghe dữ liệu tạo ca mới từ AddShiftBottomSheet qua FragmentResult API
+     */
+    private void setupBottomSheetResultListener() {
+        getChildFragmentManager().setFragmentResultListener(
+                AddShiftBottomSheet.REQUEST_KEY,
+                getViewLifecycleOwner(),
+                (requestKey, bundle) -> {
+                    ShiftOption resultShift;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        resultShift = bundle.getParcelable(AddShiftBottomSheet.EXTRA_RESULT_SHIFT, ShiftOption.class);
+                    } else {
+                        resultShift = bundle.getParcelable(AddShiftBottomSheet.EXTRA_RESULT_SHIFT);
+                    }
+
+                    if (resultShift != null) {
+                        // Thêm ca làm việc mới
+                        viewModel.addShift(
+                                resultShift.getTitle(),
+                                resultShift.getStartTime(),
+                                resultShift.getEndTime(),
+                                resultShift.getLatitude(),
+                                resultShift.getLongitude()
+                        );
+                        Toast.makeText(getContext(), "Đã tạo " + resultShift.getTitle(), Toast.LENGTH_SHORT).show();
+                    }
+                }
+        );
+    }
+
     private void observeViewModel() {
-        // Quan sát danh sách nhân viên được chọn
         viewModel.getSelectedEmployeesLiveData().observe(getViewLifecycleOwner(), employees -> {
             int count = employees != null ? employees.size() : 0;
             binding.tvLabelEmployees.setText("Nhân viên được chọn (" + count + ")");
             employeeAdapter.updateData(employees);
-
-            if (count == 0) {
-                Toast.makeText(getContext(), "Danh sách nhân viên trống!", Toast.LENGTH_SHORT).show();
-            }
         });
 
-        viewModel.getSelectedDateLiveData().observe(getViewLifecycleOwner(), this::updateDateText);
+        viewModel.getSelectedDatesLiveData().observe(getViewLifecycleOwner(), this::updateDateText);
 
         viewModel.getShiftsLiveData().observe(getViewLifecycleOwner(), shifts -> {
             boolean isEmpty = shifts == null || shifts.isEmpty();
@@ -154,14 +166,13 @@ public class AssignShiftFragment extends Fragment {
             }
         });
 
-        // Quan sát trạng thái Loading
         viewModel.getIsLoadingLiveData().observe(getViewLifecycleOwner(), isLoading -> {
             binding.btnConfirmAssign.setEnabled(!isLoading);
         });
 
-        // Quan sát kết quả API gửi yêu cầu xếp ca
         viewModel.getAssignSuccessLiveData().observe(getViewLifecycleOwner(), isSuccess -> {
             if (Boolean.TRUE.equals(isSuccess)) {
+                viewModel.clearAssignSuccessEvent();
                 Navigation.findNavController(requireView()).navigate(R.id.action_assignShiftFragment_to_assignShiftSuccessFragment);
             }
         });
@@ -169,39 +180,45 @@ public class AssignShiftFragment extends Fragment {
         viewModel.getErrorMessageLiveData().observe(getViewLifecycleOwner(), error -> {
             if (error != null && !error.isEmpty()) {
                 Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
+                viewModel.clearErrorMessage();
             }
         });
     }
 
-    private void updateDateText(LocalDate selectedDate) {
-        String dayOfWeek = selectedDate.getDayOfWeek().getDisplayName(TextStyle.FULL, new Locale("vi"));
-        String formatted = selectedDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-        binding.tvSelectedDate.setText(formatted + " (" + dayOfWeek + ")");
-    }
+    private void updateDateText(List<LocalDate> selectedDates) {
+        if (selectedDates == null || selectedDates.isEmpty()) {
+            binding.tvSelectedDate.setText("Chọn ngày...");
+            return;
+        }
 
-    private void showConfirmDeleteDialog(ShiftOption shift) {
-        new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
-                .setTitle("Xóa ca làm việc")
-                .setMessage("Bạn có chắc chắn muốn xóa " + shift.getTitle() + " không?")
-                .setPositiveButton("Xóa", (dialog, which) -> {
-                    viewModel.deleteShift(shift);
-                })
-                .setNegativeButton("Hủy", null)
-                .show();
-    }
-
-    private void showEditShiftBottomSheet(ShiftOption shift) {
-        AddShiftBottomSheet bottomSheet = AddShiftBottomSheet.newInstanceForEdit(shift, (shiftName, startTime, endTime, description) -> {
-            viewModel.updateShift(shift.getId(), shiftName, startTime, endTime, description);
-            Toast.makeText(getContext(), "Đang cập nhật " + shiftName, Toast.LENGTH_SHORT).show();
-        });
-
-        bottomSheet.show(getChildFragmentManager(), "edit_shift_bottom_sheet");
+        if (selectedDates.size() == 1) {
+            LocalDate date = selectedDates.get(0);
+            String dayOfWeek = date.getDayOfWeek().getDisplayName(TextStyle.FULL, new Locale("vi"));
+            String formatted = date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+            binding.tvSelectedDate.setText(formatted + " (" + dayOfWeek + ")");
+        } else {
+            binding.tvSelectedDate.setText("Đã chọn " + selectedDates.size() + " ngày");
+        }
     }
 
     private void setupActions() {
         binding.btnConfirmAssign.setOnClickListener(v -> {
-            viewModel.submitAssignShifts();
+            String note = binding.edtNote.getText() != null ? binding.edtNote.getText().toString() : "";
+            viewModel.submitAssignShifts(note);
+        });
+
+        binding.tvQuickSelectWeek.setOnClickListener(v -> {
+            List<LocalDate> current = viewModel.getSelectedDatesLiveData().getValue();
+            LocalDate baseDate = (current != null && !current.isEmpty()) ? current.get(0) : LocalDate.now();
+            
+            // Tìm ngày thứ 2 của tuần chứa baseDate
+            LocalDate monday = baseDate;
+            while (monday.getDayOfWeek() != java.time.DayOfWeek.MONDAY) {
+                monday = monday.minusDays(1);
+            }
+            
+            viewModel.selectFullWeek(monday);
+            Toast.makeText(getContext(), "Đã chọn cả tuần", Toast.LENGTH_SHORT).show();
         });
     }
 

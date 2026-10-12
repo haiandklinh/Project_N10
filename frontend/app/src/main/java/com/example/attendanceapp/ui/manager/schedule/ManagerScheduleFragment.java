@@ -8,6 +8,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
@@ -20,8 +21,11 @@ import com.example.attendanceapp.R;
 import com.example.attendanceapp.databinding.FragmentManagerScheduleBinding;
 import com.example.attendanceapp.domain.model.ManagerEmployeeItem;
 import com.example.attendanceapp.domain.model.ShiftOption;
+import com.example.attendanceapp.ui.manager.schedule.assign.AddShiftBottomSheet;
 import com.example.attendanceapp.ui.manager.schedule.assign.AssignShiftBottomSheet;
+import com.example.attendanceapp.ui.manager.schedule.assign.AssignShiftViewModel;
 import com.google.android.material.chip.Chip;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -37,7 +41,10 @@ public class ManagerScheduleFragment extends Fragment {
 
     private FragmentManagerScheduleBinding binding;
     private ManagerScheduleViewModel viewModel;
+    private AssignShiftViewModel assignViewModel;
     private ManagerScheduleEmployeeAdapter adapter;
+
+    private ManagerEmployeeItem pendingEmployeeForAssign;
 
     @Nullable
     @Override
@@ -50,27 +57,27 @@ public class ManagerScheduleFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         viewModel = new ViewModelProvider(this).get(ManagerScheduleViewModel.class);
+        assignViewModel = new ViewModelProvider(requireActivity()).get(AssignShiftViewModel.class);
 
         applyWindowInsets();
         setupWeekNavigation();
         setupEmployeeList();
         setupSwipeRefresh();
         setupFabAdd();
+        setupBottomSheetResultListener();
 
-        observeViewModel();
-
-        viewModel.loadEmployeeWorkSchedules();
+        setupObserves();
     }
 
     private void applyWindowInsets() {
-        ViewCompat.setOnApplyWindowInsetsListener(binding.layoutHeader, (v, insets) -> {
+        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, insets) -> {
             int statusBarHeight = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
             v.setPadding(v.getPaddingLeft(), statusBarHeight, v.getPaddingRight(), v.getPaddingBottom());
             return insets;
         });
     }
 
-    private void observeViewModel() {
+    private void setupObserves() {
         viewModel.getUiState().observe(getViewLifecycleOwner(), state -> {
             binding.swipeRefreshLayout.setRefreshing(state.isLoading());
 
@@ -83,7 +90,7 @@ public class ManagerScheduleFragment extends Fragment {
             }
 
             // Render UI
-            updateEmployeeList(state.getEmployees());
+            updateEmployeeList(state.getEmployees(), state.getShiftOptions());
             updateShiftChips(state.getShiftOptions());
             updateWeekDaySelector(state);
 
@@ -95,19 +102,30 @@ public class ManagerScheduleFragment extends Fragment {
         viewModel.getSelectedDate().observe(getViewLifecycleOwner(), date -> updateTitleText());
     }
 
-    private void updateEmployeeList(List<ManagerEmployeeItem> employees) {
+    private void updateEmployeeList(List<ManagerEmployeeItem> employees, List<ShiftOption> shiftOptions) {
         adapter.updateData(employees);
 
         boolean isListEmpty = employees.isEmpty();
+        boolean isWeekMode = binding.toggleGroupTime.getCheckedButtonId() == R.id.btn_mode_week;
+
         binding.rvEmployees.setVisibility(isListEmpty ? View.GONE : View.VISIBLE);
-        binding.layoutEmptyState.getRoot().setVisibility(isListEmpty ? View.VISIBLE : View.GONE);
+        binding.layoutEmptyState.getRoot().setVisibility((isWeekMode && isListEmpty) ? View.VISIBLE : View.GONE);
 
         if (isListEmpty) {
             String filter = viewModel.getSelectedShiftFilter();
-            if ("UNASSIGNED".equals(filter)) {
+            if (ManagerScheduleViewModel.FILTER_UNASSIGNED.equals(filter)) {
                 binding.layoutEmptyState.tvEmptySubtitle.setText("Tất cả nhân viên đã được xếp ca");
             } else if (filter != null) {
-                binding.layoutEmptyState.tvEmptySubtitle.setText("Không có nhân viên nào làm " + filter);
+                String shiftTitle = filter;
+                if (shiftOptions != null) {
+                    for (ShiftOption option : shiftOptions) {
+                        if (filter.equals(option.getId())) {
+                            shiftTitle = option.getTitle();
+                            break;
+                        }
+                    }
+                }
+                binding.layoutEmptyState.tvEmptySubtitle.setText("Không có nhân viên nào làm " + shiftTitle);
             } else {
                 binding.layoutEmptyState.tvEmptySubtitle.setText("Chưa có nhân viên nào trong danh sách");
             }
@@ -174,13 +192,22 @@ public class ManagerScheduleFragment extends Fragment {
             if (isChecked) {
                 boolean isWeek = checkedId == R.id.btn_mode_week;
                 binding.rvWeekDays.setVisibility(isWeek ? View.VISIBLE : View.GONE);
-                binding.layoutCalendarMonth.layoutCalendarRoot.setVisibility(isWeek ? View.GONE : View.VISIBLE);
+                binding.layoutCalendarMonth.getRoot().setVisibility(isWeek ? View.GONE : View.VISIBLE);
 
                 binding.tvScheduleHint.setVisibility(isWeek ? View.VISIBLE : View.GONE);
                 binding.btnAddShift.setVisibility(isWeek ? View.VISIBLE : View.GONE);
                 binding.divider1.setVisibility(isWeek ? View.VISIBLE : View.GONE);
                 binding.scrollViewChips.setVisibility(isWeek ? View.VISIBLE : View.GONE);
                 binding.swipeRefreshLayout.setVisibility(isWeek ? View.VISIBLE : View.GONE);
+
+                // Cập nhật hiển thị empty state và lịch tháng
+                ManagerScheduleUiState state = viewModel.getUiState().getValue();
+                boolean isListEmpty = state != null && (state.getEmployees() == null || state.getEmployees().isEmpty());
+                binding.layoutEmptyState.getRoot().setVisibility((isWeek && isListEmpty) ? View.VISIBLE : View.GONE);
+
+                if (!isWeek && state != null) {
+                    updateMonthCalendar(state);
+                }
 
                 updateTitleText();
             }
@@ -204,7 +231,11 @@ public class ManagerScheduleFragment extends Fragment {
 
         String dayOfWeekName = selectedDate.getDayOfWeek().getDisplayName(TextStyle.FULL, new Locale("vi"));
         String dateFormatted = selectedDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-        binding.tvScheduleHint.setText((selectedDate.equals(LocalDate.now()) ? "Hôm nay - " : "") + dayOfWeekName + ", " + dateFormatted);
+        binding.tvScheduleHint.setText(
+                selectedDate.equals(LocalDate.now())
+                        ? "Hôm nay"
+                        : dayOfWeekName + ", " + dateFormatted
+        );
     }
 
     private void setupEmployeeList() {
@@ -218,16 +249,61 @@ public class ManagerScheduleFragment extends Fragment {
     }
 
     private void setupSwipeRefresh() {
-        binding.swipeRefreshLayout.setOnRefreshListener(() -> viewModel.loadEmployeeWorkSchedules());
+        binding.swipeRefreshLayout.setOnRefreshListener(() -> viewModel.refreshData());
     }
 
     private void setupFabAdd() {
-        binding.btnAddShift.setOnClickListener(v ->
-                Navigation.findNavController(v).navigate(R.id.action_managerScheduleFragment_to_selectEmployee)
+        binding.btnAddShift.setOnClickListener(v -> {
+            assignViewModel.startNewFlow(viewModel.getSelectedDate().getValue());
+            Navigation.findNavController(v).navigate(R.id.action_managerScheduleFragment_to_selectEmployee);
+        });
+    }
+
+    private void setupBottomSheetResultListener() {
+        // Lắng nghe xếp ca từ AssignShiftBottomSheet
+        getChildFragmentManager().setFragmentResultListener(
+                AssignShiftBottomSheet.REQUEST_KEY,
+                getViewLifecycleOwner(),
+                (requestKey, result) -> {
+                    ShiftOption selectedShift = result.getParcelable(AssignShiftBottomSheet.EXTRA_SELECTED_SHIFT);
+                    LocalDate selectedDate = viewModel.getSelectedDate().getValue();
+                    if (selectedDate == null) selectedDate = LocalDate.now();
+
+                    if (pendingEmployeeForAssign != null) {
+                        viewModel.assignWorkSchedule(
+                                pendingEmployeeForAssign.getUserId(),
+                                selectedShift != null ? selectedShift.getId() : null,
+                                selectedDate.toString()
+                        );
+                        pendingEmployeeForAssign = null;
+                    }
+                }
+        );
+
+        // Lắng nghe Chỉnh sửa ca từ AddShiftBottomSheet (mở từ Menu Long Click Chip)
+        getChildFragmentManager().setFragmentResultListener(
+                AddShiftBottomSheet.REQUEST_KEY,
+                getViewLifecycleOwner(),
+                (requestKey, bundle) -> {
+                    ShiftOption resultShift = bundle.getParcelable(AddShiftBottomSheet.EXTRA_RESULT_SHIFT);
+                    if (resultShift != null && resultShift.getId() != null) {
+                        // Dùng trực tiếp viewModel (ManagerScheduleViewModel)
+                        viewModel.updateShift(
+                                resultShift.getId(),
+                                resultShift.getTitle(),
+                                resultShift.getStartTime(),
+                                resultShift.getEndTime(),
+                                resultShift.getLatitude(),
+                                resultShift.getLongitude()
+                        );
+                        Toast.makeText(getContext(), "Đã cập nhật " + resultShift.getTitle(), Toast.LENGTH_SHORT).show();
+                    }
+                }
         );
     }
 
     private void openQuickAssignBottomSheet(ManagerEmployeeItem employee, LocalDate date) {
+        this.pendingEmployeeForAssign = employee;
         List<ShiftOption> currentShifts = viewModel.getUiState().getValue() != null
                 ? viewModel.getUiState().getValue().getShiftOptions()
                 : new ArrayList<>();
@@ -235,20 +311,7 @@ public class ManagerScheduleFragment extends Fragment {
         AssignShiftBottomSheet bottomSheet = AssignShiftBottomSheet.newInstance(
                 employee.getFullName(),
                 date,
-                currentShifts,
-                selectedShift -> {
-                    if (selectedShift != null) {
-                        viewModel.assignWorkSchedule(
-                                employee.getUserId(),
-                                employee.getFullName(),
-                                employee.getPosition(),
-                                selectedShift.getId(),
-                                date.toString()
-                        );
-                    } else {
-                        // Xử lý hủy ca / cho nghỉ nếu cần
-                    }
-                }
+                currentShifts
         );
 
         bottomSheet.show(getChildFragmentManager(), "quick_assign_shift");
@@ -256,8 +319,11 @@ public class ManagerScheduleFragment extends Fragment {
 
     private void updateShiftChips(List<ShiftOption> shiftOptions) {
         binding.chipGroupShifts.removeAllViews();
-        addFilterChip("Tất cả", null);
 
+        // 1. Chip "Tất cả"
+        addFilterChip("Tất cả", null, null);
+
+        // 2. Chip các ca làm việc động
         if (shiftOptions != null) {
             for (ShiftOption option : shiftOptions) {
                 String label = option.getTitle();
@@ -265,14 +331,15 @@ public class ManagerScheduleFragment extends Fragment {
                 if (timeRange != null && !timeRange.isEmpty()) {
                     label += " (" + timeRange + ")";
                 }
-                addFilterChip(label, option.getTitle());
+                addFilterChip(label, option.getId(), option);
             }
         }
 
-        addFilterChip("Chưa xếp", "UNASSIGNED");
+        // 3. Chip "Chưa xếp"
+        addFilterChip("Chưa xếp", ManagerScheduleViewModel.FILTER_UNASSIGNED, null);
     }
 
-    private void addFilterChip(String label, String filterValue) {
+    private void addFilterChip(String label, String filterValue, ShiftOption shiftOption) {
         Chip chip = (Chip) getLayoutInflater().inflate(R.layout.item_filter_chip, binding.chipGroupShifts, false);
         chip.setText(label);
         chip.setId(View.generateViewId());
@@ -281,6 +348,7 @@ public class ManagerScheduleFragment extends Fragment {
         boolean isSelected = (currentFilter == null && filterValue == null)
                 || (currentFilter != null && currentFilter.equals(filterValue));
 
+        chip.setOnCheckedChangeListener(null);
         chip.setChecked(isSelected);
 
         chip.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -289,7 +357,45 @@ public class ManagerScheduleFragment extends Fragment {
             }
         });
 
+        // Bắt sự kiện ấn giữ (Long Click) để chỉnh sửa hoặc xóa ca
+        if (shiftOption != null) {
+            chip.setOnLongClickListener(v -> {
+                showShiftActionMenu(v, shiftOption);
+                return true;
+            });
+        }
+
         binding.chipGroupShifts.addView(chip);
+    }
+
+    private void showShiftActionMenu(View anchorView, ShiftOption shift) {
+        PopupMenu popup = new PopupMenu(requireContext(), anchorView);
+        popup.getMenu().add(0, 1, 0, "Chỉnh sửa ca");
+        popup.getMenu().add(0, 2, 1, "Xóa ca");
+
+        popup.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == 1) {
+                // Mở BottomSheet sửa ca
+                AddShiftBottomSheet bottomSheet = AddShiftBottomSheet.newInstanceForEdit(shift);
+                bottomSheet.show(getChildFragmentManager(), "edit_shift_from_chip");
+                return true;
+            } else if (item.getItemId() == 2) {
+                // Xác nhận xóa ca
+                new MaterialAlertDialogBuilder(requireContext())
+                        .setTitle("Xóa ca làm việc")
+                        .setMessage("Bạn có chắc chắn muốn xóa " + shift.getTitle() + " không?")
+                        .setPositiveButton("Xóa", (dialog, which) -> {
+                            // Dùng trực tiếp viewModel (ManagerScheduleViewModel)
+                            viewModel.deleteShift(shift);
+                            Toast.makeText(getContext(), "Đã xóa ca " + shift.getTitle(), Toast.LENGTH_SHORT).show();
+                        })
+                        .setNegativeButton("Hủy", null)
+                        .show();
+                return true;
+            }
+            return false;
+        });
+        popup.show();
     }
 
     @Override

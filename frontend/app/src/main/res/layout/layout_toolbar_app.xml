@@ -11,8 +11,8 @@
     <!-- Nút quay lại -->
     <ImageView
         android:id="@+id/iv_back"
-        android:layout_width="43dp"
-        android:layout_height="43dp"
+        android:layout_width="@dimen/icon_container_m"
+        android:layout_height="@dimen/icon_container_m"
         android:layout_marginStart="@dimen/spacing_2xs"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:clickable="true"
@@ -34,7 +34,7 @@
         android:ellipsize="end"
         android:maxLines="1"
         android:textColor="?attr/colorOnSurface"
-        android:textSize="20sp"
+        android:textSize="18sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

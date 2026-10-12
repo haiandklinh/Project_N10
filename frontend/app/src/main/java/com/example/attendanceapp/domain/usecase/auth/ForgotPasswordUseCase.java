@@ -20,9 +20,9 @@ public class ForgotPasswordUseCase {
     /**
      * Gửi mã OTP cho luồng Quên mật khẩu (luôn dùng OtpPurpose.FORGOT_PASSWORD)
      */
-    public Completable sendOtp(String phoneNumber) {
+    public Single<String> sendOtp(String phoneNumber) {
         if (phoneNumber == null || !phoneNumber.matches("^0\\d{9}$")) {
-            return Completable.error(new IllegalArgumentException("Số điện thoại không hợp lệ"));
+            return Single.error(new IllegalArgumentException("Số điện thoại không hợp lệ"));
         }
         return authRepository.sendOtp(phoneNumber, OtpPurpose.FORGOT_PASSWORD);
     }
@@ -37,13 +37,13 @@ public class ForgotPasswordUseCase {
     /**
      * Đặt lại mật khẩu mới
      */
-    public Completable resetPassword(String resetToken, String newPassword) {
-        if (resetToken == null || resetToken.isEmpty()) {
-            return Completable.error(new IllegalArgumentException("Token xác thực không hợp lệ"));
+    public Completable resetPassword(String phoneNumber, String newPassword) {
+        if (phoneNumber == null || phoneNumber.isEmpty()) {
+            return Completable.error(new IllegalArgumentException("Số điện thoại không hợp lệ"));
         }
         if (newPassword == null || newPassword.length() < 6) {
             return Completable.error(new IllegalArgumentException("Mật khẩu phải chứa ít nhất 6 ký tự"));
         }
-        return authRepository.resetPassword(resetToken, newPassword);
+        return authRepository.resetPassword(phoneNumber, newPassword);
     }
 }

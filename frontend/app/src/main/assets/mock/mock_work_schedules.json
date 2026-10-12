@@ -1,11 +1,11 @@
 {
   "manager_get_all_schedules": [
     {
-      "employee_id": "221230988",
-      "name": "Trình Minh Hiếu",
+      "employee_id": "staff_001",
+      "name": "Nhân Viên Thử Nghiệm 1",
       "position": "Thu ngân",
       "work_date": "2026-04-01",
-      "avatar": "https://cdn-media.sforum.vn/storage/app/media/anh-dep-83.jpg",
+      "avatar": "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
       "status": "ACTIVE",
       "shift": {
         "shift_id": "shift_01",
@@ -15,11 +15,11 @@
       }
     },
     {
-      "employee_id": "2212309876",
-      "name": "Trần Văn Nguyên",
+      "employee_id": "staff_002",
+      "name": "Nhân Viên Thử Nghiệm 2",
       "position": "Pha chế",
       "work_date": "2026-04-01",
-      "avatar": "https://cdn-media.sforum.vn/storage/app/media/anh-dep-83.jpg",
+      "avatar": "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
       "status": "ACTIVE",
       "shift": {
         "shift_id": "shift_02",
@@ -29,11 +29,11 @@
       }
     },
     {
-      "employee_id": "2212309876",
-      "name": "Tung Tung ShaHua",
-      "position": "Trộm",
+      "employee_id": "staff_003",
+      "name": "Nhân Viên Thử Nghiệm 3",
+      "position": "Phục vụ",
       "work_date": "2026-04-01",
-      "avatar": "https://cdn-media.sforum.vn/storage/app/media/anh-dep-83.jpg",
+      "avatar": "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
       "status": "ACTIVE",
       "shift": {
         "shift_id": "shift_02",
@@ -44,11 +44,11 @@
     }
   ],
   "assign_schedule_success": {
-    "employee_id": "emp_001",
-    "name": "Trình Minh Hiếu",
+    "employee_id": "staff_001",
+    "name": "Nhân Viên Thử Nghiệm 1",
     "position": "Thu ngân",
     "work_date": "2026-04-01",
-    "avatar": "https://example.com/avatar1.jpg",
+    "avatar": "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
     "status": "ACTIVE",
     "shift": {
       "shift_id": "shift_01",

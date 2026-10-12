@@ -1,18 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView android:id="@+id/card_today_shift"
+    style="@style/CategoryCard"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/spacing_s"
+    app:cardBackgroundColor="?attr/colorPrimaryContainer"
+    android:foreground="?attr/selectableItemBackground"
+    app:layout_constraintTop_toTopOf="parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/card_today_shift"
-        style="@style/CategoryCard"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:cardBackgroundColor="?attr/colorPrimaryContainer"
-        android:foreground="?attr/selectableItemBackground"
-        app:layout_constraintTop_toTopOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -23,21 +20,21 @@
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_shift_icon"
-                style="@style/CircleIconCardStyle"
-                android:layout_width="44dp"
-                android:layout_height="44dp"
+                style="@style/CircleIconCard"
+                android:layout_width="@dimen/icon_container_m"
+                android:layout_height="@dimen/icon_container_m"
                 app:cardBackgroundColor="?attr/colorSurfaceVariant"
-                app:cardCornerRadius="12dp"
+                app:cardCornerRadius="@dimen/radius_full"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent">
 
                 <ImageView
-                    android:layout_width="22dp"
-                    android:layout_height="22dp"
+                    android:layout_width="@dimen/icon_size_m"
+                    android:layout_height="@dimen/icon_size_m"
                     android:layout_gravity="center"
                     android:contentDescription="@null"
-                    android:src="@drawable/ic_schedule"
+                    android:src="@drawable/ic_late"
                     app:tint="?attr/colorPrimary" />
 
             </com.google.android.material.card.MaterialCardView>
@@ -89,11 +86,8 @@
                 app:chipBackgroundColor="?attr/colorSurfaceVariant"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@id/card_shift_icon"
-                app:layout_constraintBottom_toBottomOf="@id/card_shift_icon"
-                />
+                app:layout_constraintBottom_toBottomOf="@id/card_shift_icon" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </com.google.android.material.card.MaterialCardView>
-
-</androidx.constraintlayout.widget.ConstraintLayout>

@@ -8,38 +8,28 @@ public class UpdateShiftRequest {
     private final String shiftName;
 
     @SerializedName("startTime")
-    private final String startTime; // "HH:mm"
+    private final String startTime;
 
     @SerializedName("endTime")
-    private final String endTime;   // "HH:mm"
+    private final String endTime;
 
-    @SerializedName("description")
-    private final String description;
+    @SerializedName("latitude")
+    private final Double latitude;
 
-    public UpdateShiftRequest(String shiftName, String startTime, String endTime, String description) {
+    @SerializedName("longitude")
+    private final Double longitude;
+
+    public UpdateShiftRequest(String shiftName, String startTime, String endTime, Double latitude, Double longitude) {
         this.shiftName = shiftName;
         this.startTime = startTime;
         this.endTime = endTime;
-        this.description = description;
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
-    public UpdateShiftRequest(String shiftName, String startTime, String endTime) {
-        this(shiftName, startTime, endTime, null);
-    }
-
-    public String getShiftName() {
-        return shiftName;
-    }
-
-    public String getStartTime() {
-        return startTime;
-    }
-
-    public String getEndTime() {
-        return endTime;
-    }
-
-    public String getDescription() {
-        return description;
-    }
+    public String getShiftName() { return shiftName; }
+    public String getStartTime() { return startTime; }
+    public String getEndTime() { return endTime; }
+    public Double getLatitude() { return latitude; }
+    public Double getLongitude() { return longitude; }
 }

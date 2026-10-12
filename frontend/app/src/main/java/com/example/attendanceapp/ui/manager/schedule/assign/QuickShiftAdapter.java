@@ -8,12 +8,11 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.attendanceapp.R;
 import com.example.attendanceapp.core.utils.ColorUtil;
-import com.example.attendanceapp.databinding.LayoutShiftOptionRowBinding;
+import com.example.attendanceapp.databinding.ItemSelectShiftOptionBinding;
 import com.example.attendanceapp.domain.model.ShiftOption;
 
 import java.util.ArrayList;
@@ -32,7 +31,7 @@ public class QuickShiftAdapter extends RecyclerView.Adapter<QuickShiftAdapter.Vi
     private final OnShiftSelectedListener listener;
 
     // ShiftOption đại diện cho mục "Không xếp ca" (id = null)
-    private static final ShiftOption SHIFT_NONE = new ShiftOption(null, "Không xếp ca", "", "");
+    private static final ShiftOption SHIFT_NONE = new ShiftOption(null, "Không xếp ca", "", "", null, null);
 
     private ShiftOption selectedItem = null; // Mặc định chưa chọn
 
@@ -47,10 +46,22 @@ public class QuickShiftAdapter extends RecyclerView.Adapter<QuickShiftAdapter.Vi
         this.listener = listener;
     }
 
+    public void setSelectedShift(@Nullable ShiftOption shift) {
+        ShiftOption newSelected = (shift == null) ? SHIFT_NONE : shift;
+        if (selectedItem != null && isSameShift(selectedItem, newSelected)) return;
+
+        int prevPos = getShiftPosition(selectedItem);
+        this.selectedItem = newSelected;
+        int newPos = getShiftPosition(selectedItem);
+
+        if (prevPos != -1) notifyItemChanged(prevPos);
+        if (newPos != -1) notifyItemChanged(newPos);
+    }
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        LayoutShiftOptionRowBinding binding = LayoutShiftOptionRowBinding.inflate(
+        ItemSelectShiftOptionBinding binding = ItemSelectShiftOptionBinding.inflate(
                 LayoutInflater.from(parent.getContext()), parent, false);
         return new ViewHolder(binding);
     }
@@ -61,54 +72,71 @@ public class QuickShiftAdapter extends RecyclerView.Adapter<QuickShiftAdapter.Vi
         Context context = holder.itemView.getContext();
 
         boolean isNoneOption = item.getId() == null;
-        boolean isSelected = (selectedItem != null && item.getId() != null && item.getId().equals(selectedItem.getId()))
-                || (selectedItem == SHIFT_NONE && isNoneOption);
+        boolean isSelected = isSameShift(selectedItem, item);
 
         // 1. Hiển thị thông tin Tên ca & Giờ làm
         if (isNoneOption) {
-            holder.binding.tvShiftName.setText(item.getTitle());
+            holder.binding.tvShiftTitle.setText(item.getTitle());
             holder.binding.tvShiftTime.setText("Nhân viên nghỉ ngày này");
-            holder.binding.ivIcon.setImageResource(R.drawable.ic_close);
+            holder.binding.ivShiftIcon.setImageResource(R.drawable.ic_close);
         } else {
-            holder.binding.tvShiftName.setText(item.getTitle());
+            holder.binding.tvShiftTitle.setText(item.getTitle());
             holder.binding.tvShiftTime.setText(item.getTimeRange());
-            holder.binding.ivIcon.setImageResource(R.drawable.ic_history);
+            holder.binding.ivShiftIcon.setImageResource(R.drawable.ic_late);
         }
 
-        // 2. Hiển thị trạng thái Tick chọn (Check icon)
-        holder.binding.ivCheck.setVisibility(isSelected ? View.VISIBLE : View.INVISIBLE);
+        // 2. Cập nhật trạng thái RadioButton
+        holder.binding.radioSelected.setChecked(isSelected);
 
-        // 3. Highlight viền và màu sắc của Card khi được chọn
-        int primaryColor = ColorUtil.getThemeColor(context, R.attr.colorPrimary);
+        // 3. Cập nhật màu sắc & viền theo trạng thái bằng ColorUtil
+        int primaryColor = ColorUtil.getThemeColor(holder.itemView, R.attr.colorPrimary);
+        int bgSelected = ColorUtil.getThemeColor(holder.itemView, R.attr.colorPrimaryContainer);
+        int bgDefault = ColorUtil.getThemeColor(holder.itemView, R.attr.colorSurfaceVariant);
+        int defaultIconColor = ColorUtil.getThemeColor(holder.itemView, R.attr.colorOnSurfaceVariant);
         float density = context.getResources().getDisplayMetrics().density;
 
         if (isSelected) {
-            holder.binding.cardIcon.setStrokeColor(primaryColor);
-            holder.binding.cardIcon.setStrokeWidth((int) (1.5f * density));
-            holder.binding.ivIcon.setImageTintList(ColorStateList.valueOf(primaryColor));
+            // Khi chọn: Đặt viền 1dp màu primaryColor
+            holder.binding.cardShiftOption.setCardBackgroundColor(ColorStateList.valueOf(bgSelected));
+            holder.binding.cardShiftOption.setStrokeColor(primaryColor);
+            holder.binding.cardShiftOption.setStrokeWidth((int) (2.0f * density));
+            holder.binding.ivShiftIcon.setImageTintList(ColorStateList.valueOf(primaryColor));
         } else {
-            int transparentColor = ContextCompat.getColor(context, android.R.color.transparent);
-            holder.binding.cardIcon.setStrokeColor(transparentColor);
-            holder.binding.cardIcon.setStrokeWidth((int) (1.0f * density));
-            holder.binding.ivIcon.setImageTintList(null);
+            // Khi không chọn: Đặt màu nền colorSurface, viền 0dp (hoặc màu colorSurface đồng bộ)
+            holder.binding.cardShiftOption.setCardBackgroundColor(ColorStateList.valueOf(bgDefault));
+            holder.binding.cardShiftOption.setStrokeColor(bgDefault);
+            holder.binding.cardShiftOption.setStrokeWidth(0);
+            holder.binding.ivShiftIcon.setImageTintList(ColorStateList.valueOf(defaultIconColor));
         }
 
-        // 4. Xử lý sự kiện Click chọn ca
-        holder.binding.cardIcon.setOnClickListener(v -> {
+        // 4. Xử lý sự kiện Click chọn toàn bộ hàng
+        holder.itemView.setOnClickListener(v -> {
             int currentPos = holder.getBindingAdapterPosition();
             if (currentPos == RecyclerView.NO_POSITION) return;
 
-            int prevPos = shifts.indexOf(selectedItem);
-            selectedItem = item;
-
-            if (prevPos != -1) notifyItemChanged(prevPos);
-            notifyItemChanged(currentPos);
+            setSelectedShift(isNoneOption ? null : item);
 
             if (listener != null) {
-                // Nếu chọn SHIFT_NONE thì truyền null sang listener
                 listener.onShiftSelected(isNoneOption ? null : item);
             }
         });
+    }
+
+    private boolean isSameShift(ShiftOption s1, ShiftOption s2) {
+        if (s1 == null || s2 == null) return false;
+        if (s1.getId() == null && s2.getId() == null) return true;
+        if (s1.getId() != null && s2.getId() != null) return s1.getId().equals(s2.getId());
+        return false;
+    }
+
+    private int getShiftPosition(ShiftOption shift) {
+        if (shift == null) return -1;
+        for (int i = 0; i < shifts.size(); i++) {
+            if (isSameShift(shifts.get(i), shift)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     @Override
@@ -117,9 +145,9 @@ public class QuickShiftAdapter extends RecyclerView.Adapter<QuickShiftAdapter.Vi
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        final LayoutShiftOptionRowBinding binding;
+        final ItemSelectShiftOptionBinding binding;
 
-        public ViewHolder(LayoutShiftOptionRowBinding binding) {
+        public ViewHolder(ItemSelectShiftOptionBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
         }

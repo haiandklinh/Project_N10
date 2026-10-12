@@ -18,9 +18,9 @@ public interface AuthRepository {
 
     Completable logout();
 
-    Completable sendOtp(String phoneNumber, OtpPurpose purpose);
+    Single<String> sendOtp(String phoneNumber, OtpPurpose purpose);
 
     Single<String> verifyOtp(String phoneNumber, String otp, OtpPurpose purpose);
 
-    Completable resetPassword(String resetToken, String newPassword);
+    Completable resetPassword(String phoneNumber, String newPassword);
 }

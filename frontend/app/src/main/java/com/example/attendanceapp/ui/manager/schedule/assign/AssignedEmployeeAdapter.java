@@ -6,6 +6,8 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.example.attendanceapp.R;
 import com.example.attendanceapp.databinding.ItemAssignedEmployeeChipBinding;
 import com.example.attendanceapp.domain.model.ManagerEmployeeItem;
 
@@ -47,6 +49,13 @@ public class AssignedEmployeeAdapter extends RecyclerView.Adapter<AssignedEmploy
         ManagerEmployeeItem item = list.get(position);
 
         holder.binding.tvName.setText(item.getFullName() != null ? item.getFullName() : "");
+
+        // Load Avatar
+        Glide.with(holder.itemView.getContext())
+                .load(item.getAvatarUrl())
+                .placeholder(R.drawable.ic_avatar)
+                .error(R.drawable.ic_avatar)
+                .into(holder.binding.ivAvatar);
 
         holder.binding.btnRemove.setOnClickListener(v -> {
             int currentPosition = holder.getBindingAdapterPosition();

@@ -1,14 +1,23 @@
 package com.example.attendanceapp.ui.main.auth.forgotpassword;
 
+import android.content.Context;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.example.attendanceapp.core.notification.MyFirebaseMessagingService;
+import com.example.attendanceapp.domain.model.Notification;
+import com.example.attendanceapp.domain.model.NotificationType;
 import com.example.attendanceapp.domain.usecase.auth.ForgotPasswordUseCase;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 import javax.inject.Inject;
 
 import dagger.hilt.android.lifecycle.HiltViewModel;
+import dagger.hilt.android.qualifiers.ApplicationContext;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
@@ -17,6 +26,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 public class ForgotPasswordViewModel extends ViewModel {
 
     private final ForgotPasswordUseCase forgotPasswordUseCase;
+    private final Context context;
     private final CompositeDisposable disposables = new CompositeDisposable();
 
     private final MutableLiveData<ForgotPasswordState> forgotPasswordState = new MutableLiveData<>();
@@ -26,8 +36,9 @@ public class ForgotPasswordViewModel extends ViewModel {
     private String resetToken = "";
 
     @Inject
-    public ForgotPasswordViewModel(ForgotPasswordUseCase forgotPasswordUseCase) {
+    public ForgotPasswordViewModel(ForgotPasswordUseCase forgotPasswordUseCase, @ApplicationContext Context context) {
         this.forgotPasswordUseCase = forgotPasswordUseCase;
+        this.context = context;
     }
 
     public LiveData<ForgotPasswordState> getForgotPasswordState() {
@@ -51,8 +62,20 @@ public class ForgotPasswordViewModel extends ViewModel {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                        () -> {
+                        otpCode -> {
                             isLoading.setValue(false);
+                            // Hiển thị mã OTP lên thông báo của thiết bị
+                            if (otpCode != null && !otpCode.isEmpty()) {
+                                Notification notification = new Notification(
+                                        UUID.randomUUID().toString(),
+                                        "Quên mật khẩu",
+                                        "Mã xác thực của bạn là: " + otpCode,
+                                        LocalDateTime.now(),
+                                        NotificationType.AUTH,
+                                        false
+                                );
+                                MyFirebaseMessagingService.showStaticNotification(context, notification);
+                            }
                             forgotPasswordState.setValue(new ForgotPasswordState.OtpSent(currentAccount));
                         },
                         throwable -> {
@@ -154,8 +177,20 @@ public class ForgotPasswordViewModel extends ViewModel {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                        () -> {
+                        otpCode -> {
                             isLoading.setValue(false);
+                            // Hiển thị mã OTP lên thông báo của thiết bị
+                            if (otpCode != null && !otpCode.isEmpty()) {
+                                Notification notification = new Notification(
+                                        UUID.randomUUID().toString(),
+                                        "Gửi lại OTP",
+                                        "Mã xác thực mới của bạn là: " + otpCode,
+                                        LocalDateTime.now(),
+                                        NotificationType.AUTH,
+                                        false
+                                );
+                                MyFirebaseMessagingService.showStaticNotification(context, notification);
+                            }
                             forgotPasswordState.setValue(new ForgotPasswordState.OtpResent());
                         },
                         throwable -> {

@@ -19,6 +19,7 @@ public class ManagerEmployeeItem {
     private final int leaveCountThisMonth;
     private final long estimatedSalaryThisMonth;
 
+
     // Trường hỗ trợ riêng cho màn "Xếp ca": ca đã được xếp cho ngày đang chọn (có thể null)
     private String assignedShiftName;
     private String assignedShiftTime;

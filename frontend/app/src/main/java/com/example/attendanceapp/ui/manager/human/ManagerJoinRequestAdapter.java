@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.attendanceapp.R;
 import com.example.attendanceapp.databinding.ItemManagerJoinRequestBinding;
 import com.example.attendanceapp.domain.model.JoinRequestItem;
 
@@ -43,9 +44,13 @@ public class ManagerJoinRequestAdapter extends RecyclerView.Adapter<ManagerJoinR
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         JoinRequestItem item = list.get(position);
+        android.content.Context context = holder.itemView.getContext();
         holder.binding.tvName.setText(item.getFullName());
-        holder.binding.tvPhone.setText("SĐT: " + item.getPhoneNumber());
-        holder.binding.tvMeta.setText("Mã mời: " + item.getInvitationCode() + " · " + item.getRequestedAtLabel());
+        holder.binding.tvPhone.setText(String.format("SĐT: %s", item.getPhoneNumber()));
+        holder.binding.tvMeta.setText(String.format("Mã mời: %s · %s", item.getInvitationCode(), item.getRequestedAtLabel()));
+
+        holder.binding.btnApprove.setText(context.getString(R.string.human_btn_approve));
+        holder.binding.btnReject.setText(context.getString(R.string.human_btn_reject));
 
         holder.binding.btnApprove.setOnClickListener(v -> {
             if (listener != null) listener.onApprove(item, holder.getBindingAdapterPosition());

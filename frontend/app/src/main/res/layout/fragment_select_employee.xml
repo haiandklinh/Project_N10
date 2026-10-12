@@ -7,8 +7,6 @@
     android:layout_height="match_parent"
     android:background="?android:attr/colorBackground">
 
-    <!-- 1. TOOLBAR TÊU ĐỀ -->
-    <!-- Toolbar App -->
     <com.example.attendanceapp.core.utils.ToolbarApp
         android:id="@+id/toolbar_app"
         android:layout_width="match_parent"
@@ -17,33 +15,17 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Subtitle: Chọn nhân viên -->
-    <TextView
-        android:id="@+id/tv_subtitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:text="Chọn nhân viên"
-        android:textColor="#1E293B"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/toolbar_app" />
-
-    <!-- 2. Ô TÌM KIẾM NHÂN VIÊN -->
-    <!-- Thanh Tìm Kiếm -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/til_search"
         style="@style/SearchStyle"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/button_height_m"
-        android:layout_marginHorizontal="@dimen/spacing_l"
+
         android:layout_marginTop="@dimen/spacing_m"
+        android:layout_marginHorizontal="@dimen/spacing_m"
         android:hint="Tìm nhân viên theo tên..."
+        app:hintEnabled="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_subtitle">
+        app:layout_constraintTop_toBottomOf="@id/toolbar_app">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/edt_search"
@@ -52,16 +34,16 @@
             android:layout_height="wrap_content"
             android:inputType="text"
             android:maxLines="1" />
+
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- 3. BỘ LỌC CHIP (Tất cả, Đang làm, Nghỉ phép) -->
     <HorizontalScrollView
         android:id="@+id/scroll_filter"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/spacing_xs"
+        android:layout_marginTop="@dimen/spacing_l"
+        android:layout_marginHorizontal="@dimen/spacing_m"
         android:clipToPadding="false"
-        android:paddingHorizontal="16dp"
         android:scrollbars="none"
         app:layout_constraintTop_toBottomOf="@id/til_search">
 
@@ -71,7 +53,6 @@
             app:singleLine="true"
             app:singleSelection="true">
 
-            <!-- Chip 1: Tất cả -->
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_all"
                 style="@style/ChipFilterStyle"
@@ -82,7 +63,6 @@
                 app:chipCornerRadius="16dp"
                 app:chipStrokeWidth="0dp" />
 
-            <!-- Chip 2: Đang làm -->
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_working"
                 style="@style/ChipFilterStyle"
@@ -101,7 +81,6 @@
                 app:chipCornerRadius="16dp"
                 app:chipStrokeWidth="0dp" />
 
-            <!-- Chip 3: Nghỉ phép -->
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_leave"
                 style="@style/ChipFilterStyle"
@@ -114,23 +93,59 @@
         </com.google.android.material.chip.ChipGroup>
     </HorizontalScrollView>
 
-    <!-- 4. DANH SÁCH NHÂN VIÊN -->
+    <!-- Header Chọn tất cả -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layout_select_header"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_s"
+        android:layout_marginHorizontal="@dimen/spacing_m"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/scroll_filter">
+
+        <TextView
+            android:id="@+id/tv_assign_date_hint"
+            style="@style/BodyTextSmallStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Xếp ca cho: Thứ 2, 29/09/2026"
+            android:textColor="?android:attr/textColorSecondary"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/tv_select_all"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_select_all"
+            style="@style/TitleTextSmallStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="true"
+            android:text="Chọn tất cả"
+            android:textColor="?attr/colorPrimary"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_employees"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginTop="@dimen/spacing_xs"
+        android:layout_marginHorizontal="@dimen/spacing_m"
         android:clipToPadding="false"
-        android:paddingHorizontal="16dp"
-        android:paddingTop="8dp"
         android:paddingBottom="80dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/scroll_filter"
+        app:layout_constraintTop_toBottomOf="@id/layout_select_header"
         tools:listitem="@layout/item_select_employee" />
 
-    <!-- 5. BOTTOM BAR CỐ ĐỊNH DƯỚI CÙNG (Đã chọn X nhân viên + Nút Tiếp tục) -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/card_bottom_bar"
         style="@style/CategoryCard"
@@ -146,7 +161,6 @@
             android:layout_height="wrap_content"
             android:padding="@dimen/spacing_s">
 
-            <!-- Icon nhóm người -->
             <ImageView
                 android:id="@+id/iv_group_icon"
                 android:layout_width="24dp"
@@ -157,20 +171,18 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:tint="?attr/colorPrimary" />
 
-            <!-- Text số lượng chọn -->
             <TextView
                 android:id="@+id/tv_selected_count"
                 style="@style/BodyTextMediumStyle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/spacing_s"
-                android:text="Đã chọn 3 nhân viên"
+                android:text="Đã chọn 0 nhân viên"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/btn_continue"
                 app:layout_constraintStart_toEndOf="@id/iv_group_icon"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <!-- Nút Tiếp tục -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_continue"
                 style="@style/ButtonFilledSmallStyle"

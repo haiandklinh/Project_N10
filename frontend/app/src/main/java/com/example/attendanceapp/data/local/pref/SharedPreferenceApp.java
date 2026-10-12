@@ -34,6 +34,11 @@ public class SharedPreferenceApp {
     private static final String KEY_USER_STATUS = "user_status";
     private static final String KEY_USER_ID = "user_id";
 
+    // ===== COMPANY CONFIG =====
+    private static final String KEY_COMPANY_LAT = "company_lat";
+    private static final String KEY_COMPANY_LON = "company_lon";
+    private static final String KEY_COMPANY_ADDRESS = "company_address";
+
     private final SharedPreferences sharedPreferences;
 
     @Inject
@@ -91,6 +96,28 @@ public class SharedPreferenceApp {
 
     public String getUserStatus() {
         return sharedPreferences.getString(KEY_USER_STATUS, null);
+    }
+
+    // ===== COMPANY CONFIG METHODS =====
+
+    public void saveCompanyLocation(double lat, double lon, String address) {
+        sharedPreferences.edit()
+                .putFloat(KEY_COMPANY_LAT, (float) lat)
+                .putFloat(KEY_COMPANY_LON, (float) lon)
+                .putString(KEY_COMPANY_ADDRESS, address)
+                .apply();
+    }
+
+    public double getCompanyLat() {
+        return sharedPreferences.getFloat(KEY_COMPANY_LAT, 0.0f);
+    }
+
+    public double getCompanyLon() {
+        return sharedPreferences.getFloat(KEY_COMPANY_LON, 0.0f);
+    }
+
+    public String getCompanyAddress() {
+        return sharedPreferences.getString(KEY_COMPANY_ADDRESS, null);
     }
 
     /**

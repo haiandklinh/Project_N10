@@ -133,13 +133,13 @@ public class LoginViewModel extends ViewModel {
                 pendingProfile.getDob(),
                 pendingProfile.getGender(),
                 pendingProfile.getAvatarUri(),
-                UserRole.MANAGER)
+                UserRole.MANAGER,
+                companyName)
                 .andThen(roleSelectionUseCase.selectRole(UserRole.MANAGER))
-                .andThen(roleSelectionUseCase.createCompany(companyName))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                        invitationCode -> {
+                        () -> {
                             isLoading.setValue(false);
                             roleSetupEvent.setValue(new RoleSetupEvent.NavigateToHome(UserRole.MANAGER));
                         },
@@ -156,7 +156,8 @@ public class LoginViewModel extends ViewModel {
                         pendingProfile.getDob(),
                         pendingProfile.getGender(),
                         pendingProfile.getAvatarUri(),
-                        UserRole.EMPLOYEE)
+                        UserRole.EMPLOYEE,
+                        null)
                 .andThen(roleSelectionUseCase.selectRole(UserRole.EMPLOYEE))
                 .andThen(roleSelectionUseCase.joinCompanyWithCode(
                         invitationCode,

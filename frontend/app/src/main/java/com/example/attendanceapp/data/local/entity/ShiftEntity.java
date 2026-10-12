@@ -1,21 +1,51 @@
 package com.example.attendanceapp.data.local.entity;
 
+import androidx.annotation.NonNull;
 import androidx.room.Entity;
-import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
-@Entity(tableName = "shift_table", indices = {@Index("name")})
-public class ShiftEntity {
-    @PrimaryKey(autoGenerate = true)
-    public long id;
+import com.example.attendanceapp.domain.model.ShiftOption;
 
-    public String name;              // "Ca Sáng", "Ca Chiều"
-    public long startTime;           // milliseconds (08:00)
-    public long endTime;             // milliseconds (17:00)
-    public long checkInAllowTime;    // milliseconds (07:45)
-    public long checkOutAllowTime;   // milliseconds (17:15)
-    public double latitude;         // Vĩ độ địa điểm làm việc
-    public double longitude;        // Kinh độ địa điểm làm việc
-    public String location;          // Tên địa điểm
-    public String status;            // "ACTIVE", "INACTIVE"
+@Entity(tableName = "shifts")
+public class ShiftEntity {
+    @PrimaryKey
+    @NonNull
+    private final String id;
+    private final String title;
+    private final String startTime;
+    private final String endTime;
+    private final Double latitude;
+    private final Double longitude;
+
+    public ShiftEntity(@NonNull String id, String title, String startTime, String endTime, Double latitude, Double longitude) {
+        this.id = id;
+        this.title = title;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
+
+    @NonNull
+    public String getId() { return id; }
+    public String getTitle() { return title; }
+    public String getStartTime() { return startTime; }
+    public String getEndTime() { return endTime; }
+    public Double getLatitude() { return latitude; }
+    public Double getLongitude() { return longitude; }
+
+    public ShiftOption toDomain() {
+        return new ShiftOption(id, title, startTime, endTime, latitude, longitude);
+    }
+
+    public static ShiftEntity fromDomain(ShiftOption shift) {
+        return new ShiftEntity(
+                shift.getId(),
+                shift.getTitle(),
+                shift.getStartTime(),
+                shift.getEndTime(),
+                shift.getLatitude(),
+                shift.getLongitude()
+        );
+    }
 }

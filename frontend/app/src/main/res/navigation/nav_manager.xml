@@ -85,7 +85,7 @@
         android:id="@+id/assignShiftFragment"
         android:name="com.example.attendanceapp.ui.manager.schedule.assign.AssignShiftFragment"
         android:label="Thiết lập ca làm việc"
-        tools:layout="@layout/fragment_assign_shift" >
+        tools:layout="@layout/fragment_manager_assign_shift" >
 
         <action
             android:id="@+id/action_assignShiftFragment_to_assignShiftSuccessFragment"
@@ -105,7 +105,23 @@
         android:id="@+id/managerHumanFragment"
         android:name="com.example.attendanceapp.ui.manager.human.ManagerHumanFragment"
         android:label="@string/nav_manager_employees"
-        tools:layout="@layout/fragment_manager_human" />
+        tools:layout="@layout/fragment_manager_human">
+
+        <action
+            android:id="@+id/action_managerHumanFragment_to_managerJoinRequestFragment"
+            app:destination="@id/managerJoinRequestFragment" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/managerJoinRequestFragment"
+        android:name="com.example.attendanceapp.ui.manager.human.ManagerJoinRequestFragment"
+        android:label="Yêu cầu gia nhập"
+        tools:layout="@layout/fragment_manager_join_request">
+
+    </fragment>
+
+
 
     <!-- Tab 5: Hồ sơ cá nhân (Profile) -->
     <fragment
@@ -190,7 +206,17 @@
         android:id="@+id/managerEditProfileFragment"
         android:name="com.example.attendanceapp.ui.manager.profile.ManagerEditProfileFragment"
         android:label="Chỉnh sửa hồ sơ"
-        tools:layout="@layout/fragment_edit_profile" />
+        tools:layout="@layout/fragment_edit_profile">
+        <action
+            android:id="@+id/action_managerEditProfileFragment_to_managerEditBasicInfoFragment"
+            app:destination="@id/managerEditBasicInfoFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/managerEditBasicInfoFragment"
+        android:name="com.example.attendanceapp.ui.manager.profile.ManagerEditBasicInfoFragment"
+        android:label="Thông tin cá nhân"
+        tools:layout="@layout/fragment_edit_basic_info" />
 
     <!-- Đổi mật khẩu Quản lý -->
     <fragment

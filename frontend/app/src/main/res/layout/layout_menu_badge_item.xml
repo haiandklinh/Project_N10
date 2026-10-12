@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="65dp"
+    android:layout_height="48dp"
+    android:background="?attr/selectableItemBackgroundBorderless"
+    android:clickable="true"
+    android:focusable="true">
+
+    <!-- Icon người dùng ở giữa -->
+    <ImageView
+        android:id="@+id/iv_badge_icon"
+        android:layout_width="@dimen/icon_size_l"
+        android:layout_height="@dimen/icon_size_l"
+        android:layout_gravity="center"
+        android:contentDescription="@null"
+        android:src="@drawable/ic_add_user"
+        app:tint="?attr/colorPrimary" />
+
+    <!-- Badge đếm số: Cố định vị trí Start (Bên trái), dãn về bên phải -->
+    <TextView
+        android:id="@+id/tv_badge_count"
+        android:layout_width="wrap_content"
+        android:layout_height="18dp"
+        android:layout_gravity="top|start"
+        android:layout_marginTop="3dp"
+        android:layout_marginStart="34dp"
+        android:background="@drawable/bg_badge_with_stroke"
+        android:gravity="center"
+        android:minWidth="18dp"
+        android:paddingHorizontal="6dp"
+        android:includeFontPadding="false"
+        android:textColor="?attr/colorOnPrimary"
+        android:textSize="10sp"
+        android:textStyle="bold"
+        android:visibility="gone"
+        android:maxLines="1"
+        tools:text="99"
+        tools:visibility="visible" />
+</FrameLayout>

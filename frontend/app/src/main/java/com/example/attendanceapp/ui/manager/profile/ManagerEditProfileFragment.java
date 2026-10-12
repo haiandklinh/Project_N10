@@ -68,7 +68,7 @@ public class ManagerEditProfileFragment extends Fragment {
         );
 
         binding.rowBasicInfo.getRoot().setOnClickListener(v -> 
-            Toast.makeText(getContext(), "Thông tin cá nhân cơ bản", Toast.LENGTH_SHORT).show()
+            Navigation.findNavController(v).navigate(R.id.action_managerEditProfileFragment_to_managerEditBasicInfoFragment)
         );
 
         binding.rowContactInfo.getRoot().setOnClickListener(v ->

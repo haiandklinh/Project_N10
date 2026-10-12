@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.hilt.android)
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -9,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.attendanceapp"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -105,11 +106,21 @@ dependencies {
     // Desugaring
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.3")
 
-//    Flexbox
+    // Flexbox
     implementation("com.google.android.flexbox:flexbox:3.0.0")
+
+    // Excel Export (Apache POI)
+    implementation(libs.poi.ooxml)
+    // POI needs these for modern Android
+    implementation("javax.xml.stream:stax-api:1.0-2")
 
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+
+    // Firebase
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.messaging)
+    implementation("com.google.firebase:firebase-analytics")
 }

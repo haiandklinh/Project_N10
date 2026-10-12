@@ -4,9 +4,10 @@ import androidx.annotation.ColorRes;
 import com.example.attendanceapp.R;
 
 public enum EmployeeStatus {
-    ACTIVE("Đang làm việc", R.color.attendance_present, R.color.attendance_present_container),
-    ON_LEAVE("Đang nghỉ phép", R.color.attendance_leave, R.color.attendance_leave_container),
-    TERMINATED("Đã nghỉ việc", R.color.attendance_absent, R.color.attendance_absent_container);
+    ACTIVE("Làm việc", R.color.attendance_present, R.color.attendance_present_container),
+    ON_LEAVE("Nghỉ phép", R.color.attendance_leave, R.color.attendance_leave_container),
+    TERMINATED("Nghỉ việc", R.color.attendance_absent, R.color.attendance_absent_container),
+    UNKNOW("Hông biết nữa", R.color.attendance_not_checked, R.color.attendance_not_checked_container);
 
     private final String label;
     @ColorRes private final int textColorRes;

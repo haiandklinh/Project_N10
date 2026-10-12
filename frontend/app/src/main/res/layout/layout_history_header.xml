@@ -7,52 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/bg_card_gradient"
-    android:paddingHorizontal="@dimen/spacing_m"
-    android:paddingBottom="@dimen/spacing_m">
-
-    <!-- BUTTON BACK -->
-    <ImageView
-        android:id="@+id/btn_back"
-        android:layout_width="@dimen/icon_size_xl"
-        android:layout_height="@dimen/icon_size_xl"
-        android:background="@drawable/bg_time_icon_circle"
-        android:clickable="true"
-        android:contentDescription="Quay lại"
-        android:focusable="true"
-        android:padding="@dimen/spacing_2xs"
-        android:rotation="180"
-        android:src="@drawable/ic_chevron_right"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:tint="?attr/colorOnPrimary" />
-
-    <!-- Title -->
-    <TextView
-        android:id="@+id/tv_screen_title"
-        style="@style/TitleTextLargeStyle"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/spacing_m"
-        android:layout_marginEnd="@dimen/spacing_s"
-        android:text="@string/history_title"
-        android:textColor="?attr/colorOnPrimary"
-        app:layout_constraintBottom_toBottomOf="@id/btn_back"
-        app:layout_constraintEnd_toStartOf="@id/divider_vertical"
-        app:layout_constraintStart_toEndOf="@id/btn_back"
-        app:layout_constraintTop_toTopOf="@id/btn_back" />
-
-    <!-- HORIZONTAL DIVIDER (Đường gạch ngang ở giữa Title và Month) -->
-    <View
-        android:id="@+id/divider_horizontal"
-        android:layout_width="0dp"
-        android:layout_height="1dp"
-        android:layout_marginTop="@dimen/spacing_2xs"
-        android:layout_marginEnd="@dimen/spacing_s"
-        android:alpha="0.3"
-        android:background="?attr/colorOutline"
-        app:layout_constraintEnd_toStartOf="@id/divider_vertical"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btn_back" />
+    android:padding="@dimen/spacing_s">
 
     <!-- LINEAR LAYOUT BỌC CỤM ĐIỀU HƯỚNG THÁNG/NĂM -->
     <LinearLayout
@@ -65,13 +20,13 @@
         android:orientation="horizontal"
         app:layout_constraintEnd_toStartOf="@id/divider_vertical"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/divider_horizontal">
+        app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
             android:id="@+id/btn_prev_month"
             android:layout_width="@dimen/icon_size_xl"
             android:layout_height="@dimen/icon_size_xl"
-            android:background="@drawable/bg_time_chip"
+            android:background="@drawable/bg_time_icon_circle"
             android:clickable="true"
             android:contentDescription="Tháng trước"
             android:focusable="true"
@@ -81,10 +36,10 @@
 
         <TextView
             android:id="@+id/tv_month_year_subtitle"
-            style="@style/BodyTextMediumStyle"
+            style="@style/TitleTextMediumStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="@dimen/spacing_m"
+            android:layout_marginHorizontal="@dimen/spacing_s"
             android:text="@string/history_month_format"
             android:textColor="?attr/colorOnPrimary" />
 
@@ -92,7 +47,7 @@
             android:id="@+id/btn_next_month"
             android:layout_width="@dimen/icon_size_xl"
             android:layout_height="@dimen/icon_size_xl"
-            android:background="@drawable/bg_time_chip"
+            android:background="@drawable/bg_time_icon_circle"
             android:clickable="true"
             android:contentDescription="Tháng sau"
             android:focusable="true"
@@ -112,7 +67,7 @@
         android:background="?attr/colorOutline"
         app:layout_constraintBottom_toBottomOf="@id/layout_month_navigation"
         app:layout_constraintEnd_toStartOf="@id/toggle_view_mode"
-        app:layout_constraintTop_toTopOf="@id/btn_back" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <!-- Toggle View Mode Button -->
     <com.google.android.material.button.MaterialButtonToggleGroup
@@ -122,7 +77,7 @@
         app:checkedButton="@id/btn_view_list"
         app:layout_constraintBottom_toBottomOf="@+id/layout_month_navigation"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/btn_back"
+        app:layout_constraintTop_toTopOf="@id/layout_month_navigation"
         app:selectionRequired="true"
         app:singleSelection="true">
 

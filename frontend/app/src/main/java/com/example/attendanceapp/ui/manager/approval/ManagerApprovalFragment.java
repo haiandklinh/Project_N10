@@ -45,7 +45,7 @@ public class ManagerApprovalFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        viewModel = new ViewModelProvider(this).get(ManagerApprovalViewModel.class);
+        viewModel = new ViewModelProvider(requireActivity()).get(ManagerApprovalViewModel.class);
 
         binding.toolbarApp.setTitle("Duyệt yêu cầu");
         binding.toolbarApp.setBackButtonVisible(false);
@@ -56,6 +56,7 @@ public class ManagerApprovalFragment extends Fragment {
         setupTypeChips();
         setupSwipeRefresh();
 
+        updatePendingCount();
         applyFilters();
     }
 
@@ -84,6 +85,7 @@ public class ManagerApprovalFragment extends Fragment {
             public void onApprove(ManagerApprovalItem item, int position) {
                 item.setStatus(ApprovalStatus.APPROVED);
                 Toast.makeText(getContext(), "Đã duyệt yêu cầu của " + item.getEmployeeName(), Toast.LENGTH_SHORT).show();
+                updatePendingCount();
                 applyFilters();
             }
 
@@ -91,6 +93,7 @@ public class ManagerApprovalFragment extends Fragment {
             public void onReject(ManagerApprovalItem item, int position) {
                 item.setStatus(ApprovalStatus.REJECTED);
                 Toast.makeText(getContext(), "Đã từ chối yêu cầu của " + item.getEmployeeName(), Toast.LENGTH_SHORT).show();
+                updatePendingCount();
                 applyFilters();
             }
         });
@@ -167,6 +170,18 @@ public class ManagerApprovalFragment extends Fragment {
         boolean isEmpty = filtered.isEmpty();
         binding.rvApprovalRequests.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
         binding.layoutEmptyState.getRoot().setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+    }
+
+    private void updatePendingCount() {
+        int count = 0;
+        for (ManagerApprovalItem item : allRequests) {
+            if (item.getStatus() == ApprovalStatus.PENDING) {
+                count++;
+            }
+        }
+        if (viewModel != null) {
+            viewModel.setPendingApprovalCount(count);
+        }
     }
 
     @Override

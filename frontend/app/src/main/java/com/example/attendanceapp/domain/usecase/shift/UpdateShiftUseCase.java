@@ -16,7 +16,7 @@ public class UpdateShiftUseCase {
         this.shiftRepository = shiftRepository;
     }
 
-    public Single<ShiftOption> execute(String shiftId, String shiftName, String startTime, String endTime, String description) {
-        return shiftRepository.updateShift(shiftId, shiftName, startTime, endTime, description);
+    public Single<ShiftOption> execute(String shiftId, String shiftName, String startTime, String endTime, Double latitude, Double longitude) {
+        return shiftRepository.updateShift(shiftId, shiftName, startTime, endTime, latitude, longitude);
     }
 }

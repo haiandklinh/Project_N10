@@ -18,7 +18,6 @@ import com.example.attendanceapp.data.remote.UserApi;
 import com.example.attendanceapp.domain.exception.AppException;
 import com.example.attendanceapp.domain.model.OtpPurpose;
 import com.example.attendanceapp.domain.model.UserAccount;
-import com.example.attendanceapp.domain.model.UserRole;
 import com.example.attendanceapp.domain.repository.AppStateRepository;
 import com.example.attendanceapp.domain.repository.AuthRepository;
 import com.example.attendanceapp.domain.repository.UserRepository;
@@ -28,9 +27,14 @@ import javax.inject.Singleton;
 
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Single;
+import retrofit2.HttpException;
 
 @Singleton
 public class AuthRepositoryImpl implements AuthRepository {
+
+    // Chuỗi role truyền cho UserMapper. Đổi "EMPLOYEE" thành "STAFF" nếu enum UserRole của bạn đặt tên như vậy.
+    private static final String ROLE_MANAGER = "MANAGER";
+    private static final String ROLE_STAFF = "EMPLOYEE";
 
     private final AuthApi authApi;
     private final UserApi userApi;
@@ -70,31 +74,15 @@ public class AuthRepositoryImpl implements AuthRepository {
                     // 1. Lưu token
                     tokenManager.saveTokens(auth.getAccessToken(), auth.getRefreshToken());
 
-                    // 2. Trích xuất vai trò từ Access Token
-                    String roleStr = extractRoleFromToken(auth.getAccessToken());
-
-                    final String finalRoleStr = roleStr;
-                    
-                    // 3. Lấy thông tin cá nhân và map sang Domain
-                    return userApi.getMe()
-                            .map(meResponse -> {
-                                UserAccount account = UserMapper.toDomain(meResponse, phoneNumber, finalRoleStr);
-                                // Xử lý logic firstLogin: Nếu đã có Role thì không phải login lần đầu
-                                if (finalRoleStr != null) {
-                                    account = new UserAccount.Builder()
-                                            .phoneNumber(account.getPhoneNumber())
-                                            .firstLogin(false)
-                                            .profile(account.getProfile())
-                                            .build();
-                                }
-                                return account;
-                            });
+                    // 2. Backend chưa có GET /me nên xác định hồ sơ + vai trò
+                    //    bằng cách gọi lần lượt profile Manager rồi Staff
+                    return loadAccount(phoneNumber);
                 })
-                // 4. Lưu session vào local storage (Room DB)
+                // 3. Lưu session vào local storage (Room DB)
                 .flatMap(account -> userRepository.saveUserSession(account)
                         .toSingleDefault(account))
 
-                // 5. Lưu trạng thái app (isLoggedIn, userStatus, userRole) vào AppStateRepository
+                // 4. Lưu trạng thái app (isLoggedIn, userStatus, userRole)
                 .doOnSuccess(account -> {
                     appStateRepository.setLoggedIn(true);
                     appStateRepository.saveUserStatus(account.getProfile().getStatus());
@@ -103,11 +91,43 @@ public class AuthRepositoryImpl implements AuthRepository {
                     }
                 })
 
-                // 6. Nếu xảy ra bất kỳ lỗi nào, xóa token để tránh trạng thái dở dang
+                // 5. Nếu xảy ra bất kỳ lỗi nào, xóa token để tránh trạng thái dở dang
                 .doOnError(e -> tokenManager.clearTokens())
 
-                // 7. Chuyển đổi lỗi thân thiện cho UI
+                // 6. Chuyển đổi lỗi thân thiện cho UI
                 .compose(ApiErrorMapper.forSingle("Số điện thoại hoặc mật khẩu không chính xác"));
+    }
+
+    /**
+     * Thử profile Manager -> nếu không có thì thử profile Staff
+     * -> nếu cả hai đều không có thì coi là đăng nhập lần đầu (chưa có hồ sơ).
+     * Các lỗi khác (401, 500, mất mạng...) được ném ra bình thường.
+     */
+    private Single<UserAccount> loadAccount(String phoneNumber) {
+        return userApi.getManagerProfile()
+                .map(p -> UserMapper.toDomain(phoneNumber, ROLE_MANAGER, UserMapper.toUserProfile(p)))
+                .onErrorResumeNext(e -> isProfileMissing(e)
+                        ? userApi.getStaffProfile()
+                                .map(p -> UserMapper.toDomain(phoneNumber, ROLE_STAFF, UserMapper.toUserProfile(p)))
+                        : Single.<UserAccount>error(e))
+                .onErrorResumeNext(e -> isProfileMissing(e)
+                        ? Single.just(buildFirstLoginAccount(phoneNumber))
+                        : Single.<UserAccount>error(e));
+    }
+
+    private UserAccount buildFirstLoginAccount(String phoneNumber) {
+        return new UserAccount.Builder()
+                .phoneNumber(phoneNumber)
+                .firstLogin(true)
+                .profile(UserMapper.toUserProfile())
+                .build();
+    }
+
+    /** 404: chưa có hồ sơ loại này. 403: tài khoản thuộc loại khác (nếu BE trả vậy). */
+    private boolean isProfileMissing(Throwable e) {
+        if (!(e instanceof HttpException)) return false;
+        int code = ((HttpException) e).code();
+        return code == 404 || code == 403;
     }
 
     @Override
@@ -125,21 +145,21 @@ public class AuthRepositoryImpl implements AuthRepository {
                         appStateRepository.setLoggedIn(false);
                         appStateRepository.clearSession();
                         // KHÔNG xóa Room DB để giữ profile cho Login Saved Account
-                        // userRepository.clearUserSession();
                     }));
         });
     }
 
     @Override
-    public Completable sendOtp(String phoneNumber, OtpPurpose purpose) {
+    public Single<String> sendOtp(String phoneNumber, OtpPurpose purpose) {
         if (phoneNumber == null || !phoneNumber.matches("^0\\d{9}$")) {
-            return Completable.error(new IllegalArgumentException("Số điện thoại không hợp lệ"));
+            return Single.error(new IllegalArgumentException("Số điện thoại không hợp lệ"));
         }
         SendOtpRequest request = new SendOtpRequest(phoneNumber);
         Single<SendOtpResponse> call = purpose == OtpPurpose.REGISTER
                 ? authApi.sendRegisterOtp(request)
                 : authApi.sendForgotPasswordOtp(request);
-        return call.ignoreElement().compose(ApiErrorMapper.forCompletable("Gửi OTP thất bại"));
+        return call.map(res -> res.getOtp() != null ? res.getOtp() : "")
+                .compose(ApiErrorMapper.forSingle("Gửi OTP thất bại"));
     }
 
     @Override
@@ -158,22 +178,14 @@ public class AuthRepositoryImpl implements AuthRepository {
     }
 
     @Override
-    public Completable resetPassword(String resetToken, String newPassword) {
-        if (resetToken == null || resetToken.isEmpty()) {
-            return Completable.error(new IllegalArgumentException("Token xác thực không hợp lệ"));
+    public Completable resetPassword(String phoneNumber, String newPassword) {
+        if (phoneNumber == null || phoneNumber.isEmpty()) {
+            return Completable.error(new IllegalArgumentException("Số điện thoại không hợp lệ"));
         }
         if (newPassword == null || newPassword.length() < 6) {
             return Completable.error(new IllegalArgumentException("Mật khẩu phải chứa ít nhất 6 ký tự"));
         }
-        return authApi.resetPassword(new ResetPasswordRequest(resetToken, newPassword))
+        return authApi.resetPassword(new ResetPasswordRequest(phoneNumber, newPassword))
                 .compose(ApiErrorMapper.forCompletable("Đặt lại mật khẩu thất bại"));
-    }
-
-    private String extractRoleFromToken(String token) {
-        if (token == null) return null;
-        // MOCK LOGIC: Sau này thay bằng JWT Decoder thật
-        if (token.contains("manager")) return "MANAGER";
-        if (token.contains("employee")) return "EMPLOYEE";
-        return null;
     }
 }

@@ -2,17 +2,17 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="72dp"
+    android:layout_width="60dp"
     android:layout_height="wrap_content"
     android:gravity="center"
-    android:orientation="vertical"
-    android:layout_marginEnd="@dimen/spacing_s">
+    android:layout_marginEnd="@dimen/spacing_xs"
+    android:orientation="vertical">
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/card_icon"
         style="@style/CategoryCard"
-        android:layout_width="@dimen/icon_container_2xl"
-        android:layout_height="@dimen/icon_container_2xl"
+        android:layout_width="@dimen/icon_container_xl"
+        android:layout_height="@dimen/icon_container_xl"
         android:clickable="false"
         android:focusable="false">
 

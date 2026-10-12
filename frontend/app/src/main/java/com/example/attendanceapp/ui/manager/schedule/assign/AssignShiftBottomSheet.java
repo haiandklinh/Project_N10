@@ -1,12 +1,14 @@
 package com.example.attendanceapp.ui.manager.schedule.assign;
 
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.attendanceapp.databinding.BottomSheetAssignShiftBinding;
@@ -20,11 +22,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import dagger.hilt.android.AndroidEntryPoint;
+
 /**
  * BottomSheet xếp ca nhanh cho 1 nhân viên vào 1 ngày cụ thể.
- * Dữ liệu ca làm việc (List<ShiftOption>) được truyền động từ ViewModel/Repository.
+ * Hỗ trợ lưu trữ state an toàn qua Bundle & FragmentResult API.
  */
+@AndroidEntryPoint
 public class AssignShiftBottomSheet extends BottomSheetDialogFragment {
+
+    // Keys dùng cho FragmentResult API
+    public static final String REQUEST_KEY = "AssignShiftBottomSheet_RequestKey";
+    public static final String EXTRA_SELECTED_SHIFT = "extra_selected_shift";
 
     public interface OnShiftAssignedListener {
         /**
@@ -34,13 +43,31 @@ public class AssignShiftBottomSheet extends BottomSheetDialogFragment {
     }
 
     private static final String ARG_EMPLOYEE_NAME = "employee_name";
-    private static final String ARG_DATE_EPOCH_DAY = "date_epoch_day";
+    private static final String ARG_DATE_STR = "date_str";
+    private static final String ARG_SHIFTS_LIST = "shifts_list";
 
     private BottomSheetAssignShiftBinding binding;
     private OnShiftAssignedListener listener;
+    private AssignShiftViewModel assignViewModel;
 
-    private final List<ShiftOption> availableShifts = new ArrayList<>();
+    private final ArrayList<ShiftOption> availableShifts = new ArrayList<>();
     private ShiftOption selectedShift;
+
+    public static AssignShiftBottomSheet newInstance(
+            String employeeName,
+            LocalDate date,
+            List<ShiftOption> shifts
+    ) {
+        AssignShiftBottomSheet sheet = new AssignShiftBottomSheet();
+        Bundle args = new Bundle();
+        args.putString(ARG_EMPLOYEE_NAME, employeeName);
+        args.putString(ARG_DATE_STR, date != null ? date.toString() : LocalDate.now().toString());
+        if (shifts != null) {
+            args.putParcelableArrayList(ARG_SHIFTS_LIST, new ArrayList<>(shifts));
+        }
+        sheet.setArguments(args);
+        return sheet;
+    }
 
     public static AssignShiftBottomSheet newInstance(
             String employeeName,
@@ -48,15 +75,7 @@ public class AssignShiftBottomSheet extends BottomSheetDialogFragment {
             List<ShiftOption> shifts,
             OnShiftAssignedListener listener
     ) {
-        AssignShiftBottomSheet sheet = new AssignShiftBottomSheet();
-        Bundle args = new Bundle();
-        args.putString(ARG_EMPLOYEE_NAME, employeeName);
-        args.putLong(ARG_DATE_EPOCH_DAY, date.toEpochDay());
-        sheet.setArguments(args);
-
-        if (shifts != null) {
-            sheet.availableShifts.addAll(shifts);
-        }
+        AssignShiftBottomSheet sheet = newInstance(employeeName, date, shifts);
         sheet.listener = listener;
         return sheet;
     }
@@ -72,14 +91,80 @@ public class AssignShiftBottomSheet extends BottomSheetDialogFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // Lấy AssignShiftViewModel ở Activity Scope
+        assignViewModel = new ViewModelProvider(requireActivity()).get(AssignShiftViewModel.class);
+
         Bundle args = getArguments();
-        String employeeName = args != null ? args.getString(ARG_EMPLOYEE_NAME, "") : "";
-        LocalDate date = args != null ? LocalDate.ofEpochDay(args.getLong(ARG_DATE_EPOCH_DAY)) : LocalDate.now();
+        String employeeName = "";
+        LocalDate date = LocalDate.now();
+
+        if (args != null) {
+            employeeName = args.getString(ARG_EMPLOYEE_NAME, "");
+
+            String dateStr = args.getString(ARG_DATE_STR);
+            if (!TextUtils.isEmpty(dateStr)) {
+                try {
+                    date = LocalDate.parse(dateStr);
+                } catch (Exception ignored) {}
+            }
+
+            ArrayList<ShiftOption> parcelableShifts = args.getParcelableArrayList(ARG_SHIFTS_LIST);
+            if (parcelableShifts != null) {
+                availableShifts.clear();
+                availableShifts.addAll(parcelableShifts);
+            }
+        }
 
         binding.tvTitle.setText("Xếp ca cho " + employeeName);
         binding.tvSubtitle.setText(formatVietnameseDate(date));
 
-        // Kiểm tra xem hệ thống đã có danh sách ca làm việc chưa
+        // 1. Đăng ký nhận kết quả ca mới tạo từ AddShiftBottomSheet và gọi ViewModel lưu vào CSDL
+        getChildFragmentManager().setFragmentResultListener(
+                AddShiftBottomSheet.REQUEST_KEY,
+                getViewLifecycleOwner(),
+                (requestKey, result) -> {
+                    ShiftOption newShift = result.getParcelable(AddShiftBottomSheet.EXTRA_RESULT_SHIFT);
+                    if (newShift != null && newShift.getId() == null) {
+                        // Thêm ca mới
+                        assignViewModel.addShift(
+                                newShift.getTitle(),
+                                newShift.getStartTime(),
+                                newShift.getEndTime(),
+                                newShift.getLatitude(),
+                                newShift.getLongitude()
+                        );
+                    }
+                }
+        );
+
+        // 2. Sự kiện nhấn nút "Thêm ca làm khác" bên dưới RecyclerView
+        binding.btnAddOtherShift.setOnClickListener(v -> {
+            AddShiftBottomSheet addShiftSheet = AddShiftBottomSheet.newInstance();
+            addShiftSheet.show(getChildFragmentManager(), "AddShiftBottomSheet");
+        });
+
+        // 3. Quan sát stream danh sách ca từ Repository qua AssignShiftViewModel
+        assignViewModel.getShiftsLiveData().observe(getViewLifecycleOwner(), shifts -> {
+            if (shifts != null && !shifts.isEmpty()) {
+                availableShifts.clear();
+                availableShifts.addAll(shifts);
+                setupShiftRecyclerView();
+
+                // Tự động chọn ca vừa được tạo mới gần nhất
+                ShiftOption latestSelected = assignViewModel.getSelectedShiftLiveData().getValue();
+                if (latestSelected != null) {
+                    this.selectedShift = latestSelected;
+                    if (binding.rvShifts.getAdapter() instanceof QuickShiftAdapter) {
+                        ((QuickShiftAdapter) binding.rvShifts.getAdapter()).setSelectedShift(latestSelected);
+                    }
+                    binding.btnConfirm.setEnabled(true);
+                }
+            } else {
+                showEmptyState();
+            }
+        });
+
+        // 4. Hiển thị ban đầu
         if (availableShifts.isEmpty()) {
             showEmptyState();
         } else {
@@ -88,24 +173,40 @@ public class AssignShiftBottomSheet extends BottomSheetDialogFragment {
 
         binding.btnCancel.setOnClickListener(v -> dismiss());
         binding.btnConfirm.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onShiftAssigned(selectedShift);
+            if (availableShifts.isEmpty()) {
+                // Nếu chưa có ca -> Mở AddShiftBottomSheet tạo ca mới dưới dạng Dialog con
+                AddShiftBottomSheet addShiftSheet = AddShiftBottomSheet.newInstance();
+                addShiftSheet.show(getChildFragmentManager(), "AddShiftBottomSheet");
+            } else {
+                // 1. Trả kết quả qua FragmentResult API (Chống mất callback khi xoay màn hình)
+                Bundle result = new Bundle();
+                result.putParcelable(EXTRA_SELECTED_SHIFT, selectedShift);
+                getParentFragmentManager().setFragmentResult(REQUEST_KEY, result);
+
+                // 2. Trả kết quả qua listener truyền thống (nếu có)
+                if (listener != null) {
+                    listener.onShiftAssigned(selectedShift);
+                }
+                dismiss();
             }
-            dismiss();
         });
     }
 
     private void showEmptyState() {
         binding.rvShifts.setVisibility(View.GONE);
+        binding.btnAddOtherShift.setVisibility(View.GONE); // Ẩn nút "Thêm ca làm khác" khi trống ca
         binding.layoutEmptyState.getRoot().setVisibility(View.VISIBLE);
-        binding.btnConfirm.setEnabled(false);
+
+        binding.btnConfirm.setText("Tạo ca làm việc");
+        binding.btnConfirm.setEnabled(true);
     }
 
     private void setupShiftRecyclerView() {
         binding.layoutEmptyState.getRoot().setVisibility(View.GONE);
         binding.rvShifts.setVisibility(View.VISIBLE);
+        binding.btnAddOtherShift.setVisibility(View.VISIBLE); // Hiển thị nút "Thêm ca làm khác" khi có ít nhất 1 ca
+        binding.btnConfirm.setText("Xác nhận xếp ca");
 
-        // Tạo danh sách bao gồm các Ca khả dụng + 1 tùy chọn "Không xếp ca"
         QuickShiftAdapter adapter = new QuickShiftAdapter(availableShifts, selected -> {
             this.selectedShift = selected;
             binding.btnConfirm.setEnabled(true);

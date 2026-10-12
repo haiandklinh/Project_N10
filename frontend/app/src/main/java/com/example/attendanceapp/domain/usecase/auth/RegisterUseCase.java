@@ -30,7 +30,7 @@ public class RegisterUseCase {
     /**
      * Gửi mã OTP về Số điện thoại
      */
-    public Completable sendOtp(String phoneNumber) {
+    public Single<String> sendOtp(String phoneNumber) {
         return authRepository.sendOtp(phoneNumber, OtpPurpose.REGISTER);
     }
 

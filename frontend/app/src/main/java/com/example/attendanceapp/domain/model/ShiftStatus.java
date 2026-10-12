@@ -4,26 +4,10 @@ import androidx.annotation.AttrRes;
 import com.example.attendanceapp.R;
 
 public enum ShiftStatus {
-    PENDING(
-            "Chưa vào ca",
-            R.attr.colorAttendanceNotCheckedContainer,
-            R.attr.colorAttendanceNotChecked
-    ),
-    WORKING(
-            "Đang làm việc",
-            R.attr.colorAttendancePresentContainer,
-            R.attr.colorAttendancePresent
-    ),
-    COMPLETED(
-            "Đã hoàn thành",
-            R.attr.colorAttendanceLeave,
-            R.attr.colorAttendanceLeaveContainer
-    ),
-    ABSENT(
-            "Vắng mặt",
-            R.attr.colorAttendanceAbsent, // Thay thế attr màu phù hợp nếu dự án có sẵn màu vắng mặt riêng
-            R.attr.colorAttendanceAbsentContainer
-    );
+    PENDING("Chưa vào ca", R.attr.colorAttendanceNotCheckedContainer, R.attr.colorAttendanceNotChecked),
+    WORKING("Đang làm việc", R.attr.colorAttendancePresentContainer, R.attr.colorAttendancePresent),
+    COMPLETED("Đã hoàn thành", R.attr.colorAttendanceLeave, R.attr.colorAttendanceLeaveContainer),
+    ABSENT("Vắng mặt", R.attr.colorAttendanceAbsent, R.attr.colorAttendanceAbsentContainer);
 
     private final String displayName;
     @AttrRes private final int bgAttrRes;

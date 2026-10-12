@@ -16,7 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.attendanceapp.R;
-import com.example.attendanceapp.databinding.FragmentAdjustmentBinding;
+import com.example.attendanceapp.databinding.FragmentEmployeeAdjustmentBinding;
 import com.example.attendanceapp.databinding.LayoutCreateAdjustmentBinding;
 import com.example.attendanceapp.domain.model.AdjustmentReasonType;
 import com.example.attendanceapp.domain.model.ApprovalStatus;
@@ -36,7 +36,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class EmployeeAdjustmentFragment extends Fragment {
 
-    private FragmentAdjustmentBinding binding;
+    private FragmentEmployeeAdjustmentBinding binding;
     private EmployeeAdjustmentAdapter adapter;
 
     // Danh sách gốc chứa tất cả dữ liệu
@@ -47,7 +47,7 @@ public class EmployeeAdjustmentFragment extends Fragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        binding = FragmentAdjustmentBinding.inflate(inflater, container, false);
+        binding = FragmentEmployeeAdjustmentBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 

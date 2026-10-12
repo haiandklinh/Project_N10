@@ -3,8 +3,10 @@
 
     <attr name="colorPrimary" format="color" />
     <attr name="colorPrimaryContainer" format="color" />
+    <attr name="colorSurface" format="color" />
     <attr name="colorSurfaceVariant" format="color" />
     <attr name="colorOnSurfaceVariant" format="color" />
+
 
     <attr name="colorAttendancePresent" format="color" />
     <attr name="colorAttendancePresentContainer" format="color" />

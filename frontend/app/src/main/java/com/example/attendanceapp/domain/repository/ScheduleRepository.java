@@ -5,21 +5,19 @@ import com.example.attendanceapp.domain.model.EmployeeWorkSchedule;
 
 import java.util.List;
 
+import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Single;
 
 public interface ScheduleRepository {
 
-    // ===== Dành cho Quản lý =====
-
-    /** Lấy toàn bộ danh sách nhân viên và lịch làm việc */
+    /** Gọi API lấy lịch làm việc và đẩy kết quả vào stream observeEmployeeWorkSchedules(). */
     Single<List<EmployeeWorkSchedule>> getEmployeeWorkSchedules();
 
-    /** Xếp ca làm và lịch làm cho nhân viên */
-    Single<EmployeeWorkSchedule> assignWorkSchedule(String employeeId, String name, String position,
-                                                      String shiftId, String workDate);
+    /** Stream lịch làm việc dùng chung giữa các ViewModel. */
+    Observable<List<EmployeeWorkSchedule>> observeEmployeeWorkSchedules();
 
-    // ===== Dành cho Nhân viên =====
+    Single<List<EmployeeWorkSchedule>> assignWorkSchedule(List<String> employeeIds, String shiftId, String workDate, String note);
 
-    /** Lấy ra lịch làm việc của nhân viên theo ngày */
+    // TODO: nên map sang domain model thay vì trả DTO của tầng data
     Single<List<StaffWorkScheduleResponse>> getStaffWorkSchedules(String date);
 }

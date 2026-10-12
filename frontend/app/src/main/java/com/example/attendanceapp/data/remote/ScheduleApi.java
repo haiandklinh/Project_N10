@@ -20,9 +20,9 @@ public interface ScheduleApi {
     @GET("manager/work-schedules")
     Single<List<EmployeeWorkScheduleResponse>> getEmployeeWorkSchedules();
 
-    /** Xếp ca làm và lịch làm cho nhân viên */
+    /** Xếp ca làm và lịch làm cho nhân viên (Hàng loạt) */
     @POST("manager/work-schedules/assign")
-    Single<EmployeeWorkScheduleResponse> assignWorkSchedule(@Body AssignWorkScheduleRequest request);
+    Single<List<EmployeeWorkScheduleResponse>> assignWorkSchedule(@Body AssignWorkScheduleRequest request);
 
     // ===== Dành cho Nhân viên =====
 

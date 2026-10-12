@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.attendanceapp.R;
 import com.example.attendanceapp.databinding.ItemManagerEmployeeBinding;
 import com.example.attendanceapp.domain.model.EmployeeStatus;
 import com.example.attendanceapp.domain.model.ManagerEmployeeItem;
@@ -50,8 +51,9 @@ public class ManagerEmployeeAdapter extends RecyclerView.Adapter<ManagerEmployee
         Context context = holder.itemView.getContext();
 
         holder.binding.tvName.setText(item.getFullName());
-        holder.binding.tvPosition.setText(item.getPosition() + " · " + item.getDepartment());
-        holder.binding.tvPhone.setText(item.getPhoneNumber());
+        holder.binding.tvEmployeeCode.setText(item.getEmployeeCode());
+        holder.binding.tvPosition.setText(item.getPosition());
+        holder.binding.tvDepartment.setText(item.getDepartment());
 
         // Binding thông tin trạng thái trực tiếp từ Enum EmployeeStatus
         EmployeeStatus status = item.getStatus() != null ? item.getStatus() : EmployeeStatus.ACTIVE;
@@ -60,6 +62,17 @@ public class ManagerEmployeeAdapter extends RecyclerView.Adapter<ManagerEmployee
         holder.binding.chipStatus.setChipBackgroundColor(ColorStateList.valueOf(
                 ContextCompat.getColor(context, status.getContainerColorRes())
         ));
+
+        // Thêm Glide hoặc Coil/Picasso để load Avatar trong onBindViewHolder
+        if (item.getAvatarUrl() != null && !item.getAvatarUrl().isEmpty()) {
+            com.bumptech.glide.Glide.with(context)
+                    .load(item.getAvatarUrl())
+                    .placeholder(R.drawable.ic_avatar)
+                    .error(R.drawable.ic_avatar)
+                    .into(holder.binding.ivAvatar);
+        } else {
+            holder.binding.ivAvatar.setImageResource(R.drawable.ic_avatar);
+        }
 
         holder.binding.getRoot().setOnClickListener(v -> {
             if (listener != null) listener.onItemClick(item);

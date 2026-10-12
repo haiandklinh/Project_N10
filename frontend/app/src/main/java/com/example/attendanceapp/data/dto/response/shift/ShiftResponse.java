@@ -17,18 +17,24 @@ public class ShiftResponse {
     @SerializedName("endTime")
     private String endTime;   // Format: "HH:mm" (e.g. "17:00")
 
-    @SerializedName("description")
-    private String description;
+    @SerializedName("latitude")
+    private Double latitude;
+
+    @SerializedName("longitude")
+    private Double longitude;
+
+
 
     public ShiftResponse() {
     }
 
-    public ShiftResponse(String shiftId, String shiftName, String startTime, String endTime, String description) {
+    public ShiftResponse(String shiftId, String shiftName, String startTime, String endTime, Double latitude, Double longitude) {
         this.shiftId = shiftId;
         this.shiftName = shiftName;
         this.startTime = startTime;
         this.endTime = endTime;
-        this.description = description;
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
     public String getShiftId() {
@@ -47,8 +53,12 @@ public class ShiftResponse {
         return endTime;
     }
 
-    public String getDescription() {
-        return description;
+    public Double getLatitude() {
+        return latitude;
+    }
+
+    public Double getLongitude() {
+        return longitude;
     }
 
     /**
@@ -59,7 +69,9 @@ public class ShiftResponse {
                 shiftId,
                 shiftName,
                 startTime,
-                endTime
+                endTime,
+                latitude,
+                longitude
         );
     }
 }

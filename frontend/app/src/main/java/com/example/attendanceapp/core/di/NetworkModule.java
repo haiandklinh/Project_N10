@@ -70,8 +70,7 @@ public class NetworkModule {
                 .addInterceptor(loggingInterceptor)
                 .authenticator(tokenAuthenticator);
 
-        // Chỉ add MockInterceptor trong DEBUG build
-        // TODO: Uncomment dòng dưới khi cần test mock, comment lại khi production
+        // TODO: Comment khi chạy production , Uncomment khi test mock,
         builder.addInterceptor(mockInterceptor);
 
         return builder.build();

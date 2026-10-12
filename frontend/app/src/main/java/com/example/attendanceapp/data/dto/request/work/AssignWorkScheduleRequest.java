@@ -1,16 +1,11 @@
 package com.example.attendanceapp.data.dto.request.work;
 
 import com.google.gson.annotations.SerializedName;
+import java.util.List;
 
 public class AssignWorkScheduleRequest {
-    @SerializedName("employee_id")
-    private String employeeId;
-
-    @SerializedName("name")
-    private String name;
-
-    @SerializedName("position")
-    private String position;
+    @SerializedName("employee_ids")
+    private List<String> employeeIds;
 
     @SerializedName("shift_id")
     private String shiftId;
@@ -18,39 +13,25 @@ public class AssignWorkScheduleRequest {
     @SerializedName("work_date")
     private String workDate;
 
+    @SerializedName("note")
+    private String note;
+
     public AssignWorkScheduleRequest() {
     }
 
-    public AssignWorkScheduleRequest(String employeeId, String name, String position, String shiftId, String workDate) {
-        this.employeeId = employeeId;
-        this.name = name;
-        this.position = position;
+    public AssignWorkScheduleRequest(List<String> employeeIds, String shiftId, String workDate, String note) {
+        this.employeeIds = employeeIds;
         this.shiftId = shiftId;
         this.workDate = workDate;
+        this.note = note;
     }
 
-    public String getEmployeeId() {
-        return employeeId;
+    public List<String> getEmployeeIds() {
+        return employeeIds;
     }
 
-    public void setEmployeeId(String employeeId) {
-        this.employeeId = employeeId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getPosition() {
-        return position;
-    }
-
-    public void setPosition(String position) {
-        this.position = position;
+    public void setEmployeeIds(List<String> employeeIds) {
+        this.employeeIds = employeeIds;
     }
 
     public String getShiftId() {
@@ -67,5 +48,13 @@ public class AssignWorkScheduleRequest {
 
     public void setWorkDate(String workDate) {
         this.workDate = workDate;
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
     }
 }

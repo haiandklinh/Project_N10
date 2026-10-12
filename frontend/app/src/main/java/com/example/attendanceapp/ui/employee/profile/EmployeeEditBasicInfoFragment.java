@@ -9,10 +9,16 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 
 import com.example.attendanceapp.R;
 import com.example.attendanceapp.databinding.FragmentEditBasicInfoBinding;
+import com.example.attendanceapp.domain.model.Gender;
+import com.example.attendanceapp.domain.model.UserAccount;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -20,9 +26,17 @@ import dagger.hilt.android.AndroidEntryPoint;
 public class EmployeeEditBasicInfoFragment extends Fragment {
 
     private FragmentEditBasicInfoBinding binding;
+    private EmployeeEditBasicInfoViewModel viewModel;
+    private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     public EmployeeEditBasicInfoFragment() {
         // Required empty public constructor
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        viewModel = new ViewModelProvider(this).get(EmployeeEditBasicInfoViewModel.class);
     }
 
     @Override
@@ -37,6 +51,7 @@ public class EmployeeEditBasicInfoFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         setupToolbar();
+        setupObservers();
         setupListeners();
     }
 
@@ -47,20 +62,56 @@ public class EmployeeEditBasicInfoFragment extends Fragment {
         );
     }
 
-    private void setupListeners() {
-        // Xử lý lưu thông tin liên hệ cho phép chỉnh sửa (Email & Số điện thoại)
-        binding.btnSave.setOnClickListener(v -> {
-            String email = binding.etEmail.getText() != null ? binding.etEmail.getText().toString().trim() : "";
-            String phone = binding.etPhone.getText() != null ? binding.etPhone.getText().toString().trim() : "";
-
-            if (email.isEmpty() || phone.isEmpty()) {
-                Toast.makeText(requireContext(), "Vui lòng nhập đầy đủ thông tin liên hệ", Toast.LENGTH_SHORT).show();
-                return;
+    private void setupObservers() {
+        viewModel.getUserAccount().observe(getViewLifecycleOwner(), this::populateData);
+        viewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
+            binding.btnSave.setEnabled(!isLoading);
+            // Optionally show progress bar
+        });
+        viewModel.getUpdateSuccess().observe(getViewLifecycleOwner(), success -> {
+            if (success) {
+                Toast.makeText(requireContext(), "Đã cập nhật thông tin thành công", Toast.LENGTH_SHORT).show();
+                Navigation.findNavController(requireView()).navigateUp();
             }
+        });
+        viewModel.getError().observe(getViewLifecycleOwner(), error -> {
+            if (error != null) {
+                Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 
-            // TODO: Gọi ViewModel để cập nhật Email và SĐT lên Server / Local DB
-            Toast.makeText(requireContext(), "Đã cập nhật thông tin liên hệ thành công", Toast.LENGTH_SHORT).show();
-            Navigation.findNavController(v).navigateUp();
+    private void populateData(UserAccount user) {
+        if (user == null) return;
+        binding.etFullName.setText(user.getFullName());
+        if (user.getDateOfBirth() != null) {
+            binding.etDob.setText(user.getDateOfBirth().format(dateFormatter));
+        }
+        binding.etGender.setText(user.getGender() != null ? user.getGender().name() : "");
+        binding.etEmail.setText(""); // Email is not in UserAccount flat getters, would need to fetch from another source or update model
+        binding.etPhone.setText(user.getPhoneNumber());
+        
+        // Employee specifics (from profile/entity if available)
+        // binding.etEmployeeId.setText(...);
+    }
+
+    private void setupListeners() {
+        binding.btnSave.setOnClickListener(v -> {
+            String fullName = binding.etFullName.getText().toString().trim();
+            String dobStr = binding.etDob.getText().toString().trim();
+            String genderStr = binding.etGender.getText().toString().trim();
+            
+            LocalDate dob = null;
+            try {
+                dob = LocalDate.parse(dobStr, dateFormatter);
+            } catch (Exception ignored) {}
+
+            Gender gender = null;
+            try {
+                gender = Gender.valueOf(genderStr.toUpperCase());
+            } catch (Exception ignored) {}
+
+            viewModel.updateProfile(fullName, dob, gender, null);
         });
 
         // Cần phê duyệt -> Chuyển qua màn hình tạo yêu cầu thay đổi thông tin bị khóa (Ticket)

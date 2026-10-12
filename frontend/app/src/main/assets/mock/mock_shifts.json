@@ -1,46 +1,40 @@
 {
   "list_shifts": [
     {
-      "shift_id": "shift_01",
-      "shift_name": "Ca Sáng",
-      "start_time": "08:00",
-      "end_time": "12:00"
+      "shiftId": "shift_01",
+      "shiftName": "Ca Sáng",
+      "startTime": "08:00",
+      "endTime": "12:00"
     },
     {
-      "shift_id": "shift_02",
-      "shift_name": "Ca Chiều",
-      "start_time": "13:00",
-      "end_time": "17:00"
-    },
-    {
-      "shift_id": "shift_03",
-      "shift_name": "Ca Tối",
-      "start_time": "18:00",
-      "end_time": "22:00"
+      "shiftId": "shift_02",
+      "shiftName": "Ca Chiều",
+      "startTime": "13:00",
+      "endTime": "17:00"
     }
   ],
   "shift_detail": {
-    "shift_id": "shift_01",
-    "shift_name": "Ca Sáng",
-    "start_time": "08:00",
-    "end_time": "12:00",
-    "description": "Ca làm việc buổi sáng từ 8h đến 12h"
+    "shiftId": "shift_01",
+    "shiftName": "Ca Sáng",
+    "startTime": "08:00",
+    "endTime": "12:00"
   },
   "create_shift_success": {
-    "shift_id": "shift_04",
-    "shift_name": "Ca Đêm",
-    "start_time": "22:00",
-    "end_time": "06:00",
-    "message": "Tạo ca làm thành công"
+    "shiftId": "shift_03",
+    "shiftName": "Ca Tối",
+    "startTime": "18:00",
+    "endTime": "22:00"
   },
   "update_shift_success": {
-    "shift_id": "shift_01",
-    "shift_name": "Ca Sáng (Mới)",
-    "start_time": "07:30",
-    "end_time": "11:30",
-    "message": "Cập nhật ca làm thành công"
+    "shiftId": "shift_01",
+    "shiftName": "Ca Sáng (Đã cập nhật)",
+    "startTime": "07:30",
+    "endTime": "12:00"
   },
   "delete_shift_success": {
     "message": "Xóa ca làm thành công"
+  },
+  "shift_not_found": {
+    "detail": "Không tìm thấy ca làm"
   }
 }

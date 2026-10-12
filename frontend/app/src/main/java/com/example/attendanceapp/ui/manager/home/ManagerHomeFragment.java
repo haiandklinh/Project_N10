@@ -20,9 +20,8 @@ import com.example.attendanceapp.R;
 import com.example.attendanceapp.databinding.FragmentManagerHomeBinding;
 import com.example.attendanceapp.domain.model.ApprovalRequestType;
 import com.example.attendanceapp.domain.model.ApprovalStatus;
-import com.example.attendanceapp.domain.model.ManagerApprovalItem;
-import com.example.attendanceapp.ui.manager.approval.ManagerApprovalAdapter;
-
+import com.example.attendanceapp.domain.model.AttendanceStatus;
+import com.example.attendanceapp.domain.model.RecentCheckInItem;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -49,8 +48,10 @@ public class ManagerHomeFragment extends Fragment {
 
         setupObservers();
         setupOverview();
+        setupActionRequired();
         setupQuickActions();
-        setupPendingPreview();
+        setupTodayShifts();
+        setupRecentCheckIns();
         setupListeners();
     }
 
@@ -80,6 +81,21 @@ public class ManagerHomeFragment extends Fragment {
         binding.includeOverview.tvLateCount.setText("3");
         binding.includeOverview.tvAbsentCount.setText("1");
         binding.includeOverview.tvLeaveCount.setText("2");
+
+        binding.includeOverview.tvOverviewDate.setText("24/09/2026");
+    }
+
+    private void setupActionRequired() {
+        List<ManagerActionAlert> alerts = new ArrayList<>();
+        alerts.add(new ManagerActionAlert("3 nhân viên đi muộn", "Cần xác nhận lý do hoặc xử lý vi phạm",
+                R.drawable.ic_warning, R.attr.colorAttendanceAbsent, R.attr.colorAttendanceAbsentContainer,
+                () -> Toast.makeText(getContext(), "Xử lý đi muộn", Toast.LENGTH_SHORT).show()));
+        alerts.add(new ManagerActionAlert("2 yêu cầu duyệt đơn", "Đơn xin nghỉ phép và đổi ca đang chờ",
+                R.drawable.ic_approval, R.attr.colorPrimary, R.attr.colorAttendanceAbsentContainer,
+                () -> navigateTo(R.id.action_managerHomeFragment_to_managerApprovalFragment)));
+
+        binding.includeActionRequired.rvActionRequired.setLayoutManager(new LinearLayoutManager(getContext()));
+        binding.includeActionRequired.rvActionRequired.setAdapter(new ManagerActionAlertAdapter(alerts));
     }
 
     private void setupQuickActions() {
@@ -139,39 +155,37 @@ public class ManagerHomeFragment extends Fragment {
                 navigateTo(R.id.action_managerHomeFragment_to_managerProfileFragment));
     }
 
-    private void setupPendingPreview() {
-        List<ManagerApprovalItem> pending = new ArrayList<>();
-        // Refactor: Thay ManagerApprovalItem.STATUS_PENDING -> ApprovalStatus.PENDING
-        pending.add(new ManagerApprovalItem("1", "Trần Thị Bình", null, "Nhân viên bán hàng",
-                ApprovalRequestType.LEAVE, "Ngày áp dụng: 20/09/2026", "Nghỉ cả ngày",
-                "Bị ốm đột xuất cần nghỉ để đi khám bệnh.", ApprovalStatus.PENDING,
-                System.currentTimeMillis()));
-        pending.add(new ManagerApprovalItem("2", "Lê Văn Cường", null, "Nhân viên kho",
-                ApprovalRequestType.ADJUSTMENT, "Ngày áp dụng: 19/09/2026", "Bổ sung check-out",
-                "Quên bấm check-out lúc tan ca do sự cố máy chấm công.", ApprovalStatus.PENDING,
-                System.currentTimeMillis()));
+    private void setupTodayShifts() {
+        List<TodayShiftSummary> shifts = new ArrayList<>();
+        shifts.add(new TodayShiftSummary("Ca sáng", "08:00 - 12:00", "Văn phòng chính", "Đang diễn ra", 12));
+        shifts.add(new TodayShiftSummary("Ca chiều", "13:30 - 17:30", "Văn phòng chính", "Sắp tới", 10));
 
-        RecyclerView rv = binding.includePending.rvPendingPreview;
+        binding.includeTodayShifts.rvTodayShifts.setLayoutManager(new LinearLayoutManager(getContext()));
+        binding.includeTodayShifts.rvTodayShifts.setAdapter(new TodayShiftAdapter(shifts));
+
+        binding.includeTodayShifts.tvSeeAllShifts.setOnClickListener(v ->
+                navigateTo(R.id.action_managerHomeFragment_to_managerScheduleFragment));
+    }
+
+
+    private void setupRecentCheckIns() {
+        List<RecentCheckInItem> checkins = new ArrayList<>();
+        checkins.add(new RecentCheckInItem("1", "Nguyễn Văn An", null, "Ca sáng", "07:52", AttendanceStatus.PRESENT));
+        checkins.add(new RecentCheckInItem("2", "Trần Thị Bình", null, "Ca sáng", "08:15", AttendanceStatus.LATE));
+        checkins.add(new RecentCheckInItem("3", "Lê Văn Cường", null, "Ca sáng", "08:05", AttendanceStatus.PRESENT));
+
+        RecyclerView rv = binding.includeRecentCheckins.rvRecentCheckins;
         rv.setLayoutManager(new LinearLayoutManager(getContext()));
-        rv.setAdapter(new ManagerApprovalAdapter(pending, new ManagerApprovalAdapter.OnActionListener() {
-            @Override
-            public void onApprove(ManagerApprovalItem item, int position) {
-                Toast.makeText(getContext(), "Đã duyệt yêu cầu của " + item.getEmployeeName(), Toast.LENGTH_SHORT).show();
-                navigateTo(R.id.managerApprovalFragment);
-            }
+        rv.setAdapter(new RecentCheckInAdapter(checkins));
 
-            @Override
-            public void onReject(ManagerApprovalItem item, int position) {
-                Toast.makeText(getContext(), "Đã từ chối yêu cầu của " + item.getEmployeeName(), Toast.LENGTH_SHORT).show();
-                navigateTo(R.id.managerApprovalFragment);
-            }
-        }));
-
-        boolean isEmpty = pending.isEmpty();
+        boolean isEmpty = checkins.isEmpty();
         rv.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
-        binding.includePending.includeEmptyState.getRoot().setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+        binding.includeRecentCheckins.includeEmptyState.getRoot().setVisibility(isEmpty ? View.VISIBLE : View.GONE);
 
-        binding.includePending.tvSeeAllPending.setOnClickListener(v -> navigateTo(R.id.managerApprovalFragment));
+        binding.includeRecentCheckins.tvSeeAllCheckins.setOnClickListener(v -> {
+            // navigate to all checkins
+            Toast.makeText(getContext(), "Xem tất cả check-in", Toast.LENGTH_SHORT).show();
+        });
     }
 
     private void navigateTo(int destinationId) {

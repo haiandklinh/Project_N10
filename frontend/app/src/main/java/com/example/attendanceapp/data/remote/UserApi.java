@@ -1,64 +1,64 @@
 package com.example.attendanceapp.data.remote;
 
-import com.example.attendanceapp.data.dto.request.profile.ProfileRequest;
+import com.example.attendanceapp.data.dto.request.profile.CreateEmployeeRequest;
+import com.example.attendanceapp.data.dto.request.profile.CreateManagerRequest;
 import com.example.attendanceapp.data.dto.request.profile.HandleJoinRequestRequest;
 import com.example.attendanceapp.data.dto.request.profile.JoinCompanyRequest;
-import com.example.attendanceapp.data.dto.response.profile.HandleJoinRequestResponse;
-import com.example.attendanceapp.data.dto.response.profile.JoinCompanyManagerResponse;
-import com.example.attendanceapp.data.dto.response.profile.JoinRequestsListResponse;
+import com.example.attendanceapp.data.dto.request.profile.UpdateEmployeeRequest;
+import com.example.attendanceapp.data.dto.request.profile.UpdateManagerRequest;
 import com.example.attendanceapp.data.dto.response.auth.MessageResponse;
-import com.example.attendanceapp.data.dto.response.profile.ProfileResponse;
+import com.example.attendanceapp.data.dto.response.profile.CreateEmployeeResponse;
+import com.example.attendanceapp.data.dto.response.profile.CreateManagerResponse;
+import com.example.attendanceapp.data.dto.response.profile.HandleJoinRequestResponse;
+import com.example.attendanceapp.data.dto.response.profile.JoinCompanyPendingResponse;
+import com.example.attendanceapp.data.dto.response.profile.JoinRequestsListResponse;
+import com.example.attendanceapp.data.dto.response.profile.UpdateEmployeeResponse;
+import com.example.attendanceapp.data.dto.response.profile.UpdateManagerResponse;
 
 import io.reactivex.rxjava3.core.Single;
-import okhttp3.MultipartBody;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
-import retrofit2.http.Multipart;
 import retrofit2.http.PATCH;
 import retrofit2.http.POST;
-import retrofit2.http.Part;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 public interface UserApi {
+    // ===== HỒ SƠ NHÂN VIÊN (STAFF) =====
+    /** Lấy thông tin hồ sơ Nhân viên */
+    @GET("staffs/profile")
+    Single<UpdateEmployeeResponse> getStaffProfile();
 
-    // ===== Cả hai vai trò =====
-    // Lấy thông tin hồ sơ (Dùng chung cho cả Manager/Staff tùy theo Token)
-    @GET("profile")
-    Single<ProfileResponse> getProfile();
-    /**
-     * Tạo hồ sơ cá nhân (POST /profile).
-     * Token được gắn tự động qua AuthInterceptor, không cần truyền thủ công ở Tham số.
-     */
-    @Multipart
-    @POST("profile")
-    Single<ProfileResponse> createProfile(
-            @Part("full_name") okhttp3.RequestBody fullName,
-            @Part("date") okhttp3.RequestBody date,
-            @Part("gender") okhttp3.RequestBody gender,
-            @Part okhttp3.MultipartBody.Part avatar
-    );
+    /** Tạo hồ sơ Nhân viên */
+    @POST("staffs/profile")
+    Single<CreateEmployeeResponse> createStaffProfile(@Body CreateEmployeeRequest request);
 
-    @POST("profile")
-    Single<ProfileResponse> createProfile(@Body ProfileRequest request);
-
-    /** Cập nhật hồ sơ cá nhân sau này */
-    @PATCH("profile")
-    Single<ProfileResponse> updateProfile(@Body ProfileRequest request);
-
-    /** Thông tin hiện tại: dùng khi mở app và ở trang cá nhân (GET /me) */
-    @GET("me")
-    Single<ProfileResponse> getMe();
+    /** Cập nhật hồ sơ Nhân viên */
+    @PATCH("staffs/profile")
+    Single<UpdateEmployeeResponse> updateStaffProfile(@Body UpdateEmployeeRequest request);
 
 
-    @Multipart
-    @POST("uploads-avatar")
-    Single<MessageResponse> uploadAvatar(@Part MultipartBody.Part file);
+    // ===== HỒ SƠ QUẢN LÝ (MANAGER) =====
+    /** Lấy thông tin hồ sơ Quản lý */
+    @GET("managers/profile")
+    Single<UpdateManagerResponse> getManagerProfile();
+
+    /** Tạo hồ sơ Quản lý */
+    @POST("managers/profile")
+    Single<CreateManagerResponse> createManagerProfile(@Body CreateManagerRequest request);
+
+    /** Cập nhật hồ sơ Quản lý */
+    @PATCH("managers/profile")
+    Single<UpdateManagerResponse> updateManagerProfile(@Body UpdateManagerRequest request);
 
 
-    // ===== Dành cho Quản lý =====
 
-    /** Lấy mã mời hiện tại của công ty để chia sẻ cho nhân viên. */
+
+    // ==========================================
+    // ===== CHỨC NĂNG CỦA QUẢN LÝ =====
+    // ==========================================
+
+    /** Lấy mã mời hiện tại của công ty để chia sẻ cho nhân viên */
     @GET("company/invitation-code")
     Single<MessageResponse> getInvitationCode();
 
@@ -66,7 +66,7 @@ public interface UserApi {
     @POST("company/invitation-code/regenerate")
     Single<MessageResponse> regenerateInvitationCode();
 
-    /** status = PENDING để lấy danh sách chờ duyệt. */
+    /** Lấy danh sách yêu cầu tham gia công ty (truyền status = PENDING) */
     @GET("company/join-requests")
     Single<JoinRequestsListResponse> getJoinRequests(@Query("status") String status);
 
@@ -74,11 +74,15 @@ public interface UserApi {
     @PATCH("company/join-requests/{requestId}")
     Single<HandleJoinRequestResponse> handleJoinRequest(
             @Path("requestId") String requestId,
-            @Body HandleJoinRequestRequest request);
+            @Body HandleJoinRequestRequest request
+    );
 
-    // ===== Dành cho Nhân viên =====
+
+    // ==========================================
+    // ===== CHỨC NĂNG CỦA NHÂN VIÊN =====
+    // ==========================================
 
     /** Nhân viên tham gia công ty bằng mã mời */
     @POST("company/join")
-    Single<JoinCompanyManagerResponse> joinManagerWithCode(@Body JoinCompanyRequest request);
+    Single<JoinCompanyPendingResponse> joinManagerWithCode(@Body JoinCompanyRequest request);
 }

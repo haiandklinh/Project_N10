@@ -162,7 +162,7 @@
         android:id="@+id/employeeAdjustmentFragment"
         android:name="com.example.attendanceapp.ui.employee.home.adjustment.EmployeeAdjustmentFragment"
         android:label="Yêu cầu điều chỉnh công"
-        tools:layout="@layout/fragment_adjustment" />
+        tools:layout="@layout/fragment_employee_adjustment" />
 
 
     <!-- ================================================================= -->

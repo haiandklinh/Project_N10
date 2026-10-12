@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "805328184904",
+    "project_id": "sendotp-730ba",
+    "storage_bucket": "sendotp-730ba.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:805328184904:android:39d0355423e7ecbbd89a7d",
+        "android_client_info": {
+          "package_name": "com.example.attendanceapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAwMZA-EWMKm-EFqkW549w8lF4sEBsL_U8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:805328184904:android:bc7792e6e0a00ac4d89a7d",
+        "android_client_info": {
+          "package_name": "com.example.listenmusicapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAwMZA-EWMKm-EFqkW549w8lF4sEBsL_U8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:805328184904:android:5a1c07a7deb05e2cd89a7d",
+        "android_client_info": {
+          "package_name": "com.example.testfirebase"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAwMZA-EWMKm-EFqkW549w8lF4sEBsL_U8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

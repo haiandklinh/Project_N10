@@ -1,26 +1,24 @@
 {
   "profile_get_success": {
-    "full_name": "Nhân Viên Thử Nghiệm",
+    "fullName": "Nhân Viên Thử Nghiệm 1",
     "date": "2000-05-20",
     "gender": "female",
-    "status": "APPROVED",
-    "avatar_url": "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+    "status": "active",
+    "avatar": "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
   },
   "profile_create_success": {
-    "message": "Tạo thông tin nhân viên thành công",
-    "full_name": "Nhân Viên Thử Nghiệm",
+    "fullName": "Nhân Viên Thử Nghiệm 2",
     "date": "2000-05-20",
     "gender": "female",
-    "status": "APPROVED",
-    "avatar_url": "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+    "status": "active",
+    "avatar": "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
   },
   "profile_update_success": {
-    "message": "Cập nhật thông tin nhân viên thành công",
-    "full_name": "Nhân Viên Thử Nghiệm",
+    "fullName": "Nhân Viên Thử Nghiệm 3",
     "date": "2000-05-20",
     "gender": "female",
-    "status": "APPROVED",
-    "avatar_url": "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+    "status": "active",
+    "avatar": "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
   },
   "company_request_success": {
     "request_id": "cm_req_101",

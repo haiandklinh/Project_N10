@@ -12,6 +12,8 @@ import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.attendanceapp.R;
 import com.example.attendanceapp.databinding.ActivityManagerMainBinding;
+import com.example.attendanceapp.ui.manager.approval.ManagerApprovalViewModel;
+import com.example.attendanceapp.ui.manager.human.ManagerHumanViewModel;
 
 import javax.inject.Inject;
 
@@ -26,6 +28,8 @@ public class ManagerMainActivity extends AppCompatActivity {
     private ActivityManagerMainBinding binding;
     private NavController navController;
     private ManagerMainViewModel viewModel;
+    private ManagerHumanViewModel humanViewModel;
+    private ManagerApprovalViewModel approvalViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +48,8 @@ public class ManagerMainActivity extends AppCompatActivity {
 
         // 1. Khởi tạo ViewModel
         viewModel = new ViewModelProvider(this).get(ManagerMainViewModel.class);
+        humanViewModel = new ViewModelProvider(this).get(ManagerHumanViewModel.class);
+        approvalViewModel = new ViewModelProvider(this).get(ManagerApprovalViewModel.class);
 
         // 2. UI Setup
         binding = ActivityManagerMainBinding.inflate(getLayoutInflater());
@@ -54,6 +60,20 @@ public class ManagerMainActivity extends AppCompatActivity {
 
         setupNavigation();
         setupCustomBottomNavListeners();
+        observeBadgeCounts();
+    }
+
+    private void observeBadgeCounts() {
+        if (humanViewModel != null) {
+            humanViewModel.joinRequestCount.observe(this, count -> {
+                updateEmployeeTabBadge(count != null ? count : 0);
+            });
+        }
+        if (approvalViewModel != null) {
+            approvalViewModel.pendingApprovalCount.observe(this, count -> {
+                updateApprovalTabBadge(count != null ? count : 0);
+            });
+        }
     }
 
     private void applyAppTheme(String theme) {
@@ -185,6 +205,36 @@ public class ManagerMainActivity extends AppCompatActivity {
         if (binding != null && binding.bottomNavigation != null) {
             binding.bottomNavigation.setVisibility(show ? View.VISIBLE : View.GONE);
         }
+    }
+
+    public void updateEmployeeTabBadge(int count) {
+        if (binding == null || binding.tvBadgeEmployee == null) return;
+
+        binding.tvBadgeEmployee.post(() -> {
+            if (binding == null || binding.tvBadgeEmployee == null) return;
+
+            if (count > 0) {
+                binding.tvBadgeEmployee.setVisibility(View.VISIBLE);
+                binding.tvBadgeEmployee.setText(count > 99 ? "99+" : String.valueOf(count));
+            } else {
+                binding.tvBadgeEmployee.setVisibility(View.GONE);
+            }
+        });
+    }
+
+    public void updateApprovalTabBadge(int count) {
+        if (binding == null || binding.tvBadgeApproval == null) return;
+
+        binding.tvBadgeApproval.post(() -> {
+            if (binding == null || binding.tvBadgeApproval == null) return;
+
+            if (count > 0) {
+                binding.tvBadgeApproval.setVisibility(View.VISIBLE);
+                binding.tvBadgeApproval.setText(count > 99 ? "99+" : String.valueOf(count));
+            } else {
+                binding.tvBadgeApproval.setVisibility(View.GONE);
+            }
+        });
     }
 
     @Override

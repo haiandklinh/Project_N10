@@ -11,6 +11,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -18,7 +19,11 @@ import com.example.attendanceapp.R;
 import com.example.attendanceapp.databinding.FragmentSelectEmployeeBinding;
 import com.example.attendanceapp.domain.model.EmployeeStatus;
 import com.example.attendanceapp.domain.model.ManagerEmployeeItem;
+import com.example.attendanceapp.ui.manager.schedule.assign.AssignShiftViewModel;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -32,9 +37,11 @@ public class SelectEmployeeFragment extends Fragment {
 
     private FragmentSelectEmployeeBinding binding;
     private SelectEmployeeAdapter adapter;
+    private AssignShiftViewModel viewModel;
 
-    private final List<ManagerEmployeeItem> allEmployees = new ArrayList<>();
+    private List<ManagerEmployeeItem> allEmployees = new ArrayList<>();
     private final Set<String> selectedEmployeeIds = new HashSet<>();
+    private List<ManagerEmployeeItem> filteredEmployees = new ArrayList<>();
 
     private String searchQuery = "";
     private int selectedFilterStatus = FILTER_ALL;
@@ -55,60 +62,61 @@ public class SelectEmployeeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        viewModel = new ViewModelProvider(requireActivity()).get(AssignShiftViewModel.class);
+
         setupToolbar();
-        loadMockData();
         setupRecyclerView();
         setupSearch();
         setupFilterChips();
         setupBottomBar();
-
-        updateFilteredList();
+        setupSelectAll();
+        observeViewModel();
     }
 
-    private void setupToolbar() {
-        binding.toolbarApp.setTitle("Xếp ca nhân viên");
-        binding.toolbarApp.setOnBackClickListener(() -> {
-            if (getActivity() != null) {
-                getActivity().onBackPressed();
+    private void observeViewModel() {
+        viewModel.getAllEmployeesLiveData().observe(getViewLifecycleOwner(), employees -> {
+            if (employees != null) {
+                this.allEmployees = employees;
+                updateFilteredList();
+            }
+        });
+
+        viewModel.getSelectedEmployeesLiveData().observe(getViewLifecycleOwner(), selected -> {
+            selectedEmployeeIds.clear();
+
+            if (selected != null) {
+                for (ManagerEmployeeItem item : selected) {
+                    selectedEmployeeIds.add(item.getUserId());
+                }
+            }
+
+            if (adapter != null) {
+                adapter.notifyDataSetChanged();
+            }
+
+            updateSelectionAllText();
+            updateBottomBarCount();
+        });
+
+        viewModel.getSelectedDateLiveData().observe(getViewLifecycleOwner(), date -> {
+            if (date != null) {
+                String dayOfWeekName = date.getDayOfWeek().getDisplayName(TextStyle.FULL, new Locale("vi"));
+                String dateFormatted = date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+                binding.tvAssignDateHint.setText("Xếp ca cho: " + dayOfWeekName + ", " + dateFormatted);
             }
         });
     }
 
-    private void loadMockData() {
-        // Refactor: Sử dụng Enum EmployeeStatus.ACTIVE và EmployeeStatus.ON_LEAVE
-        allEmployees.add(new ManagerEmployeeItem("u1", "NV001", "Nguyễn Văn A", null,
-                "Nhân viên", "Cửa hàng Q1", "0901 111 222", "03/01/2025",
-                EmployeeStatus.ACTIVE, 20, 1, 7200000));
-        allEmployees.add(new ManagerEmployeeItem("u2", "NV002", "Trần Văn B", null,
-                "Nhân viên", "Cửa hàng Q1", "0902 222 333", "12/03/2024",
-                EmployeeStatus.ACTIVE, 22, 0, 7850000));
-        allEmployees.add(new ManagerEmployeeItem("u3", "NV003", "Lê Thị C", null,
-                "Thu ngân", "Cửa hàng Q1", "0903 333 444", "20/06/2025",
-                EmployeeStatus.ACTIVE, 18, 2, 6500000));
-        allEmployees.add(new ManagerEmployeeItem("u4", "NV004", "Phạm Văn D", null,
-                "Nhân viên bảo vệ", "Cửa hàng Q3", "0904 444 555", "05/11/2023",
-                EmployeeStatus.ACTIVE, 24, 0, 8100000));
-        allEmployees.add(new ManagerEmployeeItem("u5", "NV005", "Hoàng Thị E", null,
-                "Pha chế", "Cửa hàng Q1", "0905 555 666", "18/08/2025",
-                EmployeeStatus.ACTIVE, 15, 3, 5200000));
-        allEmployees.add(new ManagerEmployeeItem("u6", "NV006", "Đỗ Văn G", null,
-                "Kho", "Kho vận", "0906 666 777", "10/02/2024",
-                EmployeeStatus.ON_LEAVE, 12, 1, 6000000));
-
-        // Mặc định chọn trước 3 nhân viên đầu tiên
-        selectedEmployeeIds.add("u1");
-        selectedEmployeeIds.add("u2");
-        selectedEmployeeIds.add("u3");
+    private void setupToolbar() {
+        binding.toolbarApp.setTitle("Chọn nhân viên xếp ca");
+        binding.toolbarApp.setOnBackClickListener(() -> {
+            requireActivity().getOnBackPressedDispatcher().onBackPressed();
+        });
     }
 
     private void setupRecyclerView() {
         adapter = new SelectEmployeeAdapter(new ArrayList<>(), selectedEmployeeIds, (employee, isChecked) -> {
-            if (isChecked) {
-                selectedEmployeeIds.add(employee.getUserId());
-            } else {
-                selectedEmployeeIds.remove(employee.getUserId());
-            }
-            updateBottomBarCount();
+            viewModel.toggleEmployeeSelection(employee);
         });
 
         binding.rvEmployees.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -155,19 +163,20 @@ public class SelectEmployeeFragment extends Fragment {
         List<ManagerEmployeeItem> filtered = new ArrayList<>();
 
         for (ManagerEmployeeItem item : allEmployees) {
-            // Lọc theo từ khóa tìm kiếm
-            boolean matchesSearch = searchQuery.isEmpty() ||
-                    item.getFullName().toLowerCase(Locale.ROOT).contains(searchQuery) ||
-                    (item.getEmployeeCode() != null && item.getEmployeeCode().toLowerCase(Locale.ROOT).contains(searchQuery));
+            boolean matchesSearch = searchQuery.isEmpty()
+                    || (item.getFullName() != null
+                    && item.getFullName().toLowerCase(Locale.ROOT).contains(searchQuery))
+                    || (item.getEmployeeCode() != null
+                    && item.getEmployeeCode().toLowerCase(Locale.ROOT).contains(searchQuery));
 
-            // Lọc theo trạng thái Chip (So sánh Enum trực tiếp với ==)
             boolean matchesFilter = true;
+
             if (selectedFilterStatus == FILTER_WORKING) {
-                matchesFilter = (item.getStatus() == EmployeeStatus.ACTIVE);
+                matchesFilter = item.getStatus() == EmployeeStatus.ACTIVE;
             } else if (selectedFilterStatus == FILTER_LEAVE) {
-                matchesFilter = (item.getStatus() == EmployeeStatus.ON_LEAVE);
+                matchesFilter = item.getStatus() == EmployeeStatus.ON_LEAVE;
             } else if (selectedFilterStatus == FILTER_ABSENT) {
-                matchesFilter = false; // Mock ví dụ Bỏ ca = 0
+                matchesFilter = false;
             }
 
             if (matchesSearch && matchesFilter) {
@@ -175,10 +184,75 @@ public class SelectEmployeeFragment extends Fragment {
             }
         }
 
-        adapter.updateData(filtered);
+        filteredEmployees = filtered;
+
+        adapter.updateData(filteredEmployees);
+        updateSelectionAllText();
         updateBottomBarCount();
     }
+    private void setupSelectAll() {
+        binding.tvSelectAll.setOnClickListener(v -> {
+            if (filteredEmployees.isEmpty()) {
+                return;
+            }
 
+            boolean allSelected = true;
+            for (ManagerEmployeeItem employee : filteredEmployees) {
+                if (!selectedEmployeeIds.contains(employee.getUserId())) {
+                    allSelected = false;
+                    break;
+                }
+            }
+
+            List<ManagerEmployeeItem> currentSelected = viewModel.getSelectedEmployeesLiveData().getValue();
+            if (currentSelected == null) currentSelected = new ArrayList<>();
+            List<ManagerEmployeeItem> newList = new ArrayList<>(currentSelected);
+
+            if (allSelected) {
+                // Hủy chọn tất cả các nhân viên đang hiển thị
+                for (ManagerEmployeeItem filtered : filteredEmployees) {
+                    newList.removeIf(item -> item.getUserId().equals(filtered.getUserId()));
+                }
+            } else {
+                // Chọn tất cả các nhân viên đang hiển thị (tránh trùng)
+                for (ManagerEmployeeItem filtered : filteredEmployees) {
+                    boolean alreadyIn = false;
+                    for (ManagerEmployeeItem item : newList) {
+                        if (item.getUserId().equals(filtered.getUserId())) {
+                            alreadyIn = true;
+                            break;
+                        }
+                    }
+                    if (!alreadyIn) {
+                        newList.add(filtered);
+                    }
+                }
+            }
+
+            viewModel.setSelectedEmployees(newList);
+        });
+    }
+    private void updateSelectionAllText() {
+        if (filteredEmployees.isEmpty()) {
+            binding.tvSelectAll.setText("Chọn tất cả");
+            return;
+        }
+
+        boolean allSelected = true;
+
+        for (ManagerEmployeeItem employee : filteredEmployees) {
+            if (!selectedEmployeeIds.contains(employee.getUserId())) {
+                allSelected = false;
+                break;
+            }
+        }
+
+        binding.tvSelectAll.setText(
+                allSelected
+                        ? "Hủy chọn tất cả"
+                        : "Chọn tất cả"
+        );
+    }
     private void setupBottomBar() {
         updateBottomBarCount();
 

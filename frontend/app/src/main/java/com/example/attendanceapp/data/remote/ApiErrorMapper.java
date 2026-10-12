@@ -57,7 +57,13 @@ public final class ApiErrorMapper {
                 Object detail = json.opt("detail");
                 if (detail instanceof JSONArray && ((JSONArray) detail).length() > 0) {
                     JSONObject first = ((JSONArray) detail).optJSONObject(0);
-                    if (first != null && first.has("msg")) message = first.getString("msg");
+                    if (first != null && first.has("msg")) {
+                        message = first.getString("msg");
+                        // Dịch các lỗi mặc định từ Backend (FastAPI/Pydantic)
+                        if ("field required".equalsIgnoreCase(message)) {
+                            message = "Mã OTP không hợp lệ!";
+                        }
+                    }
                 } else if (detail instanceof String) {
                     message = (String) detail;
                 } else if (json.has("message") && !json.isNull("message")) {

@@ -88,6 +88,7 @@
                 <com.google.android.material.chip.Chip
                     android:id="@+id/tag_location_valid"
                     style="@style/ChipStatusStyle"
+                    android:layout_margin="@dimen/spacing_m"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="top|end"
@@ -269,35 +270,33 @@
             app:layout_constraintTop_toBottomOf="@id/btn_check_action" />
 
 
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/card_today_summary"
-            style="@style/ItemCard"
-            app:cardBackgroundColor="?attr/colorPrimaryContainer"
+        <LinearLayout
+            android:id="@+id/layout_today_summary_cards"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_s"
+            android:orientation="horizontal"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tv_today_summary_title">
 
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/layout_today_summary"
-                android:layout_width="match_parent"
+            <!-- CARD CHECK IN -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_summary_check_in"
+                style="@style/ItemCard"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:paddingTop="@dimen/spacing_l"
-                android:paddingBottom="@dimen/spacing_l">
+                android:layout_marginEnd="@dimen/spacing_2xs"
+                android:layout_weight="1"
+                app:cardBackgroundColor="?attr/colorPrimaryContainer">
 
-                <!-- CHECK IN -->
                 <LinearLayout
-                    android:id="@+id/summary_check_in"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:orientation="vertical"
-                    app:layout_constraintEnd_toStartOf="@id/summary_divider"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent">
+                    android:paddingTop="@dimen/spacing_l"
+                    android:paddingBottom="@dimen/spacing_l">
 
                     <ImageView
                         android:layout_width="20dp"
@@ -326,28 +325,25 @@
 
                 </LinearLayout>
 
-                <!-- DIVIDER -->
-                <View
-                    android:id="@+id/summary_divider"
-                    android:layout_width="1dp"
-                    android:layout_height="52dp"
-                    android:background="?attr/colorOutlineVariant"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@id/summary_check_out"
-                    app:layout_constraintStart_toEndOf="@id/summary_check_in"
-                    app:layout_constraintTop_toTopOf="parent" />
+            </com.google.android.material.card.MaterialCardView>
 
+            <!-- CARD CHECK OUT -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_summary_check_out"
+                style="@style/ItemCard"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_2xs"
+                android:layout_weight="1"
+                app:cardBackgroundColor="?attr/colorPrimaryContainer">
 
-                <!-- CHECK OUT -->
                 <LinearLayout
-                    android:id="@+id/summary_check_out"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:orientation="vertical"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/summary_divider"
-                    app:layout_constraintTop_toTopOf="parent">
+                    android:paddingTop="@dimen/spacing_l"
+                    android:paddingBottom="@dimen/spacing_l">
 
                     <ImageView
                         android:layout_width="20dp"
@@ -376,9 +372,9 @@
 
                 </LinearLayout>
 
-            </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.card.MaterialCardView>
 
-        </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
 
 
         <!-- WARNING -->
@@ -393,7 +389,7 @@
             app:cardElevation="0dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/card_today_summary"
+            app:layout_constraintTop_toBottomOf="@id/layout_today_summary_cards"
             app:strokeWidth="0dp"
             tools:visibility="visible">
 

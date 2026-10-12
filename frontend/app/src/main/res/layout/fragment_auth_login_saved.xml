@@ -207,7 +207,7 @@
 
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/btnBiometric"
-                    style="@style/RadiusItemCard"
+                    style="@style/CircleIconCard"
                     android:layout_width="@dimen/button_height_default"
                     android:layout_height="@dimen/button_height_default"
                     android:layout_marginStart="@dimen/spacing_m"
