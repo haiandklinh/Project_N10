@@ -1,4 +1,4 @@
-from datetime import time ,date
+from datetime import time, date, datetime
 from uuid import UUID
 
 from schemas.base import BaseSchema
@@ -6,14 +6,14 @@ from schemas.base import BaseSchema
 
 class CheckinRequest(BaseSchema) :
     id_work_schedule : UUID
-    check_in_time : time
+    check_in_time: datetime
     latitude_check_in : float
     longitude_check_in :float
     workday :date
 
 class CheckoutRequest(BaseSchema) :
     id_work_schedule : UUID
-    check_out_time : time
+    check_out_time : datetime
     latitude_check_out : float
     longitude_check_out :float
     workday :date

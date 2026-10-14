@@ -5,7 +5,6 @@ from repositories.attendance_repository import AttendanceRepository
 from schemas.account import MessageResponse
 from schemas.attendance import CheckinRequest, CheckoutRequest, ListAttendanceRecordResponse, AttendanceRecordResponse
 
-
 class AttendanceService:
 
     def __init__(self, repository: AttendanceRepository):

@@ -10,6 +10,7 @@ from models.notification import Notification
 from models.staff import Staff
 from models.work_schedule import WorkSchedule
 from models.work_shift import WorkShift
+import secrets
 
 
 class ManagerRepository:
@@ -27,8 +28,22 @@ class ManagerRepository:
     async def create_profile(self, fullName, gender, avatar, date, id_account, company):
         result = await self.get_profile_by_id_account(id_account)
         if result is not None:
-            return None  # Kiểm tra xem profile đã từng được tạo hay chưa
+            return None
+
+        while True:
+            invitation_code = secrets.randbelow(900000) + 100000
+
+            result = await self.db.execute(
+                select(Manager).where(
+                    Manager.invitation_code == invitation_code
+                )
+            )
+
+            if result.scalar_one_or_none() is None:
+                break
+
         manager = Manager(
+            invitation_code=invitation_code,
             full_name=fullName,
             company=company,
             date_of_birth=date,
@@ -36,8 +51,8 @@ class ManagerRepository:
             avatar=avatar,
             id_account=id_account
         )
-        self.db.add(manager)
 
+        self.db.add(manager)
         await self.db.commit()
         await self.db.refresh(manager)
 
