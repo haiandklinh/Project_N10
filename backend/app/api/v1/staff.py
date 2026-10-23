@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 
 from app.api.deps import get_current_account, get_staff_service
 from schemas.staff import ProfileResponse, UpdateProfileRequest, ListStaffWorkScheduleResponse, StaffShiftChangeRequest, \
-    StaffLeaveRequest, JoinRequest, JoinResponse, CreateProfileRequest, ListNotificationResponse
+    StaffLeaveRequest, JoinRequest, JoinResponse, CreateProfileRequest, ListNotificationResponse, ListCompany
 
 router = APIRouter(
     prefix="/staffs",
@@ -89,3 +89,11 @@ async def request_adjustment_attendance(
     id_account=Depends(get_current_account)
 ) :
     pass
+
+# Lấy danh sách các công ty của nhân viên đang làm
+@router.get("/my-company",response_model=ListCompany)
+async def  get_companies(
+    service=Depends(get_staff_service),
+    id_account=Depends(get_current_account)
+) :
+   return await service.get_companies(id_account)

@@ -65,4 +65,11 @@ class JoinResponse(BaseSchema) :
     company :str
     OTP :str
 
+class CompanyResponse(BaseSchema) :
+    name_company : str
+    name_manager : str
+    position_staff : str
+    id_manager : UUID
+class ListCompany(BaseSchema) :
+    data : list[CompanyResponse]
 

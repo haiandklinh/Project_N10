@@ -25,6 +25,15 @@ class ManagerRepository:
 
         return result.scalar_one_or_none()
 
+    async def get_staffs(self, id_manager):
+        result = await self.db.execute(
+            select(Staff, ManagerStaff.position)
+            .join(ManagerStaff, ManagerStaff.id_staff == Staff.id)
+            .where(ManagerStaff.id_manager == id_manager)
+        )
+
+        return result.all()
+
     async def create_profile(self, fullName, gender, avatar, date, id_account, company):
         result = await self.get_profile_by_id_account(id_account)
         if result is not None:
@@ -203,3 +212,5 @@ class ManagerRepository:
         self.db.add(new_staff)
         await self.db.commit()
         await self.db.refresh(new_staff)
+
+

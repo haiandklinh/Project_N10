@@ -43,3 +43,7 @@ class Notification(Base):
         String(255),
         nullable=False
     )
+    status :Mapped[str] =mapped_column(
+        String(50),
+        default="active" #deactive
+    )

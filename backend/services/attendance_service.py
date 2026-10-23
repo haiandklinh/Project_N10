@@ -1,5 +1,6 @@
 import math
-from http.client import HTTPException
+
+from fastapi import HTTPException
 
 from repositories.attendance_repository import AttendanceRepository
 from schemas.account import MessageResponse
@@ -64,10 +65,10 @@ class AttendanceService:
                                                             request.latitude_check_out, request.longitude_check_out)
         if attendance_record is not None:
             return MessageResponse(
-                message="Check in Successful"
+                message="Check out Successful"
             )
         return MessageResponse(
-            message="Check in Failed"
+            message="Check out Failed"
         )
 
     async def get_attendance_record(self,id_manager, id_account,start_date,end_date,page,size) -> ListAttendanceRecordResponse:

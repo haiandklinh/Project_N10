@@ -7,7 +7,8 @@ from app.websocket.staff import websocket_staff
 from core.redis_custom import redis_client
 from repositories.manager_repository import ManagerRepository
 from schemas.manager import CreateProfileRequest, ProfileResponse, UpdateProfileRequest, NotificationResponse, \
-    ListNotificationResponse, InvitationCodeResponse, ShiftChangeRequest, LeaveDayRequest, JoinRequest
+    ListNotificationResponse, InvitationCodeResponse, ShiftChangeRequest, LeaveDayRequest, JoinRequest, \
+    ListStaffByCompany, StaffByCompany
 
 
 class ManagerService:
@@ -50,6 +51,28 @@ class ManagerService:
             company = profile.company
         )
 
+    async def get_staffs(self, id_account: str) -> ListStaffByCompany:
+        manager = await self.repository.get_profile_by_id_account(id_account)
+        if manager is None:
+            raise HTTPException(404, "Not found Manager in the system")
+
+        staffs = await self.repository.get_staffs(manager.id)
+
+        return ListStaffByCompany(
+            data=[
+                StaffByCompany(
+                    id_staff=staff.id,
+                    name_staff=staff.full_name,
+                    position=position or "",
+                    date_of_birth=staff.date_of_birth,
+                    gender=staff.gender,
+                    status=staff.status,
+                    avatar=staff.avatar or "",
+                )
+                for staff, position in staffs
+            ]
+        )
+
     async def update_profile(self,request: UpdateProfileRequest,id_account: str) -> ProfileResponse:
 
         profile = await self.repository.update_profile(
@@ -90,7 +113,8 @@ class ManagerService:
                 send_person = staff.full_name,
                 content=notification.content,
                 send_at=notification.created_at ,
-                notification_type= notification.notification_type
+                notification_type= notification.notification_type ,
+                status = notification.status
             )
             for notification, staff in notifications
         ]
@@ -200,6 +224,8 @@ class ManagerService:
                 "status" :str(request.status)
             }
         )
+
+
 
 
 

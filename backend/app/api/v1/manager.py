@@ -4,7 +4,8 @@ from fastapi import APIRouter, Depends
 
 from app.api.deps import get_manager_service, get_current_account
 from schemas.manager import ProfileResponse, CreateProfileRequest, UpdateProfileRequest, NotificationResponse, \
-    ListNotificationResponse, InvitationCodeResponse, ShiftChangeRequest, LeaveDayRequest, JoinRequest
+    ListNotificationResponse, InvitationCodeResponse, ShiftChangeRequest, LeaveDayRequest, JoinRequest, \
+    ListStaffByCompany
 
 router = APIRouter(
     prefix="/managers",
@@ -78,3 +79,12 @@ async def handle_join_request(
     id_account=Depends(get_current_account)
 ):
     return await service.handle_join_request(request,id_account)
+
+#Lấy danh sách nhân viên công ty
+@router.get("/staffs",response_model=ListStaffByCompany)
+async def get_staffs(
+    service=Depends(get_manager_service),
+    id_account=Depends(get_current_account)
+):
+    return await service.get_staffs(id_account)
+
