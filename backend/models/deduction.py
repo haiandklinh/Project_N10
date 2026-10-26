@@ -49,3 +49,7 @@ class Deduction(Base):
         String(255),
         nullable=False
     )
+    id_payroll: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("payrolls.id"),
+        nullable=True
+    )

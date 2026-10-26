@@ -6,32 +6,37 @@ from sqlalchemy.orm import Mapped, mapped_column
 from db.base import Base
 
 
-class BonusSheet(Base) :
+class BonusSheet(Base):
     __tablename__ = "bonus_sheets"
-    id : Mapped[uuid.UUID] =mapped_column(
+    id: Mapped[uuid.UUID] = mapped_column(
         primary_key=True,
         default=uuid.uuid4,
     )
     id_staff: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("staffs.id") ,
+        ForeignKey("staffs.id"),
         nullable=False
     )
     id_manager: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("managers.id"),
         nullable=False
     )
-    bonusAmount : Mapped[float] = mapped_column(
-        Float ,
-        nullable= True
+    bonusAmount: Mapped[float] = mapped_column(
+        Float,
+        nullable=True
     )
-    reason : Mapped[str] = mapped_column(
-        String(255) ,
+    reason: Mapped[str] = mapped_column(
+        String(255),
         nullable=True
     )
 
-    status :Mapped[str] = mapped_column(
+    status: Mapped[str] = mapped_column(
         String(255)
     )
-    note :Mapped[str] = mapped_column(
+    note: Mapped[str] = mapped_column(
         String(255)
+    )
+
+    id_payroll: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("payrolls.id"),
+        nullable=True
     )
