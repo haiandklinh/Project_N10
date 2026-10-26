@@ -7,7 +7,7 @@ from core.redis_custom import redis_client
 from repositories.staff_repository import StaffRepository
 from schemas.staff import CreateProfileRequest, ProfileResponse, UpdateProfileRequest, StaffWorkScheduleResponse, \
     ListStaffWorkScheduleResponse, StaffWorkShiftResponse, StaffShiftChangeRequest, StaffLeaveRequest, JoinRequest, \
-    JoinResponse, ListNotificationResponse, NotificationResponse
+    JoinResponse, ListNotificationResponse, NotificationResponse, CompanyResponse, ListCompany
 
 
 class StaffService:
@@ -47,6 +47,25 @@ class StaffService:
             status=profile.status,
             avatar=profile.avatar,
             date=profile.date_of_birth
+        )
+
+    async def get_companies(self, id_account: str) -> ListCompany:
+        staff = await self.repository.get_profile_by_id_account(id_account)
+        if staff is None:
+            raise HTTPException(404, "Not found Staff in the system")
+
+        companies = await self.repository.get_companies(staff.id)
+
+        return ListCompany(
+            data=[
+                CompanyResponse(
+                    name_company=manager.company or "",
+                    name_manager=manager.full_name,
+                    position_staff=position or "",
+                    id_manager=manager.id,
+                )
+                for manager, position in companies
+            ]
         )
 
     async def update_profile(self, request: UpdateProfileRequest, id_account: str) -> ProfileResponse:
@@ -295,7 +314,7 @@ class StaffService:
                 status_code=404,
                 detail="Not found Staff in System"
             )
-
+        phone_number = await self.repository.get_phone_number_by_id(id_account)
         # Lấy manager từ mã mời
         manager_id = await redis_client.get(request.OTP)
         if manager_id is None:
@@ -318,7 +337,8 @@ class StaffService:
                 "id_staff": str(staff.id),
                 "avatar_staff": staff.avatar,
                 "name_staff": staff.full_name,
-                "type": notification.notification_type
+                "type": notification.notification_type,
+                "phone_number" : phone_number
             }
         )
         return JoinResponse(

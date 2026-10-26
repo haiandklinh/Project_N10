@@ -4,6 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.config import settings
+from models.account import Account
 from models.manager import Manager
 from models.manager_staff import ManagerStaff
 from models.notification import Notification
@@ -24,6 +25,15 @@ class ManagerRepository:
         )
 
         return result.scalar_one_or_none()
+
+    async def get_staffs(self, id_manager):
+        result = await self.db.execute(
+            select(Staff, ManagerStaff.position)
+            .join(ManagerStaff, ManagerStaff.id_staff == Staff.id)
+            .where(ManagerStaff.id_manager == id_manager)
+        )
+
+        return result.all()
 
     async def create_profile(self, fullName, gender, avatar, date, id_account, company):
         result = await self.get_profile_by_id_account(id_account)
@@ -86,9 +96,11 @@ class ManagerRepository:
 
     async def get_notification(self, id_manager):
         result = await self.db.execute(
-            select(Notification, Staff)
+            select(Notification, Staff,Account.phone_number)
             .join(Staff,
                   Staff.id == Notification.id_staff)
+            .join(Account,
+                  Account.id ==Staff.id_account)
             .where(
                 Notification.id_manager == id_manager,
                 Notification.notification_type.in_([
@@ -203,3 +215,5 @@ class ManagerRepository:
         self.db.add(new_staff)
         await self.db.commit()
         await self.db.refresh(new_staff)
+
+

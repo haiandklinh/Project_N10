@@ -89,4 +89,4 @@ async def notification_websocket(
             await websocket.receive_text()
 
     except WebSocketDisconnect:
-        websocket_manager.disconnect(staff_id)
+        websocket_staff.disconnect(staff_id)
