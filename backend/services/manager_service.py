@@ -114,9 +114,10 @@ class ManagerService:
                 content=notification.content,
                 send_at=notification.created_at ,
                 notification_type= notification.notification_type ,
-                status = notification.status
+                status = notification.status ,
+                phone_number= phone_number
             )
-            for notification, staff in notifications
+            for notification, staff , phone_number in notifications
         ]
 
         return ListNotificationResponse(

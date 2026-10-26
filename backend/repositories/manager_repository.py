@@ -4,6 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.config import settings
+from models.account import Account
 from models.manager import Manager
 from models.manager_staff import ManagerStaff
 from models.notification import Notification
@@ -95,9 +96,11 @@ class ManagerRepository:
 
     async def get_notification(self, id_manager):
         result = await self.db.execute(
-            select(Notification, Staff)
+            select(Notification, Staff,Account.phone_number)
             .join(Staff,
                   Staff.id == Notification.id_staff)
+            .join(Account,
+                  Account.id ==Staff.id_account)
             .where(
                 Notification.id_manager == id_manager,
                 Notification.notification_type.in_([

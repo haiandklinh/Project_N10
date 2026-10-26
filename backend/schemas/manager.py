@@ -30,6 +30,7 @@ class UpdateProfileRequest(BaseSchema):
 
 class  NotificationResponse(BaseSchema) :
     id_staff :UUID
+    phone_number : str
     avatar_send_person :str | None = None
     send_person :str
     content : dict
