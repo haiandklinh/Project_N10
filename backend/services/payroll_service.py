@@ -13,7 +13,8 @@ from schemas.payroll import (
     CalculatePayrollRequest, PayrollResponse,
     CreateBonusRequest, BonusResponse,
     CreateDeductionRequest, DeductionResponse,
-    PayrollHistoryItem, ListPayrollHistory
+    PayrollHistoryItem, ListPayrollHistory,
+    ManagerPayrollHistoryItem, ListManagerPayrollHistory,
 )
 
 

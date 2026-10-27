@@ -90,7 +90,7 @@ class AttendanceService:
                 check_in_time=record.check_in_time,
                 check_out_time=record.check_out_time,
                 workday=work_schedule.work_day,
-                name_shift=workshift.nameshift,
+                name_shift=workshift.name,
                 start_time=workshift.start_time,
                 end_time=workshift.end_time,
                 status=record.status

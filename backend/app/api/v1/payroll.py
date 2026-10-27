@@ -8,7 +8,7 @@ from schemas.payroll import (
     CalculatePayrollRequest, PayrollResponse,
     CreateBonusRequest, BonusResponse,
     CreateDeductionRequest, DeductionResponse,
-    ListPayrollHistory
+    ListPayrollHistory, ListManagerPayrollHistory
 )
 
 router = APIRouter(tags=["Payroll"])

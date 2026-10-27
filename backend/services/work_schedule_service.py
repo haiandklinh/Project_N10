@@ -1,4 +1,4 @@
-from http.client import HTTPException
+from fastapi import HTTPException
 
 from repositories.work_schedule_repository import WorkScheduleRepository
 from schemas.work_schedule import ListStaffWorkScheduleResponse, StaffWorkScheduleResponse, WorkShift, \
