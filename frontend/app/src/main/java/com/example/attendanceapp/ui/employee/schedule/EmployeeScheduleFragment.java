@@ -17,27 +17,27 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.attendanceapp.R;
+import com.example.attendanceapp.core.notification.ShiftAlarmScheduler;
+import com.example.attendanceapp.core.notification.WebSocketNotificationManager;
+import com.example.attendanceapp.data.local.pref.SharedPreferenceApp;
 import com.example.attendanceapp.core.utils.ColorUtil;
-import com.example.attendanceapp.data.dto.response.schedule.StaffWorkScheduleResponse;
 import com.example.attendanceapp.databinding.FragmentEmployeeScheduleBinding;
 import com.example.attendanceapp.databinding.LayoutScheduleTimelineBinding;
-import com.example.attendanceapp.domain.model.AttendanceStatus;
 import com.example.attendanceapp.domain.model.Shift;
 import com.example.attendanceapp.domain.model.ShiftStatus;
-import com.example.attendanceapp.domain.model.WeekDay;
 import com.example.attendanceapp.ui.employee.schedule.shift.EmployeeUpcomingShiftAdapter;
 import com.example.attendanceapp.ui.employee.schedule.weekday.EmployeeScheduleWeekDayAdapter;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
+import javax.inject.Inject;
+
 import dagger.hilt.android.AndroidEntryPoint;
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
 
 @AndroidEntryPoint
 public class EmployeeScheduleFragment extends Fragment {
@@ -46,18 +46,16 @@ public class EmployeeScheduleFragment extends Fragment {
     private EmployeeScheduleWeekDayAdapter employeeScheduleWeekDayAdapter;
     private EmployeeUpcomingShiftAdapter shiftAdapter;
     private EmployeeScheduleViewModel viewModel;
+    private final CompositeDisposable disposables = new CompositeDisposable();
+    private io.reactivex.rxjava3.disposables.Disposable autoRefreshDisposable;
 
-    private LocalDate selectedDate;
-    private LocalDate currentWeekStart;
+    @Inject
+    WebSocketNotificationManager webSocketManager;
+
+    @Inject
+    SharedPreferenceApp sharedPreferenceApp;
 
     public EmployeeScheduleFragment() {
-    }
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        selectedDate = LocalDate.now();
-        currentWeekStart = selectedDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
     }
 
     @Override
@@ -84,15 +82,70 @@ public class EmployeeScheduleFragment extends Fragment {
             return insets;
         });
 
+        setupSwipeRefresh();
         setupWeekDaysRecyclerView();
-        setupTodayShiftCard();
+        setupTodayShiftActions();
         setupUpcomingShiftRecyclerView();
         setupWeekNavigator();
         setupQuickActions();
         setupObservers();
-
-        loadWeekData();
+        listenToWebSocketNotifications();
     }
+
+    private void setupSwipeRefresh() {
+        binding.swipeRefreshLayout.setOnRefreshListener(() -> viewModel.refresh());
+    }
+
+    private void listenToWebSocketNotifications() {
+        if (webSocketManager != null) {
+            disposables.add(webSocketManager.observeIncomingNotifications()
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(notification -> {
+                        // Tự động tải lại lịch khi nhận thông báo liên quan đến ca làm
+                        if (viewModel != null) {
+                            viewModel.refresh();
+                        }
+                    }, throwable -> {}));
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Tự động đồng bộ ca làm việc mới nhất khi nhân viên quay lại màn hình
+        if (viewModel != null) {
+            viewModel.refresh();
+        }
+        startAutoRefresh();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        stopAutoRefresh();
+    }
+
+    private void startAutoRefresh() {
+        stopAutoRefresh();
+        autoRefreshDisposable = io.reactivex.rxjava3.core.Observable.interval(15, 15, java.util.concurrent.TimeUnit.SECONDS)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(tick -> {
+                    if (viewModel != null) {
+                        viewModel.refreshSilently();
+                    }
+                }, throwable -> {});
+    }
+
+    private void stopAutoRefresh() {
+        if (autoRefreshDisposable != null && !autoRefreshDisposable.isDisposed()) {
+            autoRefreshDisposable.dispose();
+            autoRefreshDisposable = null;
+        }
+    }
+
+    // =====================================================================
+    // SETUP VIEW (chỉ gắn adapter / listener, dữ liệu do ViewModel đẩy xuống)
+    // =====================================================================
 
     private void setupWeekDaysRecyclerView() {
         LayoutScheduleTimelineBinding timelineBinding = binding.includeCardTimeline;
@@ -100,29 +153,106 @@ public class EmployeeScheduleFragment extends Fragment {
         employeeScheduleWeekDayAdapter = new EmployeeScheduleWeekDayAdapter(new ArrayList<>());
         timelineBinding.rvWeekDays.setAdapter(employeeScheduleWeekDayAdapter);
 
-        employeeScheduleWeekDayAdapter.setOnDayClickListener(day -> {
-            selectedDate = day.getDate();
-            onDaySelected(selectedDate);
+        employeeScheduleWeekDayAdapter.setOnDayClickListener(day -> viewModel.selectDate(day.getDate()));
+    }
+
+    private void setupTodayShiftActions() {
+        if (binding.includeShiftToday == null) return;
+
+        if (binding.includeShiftToday.tvExchangeShift != null) {
+            binding.includeShiftToday.tvExchangeShift.setOnClickListener(v ->
+                    Navigation.findNavController(v)
+                            .navigate(R.id.action_employeeScheduleFragment_to_employeeShiftExchangeFragment));
+        }
+    }
+
+    private void setupUpcomingShiftRecyclerView() {
+        shiftAdapter = new EmployeeUpcomingShiftAdapter();
+
+        binding.rvUpcomingShifts.setLayoutManager(new LinearLayoutManager(requireContext()));
+        binding.rvUpcomingShifts.setNestedScrollingEnabled(false);
+        binding.rvUpcomingShifts.setAdapter(shiftAdapter);
+
+        shiftAdapter.setOnItemClickListener((shift, position) -> {
+            if (shift != null) {
+                Bundle args = new Bundle();
+                args.putString("selected_shift_id", shift.getId());
+                args.putString("selected_shift_name", shift.getShiftName());
+                if (shift.getDate() != null) {
+                    args.putString("selected_shift_date", shift.getDate().toString());
+                }
+                Navigation.findNavController(requireView())
+                        .navigate(R.id.action_employeeScheduleFragment_to_employeeShiftExchangeFragment, args);
+            }
         });
     }
 
+    private void setupWeekNavigator() {
+        LayoutScheduleTimelineBinding timelineBinding = binding.includeCardTimeline;
+
+        timelineBinding.btnPrevWeek.setOnClickListener(v -> viewModel.showPreviousWeek());
+        timelineBinding.btnNextWeek.setOnClickListener(v -> viewModel.showNextWeek());
+    }
+
+    private void setupQuickActions() {
+        binding.btnSwapShift.setOnClickListener(v ->
+                Navigation.findNavController(v)
+                        .navigate(R.id.action_employeeScheduleFragment_to_employeeShiftExchangeFragment));
+
+        binding.btnRequestLeave.setOnClickListener(v ->
+                Navigation.findNavController(v)
+                        .navigate(R.id.action_employeeScheduleFragment_to_employeeLeaveHistoryFragment));
+    }
+
     // =====================================================================
-    // BIND DỮ LIỆU CA LÀM HÔM NAY (dùng Shift model mới + ShiftStatus enum)
+    // OBSERVE & RENDER
     // =====================================================================
-    private void setupTodayShiftCard() {
+
+    private void setupObservers() {
+        viewModel.getScheduleUiState().observe(getViewLifecycleOwner(), state -> {
+            if (state.isLoading()) {
+                binding.swipeRefreshLayout.setRefreshing(true);
+                return;
+            }
+            binding.swipeRefreshLayout.setRefreshing(false);
+            if (state.getError() != null) {
+                Toast.makeText(requireContext(), "Lỗi: " + state.getError(), Toast.LENGTH_SHORT).show();
+                return;
+            }
+            render(state);
+        });
+    }
+
+    private void render(EmployeeScheduleViewModel.ScheduleUiState state) {
+        bindTodayShift(state.getTodayShift());
+        shiftAdapter.submitList(state.getUpcomingShifts());
+
+        employeeScheduleWeekDayAdapter.submitList(state.getWeekDays());
+        updateWeekRangeTitle(state.getWeekStart());
+        updateWeekSummary(state.getTotalShifts(), state.getTotalHours());
+    }
+
+    private void bindTodayShift(@Nullable Shift todayShift) {
         if (binding.includeShiftToday == null || binding.includeShiftToday.cardTodayShift == null) return;
 
-        // Khởi tạo Shift với constructor mới, đã loại bỏ các tham số String thừa
-        Shift todayShift = new Shift(
-                "s100",
-                "u1000",
-                LocalDate.now(),
-                "Ca Sáng",
-                LocalTime.of(8, 0),
-                LocalTime.of(17, 0),
-                "Văn phòng chính · Tầng 3",
-                ShiftStatus.PENDING
-        );
+        if (todayShift == null) {
+            binding.includeShiftToday.cardTodayShift.setVisibility(View.GONE);
+            return;
+        }
+        binding.includeShiftToday.cardTodayShift.setVisibility(View.VISIBLE);
+
+        if (binding.includeShiftToday.tvExchangeShift != null) {
+            binding.includeShiftToday.tvExchangeShift.setOnClickListener(v -> {
+                Bundle args = new Bundle();
+                args.putString("selected_shift_id", todayShift.getId());
+                args.putString("selected_shift_name", todayShift.getShiftName());
+                if (todayShift.getDate() != null) {
+                    args.putString("selected_shift_date", todayShift.getDate().toString());
+                }
+                Navigation.findNavController(v)
+                        .navigate(R.id.action_employeeScheduleFragment_to_employeeShiftExchangeFragment, args);
+            });
+        }
 
         if (binding.includeShiftToday.tvShiftName != null) {
             binding.includeShiftToday.tvShiftName.setText(todayShift.getShiftName());
@@ -133,16 +263,22 @@ public class EmployeeScheduleFragment extends Fragment {
         }
 
         if (binding.includeShiftToday.tvShiftLocation != null) {
-            binding.includeShiftToday.tvShiftLocation.setText(todayShift.getLocation());
+            String loc = todayShift.getLocation();
+            if (loc == null || loc.trim().isEmpty()) {
+                if (sharedPreferenceApp != null) {
+                    loc = sharedPreferenceApp.getShiftAddress(todayShift.getShiftName());
+                }
+            }
+            if (loc == null || loc.trim().isEmpty()) {
+                loc = "Vị trí ca làm việc";
+            }
+            binding.includeShiftToday.tvShiftLocation.setText(loc);
+            binding.includeShiftToday.tvShiftLocation.setVisibility(View.VISIBLE);
         }
 
         bindTodayShiftStatusChip(todayShift.getStatus());
-
-        if (binding.includeShiftToday.tvExchangeShift != null) {
-            binding.includeShiftToday.tvExchangeShift.setOnClickListener(v -> {
-                Navigation.findNavController(v)
-                        .navigate(R.id.action_employeeScheduleFragment_to_employeeShiftExchangeFragment);
-            });
+        if (getContext() != null) {
+            ShiftAlarmScheduler.scheduleShiftAlarms(requireContext(), todayShift, sharedPreferenceApp);
         }
     }
 
@@ -152,26 +288,8 @@ public class EmployeeScheduleFragment extends Fragment {
         ShiftStatus currentStatus = (status != null) ? status : ShiftStatus.PENDING;
         binding.includeShiftToday.tagShiftStatus.setText(currentStatus.getDisplayName());
 
-        int bgAttr;
-        int textColorAttr;
-
-        switch (currentStatus) {
-            case WORKING:
-                bgAttr = R.attr.colorAttendancePresentContainer;
-                textColorAttr = R.attr.colorAttendancePresent;
-                break;
-
-            case COMPLETED:
-                bgAttr = R.attr.colorSurfaceVariant;
-                textColorAttr = R.attr.colorOnSurfaceVariant;
-                break;
-
-            case PENDING:
-            default:
-                bgAttr = R.attr.colorAttendanceNotCheckedContainer;
-                textColorAttr = R.attr.colorAttendanceNotChecked;
-                break;
-        }
+        int bgAttr = currentStatus.getBgAttrRes();
+        int textColorAttr = currentStatus.getTextColorAttrRes();
 
         binding.includeShiftToday.tagShiftStatus.setChipBackgroundColor(
                 ColorStateList.valueOf(ColorUtil.getThemeColor(requireContext(), bgAttr))
@@ -181,146 +299,30 @@ public class EmployeeScheduleFragment extends Fragment {
         );
     }
 
-    // =====================================================================
-    // DANH SÁCH CA LÀM SẮP TỚI
-    // =====================================================================
-    private void setupUpcomingShiftRecyclerView() {
-        shiftAdapter = new EmployeeUpcomingShiftAdapter();
+    private void updateWeekRangeTitle(@Nullable LocalDate weekStart) {
+        if (weekStart == null) return;
 
-        binding.rvUpcomingShifts.setLayoutManager(new LinearLayoutManager(requireContext()));
-        binding.rvUpcomingShifts.setNestedScrollingEnabled(false);
-        binding.rvUpcomingShifts.setAdapter(shiftAdapter);
-
-        List<Shift> list = new ArrayList<>();
-        list.add(new Shift(
-                "s101",
-                "u1000",
-                LocalDate.now().plusDays(1),
-                "Ca Sáng",
-                LocalTime.of(8, 0),
-                LocalTime.of(12, 0),
-                "Văn phòng chính · Tầng 3",
-                ShiftStatus.PENDING));
-        list.add(new Shift(
-                "s102",
-                "u1000",
-                LocalDate.now().plusDays(2),
-                "Ca Chiều",
-                LocalTime.of(13, 30),
-                LocalTime.of(17, 30),
-                "Văn phòng chính · Tầng 3",
-                ShiftStatus.PENDING));
-        list.add(new Shift(
-                "s103",
-                "u1000",
-                LocalDate.now().plusDays(3),
-                "Ca Hành Chính",
-                LocalTime.of(8, 0),
-                LocalTime.of(17, 0),
-                "Văn phòng chính · Tầng 3",
-                ShiftStatus.PENDING));
-
-        shiftAdapter.submitList(list);
-    }
-
-    private void setupWeekNavigator() {
-        LayoutScheduleTimelineBinding timelineBinding = binding.includeCardTimeline;
-
-        timelineBinding.btnPrevWeek.setOnClickListener(v -> {
-            currentWeekStart = currentWeekStart.minusWeeks(1);
-            loadWeekData();
-        });
-
-        timelineBinding.btnNextWeek.setOnClickListener(v -> {
-            currentWeekStart = currentWeekStart.plusWeeks(1);
-            loadWeekData();
-        });
-    }
-
-    private void setupQuickActions() {
-        binding.btnSwapShift.setOnClickListener(v -> {
-            Navigation.findNavController(v)
-                    .navigate(R.id.action_employeeScheduleFragment_to_employeeShiftExchangeFragment);
-        });
-
-        binding.btnRequestLeave.setOnClickListener(v -> {
-            Navigation.findNavController(v)
-                    .navigate(R.id.action_employeeScheduleFragment_to_employeeLeaveHistoryFragment);
-        });
-    }
-
-    private void loadWeekData() {
-        updateWeekRangeTitle();
-        List<WeekDay> weekDays = createWeekDays();
-        employeeScheduleWeekDayAdapter.submitList(weekDays);
-
-        updateWeekSummary(5, "40.0 giờ");
-    }
-
-    private void updateWeekRangeTitle() {
-        LocalDate weekEnd = currentWeekStart.plusDays(6);
+        LocalDate weekEnd = weekStart.plusDays(6);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM", new Locale("vi", "VN"));
 
-        String rangeText = currentWeekStart.format(formatter) + " – "
+        String rangeText = weekStart.format(formatter) + " – "
                 + weekEnd.format(formatter) + ", "
-                + currentWeekStart.getYear();
+                + weekStart.getYear();
 
         binding.includeCardTimeline.tvWeekRange.setText(rangeText);
     }
 
-    private List<WeekDay> createWeekDays() {
-        List<WeekDay> days = new ArrayList<>();
-        LocalDate today = LocalDate.now();
-
-        for (int i = 0; i < 7; i++) {
-            LocalDate date = currentWeekStart.plusDays(i);
-            boolean isToday = date.equals(today);
-            AttendanceStatus status = resolveStatus(date);
-
-            days.add(new WeekDay(date, status, isToday));
-        }
-
-        return days;
-    }
-
-    private AttendanceStatus resolveStatus(LocalDate date) {
-        DayOfWeek dayOfWeek = date.getDayOfWeek();
-        if (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
-            return AttendanceStatus.WEEKEND;
-        }
-        return AttendanceStatus.NOT_CHECKED;
-    }
-
-    private void updateWeekSummary(int totalShifts, String totalHours) {
+    private void updateWeekSummary(int totalShifts, double totalHours) {
         LayoutScheduleTimelineBinding timelineBinding = binding.includeCardTimeline;
         timelineBinding.tvTotalShifts.setText(totalShifts + " ca");
-        timelineBinding.tvTotalHours.setText(totalHours);
-    }
-
-    private void onDaySelected(LocalDate date) {
-        selectedDate = date;
-        viewModel.loadScheduleByDate(date.toString());
-    }
-
-    private void setupObservers() {
-        viewModel.getScheduleUiState().observe(getViewLifecycleOwner(), state -> {
-            if (state.isLoading()) {
-                // Show loading indicator
-            } else if (state.getError() != null) {
-                Toast.makeText(requireContext(), "Lỗi: " + state.getError(), Toast.LENGTH_SHORT).show();
-            } else if (state.getSchedules() != null) {
-                updateScheduleUI(state.getSchedules());
-            }
-        });
-    }
-
-    private void updateScheduleUI(List<StaffWorkScheduleResponse> schedules) {
-        // Cập nhật UI từ phản hồi thực tế của UseCase / ViewModel
+        timelineBinding.tvTotalHours.setText(String.format(Locale.US, "%.1f giờ", totalHours));
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        stopAutoRefresh();
+        disposables.clear();
         binding = null;
     }
 }

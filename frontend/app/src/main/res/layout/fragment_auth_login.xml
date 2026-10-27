@@ -38,22 +38,16 @@
                 app:layout_collapseMode="parallax"
                 app:layout_collapseParallaxMultiplier="0.5">
 
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/cardLogo"
-                    android:layout_width="@dimen/login_logo_size"
-                    android:layout_height="@dimen/login_logo_size"
-                    app:cardCornerRadius="@dimen/radius_full"
-                    app:cardElevation="@dimen/elevation_none"
-                    app:strokeWidth="@dimen/border_none">
-
-                    <ImageView
-                        android:id="@+id/ivLogo"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:contentDescription="@string/app_name"
-                        android:padding="@dimen/spacing_l"
-                        android:src="@drawable/ic_logo" />
-                </com.google.android.material.card.MaterialCardView>
+                <!-- LOGO & TÊN ỨNG DỤNG -->
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/iv_app_logo"
+                    android:layout_width="88dp"
+                    android:layout_height="88dp"
+                    android:src="@mipmap/ic_launcher"
+                    android:elevation="@dimen/spacing_s"
+                    app:shapeAppearanceOverlay="@style/ImageCircleStyle"
+                    android:layout_marginTop="@dimen/spacing_m"
+                    android:layout_marginBottom="@dimen/spacing_s" />
 
                 <TextView
                     android:id="@+id/tvWelcome"

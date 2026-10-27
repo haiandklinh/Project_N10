@@ -58,6 +58,24 @@ public class LoginFragment extends Fragment {
     private void observeRegisteredPhone() {
         NavBackStackEntry currentEntry = NavHostFragment.findNavController(this).getCurrentBackStackEntry();
         if (currentEntry != null) {
+            // 1. Tự động đăng nhập ngầm khi nhận được thông tin từ RegisterFragment (Auto-login)
+            currentEntry.getSavedStateHandle()
+                    .<String>getLiveData("auto_login_phone")
+                    .observe(getViewLifecycleOwner(), autoPhone -> {
+                        if (!TextUtils.isEmpty(autoPhone)) {
+                            String autoPassword = currentEntry.getSavedStateHandle().get("auto_login_password");
+                            currentEntry.getSavedStateHandle().remove("auto_login_phone");
+                            currentEntry.getSavedStateHandle().remove("auto_login_password");
+
+                            binding.edtPhone.setText(autoPhone);
+                            if (!TextUtils.isEmpty(autoPassword)) {
+                                binding.edtPassword.setText(autoPassword);
+                                loginviewModel.login(autoPhone, autoPassword);
+                            }
+                        }
+                    });
+
+            // 2. Dự phòng khi chỉ nhận registered_phone
             currentEntry.getSavedStateHandle()
                     .<String>getLiveData("registered_phone")
                     .observe(getViewLifecycleOwner(), phone -> {
@@ -66,7 +84,6 @@ public class LoginFragment extends Fragment {
                             binding.tilPhone.setError(null);
                             binding.edtPassword.requestFocus();
 
-                            // Hiển thị bàn phím ngay lập tức
                             binding.edtPassword.postDelayed(() -> {
                                 if (isAdded() && getContext() != null) {
                                     android.view.inputmethod.InputMethodManager imm =
@@ -112,8 +129,6 @@ public class LoginFragment extends Fragment {
             }
         });
 
-
-
         // Lắng nghe các sự kiện thiết lập Role từ ViewModel
         loginviewModel.getRoleSetupEvent().observe(getViewLifecycleOwner(), event -> {
             if (event instanceof LoginViewModel.RoleSetupEvent.ShowPersonalInfoForm) {
@@ -127,6 +142,10 @@ public class LoginFragment extends Fragment {
             } else if (event instanceof LoginViewModel.RoleSetupEvent.ShowInvitationCodeForm) {
                 EnterInvitationCodeBottomSheet.newInstance()
                         .show(getChildFragmentManager(), EnterInvitationCodeBottomSheet.TAG);
+
+            } else if (event instanceof LoginViewModel.RoleSetupEvent.NavigateToCompanySelection) {
+                Navigation.findNavController(requireView())
+                        .navigate(R.id.action_loginFragment_to_staffCompanySelectionFragment);
 
             } else if (event instanceof LoginViewModel.RoleSetupEvent.NavigateToHome) {
                 navigateToRoleHome(((LoginViewModel.RoleSetupEvent.NavigateToHome) event).role);
@@ -213,7 +232,6 @@ public class LoginFragment extends Fragment {
         );
     }
 
-
     private void showRoleSelectionDialog() {
         RoleSelectionDialog.newInstance()
                 .show(getChildFragmentManager(), RoleSelectionDialog.TAG);
@@ -229,19 +247,17 @@ public class LoginFragment extends Fragment {
     }
 
     private void navigateToRoleHome(UserRole role) {
-        // 1. Kiểm tra an toàn Lifecycle của Fragment
         if (!isAdded() || getContext() == null) return;
 
-        // 2. Chọn màn hình đích
-        Class<?> targetActivity = (role == UserRole.MANAGER)
-                ? ManagerMainActivity.class
-                : EmployeeMainActivity.class;
-
-        Intent intent = new Intent(requireContext(), targetActivity);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-
-        startActivity(intent);
-        requireActivity().finish();
+        if (role == UserRole.MANAGER) {
+            Intent intent = new Intent(requireContext(), ManagerMainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            requireActivity().finish();
+        } else {
+            Navigation.findNavController(requireView())
+                    .navigate(R.id.action_loginFragment_to_staffCompanySelectionFragment);
+        }
     }
 
     private void setupViews() {

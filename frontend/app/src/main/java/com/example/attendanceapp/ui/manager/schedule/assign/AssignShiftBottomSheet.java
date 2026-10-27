@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import javax.inject.Inject;
+import com.example.attendanceapp.data.local.pref.SharedPreferenceApp;
 import dagger.hilt.android.AndroidEntryPoint;
 
 /**
@@ -45,6 +47,9 @@ public class AssignShiftBottomSheet extends BottomSheetDialogFragment {
     private static final String ARG_EMPLOYEE_NAME = "employee_name";
     private static final String ARG_DATE_STR = "date_str";
     private static final String ARG_SHIFTS_LIST = "shifts_list";
+
+    @Inject
+    SharedPreferenceApp sharedPreferenceApp;
 
     private BottomSheetAssignShiftBinding binding;
     private OnShiftAssignedListener listener;
@@ -125,11 +130,29 @@ public class AssignShiftBottomSheet extends BottomSheetDialogFragment {
                 (requestKey, result) -> {
                     ShiftOption newShift = result.getParcelable(AddShiftBottomSheet.EXTRA_RESULT_SHIFT);
                     if (newShift != null && newShift.getId() == null) {
+                        if (sharedPreferenceApp != null && newShift.getLatitude() != null && newShift.getLongitude() != null) {
+                            sharedPreferenceApp.saveShiftLocation(
+                                    newShift.getTitle(),
+                                    newShift.getLatitude(),
+                                    newShift.getLongitude(),
+                                    newShift.getCheckInRadius() != null ? newShift.getCheckInRadius() : 100.0
+                            );
+                        }
                         // Thêm ca mới
+                        if (sharedPreferenceApp != null && newShift.getLatitude() != null && newShift.getLongitude() != null) {
+                            sharedPreferenceApp.saveLatestShiftLocation(
+                                    newShift.getLatitude(),
+                                    newShift.getLongitude(),
+                                    newShift.getCheckInRadius() != null ? newShift.getCheckInRadius() : 100.0,
+                                    ""
+                            );
+                        }
                         assignViewModel.addShift(
                                 newShift.getTitle(),
                                 newShift.getStartTime(),
                                 newShift.getEndTime(),
+                                newShift.getAllowedCheckInTime(),
+                                newShift.getCheckInRadius() != null ? newShift.getCheckInRadius() : 100.0,
                                 newShift.getLatitude(),
                                 newShift.getLongitude()
                         );
@@ -178,6 +201,26 @@ public class AssignShiftBottomSheet extends BottomSheetDialogFragment {
                 AddShiftBottomSheet addShiftSheet = AddShiftBottomSheet.newInstance();
                 addShiftSheet.show(getChildFragmentManager(), "AddShiftBottomSheet");
             } else {
+                if (selectedShift != null && sharedPreferenceApp != null) {
+                    if (selectedShift.getLatitude() != null && selectedShift.getLongitude() != null
+                            && (selectedShift.getLatitude() != 0.0 || selectedShift.getLongitude() != 0.0)) {
+                        double radius = selectedShift.getCheckInRadius() != null && selectedShift.getCheckInRadius() > 0 ? selectedShift.getCheckInRadius() : sharedPreferenceApp.getShiftRadius(selectedShift.getTitle());
+                        if (radius <= 0) radius = sharedPreferenceApp.getLatestShiftRadius();
+                        if (radius <= 0) radius = 100.0;
+                        sharedPreferenceApp.saveShiftLocation(
+                                selectedShift.getTitle(),
+                                selectedShift.getLatitude(),
+                                selectedShift.getLongitude(),
+                                radius
+                        );
+                        sharedPreferenceApp.saveLatestShiftLocation(
+                                selectedShift.getLatitude(),
+                                selectedShift.getLongitude(),
+                                radius,
+                                ""
+                        );
+                    }
+                }
                 // 1. Trả kết quả qua FragmentResult API (Chống mất callback khi xoay màn hình)
                 Bundle result = new Bundle();
                 result.putParcelable(EXTRA_SELECTED_SHIFT, selectedShift);

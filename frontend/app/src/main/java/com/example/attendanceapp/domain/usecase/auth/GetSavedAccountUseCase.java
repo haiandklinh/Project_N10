@@ -1,20 +1,20 @@
 package com.example.attendanceapp.domain.usecase.auth;
 
 import com.example.attendanceapp.domain.model.SavedAccountData;
-import com.example.attendanceapp.domain.repository.AppStateRepository;
+import com.example.attendanceapp.domain.repository.SessionRepository;
 
 import javax.inject.Inject;
 
 public class GetSavedAccountUseCase {
 
-    private final AppStateRepository appStateRepository;
+    private final SessionRepository sessionRepository;
 
     @Inject
-    public GetSavedAccountUseCase(AppStateRepository appStateRepository) {
-        this.appStateRepository = appStateRepository;
+    public GetSavedAccountUseCase(SessionRepository sessionRepository) {
+        this.sessionRepository = sessionRepository;
     }
 
     public SavedAccountData execute() {
-        return appStateRepository.getSavedAccountData();
+        return sessionRepository.getSavedAccountData().blockingGet();
     }
 }

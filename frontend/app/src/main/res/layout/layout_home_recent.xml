@@ -41,7 +41,8 @@
         android:layout_marginTop="@dimen/spacing_s"
         app:layout_constraintTop_toBottomOf="@id/tv_recent_label"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_recent"

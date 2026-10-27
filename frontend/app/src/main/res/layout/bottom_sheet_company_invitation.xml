@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_bottom_sheet"
+    android:orientation="vertical"
+    android:paddingHorizontal="@dimen/spacing_xl"
+    android:paddingBottom="@dimen/spacing_2xl">
+
+    <!-- Drag Handle -->
+    <View
+        android:layout_width="36dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/spacing_s"
+        android:layout_marginBottom="@dimen/spacing_m"
+        android:background="@drawable/bg_handle" />
+
+    <!-- Top Bar with Title and Close -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/spacing_m">
+
+        <TextView
+            android:id="@+id/tvSheetHeader"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:text="Mã mời tham gia công ty"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="@dimen/text_size_title_medium"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/btnCloseSheet"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Đóng"
+            android:padding="4dp"
+            android:src="@drawable/ic_close"
+            app:tint="?attr/colorOnSurfaceVariant" />
+    </RelativeLayout>
+
+    <!-- STATE 1: Prompt State (Chưa có mã hoặc cần tạo mã) -->
+    <LinearLayout
+        android:id="@+id/layoutPromptState"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:visibility="visible"
+        tools:visibility="gone">
+
+        <!-- Illustration Icon -->
+        <FrameLayout
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:layout_marginTop="@dimen/spacing_m"
+            android:layout_marginBottom="@dimen/spacing_m"
+            android:background="@drawable/bg_time_icon_circle">
+
+            <ImageView
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_add_user"
+                app:tint="?attr/colorPrimary" />
+        </FrameLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Bổ sung nhân sự"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="@dimen/text_size_title_medium"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvPromptMessage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_s"
+            android:gravity="center"
+            android:lineSpacingExtra="4dp"
+            android:text="Công ty chưa có nhân sự nào, vui lòng tạo mã công ty để bổ sung thêm nhân sự:"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="@dimen/text_size_body_medium" />
+
+        <!-- Info Card: Giới hạn thời gian -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_l"
+            android:layout_marginBottom="@dimen/spacing_xl"
+            app:cardBackgroundColor="?attr/colorSurfaceVariant"
+            app:cardCornerRadius="@dimen/radius_m"
+            app:cardElevation="0dp"
+            app:strokeWidth="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="@dimen/spacing_m">
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_history"
+                    app:tint="?attr/colorPrimary" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/spacing_s"
+                    android:layout_weight="1"
+                    android:text="Mã mời có giới hạn thời gian (24 giờ). Nhân viên nhập mã này trên ứng dụng để gửi yêu cầu gia nhập."
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textSize="@dimen/text_size_body_small" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Loading indicator -->
+        <ProgressBar
+            android:id="@+id/pbPromptLoading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_m"
+            android:visibility="gone" />
+
+        <!-- Nút Tạo mã công ty -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnGenerateCode"
+            style="@style/ButtonMaxWidthStyle"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/button_height_default"
+            android:text="Tạo mã công ty"
+            app:icon="@drawable/ic_key"
+            app:iconGravity="textStart"
+            app:iconPadding="@dimen/spacing_s" />
+    </LinearLayout>
+
+    <!-- STATE 2: Code Display State (Đã có mã mời) -->
+    <LinearLayout
+        android:id="@+id/layoutCodeState"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_s"
+            android:text="MÃ MỜI THAM GIA DOANH NGHIỆP"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="@dimen/text_size_label_medium"
+            android:textStyle="bold" />
+
+        <!-- OTP Display Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_m"
+            android:layout_marginBottom="@dimen/spacing_m"
+            app:cardBackgroundColor="?attr/colorPrimaryContainer"
+            app:cardCornerRadius="@dimen/radius_l"
+            app:cardElevation="0dp"
+            app:strokeColor="?attr/colorPrimary"
+            app:strokeWidth="1.5dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingVertical="@dimen/spacing_l"
+                android:paddingHorizontal="@dimen/spacing_m">
+
+                <TextView
+                    android:id="@+id/tvDisplayCode"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.25"
+                    android:textColor="?attr/colorPrimary"
+                    android:textSize="32sp"
+                    android:textStyle="bold"
+                    tools:text="849 201" />
+
+                <!-- Expiry label -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_s"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:src="@drawable/ic_history"
+                        app:tint="?attr/colorOnPrimaryContainer" />
+
+                    <TextView
+                        android:id="@+id/tvExpiryTime"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:text="Mã có hiệu lực trong 24 giờ"
+                        android:textColor="?attr/colorOnPrimaryContainer"
+                        android:textSize="@dimen/text_size_label_medium" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_l"
+            android:gravity="center"
+            android:text="Gửi mã này cho nhân sự mới để nhập khi đăng ký tài khoản tham gia doanh nghiệp."
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="@dimen/text_size_body_small" />
+
+        <!-- Loading indicator for regenerating -->
+        <ProgressBar
+            android:id="@+id/pbCodeLoading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_m"
+            android:visibility="gone" />
+
+        <!-- Nút Sao chép mã -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCopyCode"
+            style="@style/ButtonMaxWidthStyle"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/button_height_default"
+            android:text="Sao chép mã"
+            app:icon="@drawable/ic_copy"
+            app:iconGravity="textStart"
+            app:iconPadding="@dimen/spacing_s" />
+
+        <!-- Nút Chia sẻ mã -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnShareCode"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/button_height_default"
+            android:layout_marginTop="@dimen/spacing_s"
+            android:text="Chia sẻ mã mời"
+            app:icon="@drawable/ic_share"
+            app:iconGravity="textStart"
+            app:iconPadding="@dimen/spacing_s" />
+
+        <!-- Nút Tạo mã mới khác -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnRegenerateCode"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_xs"
+            android:text="Tạo mã mới khác"
+            android:textColor="?attr/colorPrimary"
+            app:icon="@drawable/ic_refresh"
+            app:iconGravity="textStart"
+            app:iconSize="16dp"
+            app:iconTint="?attr/colorPrimary" />
+
+    </LinearLayout>
+
+</LinearLayout>

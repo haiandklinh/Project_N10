@@ -30,6 +30,7 @@ import com.example.attendanceapp.databinding.ItemProfileSwitchRowBinding;
 import com.example.attendanceapp.databinding.ItemThemeOptionBinding;
 import com.example.attendanceapp.databinding.LayoutBottomSheetThemeBinding;
 import com.example.attendanceapp.ui.main.auth.AuthActivity;
+import com.example.attendanceapp.ui.manager.human.CompanyInvitationBottomSheet;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import dagger.hilt.android.AndroidEntryPoint;
@@ -108,12 +109,21 @@ public class ManagerProfileFragment extends Fragment {
     }
 
     private void setupListeners() {
+        binding.cardInviteCode.setOnClickListener(v -> {
+            CompanyInvitationBottomSheet.newInstance().show(getChildFragmentManager(), CompanyInvitationBottomSheet.TAG);
+        });
         binding.btnCopyCode.setOnClickListener(v -> {
             ClipboardManager clipboard = (ClipboardManager) requireContext().getSystemService(Context.CLIPBOARD_SERVICE);
             ClipData clip = ClipData.newPlainText("Invite Code", binding.tvInviteCode.getText().toString());
             clipboard.setPrimaryClip(clip);
             Toast.makeText(requireContext(), getString(R.string.manager_profile_copy_success), Toast.LENGTH_SHORT).show();
         });
+
+        binding.rowCompanySettings.getRoot().setOnClickListener(v -> 
+            Navigation.findNavController(v).navigate(R.id.action_managerProfileFragment_to_managerBusinessSettingsFragment));
+
+        binding.rowPermissions.getRoot().setOnClickListener(v -> 
+            Navigation.findNavController(v).navigate(R.id.action_managerProfileFragment_to_managerRolePermissionFragment));
 
         binding.rowStatistics.getRoot().setOnClickListener(v -> 
             Navigation.findNavController(v).navigate(R.id.action_managerProfileFragment_to_managerStatisticFragment));
@@ -223,6 +233,14 @@ public class ManagerProfileFragment extends Fragment {
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         requireActivity().finish();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (viewModel != null) {
+            viewModel.loadProfile();
+        }
     }
 
     @Override

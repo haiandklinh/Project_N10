@@ -16,14 +16,19 @@ public class ShiftEntity {
     private final String endTime;
     private final Double latitude;
     private final Double longitude;
+    private final String allowedCheckInTime;
+    private final Double checkInRadius;
 
-    public ShiftEntity(@NonNull String id, String title, String startTime, String endTime, Double latitude, Double longitude) {
+    public ShiftEntity(@NonNull String id, String title, String startTime, String endTime,
+                       Double latitude, Double longitude, String allowedCheckInTime, Double checkInRadius) {
         this.id = id;
         this.title = title;
         this.startTime = startTime;
         this.endTime = endTime;
         this.latitude = latitude;
         this.longitude = longitude;
+        this.allowedCheckInTime = allowedCheckInTime;
+        this.checkInRadius = checkInRadius;
     }
 
     @NonNull
@@ -33,9 +38,11 @@ public class ShiftEntity {
     public String getEndTime() { return endTime; }
     public Double getLatitude() { return latitude; }
     public Double getLongitude() { return longitude; }
+    public String getAllowedCheckInTime() { return allowedCheckInTime; }
+    public Double getCheckInRadius() { return checkInRadius; }
 
     public ShiftOption toDomain() {
-        return new ShiftOption(id, title, startTime, endTime, latitude, longitude);
+        return new ShiftOption(id, title, startTime, endTime, latitude, longitude, allowedCheckInTime, checkInRadius);
     }
 
     public static ShiftEntity fromDomain(ShiftOption shift) {
@@ -45,7 +52,9 @@ public class ShiftEntity {
                 shift.getStartTime(),
                 shift.getEndTime(),
                 shift.getLatitude(),
-                shift.getLongitude()
+                shift.getLongitude(),
+                shift.getAllowedCheckInTime(),
+                shift.getCheckInRadius()
         );
     }
 }

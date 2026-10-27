@@ -6,20 +6,31 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
-import com.example.attendanceapp.R;
+import com.example.attendanceapp.core.utils.AvatarLoader;
 import com.example.attendanceapp.core.utils.ColorUtil;
 import com.example.attendanceapp.databinding.ItemManagerRecentCheckinBinding;
 import com.example.attendanceapp.domain.model.AttendanceStatus;
 import com.example.attendanceapp.domain.model.RecentCheckInItem;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class RecentCheckInAdapter extends RecyclerView.Adapter<RecentCheckInAdapter.ViewHolder> {
 
-    private final List<RecentCheckInItem> items;
+    private final List<RecentCheckInItem> items = new ArrayList<>();
 
     public RecentCheckInAdapter(List<RecentCheckInItem> items) {
-        this.items = items;
+        if (items != null) {
+            this.items.addAll(items);
+        }
+    }
+
+    public void updateData(List<RecentCheckInItem> newItems) {
+        items.clear();
+        if (newItems != null) {
+            items.addAll(newItems);
+        }
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -49,13 +60,14 @@ public class RecentCheckInAdapter extends RecyclerView.Adapter<RecentCheckInAdap
         }
 
         void bind(RecentCheckInItem item) {
-            binding.tvName.setText(item.getEmployeeName());
+            if (item == null) return;
+            binding.tvName.setText(item.getEmployeeName() != null ? item.getEmployeeName() : "Nhân viên");
             binding.tvCheckinInfo.setText(item.getShiftName() + " · " + item.getCheckInTime());
-            
+
             AttendanceStatus status = item.getStatus();
             if (status != null) {
                 binding.chipStatus.setText(status.getDisplayName());
-                
+
                 int color = ColorUtil.getThemeColor(binding.getRoot(), status.getColorAttr());
                 int containerColor = ColorUtil.getThemeColor(binding.getRoot(), status.getContainerColorAttr());
 
@@ -64,12 +76,7 @@ public class RecentCheckInAdapter extends RecyclerView.Adapter<RecentCheckInAdap
                 binding.chipStatus.setChipStrokeColor(ColorStateList.valueOf(color));
             }
 
-            Glide.with(binding.ivAvatar.getContext())
-                    .load(item.getAvatarUrl())
-                    .placeholder(R.drawable.ic_avatar)
-                    .error(R.drawable.ic_avatar)
-                    .circleCrop()
-                    .into(binding.ivAvatar);
+            AvatarLoader.loadAvatar(binding.ivAvatar.getContext(), item.getAvatarUrl(), binding.ivAvatar);
         }
     }
 }

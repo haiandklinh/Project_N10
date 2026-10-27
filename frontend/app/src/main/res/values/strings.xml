@@ -204,7 +204,8 @@
     <string name="checkin_not_determined">Chưa xác định</string>
     <string name="checkin_enable_gps">Vui lòng bật định vị GPS để chấm công</string>
     <string name="checkin_gps_enabled">Đã bật định vị GPS</string>
-    <string name="checkin_within_range">Trong bán kính cho phép (50m)</string>
+    <string name="checkin_within_range">Trong bán kính cho phép (%1$dm)</string>
+    <string name="checkin_within_range_default">Trong bán kính cho phép (50m)</string>
     <string name="checkin_network_stable">Kết nối mạng ổn định</string>
     <string name="checkin_determining_your_location">Đang xác định vị trí của bạn</string>
     <string name="checkin_outside_allowed_area">Bạn đang ở ngoài khu vực cho phép chấm công</string>

@@ -63,16 +63,8 @@ public class ManagerEmployeeAdapter extends RecyclerView.Adapter<ManagerEmployee
                 ContextCompat.getColor(context, status.getContainerColorRes())
         ));
 
-        // Thêm Glide hoặc Coil/Picasso để load Avatar trong onBindViewHolder
-        if (item.getAvatarUrl() != null && !item.getAvatarUrl().isEmpty()) {
-            com.bumptech.glide.Glide.with(context)
-                    .load(item.getAvatarUrl())
-                    .placeholder(R.drawable.ic_avatar)
-                    .error(R.drawable.ic_avatar)
-                    .into(holder.binding.ivAvatar);
-        } else {
-            holder.binding.ivAvatar.setImageResource(R.drawable.ic_avatar);
-        }
+        // Đồng bộ load avatar từ API
+        com.example.attendanceapp.core.utils.AvatarLoader.loadAvatar(context, item.getAvatarUrl(), holder.binding.ivAvatar);
 
         holder.binding.getRoot().setOnClickListener(v -> {
             if (listener != null) listener.onItemClick(item);

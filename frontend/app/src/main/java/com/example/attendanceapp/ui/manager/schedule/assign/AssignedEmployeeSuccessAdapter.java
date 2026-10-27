@@ -47,12 +47,8 @@ public class AssignedEmployeeSuccessAdapter extends RecyclerView.Adapter<Assigne
         // 1. Hiển thị Họ và tên
         holder.binding.tvName.setText(item.getFullName());
 
-        // 2. Hiển thị Avatar
-        Glide.with(holder.itemView.getContext())
-                .load(item.getAvatarUrl())
-                .placeholder(R.drawable.ic_avatar)
-                .circleCrop()
-                .into(holder.binding.ivAvatar);
+        // 2. Hiển thị Avatar đồng bộ từ API
+        com.example.attendanceapp.core.utils.AvatarLoader.loadAvatar(holder.itemView.getContext(), item.getAvatarUrl(), holder.binding.ivAvatar);
 
         // 3. ẨN NÚT XÓA TRÊN MÀN HÌNH THÀNH CÔNG (Chỉ hiển thị để xem lại)
         if (holder.binding.btnRemove != null) {

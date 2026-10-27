@@ -2,17 +2,41 @@ package com.example.attendanceapp.ui.manager.home;
 
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.attendanceapp.databinding.ItemShiftTodayBinding;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class TodayShiftAdapter extends RecyclerView.Adapter<TodayShiftAdapter.ViewHolder> {
 
-    private final List<TodayShiftSummary> shifts;
+    public interface OnShiftClickListener {
+        void onShiftClick(TodayShiftSummary shift);
+    }
+
+    private final List<TodayShiftSummary> shifts = new ArrayList<>();
+    private final OnShiftClickListener clickListener;
 
     public TodayShiftAdapter(List<TodayShiftSummary> shifts) {
-        this.shifts = shifts;
+        this(shifts, null);
+    }
+
+    public TodayShiftAdapter(List<TodayShiftSummary> shifts, OnShiftClickListener clickListener) {
+        if (shifts != null) {
+            this.shifts.addAll(shifts);
+        }
+        this.clickListener = clickListener;
+    }
+
+    public void updateData(List<TodayShiftSummary> newShifts) {
+        this.shifts.clear();
+        if (newShifts != null) {
+            this.shifts.addAll(newShifts);
+        }
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -25,7 +49,7 @@ public class TodayShiftAdapter extends RecyclerView.Adapter<TodayShiftAdapter.Vi
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.bind(shifts.get(position));
+        holder.bind(shifts.get(position), clickListener);
     }
 
     @Override
@@ -41,10 +65,32 @@ public class TodayShiftAdapter extends RecyclerView.Adapter<TodayShiftAdapter.Vi
             this.binding = binding;
         }
 
-        void bind(TodayShiftSummary shift) {
-            binding.tvShiftName.setText(shift.getShiftName() + " · " + shift.getTimeRange());
-            binding.tvShiftLocation.setText(shift.getLocation() + " · " + shift.getEmployeeCount() + " NV");
-            binding.tagShiftStatus.setText(shift.getStatus());
+        void bind(TodayShiftSummary shift, OnShiftClickListener listener) {
+            if (shift == null) return;
+
+            String name = shift.getShiftName() != null ? shift.getShiftName() : "Ca làm việc";
+            String timeRange = shift.getTimeRange();
+            if (timeRange != null && !timeRange.trim().isEmpty()) {
+                binding.tvShiftName.setText(name + " · " + timeRange);
+            } else {
+                binding.tvShiftName.setText(name);
+            }
+
+            String location = shift.getLocation();
+            if (location != null && !location.trim().isEmpty()) {
+                binding.tvShiftLocation.setText(location);
+            } else {
+                binding.tvShiftLocation.setText("Văn phòng chính");
+            }
+
+            // Chip hiển thị số nhân viên làm ca này
+            binding.tagShiftEmployeeCount.setText(shift.getEmployeeCount() + " NV");
+
+            binding.getRoot().setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onShiftClick(shift);
+                }
+            });
         }
     }
 }

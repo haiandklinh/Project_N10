@@ -4,3 +4,9 @@ plugins {
     alias(libs.plugins.hilt.android) apply false
     alias(libs.plugins.google.services) apply false
 }
+
+allprojects {
+    tasks.withType<JavaCompile>().configureEach {
+        options.encoding = "UTF-8"
+    }
+}

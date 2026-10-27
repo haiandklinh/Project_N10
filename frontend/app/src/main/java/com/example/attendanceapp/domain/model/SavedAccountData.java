@@ -6,12 +6,18 @@ public class SavedAccountData {
     public final String companyName;
     public final String companyCode;
     public final String phone;
+    public final String avatarUrl;
 
-    public SavedAccountData(String fullName, String companyName, String companyCode, String phone) {
+    public SavedAccountData(String fullName, String companyName, String companyCode, String phone, String avatarUrl) {
         this.fullName = fullName;
         this.companyName = companyName;
         this.companyCode = companyCode;
         this.phone = phone;
+        this.avatarUrl = avatarUrl;
+    }
+
+    public SavedAccountData(String fullName, String companyName, String companyCode, String phone) {
+        this(fullName, companyName, companyCode, phone, null);
     }
 
     public String getFullName() {
@@ -28,5 +34,9 @@ public class SavedAccountData {
 
     public String getPhone() {
         return phone;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
     }
 }

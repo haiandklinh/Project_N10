@@ -10,7 +10,7 @@ import com.example.attendanceapp.domain.model.EmployeeWorkSchedule;
 public class WorkScheduleEntity {
     @PrimaryKey
     @NonNull
-    private final String id; // employeeId + "_" + workDate
+    private final String id; // employeeId + "_" + workDate + "_" + shiftId
     private final String employeeId;
     private final String employeeName;
     private final String position;
@@ -52,6 +52,10 @@ public class WorkScheduleEntity {
     public String getStatus() { return status; }
 
     public EmployeeWorkSchedule toDomain() {
+        EmployeeWorkSchedule.ShiftInfo shiftInfo = null;
+        if ((shiftId != null && !shiftId.trim().isEmpty()) || (shiftName != null && !shiftName.trim().isEmpty())) {
+            shiftInfo = new EmployeeWorkSchedule.ShiftInfo(shiftId, shiftName, startTime, endTime);
+        }
         return new EmployeeWorkSchedule(
                 employeeId,
                 employeeName,
@@ -59,22 +63,37 @@ public class WorkScheduleEntity {
                 workDate,
                 avatar,
                 status,
-                new EmployeeWorkSchedule.ShiftInfo(shiftId, shiftName, startTime, endTime)
+                shiftInfo
         );
     }
 
     public static WorkScheduleEntity fromDomain(EmployeeWorkSchedule schedule) {
-        String id = schedule.getEmployeeId() + "_" + schedule.getWorkDate();
+        String shiftId = null;
+        String shiftName = null;
+        String startTime = null;
+        String endTime = null;
+        if (schedule.getShift() != null) {
+            shiftId = schedule.getShift().getShiftId();
+            shiftName = schedule.getShift().getShiftName();
+            startTime = schedule.getShift().getStartTime();
+            endTime = schedule.getShift().getEndTime();
+        }
+
+        String empId = schedule.getEmployeeId() != null ? schedule.getEmployeeId() : "";
+        String wDate = schedule.getWorkDate() != null ? schedule.getWorkDate() : "unassigned";
+        String sId = shiftId != null ? shiftId : "none";
+        String id = empId + "_" + wDate + "_" + sId;
+
         return new WorkScheduleEntity(
                 id,
-                schedule.getEmployeeId(),
+                empId,
                 schedule.getName(),
                 schedule.getPosition(),
                 schedule.getAvatar(),
-                schedule.getShift().getShiftId(),
-                schedule.getShift().getShiftName(),
-                schedule.getShift().getStartTime(),
-                schedule.getShift().getEndTime(),
+                shiftId,
+                shiftName,
+                startTime,
+                endTime,
                 schedule.getWorkDate(),
                 schedule.getStatus()
         );

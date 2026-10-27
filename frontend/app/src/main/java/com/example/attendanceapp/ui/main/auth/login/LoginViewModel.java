@@ -4,11 +4,15 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.example.attendanceapp.domain.exception.AppException;
 import com.example.attendanceapp.domain.model.PendingProfileSetup;
 import com.example.attendanceapp.domain.model.UserAccount;
 import com.example.attendanceapp.domain.model.UserRole;
+import com.example.attendanceapp.domain.model.UserStatus;
+import com.example.attendanceapp.domain.repository.StaffRepository;
+import com.example.attendanceapp.domain.usecase.auth.CreateProfileUseCase;
 import com.example.attendanceapp.domain.usecase.auth.LoginUseCase;
-import com.example.attendanceapp.domain.usecase.auth.RoleSelectionUseCase;
+import com.example.attendanceapp.domain.usecase.profile.LoadProfileAfterRoleUseCase;
 
 import javax.inject.Inject;
 
@@ -21,20 +25,27 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 public class LoginViewModel extends ViewModel {
 
     private final LoginUseCase loginUseCase;
-    private final RoleSelectionUseCase roleSelectionUseCase;
+    private final CreateProfileUseCase createProfileUseCase;
+    private final LoadProfileAfterRoleUseCase loadProfileAfterRoleUseCase;
+    private final StaffRepository staffRepository;
     private final CompositeDisposable disposables = new CompositeDisposable();
 
     private final MutableLiveData<LoginState> loginState = new MutableLiveData<>();
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
     private final MutableLiveData<RoleSetupEvent> roleSetupEvent = new MutableLiveData<>();
 
-    // State lưu giữ tiến trình setup role
+    // State lưu giữ tiến trình setup role/profile
     private final PendingProfileSetup pendingProfile = new PendingProfileSetup();
 
     @Inject
-    public LoginViewModel(LoginUseCase loginUseCase, RoleSelectionUseCase roleSelectionUseCase) {
+    public LoginViewModel(LoginUseCase loginUseCase,
+                          CreateProfileUseCase createProfileUseCase,
+                          LoadProfileAfterRoleUseCase loadProfileAfterRoleUseCase,
+                          StaffRepository staffRepository) {
         this.loginUseCase = loginUseCase;
-        this.roleSelectionUseCase = roleSelectionUseCase;
+        this.createProfileUseCase = createProfileUseCase;
+        this.loadProfileAfterRoleUseCase = loadProfileAfterRoleUseCase;
+        this.staffRepository = staffRepository;
     }
 
     public LiveData<LoginState> getLoginState() { return loginState; }
@@ -53,19 +64,17 @@ public class LoginViewModel extends ViewModel {
                         },
                         error -> {
                             isLoading.setValue(false);
-                            
+
                             if (error instanceof com.example.attendanceapp.domain.exception.AppException) {
-                                com.example.attendanceapp.domain.exception.AppException appEx = 
+                                com.example.attendanceapp.domain.exception.AppException appEx =
                                         (com.example.attendanceapp.domain.exception.AppException) error;
-                                
-                                // Nếu Backend trả về 404 hoặc mã lỗi USER_NOT_FOUND
+
                                 if (appEx.getHttpCode() == 404 || "USER_NOT_FOUND".equals(appEx.getErrorCode())) {
                                     loginState.setValue(new LoginState.PhoneNotRegistered(phone));
                                     return;
                                 }
                             }
 
-                            // Fallback: Nếu không phải 404, dùng checkPhoneExists để xác nhận lại cho chắc chắn
                             String message = error.getMessage();
                             disposables.add(loginUseCase.checkPhoneExists(phone)
                                     .subscribeOn(Schedulers.io())
@@ -93,10 +102,8 @@ public class LoginViewModel extends ViewModel {
                         exists -> {
                             isLoading.setValue(false);
                             if (exists) {
-                                // SĐT đã tồn tại, yêu cầu nhập mật khẩu
                                 loginState.setValue(new LoginState.Error("Vui lòng nhập mật khẩu!"));
                             } else {
-                                // SĐT chưa tồn tại, hiện dialog chuyển sang đăng ký
                                 loginState.setValue(new LoginState.PhoneNotRegistered(phone));
                             }
                         },
@@ -111,7 +118,59 @@ public class LoginViewModel extends ViewModel {
 
     public void onRoleSelected(UserRole role) {
         pendingProfile.setRole(role);
-        roleSetupEvent.setValue(new RoleSetupEvent.ShowPersonalInfoForm());
+        isLoading.setValue(true);
+
+        disposables.add(loadProfileAfterRoleUseCase.execute(role)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        result -> {
+                            if (result.isFound()) {
+                                UserAccount user = result.getAccount();
+                                if (role == UserRole.MANAGER) {
+                                    isLoading.setValue(false);
+                                    roleSetupEvent.setValue(new RoleSetupEvent.NavigateToHome(UserRole.MANAGER));
+                                } else {
+                                    handleEmployeeRouting(user);
+                                }
+                            } else {
+                                isLoading.setValue(false);
+                                roleSetupEvent.setValue(new RoleSetupEvent.ShowPersonalInfoForm());
+                            }
+                        },
+                        throwable -> {
+                            isLoading.setValue(false);
+                            roleSetupEvent.setValue(new RoleSetupEvent.ShowPersonalInfoForm());
+                        }
+                ));
+    }
+
+    private void handleEmployeeRouting(UserAccount user) {
+        String inviteCode = (user != null && user.getInvitationCode() != null) ? user.getInvitationCode() : "";
+        String companyName = (user != null && user.getCompanyName() != null) ? user.getCompanyName() : "";
+
+        // Kiểm tra danh sách công ty đã tham gia từ API /staffs/my-company
+        disposables.add(staffRepository.getMyCompanies()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        res -> {
+                            isLoading.setValue(false);
+                            if (res != null && res.getData() != null && !res.getData().isEmpty()) {
+                                // Đã tham gia công ty -> Vào màn hình chọn công ty trước khi vào app
+                                roleSetupEvent.setValue(new RoleSetupEvent.NavigateToCompanySelection());
+                            } else if (!inviteCode.isEmpty()) {
+                                roleSetupEvent.setValue(new RoleSetupEvent.NavigateToPendingApproval(inviteCode, companyName));
+                            } else {
+                                // Chưa có công ty nào -> Mở màn hình chọn công ty (hiển thị trạng thái rỗng + nút nhập mã mời)
+                                roleSetupEvent.setValue(new RoleSetupEvent.NavigateToCompanySelection());
+                            }
+                        },
+                        error -> {
+                            isLoading.setValue(false);
+                            roleSetupEvent.setValue(new RoleSetupEvent.NavigateToCompanySelection());
+                        }
+                ));
     }
 
     public void onPersonalInfoEntered(String name, String dob, String gender, String avatarUri) {
@@ -124,18 +183,16 @@ public class LoginViewModel extends ViewModel {
         }
     }
 
+    /** Tạo hồ sơ Quản lý kèm Tên công ty */
     public void submitManagerCompany(String companyName) {
         isLoading.setValue(true);
 
-        // Chaining các Completable và Single qua RxJava
-        disposables.add(roleSelectionUseCase.updatePersonalInfo(
-                pendingProfile.getFullName(),
-                pendingProfile.getDob(),
-                pendingProfile.getGender(),
-                pendingProfile.getAvatarUri(),
-                UserRole.MANAGER,
-                companyName)
-                .andThen(roleSelectionUseCase.selectRole(UserRole.MANAGER))
+        disposables.add(createProfileUseCase.createManagerProfile(
+                        pendingProfile.getFullName(),
+                        pendingProfile.getDob(),
+                        pendingProfile.getGender(),
+                        pendingProfile.getAvatarUri(),
+                        companyName)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
@@ -143,36 +200,67 @@ public class LoginViewModel extends ViewModel {
                             isLoading.setValue(false);
                             roleSetupEvent.setValue(new RoleSetupEvent.NavigateToHome(UserRole.MANAGER));
                         },
-                        throwable -> handleError(throwable.getMessage())
+                        throwable -> {
+                            if (isConflictError(throwable)) {
+                                isLoading.setValue(false);
+                                roleSetupEvent.setValue(new RoleSetupEvent.NavigateToHome(UserRole.MANAGER));
+                            } else {
+                                handleError(throwable.getMessage());
+                            }
+                        }
                 ));
     }
 
+    /** Tạo hồ sơ Nhân viên và Gửi yêu cầu gia nhập qua mã mời */
     public void submitEmployeeInvitationCode(String invitationCode) {
         isLoading.setValue(true);
 
-        // Chaining các Completable và Single qua RxJava, truyền đủ 3 tham số
-        disposables.add(roleSelectionUseCase.updatePersonalInfo(
+        disposables.add(createProfileUseCase.createStaffProfile(
                         pendingProfile.getFullName(),
                         pendingProfile.getDob(),
                         pendingProfile.getGender(),
-                        pendingProfile.getAvatarUri(),
-                        UserRole.EMPLOYEE,
-                        null)
-                .andThen(roleSelectionUseCase.selectRole(UserRole.EMPLOYEE))
-                .andThen(roleSelectionUseCase.joinCompanyWithCode(
+                        pendingProfile.getAvatarUri())
+                .onErrorResumeNext(throwable -> {
+                    if (isConflictError(throwable)) {
+                        return staffRepository.updateProfile(new com.example.attendanceapp.data.dto.request.staff.UpdateStaffProfileRequest(
+                                pendingProfile.getFullName(),
+                                pendingProfile.getGender(),
+                                pendingProfile.getAvatarUri(),
+                                pendingProfile.getDob()
+                        )).ignoreElement();
+                    }
+                    return io.reactivex.rxjava3.core.Completable.error(throwable);
+                })
+                .andThen(createProfileUseCase.joinCompanyWithCode(
                         invitationCode,
                         pendingProfile.getFullName(),
                         pendingProfile.getAvatarUri()
                 ))
+                .flatMap(companyName -> staffRepository.checkCompanyApprovalStatus(invitationCode)
+                        .map(isApproved -> new Object[]{companyName, isApproved}))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                        companyName -> {
+                        res -> {
                             isLoading.setValue(false);
-                            roleSetupEvent.setValue(new RoleSetupEvent.NavigateToPendingApproval(invitationCode, companyName));
+                            String companyName = (String) res[0];
+                            boolean isApproved = (Boolean) res[1];
+                            if (isApproved) {
+                                roleSetupEvent.setValue(new RoleSetupEvent.NavigateToCompanySelection());
+                            } else {
+                                roleSetupEvent.setValue(new RoleSetupEvent.NavigateToPendingApproval(invitationCode, companyName));
+                            }
                         },
                         throwable -> handleError(throwable.getMessage())
                 ));
+    }
+
+    private boolean isConflictError(Throwable throwable) {
+        if (throwable instanceof AppException) {
+            AppException ex = (AppException) throwable;
+            return ex.getHttpCode() == 409 || (ex.getMessage() != null && ex.getMessage().contains("Hồ sơ đã được tạo"));
+        }
+        return false;
     }
 
     private void handleError(String errorMessage) {
@@ -191,6 +279,7 @@ public class LoginViewModel extends ViewModel {
         public static class ShowPersonalInfoForm extends RoleSetupEvent {}
         public static class ShowCompanyNameForm extends RoleSetupEvent {}
         public static class ShowInvitationCodeForm extends RoleSetupEvent {}
+        public static class NavigateToCompanySelection extends RoleSetupEvent {}
         public static class ShowError extends RoleSetupEvent {
             public final String message;
             public ShowError(String message) { this.message = message; }

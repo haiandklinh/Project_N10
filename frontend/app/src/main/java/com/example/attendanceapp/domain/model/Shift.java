@@ -18,16 +18,24 @@ public class Shift {
     private final LocalTime endTime;    // 17:00
     private final String location;
     private final ShiftStatus status;
+    private final LocalTime allowedCheckInTime;
 
     // Constructor tự sinh UUID cho ID
     public Shift(String userId, LocalDate date, String shiftName,
                  LocalTime startTime, LocalTime endTime, String location, ShiftStatus status) {
-        this(UUID.randomUUID().toString(), userId, date, shiftName, startTime, endTime, location, status);
+        this(UUID.randomUUID().toString(), userId, date, shiftName, startTime, endTime, location, status, null);
     }
 
-    // Constructor đầy đủ
+    // Constructor day du (tuong thich cu)
     public Shift(String id, String userId, LocalDate date, String shiftName,
                  LocalTime startTime, LocalTime endTime, String location, ShiftStatus status) {
+        this(id, userId, date, shiftName, startTime, endTime, location, status, null);
+    }
+
+    // Constructor day du kem allowedCheckInTime
+    public Shift(String id, String userId, LocalDate date, String shiftName,
+                 LocalTime startTime, LocalTime endTime, String location, ShiftStatus status,
+                 LocalTime allowedCheckInTime) {
         this.id = id != null ? id : UUID.randomUUID().toString();
         this.userId = userId;
         this.date = date;
@@ -36,8 +44,8 @@ public class Shift {
         this.endTime = endTime;
         this.location = location;
         this.status = status != null ? status : ShiftStatus.PENDING;
+        this.allowedCheckInTime = allowedCheckInTime != null ? allowedCheckInTime : startTime;
     }
-
     // Getters
     public String getId() { return id; }
     public String getUserId() { return userId; }
@@ -47,6 +55,7 @@ public class Shift {
     public LocalTime getEndTime() { return endTime; }
     public String getLocation() { return location; }
     public ShiftStatus getStatus() { return status; }
+    public LocalTime getAllowedCheckInTime() { return allowedCheckInTime != null ? allowedCheckInTime : startTime; }
 
     /** Getter động trả về chuỗi hiển thị giờ dạng "08:00 - 17:00" */
     public String getShiftTime() {

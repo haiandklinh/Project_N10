@@ -67,16 +67,8 @@ public class ManagerScheduleEmployeeAdapter extends RecyclerView.Adapter<Manager
             holder.binding.tvDivider.setVisibility(View.VISIBLE);
         }
 
-        // 3. LOAD AVATAR BẰNG GLIDE
-        if (item.getAvatarUrl() != null && !item.getAvatarUrl().isEmpty()) {
-            Glide.with(context)
-                    .load(item.getAvatarUrl())
-                    .placeholder(R.drawable.ic_avatar)
-                    .error(R.drawable.ic_avatar)
-                    .into(holder.binding.ivAvatar);
-        } else {
-            holder.binding.ivAvatar.setImageResource(R.drawable.ic_avatar);
-        }
+        // 3. LOAD AVATAR ĐỒNG BỘ TỪ API
+        com.example.attendanceapp.core.utils.AvatarLoader.loadAvatar(context, item.getAvatarUrl(), holder.binding.ivAvatar);
 
         // 4. Thông tin Ca làm việc (Chip bên phải)
         boolean hasShift = item.getAssignedShiftName() != null && !item.getAssignedShiftName().isEmpty();

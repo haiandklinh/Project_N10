@@ -13,6 +13,7 @@ import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.attendanceapp.R;
+import com.example.attendanceapp.core.notification.SystemNotificationHelper;
 import com.example.attendanceapp.databinding.ActivityAuthBinding;
 import com.google.firebase.messaging.FirebaseMessaging;
 
@@ -30,13 +31,16 @@ public class AuthActivity extends AppCompatActivity {
 
         viewModel = new ViewModelProvider(this).get(AuthViewModel.class);
 
-        // 1. Kiểm tra quyền thông báo (Android 13+)
+        // 1. Khởi tạo Notification Channel cho thông báo hệ thống
+        SystemNotificationHelper.createNotificationChannel(this);
+
+        // 2. Kiểm tra quyền thông báo (Android 13+)
         requestNotificationPermission();
 
-        // 2. Lấy FCM Token để gửi cho Backend (Dùng để test)
+        // 3. Lấy FCM Token để gửi cho Backend (Dùng để test)
         getAndLogFCMToken();
 
-        //Apply Theme
+        // Apply Theme
         applyAppTheme(viewModel.getCurrentTheme().getValue());
 
         // 4. Setup UI & ViewBinding
@@ -85,7 +89,6 @@ public class AuthActivity extends AppCompatActivity {
                     }
                     String token = task.getResult();
                     Log.d("FCM_TOKEN", "Token của máy bạn là: " + token);
-                    // Dùng token này để test gửi từ Backend hoặc Postman
                 });
     }
 

@@ -1,137 +1,143 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/swipeRefreshLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?android:attr/colorBackground"
-    android:fillViewport="true"
-    android:id="@+id/employeeScheduleFragment"
-    android:overScrollMode="never"
-    android:clipToPadding="false"
-    android:paddingBottom="100dp"
-    tools:context=".ui.employee.schedule.EmployeeScheduleFragment">
+    android:background="?android:attr/colorBackground">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/employeeScheduleFragment"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingHorizontal="@dimen/spacing_m">
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:overScrollMode="never"
+        android:clipToPadding="false"
+        android:paddingBottom="100dp"
+        tools:context=".ui.employee.schedule.EmployeeScheduleFragment">
 
-        <!-- ==================== TOP BAR: TITLE & QUICK ACTIONS ==================== -->
-        <TextView
-            android:id="@+id/tv_screen_title"
-            style="@style/TitleTextLargeStyle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_m"
-            android:text="Lịch làm việc"
-            android:textColor="?attr/colorOnSurface"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toStartOf="@id/layout_quick_actions"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <LinearLayout
-            android:id="@+id/layout_quick_actions"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintBottom_toBottomOf="@+id/tv_screen_title"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/tv_screen_title">
-
-            <!-- Nút Đổi ca -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/btn_swap_shift"
-                style="@style/CircleIconCard"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginEnd="@dimen/spacing_xs">
-
-                <ImageView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:contentDescription="Đổi ca làm"
-                    android:padding="10dp"
-                    android:src="@drawable/ic_refresh"
-                    app:tint="?attr/colorPrimary" />
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Nút Xin nghỉ phép -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/btn_request_leave"
-                style="@style/CircleIconCard"
-                android:layout_width="40dp"
-                android:layout_height="40dp">
-
-                <ImageView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:contentDescription="Xin nghỉ phép"
-                    android:padding="10dp"
-                    android:src="@drawable/ic_add"
-                    app:tint="?attr/colorPrimary" />
-            </com.google.android.material.card.MaterialCardView>
-        </LinearLayout>
-
-        <!-- ==================== BANNER LỊCH TUẦN & THỐNG KÊ NHANH ==================== -->
-        <include
-            android:id="@+id/include_card_timeline"
-            layout="@layout/layout_schedule_timeline"
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_m"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_screen_title" />
+            android:paddingHorizontal="@dimen/spacing_m">
 
-        <!-- ==================== CA LÀM HÔM NAY ==================== -->
-        <include
-            android:id="@+id/include_shift_today"
-            layout="@layout/layout_home_today_shift"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_l"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/include_card_timeline" />
+            <!-- ==================== TOP BAR: TITLE & QUICK ACTIONS ==================== -->
+            <TextView
+                android:id="@+id/tv_screen_title"
+                style="@style/TitleTextLargeStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_m"
+                android:text="Lịch làm việc"
+                android:textColor="?attr/colorOnSurface"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toStartOf="@id/layout_quick_actions"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- ==================== CÁC CA SẮP TỚI ==================== -->
-        <TextView
-            android:id="@+id/tv_upcoming_label"
-            style="@style/TitleTextMediumStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_l"
-            android:text="Ca sắp tới"
-            android:textColor="?attr/colorOnSurface"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/include_shift_today" />
+            <LinearLayout
+                android:id="@+id/layout_quick_actions"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                app:layout_constraintBottom_toBottomOf="@+id/tv_screen_title"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/tv_screen_title">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_upcoming_shifts"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_s"
-            android:clipToPadding="false"
-            android:nestedScrollingEnabled="false"
-            app:layout_constraintTop_toBottomOf="@id/tv_upcoming_label"
-            tools:itemCount="4"
-            tools:listitem="@layout/item_shift_upcoming" />
+                <!-- Nút Đổi ca -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/btn_swap_shift"
+                    style="@style/CircleIconCard"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginEnd="@dimen/spacing_xs">
 
-        <!-- Trạng thái trống: chưa được phân ca nào -->
-        <include
-            android:id="@+id/include_empty_state"
-            layout="@layout/layout_empty_state"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_s"
-            android:visibility="gone"
-            app:layout_constraintTop_toBottomOf="@id/tv_upcoming_label"
-            tools:visibility="gone" />
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:contentDescription="Đổi ca làm"
+                        android:padding="10dp"
+                        android:src="@drawable/ic_refresh"
+                        app:tint="?attr/colorPrimary" />
+                </com.google.android.material.card.MaterialCardView>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+                <!-- Nút Xin nghỉ phép -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/btn_request_leave"
+                    style="@style/CircleIconCard"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp">
 
-</androidx.core.widget.NestedScrollView>
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:contentDescription="Xin nghỉ phép"
+                        android:padding="10dp"
+                        android:src="@drawable/ic_add"
+                        app:tint="?attr/colorPrimary" />
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+            <!-- ==================== BANNER LỊCH TUẦN & THỐNG KÊ NHANH ==================== -->
+            <include
+                android:id="@+id/include_card_timeline"
+                layout="@layout/layout_schedule_timeline"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_m"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_screen_title" />
+
+            <!-- ==================== CA LÀM HÔM NAY ==================== -->
+            <include
+                android:id="@+id/include_shift_today"
+                layout="@layout/layout_home_today_shift"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_l"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/include_card_timeline" />
+
+            <!-- ==================== CÁC CA SẮP TỚI ==================== -->
+            <TextView
+                android:id="@+id/tv_upcoming_label"
+                style="@style/TitleTextMediumStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_l"
+                android:text="Ca sắp tới"
+                android:textColor="?attr/colorOnSurface"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/include_shift_today" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_upcoming_shifts"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_s"
+                android:clipToPadding="false"
+                android:nestedScrollingEnabled="false"
+                app:layout_constraintTop_toBottomOf="@id/tv_upcoming_label"
+                tools:itemCount="4"
+                tools:listitem="@layout/item_shift_upcoming" />
+
+            <!-- Trạng thái trống: chưa được phân ca nào -->
+            <include
+                android:id="@+id/include_empty_state"
+                layout="@layout/layout_empty_state"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_s"
+                android:visibility="gone"
+                app:layout_constraintTop_toBottomOf="@id/tv_upcoming_label"
+                tools:visibility="gone" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

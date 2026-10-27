@@ -1,32 +1,32 @@
 package com.example.attendanceapp.domain.model;
 
-import androidx.annotation.ColorRes;
+import androidx.annotation.AttrRes;
 import androidx.annotation.DrawableRes;
 
 import com.example.attendanceapp.R;
 
 public enum DayStatus {
     NONE(0, 0),
-    SUCCESS(R.drawable.ic_check, R.color.attendance_present),
-    WARNING(R.drawable.ic_warning, R.color.attendance_late),
-    CRITICAL(R.drawable.ic_warning, R.color.attendance_absent);
+    SUCCESS(R.drawable.ic_check, R.attr.colorAttendancePresent),
+    WARNING(R.drawable.ic_warning, R.attr.colorAttendanceLate),
+    CRITICAL(R.drawable.ic_warning, R.attr.colorAttendanceAbsent);
 
     @DrawableRes
     private final int iconRes;
 
-    @ColorRes
-    private final int colorRes;
+    @AttrRes
+    private final int colorAttrRes;
 
-    DayStatus(@DrawableRes int iconRes, @ColorRes int colorRes) {
+    DayStatus(@DrawableRes int iconRes, @AttrRes int colorAttrRes) {
         this.iconRes = iconRes;
-        this.colorRes = colorRes;
+        this.colorAttrRes = colorAttrRes;
     }
 
     public int getIconRes() {
         return iconRes;
     }
 
-    public int getColorRes() {
-        return colorRes;
+    public int getColorAttrRes() {
+        return colorAttrRes;
     }
 }

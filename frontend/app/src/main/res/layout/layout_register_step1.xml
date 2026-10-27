@@ -97,7 +97,6 @@
             android:layout_height="wrap_content"
             style="@style/MainCard"
             android:visibility="gone"
-            app:cardBackgroundColor="?attr/colorSurfaceVariant"
             app:cardCornerRadius="@dimen/radius_m"
             app:cardElevation="0dp"
             app:strokeWidth="0dp"

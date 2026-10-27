@@ -15,7 +15,6 @@ import androidx.navigation.Navigation;
 
 import com.example.attendanceapp.R;
 import com.example.attendanceapp.databinding.FragmentAuthPendingApprovalBinding;
-import com.example.attendanceapp.ui.employee.EmployeeMainActivity;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -57,43 +56,74 @@ public class PendingApprovalFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         viewModel = new ViewModelProvider(this).get(PendingApprovalViewModel.class);
+        viewModel.init(inviteCode, companyName);
 
         setupViews();
         observeViewModel();
+        setupBackPress();
+    }
+
+    private void setupBackPress() {
+        requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), new androidx.activity.OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                requireActivity().finish();
+            }
+        });
     }
 
     private void setupViews() {
-        // Hiển thị thông tin mã mời và tên công ty
-        binding.tvInviteCode.setText(inviteCode != null ? inviteCode : "");
-        binding.tvCompanyName.setText(companyName != null ? companyName : "");
+        // Hiển thị thông tin mã mời và tên công ty ban đầu nếu có từ Bundle
+        if (inviteCode != null && !inviteCode.isEmpty()) {
+            binding.tvInviteCode.setText(inviteCode);
+        }
+        if (companyName != null && !companyName.isEmpty()) {
+            if (!companyName.equals(inviteCode)) {
+                binding.tvCompanyName.setText(companyName);
+            } else {
+                binding.tvCompanyName.setText("Đang tải...");
+            }
+        }
 
         binding.btnCheckStatus.setOnClickListener(v -> viewModel.checkApprovalStatus());
         binding.btnLogout.setOnClickListener(v -> logout());
 
-        // Sự kiện chuyển sang chế độ Khách (Bắt nút từ Layout góc trên bên phải hoặc bên dưới)
+        // Đảm bảo không cho phép đi vào Guest Mode
         if (binding.btnContinueAsGuest != null) {
-            binding.btnContinueAsGuest.setOnClickListener(v -> navigateToGuestMode());
+            binding.btnContinueAsGuest.setVisibility(View.GONE);
         }
     }
 
     private void observeViewModel() {
+        // Observe thông tin công ty từ Session / ViewModel
+        viewModel.getCompanyInfo().observe(getViewLifecycleOwner(), info -> {
+            if (info != null) {
+                if (info.inviteCode != null && !info.inviteCode.isEmpty()) {
+                    binding.tvInviteCode.setText(info.inviteCode);
+                }
+                if (info.companyName != null && !info.companyName.isEmpty()) {
+                    binding.tvCompanyName.setText(info.companyName);
+                }
+            }
+        });
+
         // Observe trạng thái Loading
         viewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
             binding.progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
             binding.btnCheckStatus.setEnabled(!isLoading);
             binding.btnLogout.setEnabled(!isLoading);
-            if (binding.btnContinueAsGuest != null) {
-                binding.btnContinueAsGuest.setEnabled(!isLoading);
-            }
         });
 
-        // Observe kết quả kiểm tra phê duyệt
+        // Observe kết quả kiểm tra phê duyệt (thủ công hoặc realtime qua WebSocket)
         viewModel.getApprovalStatusState().observe(getViewLifecycleOwner(), state -> {
             if (state instanceof PendingApprovalViewModel.ApprovalStatusState.Approved) {
                 Toast.makeText(requireContext(), "Chúc mừng! Yêu cầu của bạn đã được phê duyệt", Toast.LENGTH_SHORT).show();
                 navigateToEmployeeHome();
             } else if (state instanceof PendingApprovalViewModel.ApprovalStatusState.Pending) {
                 Toast.makeText(requireContext(), "Yêu cầu của bạn vẫn đang chờ quản lý duyệt", Toast.LENGTH_SHORT).show();
+            } else if (state instanceof PendingApprovalViewModel.ApprovalStatusState.Rejected) {
+                String error = ((PendingApprovalViewModel.ApprovalStatusState.Rejected) state).message;
+                Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show();
             } else if (state instanceof PendingApprovalViewModel.ApprovalStatusState.Error) {
                 String error = ((PendingApprovalViewModel.ApprovalStatusState.Error) state).message;
                 Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show();
@@ -102,24 +132,12 @@ public class PendingApprovalFragment extends Fragment {
     }
 
     private void navigateToEmployeeHome() {
-        Intent intent = new Intent(requireContext(), EmployeeMainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        requireActivity().finish();
-    }
-
-    // Sửa hàm này để mở thẳng EmployeeMainActivity thay vì navigate sang GuestModeFragment
-    private void navigateToGuestMode() {
-        Intent intent = new Intent(requireContext(), EmployeeMainActivity.class);
-        // (Tùy chọn) Chèn extra flag nếu muốn EmployeeMainActivity biết đây là luồng test Guest
-        intent.putExtra("IS_GUEST_TEST_MODE", true);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        requireActivity().finish();
+        Navigation.findNavController(requireView())
+                .navigate(R.id.action_pendingApprovalFragment_to_staffCompanySelectionFragment);
     }
 
     private void logout() {
-        // 1. Xóa sạch Session đăng nhập trong SharedPreferences
+        // 1. Xóa sạch Session đăng nhập
         viewModel.logout();
 
         // 2. Điều hướng quay về màn hình Đăng nhập

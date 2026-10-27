@@ -24,6 +24,8 @@ android {
     buildTypes {
         debug {
             buildConfigField("String", "BASE_URL", "\"http://192.168.1.226:8000/\"")
+//            buildConfigField("String", "BASE_URL", "\"https://attendance-api-wt4i.onrender.com/\"")
+
         }
         release {
             isMinifyEnabled = false
@@ -123,4 +125,9 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.messaging)
     implementation("com.google.firebase:firebase-analytics")
+}
+
+
+tasks.withType<JavaCompile>().configureEach {
+    options.encoding = "UTF-8"
 }

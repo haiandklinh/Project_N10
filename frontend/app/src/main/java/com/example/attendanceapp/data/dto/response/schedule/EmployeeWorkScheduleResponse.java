@@ -2,28 +2,30 @@ package com.example.attendanceapp.data.dto.response.schedule;
 
 import androidx.annotation.Nullable;
 import com.google.gson.annotations.SerializedName;
+import java.util.List;
 
 public class EmployeeWorkScheduleResponse {
-    @SerializedName("employee_id")
+    @SerializedName("id_staff")
     private String employeeId;
 
-    @SerializedName("name")
+    @SerializedName("name_staff")
     private String name;
 
     @SerializedName("position")
     private String position;
 
-    @SerializedName("work_date")
+    @SerializedName("work_day")
     private String workDate;
 
     @Nullable
     @SerializedName("avatar")
     private String avatar;
 
+    @SerializedName("status")
     private String status;
 
-    @SerializedName("shift")
-    private ShiftInfo shift;
+    @SerializedName("data")
+    private List<ShiftInfo> shifts;
 
     public EmployeeWorkScheduleResponse() {
     }
@@ -77,19 +79,19 @@ public class EmployeeWorkScheduleResponse {
         this.status = status;
     }
 
-    public ShiftInfo getShift() {
-        return shift;
+    public List<ShiftInfo> getShifts() {
+        return shifts;
     }
 
-    public void setShift(ShiftInfo shift) {
-        this.shift = shift;
+    public void setShifts(List<ShiftInfo> shifts) {
+        this.shifts = shifts;
     }
 
     public static class ShiftInfo {
-        @SerializedName("shift_id")
+        @SerializedName("id")
         private String shiftId;
 
-        @SerializedName("shift_name")
+        @SerializedName("name")
         private String shiftName;
 
         @SerializedName("start_time")

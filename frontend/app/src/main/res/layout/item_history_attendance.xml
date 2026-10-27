@@ -195,7 +195,7 @@
                 android:layout_marginStart="@dimen/spacing_3xs"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="@dimen/text_size_body_small"
-                tools:text="GPS đã xác nhận · Văn phòng HCM" />
+                tools:text="Vị trí ca làm việc thực tế" />
 
         </LinearLayout>
 

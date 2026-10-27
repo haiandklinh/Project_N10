@@ -185,7 +185,7 @@ public class ManagerWeekDaySelectorAdapter extends RecyclerView.Adapter<ManagerW
             binding.ivDayStatus.setVisibility(View.VISIBLE);
             binding.ivDayStatus.setImageResource(status.getIconRes());
             binding.ivDayStatus.setImageTintList(ColorStateList.valueOf(
-                    ContextCompat.getColor(itemView.getContext(), status.getColorRes())
+                    ColorUtil.getThemeColor(itemView.getContext(), status.getColorAttrRes())
             ));
         }
     }

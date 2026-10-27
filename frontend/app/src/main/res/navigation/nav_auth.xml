@@ -39,6 +39,13 @@
             app:destination="@id/pendingApprovalFragment"
             app:popUpTo="@id/splashFragment"
             app:popUpToInclusive="true" />
+
+        <!-- Sang Màn hình chọn công ty của nhân viên -->
+        <action
+            android:id="@+id/action_splashFragment_to_staffCompanySelectionFragment"
+            app:destination="@id/staffCompanySelectionFragment"
+            app:popUpTo="@id/splashFragment"
+            app:popUpToInclusive="true" />
     </fragment>
 
     <!-- Màn hình Onboarding / Giới thiệu ban đầu -->
@@ -72,7 +79,15 @@
 
         <action
             android:id="@+id/action_loginFragment_to_pendingApprovalFragment"
-            app:destination="@id/pendingApprovalFragment" />
+            app:destination="@id/pendingApprovalFragment"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
+
+        <action
+            android:id="@+id/action_loginFragment_to_staffCompanySelectionFragment"
+            app:destination="@id/staffCompanySelectionFragment"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
     </fragment>
 
     <!-- Màn hình Đăng nhập tài khoản đã lưu -->
@@ -89,6 +104,12 @@
         <action
             android:id="@+id/action_loginSavedAccountFragment_to_loginFragment"
             app:destination="@id/loginFragment" />
+
+        <action
+            android:id="@+id/action_loginSavedAccountFragment_to_staffCompanySelectionFragment"
+            app:destination="@id/staffCompanySelectionFragment"
+            app:popUpTo="@id/loginSavedAccountFragment"
+            app:popUpToInclusive="true" />
     </fragment>
 
     <!-- Màn hình Đăng ký tài khoản -->
@@ -136,6 +157,29 @@
             app:popUpTo="@id/loginFragment"
             app:popUpToInclusive="true" />
 
+        <action
+            android:id="@+id/action_pendingApprovalFragment_to_staffCompanySelectionFragment"
+            app:destination="@id/staffCompanySelectionFragment"
+            app:popUpTo="@id/pendingApprovalFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <!-- Màn hình Chọn công ty đã tham gia (Nhân viên) -->
+    <fragment
+        android:id="@+id/staffCompanySelectionFragment"
+        android:name="com.example.attendanceapp.ui.main.auth.company.StaffCompanySelectionFragment"
+        android:label="Chọn công ty"
+        tools:layout="@layout/fragment_staff_company_selection">
+
+        <action
+            android:id="@+id/action_staffCompanySelectionFragment_to_loginFragment"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/staffCompanySelectionFragment"
+            app:popUpToInclusive="true" />
+
+        <action
+            android:id="@+id/action_staffCompanySelectionFragment_to_pendingApprovalFragment"
+            app:destination="@id/pendingApprovalFragment" />
     </fragment>
 
     <fragment

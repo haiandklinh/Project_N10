@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -18,10 +17,8 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.attendanceapp.R;
 import com.example.attendanceapp.databinding.FragmentManagerHomeBinding;
-import com.example.attendanceapp.domain.model.ApprovalRequestType;
-import com.example.attendanceapp.domain.model.ApprovalStatus;
-import com.example.attendanceapp.domain.model.AttendanceStatus;
 import com.example.attendanceapp.domain.model.RecentCheckInItem;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -33,6 +30,8 @@ public class ManagerHomeFragment extends Fragment {
 
     private FragmentManagerHomeBinding binding;
     private ManagerHomeViewModel viewModel;
+    private TodayShiftAdapter todayShiftAdapter;
+    private RecentCheckInAdapter recentCheckInAdapter;
 
     @Nullable
     @Override
@@ -47,8 +46,6 @@ public class ManagerHomeFragment extends Fragment {
         viewModel = new ViewModelProvider(this).get(ManagerHomeViewModel.class);
 
         setupObservers();
-        setupOverview();
-        setupActionRequired();
         setupQuickActions();
         setupTodayShifts();
         setupRecentCheckIns();
@@ -60,12 +57,20 @@ public class ManagerHomeFragment extends Fragment {
             if (state == null || binding == null) return;
 
             updateHeader(state);
+            updateOverview(state);
+            updateActionRequired(state);
+            updateTodayShifts(state);
+            updateRecentCheckIns(state);
         });
     }
 
     private void updateHeader(ManagerHomeViewModel.ManagerHomeUiState state) {
         binding.includeHeader.tvGreeting.setText(state.getUserName());
         binding.includeHeader.tvCompanyName.setText(state.getCompanyName());
+
+        binding.includeHeader.notificationBadge.setVisibility(
+                state.hasUnreadNotifications() ? View.VISIBLE : View.GONE
+        );
 
         Glide.with(this)
                 .load(state.getAvatarUrl())
@@ -75,27 +80,39 @@ public class ManagerHomeFragment extends Fragment {
                 .into(binding.includeHeader.ivAvatar);
     }
 
-    private void setupOverview() {
-        binding.includeOverview.tvTotalEmployees.setText("24");
-        binding.includeOverview.tvPresentCount.setText("18");
-        binding.includeOverview.tvLateCount.setText("3");
-        binding.includeOverview.tvAbsentCount.setText("1");
-        binding.includeOverview.tvLeaveCount.setText("2");
-
-        binding.includeOverview.tvOverviewDate.setText("24/09/2026");
+    private void updateOverview(ManagerHomeViewModel.ManagerHomeUiState state) {
+        binding.includeOverview.tvOverviewDate.setText(state.getTodayDate());
+        binding.includeOverview.tvTotalEmployees.setText(String.valueOf(state.getTotalEmployees()));
+        binding.includeOverview.tvPresentCount.setText(String.valueOf(state.getPresentCount()));
+        binding.includeOverview.tvLateCount.setText(String.valueOf(state.getLateCount()));
+        binding.includeOverview.tvAbsentCount.setText(String.valueOf(state.getAbsentCount()));
+        binding.includeOverview.tvLeaveCount.setText(String.valueOf(state.getLeaveCount()));
     }
 
-    private void setupActionRequired() {
-        List<ManagerActionAlert> alerts = new ArrayList<>();
-        alerts.add(new ManagerActionAlert("3 nhân viên đi muộn", "Cần xác nhận lý do hoặc xử lý vi phạm",
-                R.drawable.ic_warning, R.attr.colorAttendanceAbsent, R.attr.colorAttendanceAbsentContainer,
-                () -> Toast.makeText(getContext(), "Xử lý đi muộn", Toast.LENGTH_SHORT).show()));
-        alerts.add(new ManagerActionAlert("2 yêu cầu duyệt đơn", "Đơn xin nghỉ phép và đổi ca đang chờ",
-                R.drawable.ic_approval, R.attr.colorPrimary, R.attr.colorAttendanceAbsentContainer,
-                () -> navigateTo(R.id.action_managerHomeFragment_to_managerApprovalFragment)));
+    private void updateActionRequired(ManagerHomeViewModel.ManagerHomeUiState state) {
+        if (state.getPendingApprovalCount() > 0) {
+            binding.includeActionRequired.cardEmptyActionRequired.setVisibility(View.GONE);
+            binding.includeActionRequired.rvActionRequired.setVisibility(View.VISIBLE);
 
-        binding.includeActionRequired.rvActionRequired.setLayoutManager(new LinearLayoutManager(getContext()));
-        binding.includeActionRequired.rvActionRequired.setAdapter(new ManagerActionAlertAdapter(alerts));
+            List<ManagerActionAlert> alerts = new ArrayList<>();
+            alerts.add(new ManagerActionAlert(
+                    state.getPendingApprovalCount() + " yêu cầu duyệt đơn",
+                    "Đơn xin nghỉ phép và đổi ca đang chờ",
+                    R.drawable.ic_approval,
+                    R.attr.colorPrimary,
+                    R.attr.colorAttendanceAbsentContainer,
+                    () -> navigateTo(R.id.action_managerHomeFragment_to_managerApprovalFragment)
+            ));
+
+            binding.includeActionRequired.rvActionRequired.setLayoutManager(new LinearLayoutManager(getContext()));
+            binding.includeActionRequired.rvActionRequired.setAdapter(new ManagerActionAlertAdapter(alerts));
+        } else {
+            // Mặc định hiện card "Chưa có yêu cầu xử lý"
+            binding.includeActionRequired.cardEmptyActionRequired.setVisibility(View.VISIBLE);
+            binding.includeActionRequired.rvActionRequired.setVisibility(View.GONE);
+            binding.includeActionRequired.cardEmptyActionRequired.setOnClickListener(v ->
+                    navigateTo(R.id.action_managerHomeFragment_to_managerApprovalFragment));
+        }
     }
 
     private void setupQuickActions() {
@@ -156,36 +173,71 @@ public class ManagerHomeFragment extends Fragment {
     }
 
     private void setupTodayShifts() {
-        List<TodayShiftSummary> shifts = new ArrayList<>();
-        shifts.add(new TodayShiftSummary("Ca sáng", "08:00 - 12:00", "Văn phòng chính", "Đang diễn ra", 12));
-        shifts.add(new TodayShiftSummary("Ca chiều", "13:30 - 17:30", "Văn phòng chính", "Sắp tới", 10));
+        binding.includeTodayShifts.cardEmptyShifts.setVisibility(View.VISIBLE);
+        binding.includeTodayShifts.rvTodayShifts.setVisibility(View.GONE);
 
-        binding.includeTodayShifts.rvTodayShifts.setLayoutManager(new LinearLayoutManager(getContext()));
-        binding.includeTodayShifts.rvTodayShifts.setAdapter(new TodayShiftAdapter(shifts));
+        binding.includeTodayShifts.cardEmptyShifts.setOnClickListener(v ->
+                navigateTo(R.id.action_managerHomeFragment_to_managerScheduleFragment));
 
         binding.includeTodayShifts.tvSeeAllShifts.setOnClickListener(v ->
                 navigateTo(R.id.action_managerHomeFragment_to_managerScheduleFragment));
     }
 
+    private void updateTodayShifts(ManagerHomeViewModel.ManagerHomeUiState state) {
+        List<TodayShiftSummary> shifts = state.getTodayShifts();
+        if (shifts != null && !shifts.isEmpty()) {
+            binding.includeTodayShifts.cardEmptyShifts.setVisibility(View.GONE);
+            binding.includeTodayShifts.rvTodayShifts.setVisibility(View.VISIBLE);
+
+            if (todayShiftAdapter == null) {
+                todayShiftAdapter = new TodayShiftAdapter(new ArrayList<>(shifts), shift ->
+                        navigateTo(R.id.action_managerHomeFragment_to_managerScheduleFragment));
+                binding.includeTodayShifts.rvTodayShifts.setLayoutManager(new LinearLayoutManager(getContext()));
+                binding.includeTodayShifts.rvTodayShifts.setAdapter(todayShiftAdapter);
+            } else {
+                todayShiftAdapter.updateData(shifts);
+            }
+        } else {
+            binding.includeTodayShifts.cardEmptyShifts.setVisibility(View.VISIBLE);
+            binding.includeTodayShifts.rvTodayShifts.setVisibility(View.GONE);
+        }
+    }
 
     private void setupRecentCheckIns() {
-        List<RecentCheckInItem> checkins = new ArrayList<>();
-        checkins.add(new RecentCheckInItem("1", "Nguyễn Văn An", null, "Ca sáng", "07:52", AttendanceStatus.PRESENT));
-        checkins.add(new RecentCheckInItem("2", "Trần Thị Bình", null, "Ca sáng", "08:15", AttendanceStatus.LATE));
-        checkins.add(new RecentCheckInItem("3", "Lê Văn Cường", null, "Ca sáng", "08:05", AttendanceStatus.PRESENT));
-
+        recentCheckInAdapter = new RecentCheckInAdapter(new ArrayList<>());
         RecyclerView rv = binding.includeRecentCheckins.rvRecentCheckins;
         rv.setLayoutManager(new LinearLayoutManager(getContext()));
-        rv.setAdapter(new RecentCheckInAdapter(checkins));
+        rv.setAdapter(recentCheckInAdapter);
 
-        boolean isEmpty = checkins.isEmpty();
-        rv.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
-        binding.includeRecentCheckins.includeEmptyState.getRoot().setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+        rv.setVisibility(View.GONE);
+        binding.includeRecentCheckins.includeEmptyState.getRoot().setVisibility(View.VISIBLE);
+        binding.includeRecentCheckins.includeEmptyState.tvEmptyTitle.setText("Chưa có check-in hôm nay");
+        binding.includeRecentCheckins.includeEmptyState.tvEmptySubtitle.setText("Chưa có nhân viên nào check-in trong ngày hôm nay.");
 
-        binding.includeRecentCheckins.tvSeeAllCheckins.setOnClickListener(v -> {
-            // navigate to all checkins
-            Toast.makeText(getContext(), "Xem tất cả check-in", Toast.LENGTH_SHORT).show();
-        });
+        binding.includeRecentCheckins.tvSeeAllCheckins.setOnClickListener(v ->
+                navigateTo(R.id.action_managerHomeFragment_to_managerScheduleFragment));
+    }
+
+    private void updateRecentCheckIns(ManagerHomeViewModel.ManagerHomeUiState state) {
+        if (binding == null) return;
+        List<RecentCheckInItem> checkins = state.getRecentCheckIns();
+        boolean hasData = checkins != null && !checkins.isEmpty();
+
+        RecyclerView rv = binding.includeRecentCheckins.rvRecentCheckins;
+        View emptyState = binding.includeRecentCheckins.includeEmptyState.getRoot();
+
+        if (hasData) {
+            rv.setVisibility(View.VISIBLE);
+            emptyState.setVisibility(View.GONE);
+            if (recentCheckInAdapter != null) {
+                recentCheckInAdapter.updateData(checkins);
+            }
+        } else {
+            rv.setVisibility(View.GONE);
+            emptyState.setVisibility(View.VISIBLE);
+            binding.includeRecentCheckins.includeEmptyState.tvEmptyTitle.setText("Chưa có check-in hôm nay");
+            binding.includeRecentCheckins.includeEmptyState.tvEmptySubtitle.setText("Chưa có nhân viên nào check-in trong ngày hôm nay.");
+        }
     }
 
     private void navigateTo(int destinationId) {
@@ -194,8 +246,18 @@ public class ManagerHomeFragment extends Fragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        if (viewModel != null) {
+            viewModel.loadHomeData();
+        }
+    }
+
+    @Override
     public void onDestroyView() {
         super.onDestroyView();
+        todayShiftAdapter = null;
+        recentCheckInAdapter = null;
         binding = null;
     }
 }

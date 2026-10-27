@@ -5,11 +5,13 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.example.attendanceapp.data.dto.response.manager.StaffItemResponse;
 import com.example.attendanceapp.domain.model.DayStatus;
 import com.example.attendanceapp.domain.model.EmployeeStatus;
 import com.example.attendanceapp.domain.model.EmployeeWorkSchedule;
 import com.example.attendanceapp.domain.model.ManagerEmployeeItem;
 import com.example.attendanceapp.domain.model.ShiftOption;
+import com.example.attendanceapp.domain.repository.ManagerRepository;
 import com.example.attendanceapp.domain.usecase.schedule.GetEmployeeWorkSchedulesUseCase;
 import com.example.attendanceapp.domain.usecase.schedule.ObserveEmployeeWorkSchedulesUseCase;
 import com.example.attendanceapp.domain.usecase.shift.AssignShiftUseCase;
@@ -23,6 +25,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -45,6 +48,7 @@ public class ManagerScheduleViewModel extends ViewModel {
     private final DeleteShiftUseCase deleteShiftUseCase;
     private final ObserveShiftsUseCase observeShiftsUseCase;
     private final ObserveEmployeeWorkSchedulesUseCase observeSchedulesUseCase;
+    private final ManagerRepository managerRepository;
     private final CompositeDisposable disposables = new CompositeDisposable();
 
     // State Holders
@@ -54,6 +58,7 @@ public class ManagerScheduleViewModel extends ViewModel {
     private final MutableLiveData<String> selectedShiftFilter = new MutableLiveData<>(null);
 
     private final MutableLiveData<List<EmployeeWorkSchedule>> rawSchedules = new MutableLiveData<>(new ArrayList<>());
+    private final MutableLiveData<List<StaffItemResponse>> companyStaffs = new MutableLiveData<>(new ArrayList<>());
     private final MutableLiveData<List<ShiftOption>> shiftOptions = new MutableLiveData<>(new ArrayList<>());
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
     private final MutableLiveData<String> errorMsg = new MutableLiveData<>(null);
@@ -69,7 +74,8 @@ public class ManagerScheduleViewModel extends ViewModel {
                                     UpdateShiftUseCase updateShiftUseCase,
                                     DeleteShiftUseCase deleteShiftUseCase,
                                     ObserveShiftsUseCase observeShiftsUseCase,
-                                    ObserveEmployeeWorkSchedulesUseCase observeSchedulesUseCase) {
+                                    ObserveEmployeeWorkSchedulesUseCase observeSchedulesUseCase,
+                                    ManagerRepository managerRepository) {
         this.getShiftsUseCase = getShiftsUseCase;
         this.getEmployeeWorkSchedulesUseCase = getEmployeeWorkSchedulesUseCase;
         this.assignShiftUseCase = assignShiftUseCase;
@@ -77,6 +83,7 @@ public class ManagerScheduleViewModel extends ViewModel {
         this.deleteShiftUseCase = deleteShiftUseCase;
         this.observeShiftsUseCase = observeShiftsUseCase;
         this.observeSchedulesUseCase = observeSchedulesUseCase;
+        this.managerRepository = managerRepository;
 
         setupMediator();
         observeRepositoryStreams();
@@ -86,6 +93,23 @@ public class ManagerScheduleViewModel extends ViewModel {
     public void refreshData() {
         loadShiftOptions();
         loadEmployeeWorkSchedules();
+        loadCompanyStaffs();
+    }
+
+    public void loadCompanyStaffs() {
+        disposables.add(
+                managerRepository.getStaffs()
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                resp -> {
+                                    if (resp != null && resp.getData() != null) {
+                                        companyStaffs.setValue(resp.getData());
+                                    }
+                                },
+                                throwable -> {}
+                        )
+        );
     }
 
     private void observeRepositoryStreams() {
@@ -125,6 +149,7 @@ public class ManagerScheduleViewModel extends ViewModel {
 
     private void setupMediator() {
         uiState.addSource(rawSchedules, schedules -> updateUiState());
+        uiState.addSource(companyStaffs, staffs -> updateUiState());
         uiState.addSource(selectedShiftFilter, filter -> updateUiState());
         uiState.addSource(selectedDate, date -> updateUiState());
         uiState.addSource(shiftOptions, options -> updateUiState());
@@ -135,6 +160,7 @@ public class ManagerScheduleViewModel extends ViewModel {
 
     private void updateUiState() {
         List<EmployeeWorkSchedule> schedules = rawSchedules.getValue();
+        List<StaffItemResponse> staffs = companyStaffs.getValue();
         String filter = selectedShiftFilter.getValue();
         LocalDate date = selectedDate.getValue();
         String dateStr = (date != null) ? date.toString() : LocalDate.now().toString();
@@ -147,31 +173,129 @@ public class ManagerScheduleViewModel extends ViewModel {
             }
         }
 
-        List<ManagerEmployeeItem> filteredList = new ArrayList<>();
+        // 1. Thu thập tất cả nhân viên của công ty (kết hợp từ companyStaffs và rawSchedules)
+        Map<String, ManagerEmployeeItem> employeeMap = new LinkedHashMap<>();
+
+        if (staffs != null) {
+            for (StaffItemResponse staff : staffs) {
+                if (staff.getStaffId() != null && !staff.getStaffId().trim().isEmpty()) {
+                    String empId = staff.getStaffId().trim();
+                    String code = empId.length() >= 6
+                            ? "NV" + empId.substring(0, 4).toUpperCase()
+                            : "NV" + empId;
+                    EmployeeStatus status = "deactive".equalsIgnoreCase(staff.getStatus())
+                            ? EmployeeStatus.TERMINATED : EmployeeStatus.ACTIVE;
+                    String pos = (staff.getPosition() != null && !staff.getPosition().trim().isEmpty())
+                            ? staff.getPosition().trim() : "Nhân viên";
+                    String avatar = (staff.getAvatar() != null && !staff.getAvatar().trim().isEmpty()
+                            && !"null".equalsIgnoreCase(staff.getAvatar()) && !"none".equalsIgnoreCase(staff.getAvatar()))
+                            ? staff.getAvatar().trim() : "";
+
+                    employeeMap.put(empId, new ManagerEmployeeItem(
+                            empId,
+                            code,
+                            staff.getNameStaff() != null ? staff.getNameStaff() : "Nhân viên",
+                            avatar,
+                            pos,
+                            "", "", "",
+                            status,
+                            0, 0, 0
+                    ));
+                }
+            }
+        }
+
         if (schedules != null) {
             for (EmployeeWorkSchedule schedule : schedules) {
-                if (schedule.getWorkDate() == null || !schedule.getWorkDate().equals(dateStr)) {
-                    continue;
+                if (schedule.getEmployeeId() != null && !schedule.getEmployeeId().trim().isEmpty()) {
+                    String empId = schedule.getEmployeeId().trim();
+                    if (!employeeMap.containsKey(empId)) {
+                        String code = empId.length() >= 6
+                                ? "NV" + empId.substring(0, 4).toUpperCase()
+                                : "NV" + empId;
+                        EmployeeStatus status = EmployeeStatus.fromString(schedule.getStatus());
+                        String pos = (schedule.getPosition() != null && !schedule.getPosition().trim().isEmpty())
+                                ? schedule.getPosition().trim() : "Nhân viên";
+                        String avatar = (schedule.getAvatar() != null && !schedule.getAvatar().trim().isEmpty()
+                                && !"null".equalsIgnoreCase(schedule.getAvatar()) && !"none".equalsIgnoreCase(schedule.getAvatar()))
+                                ? schedule.getAvatar().trim() : "";
+
+                        employeeMap.put(empId, new ManagerEmployeeItem(
+                                empId,
+                                code,
+                                schedule.getName() != null ? schedule.getName() : "Nhân viên",
+                                avatar,
+                                pos,
+                                "", "", "",
+                                status,
+                                0, 0, 0
+                        ));
+                    }
                 }
+            }
+        }
 
-                String shiftId = schedule.getShift() != null ? schedule.getShift().getShiftId() : null;
-
-                // Xử lý kiểm tra xem ca còn tồn tại trong hệ thống hay không
-                boolean isShiftExist = shiftId != null && shiftById.containsKey(shiftId);
-
-                boolean matches;
-                if (filter == null) {
-                    matches = true;
-                } else if (FILTER_UNASSIGNED.equals(filter)) {
-                    // Hiển thị nếu nhân viên chưa được xếp ca HOẶC ca của họ đã bị xóa khỏi hệ thống
-                    matches = (schedule.getShift() == null || !isShiftExist);
-                } else {
-                    matches = filter.equals(shiftId) && isShiftExist;
+        // 2. Tìm ca làm việc của từng nhân viên trên ngày dateStr
+        Map<String, EmployeeWorkSchedule> scheduleOnSelectedDate = new HashMap<>();
+        if (schedules != null) {
+            for (EmployeeWorkSchedule schedule : schedules) {
+                if (schedule.getEmployeeId() != null && schedule.getWorkDate() != null
+                        && schedule.getWorkDate().equals(dateStr) && schedule.getShift() != null) {
+                    scheduleOnSelectedDate.put(schedule.getEmployeeId().trim(), schedule);
                 }
+            }
+        }
 
-                if (matches) {
-                    filteredList.add(mapToManagerEmployeeItem(schedule, shiftById));
+        // 3. Xây dựng danh sách hiển thị và áp dụng bộ lọc (filter)
+        List<ManagerEmployeeItem> filteredList = new ArrayList<>();
+        for (Map.Entry<String, ManagerEmployeeItem> entry : employeeMap.entrySet()) {
+            String empId = entry.getKey();
+            ManagerEmployeeItem baseItem = entry.getValue();
+
+            ManagerEmployeeItem item = new ManagerEmployeeItem(
+                    baseItem.getUserId(),
+                    baseItem.getEmployeeCode(),
+                    baseItem.getFullName(),
+                    baseItem.getAvatarUrl(),
+                    baseItem.getPosition(),
+                    baseItem.getDepartment(),
+                    baseItem.getPhoneNumber(),
+                    baseItem.getJoinDateLabel(),
+                    baseItem.getStatus(),
+                    baseItem.getShiftCountThisMonth(),
+                    baseItem.getLeaveCountThisMonth(),
+                    baseItem.getEstimatedSalaryThisMonth()
+            );
+
+            EmployeeWorkSchedule schedule = scheduleOnSelectedDate.get(empId);
+            String shiftId = null;
+            String shiftName = null;
+            boolean isShiftExist = false;
+
+            if (schedule != null && schedule.getShift() != null) {
+                shiftId = schedule.getShift().getShiftId();
+                if (shiftId != null && shiftById.containsKey(shiftId)) {
+                    shiftName = shiftById.get(shiftId).getTitle();
+                    isShiftExist = true;
+                } else if (schedule.getShift().getShiftName() != null) {
+                    shiftName = schedule.getShift().getShiftName();
+                    isShiftExist = true;
                 }
+            }
+
+            item.setAssignedShiftName(isShiftExist ? shiftName : null);
+
+            boolean matches;
+            if (filter == null) {
+                matches = true;
+            } else if (FILTER_UNASSIGNED.equals(filter)) {
+                matches = (item.getAssignedShiftName() == null);
+            } else {
+                matches = (filter.equals(shiftId) && isShiftExist);
+            }
+
+            if (matches) {
+                filteredList.add(item);
             }
         }
 
@@ -191,39 +315,12 @@ public class ManagerScheduleViewModel extends ViewModel {
         }
     }
 
-    private ManagerEmployeeItem mapToManagerEmployeeItem(EmployeeWorkSchedule schedule,
-                                                         Map<String, ShiftOption> shiftById) {
-        String shiftName = null;
-        if (schedule.getShift() != null) {
-            String shiftId = schedule.getShift().getShiftId();
-            // Nếu ca tồn tại trong danh sách ca hiện tại -> lấy tên ca mới nhất
-            // Nếu ca đã bị xóa khỏi danh sách ca -> shiftName = null (Hiển thị "Chưa xếp ca")
-            if (shiftId != null && shiftById.containsKey(shiftId)) {
-                shiftName = shiftById.get(shiftId).getTitle();
-            }
-        }
-
-        EmployeeStatus employeeStatus = EmployeeStatus.fromString(schedule.getStatus());
-
-        ManagerEmployeeItem item = new ManagerEmployeeItem(
-                schedule.getEmployeeId(),
-                schedule.getEmployeeId(),
-                schedule.getName(),
-                schedule.getAvatar(),
-                schedule.getPosition(),
-                "", "", "",
-                employeeStatus,
-                0, 0, 0
-        );
-        item.setAssignedShiftName(shiftName); // Nếu shiftName == null -> Adapter sẽ render trạng thái Chưa xếp ca
-        return item;
-    }
-
     private Map<LocalDate, DayStatus> calculateDayStatuses(List<EmployeeWorkSchedule> schedules) {
         Map<LocalDate, DayStatus> statuses = new HashMap<>();
         LocalDate selected = selectedDate.getValue();
         if (selected == null) selected = LocalDate.now();
 
+        // Tính toán phạm vi hiển thị (thường là 42 ngày cho grid tháng)
         LocalDate firstDayOfMonth = selected.withDayOfMonth(1);
         int dayOfWeekOfFirst = firstDayOfMonth.getDayOfWeek().getValue();
         LocalDate gridStartDate = firstDayOfMonth.minusDays(dayOfWeekOfFirst - 1);
@@ -231,24 +328,18 @@ public class ManagerScheduleViewModel extends ViewModel {
         for (int i = 0; i < 42; i++) {
             LocalDate date = gridStartDate.plusDays(i);
 
-            if (date.getDayOfWeek() == DayOfWeek.SUNDAY) {
-                statuses.put(date, DayStatus.CRITICAL);
-                continue;
-            }
-
             long count = 0;
             if (schedules != null) {
                 count = schedules.stream()
-                        .filter(s -> date.toString().equals(s.getWorkDate()))
+                        .filter(s -> s.getWorkDate() != null && date.toString().equals(s.getWorkDate()) && s.getShift() != null)
                         .count();
             }
 
-            if (count == 0) {
-                statuses.put(date, DayStatus.CRITICAL);
-            } else if (date.getDayOfMonth() == 15 || date.getDayOfMonth() == 20) {
-                statuses.put(date, DayStatus.WARNING);
-            } else {
+            // Logic: Có ca -> Tích xanh, Không ca -> ! đỏ
+            if (count > 0) {
                 statuses.put(date, DayStatus.SUCCESS);
+            } else {
+                statuses.put(date, DayStatus.CRITICAL);
             }
         }
         return statuses;
@@ -260,8 +351,8 @@ public class ManagerScheduleViewModel extends ViewModel {
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                options -> { },
-                                throwable -> errorMsg.setValue("Khởi tạo danh sách ca thất bại: " + throwable.getMessage())
+                                options -> {},
+                                throwable -> errorMsg.setValue(throwable.getMessage())
                         )
         );
     }
@@ -285,9 +376,15 @@ public class ManagerScheduleViewModel extends ViewModel {
     }
 
     public void updateShift(String shiftId, String shiftName, String startTime, String endTime, Double latitude, Double longitude) {
+        updateShift(shiftId, shiftName, startTime, endTime, startTime, 100.0, latitude, longitude);
+    }
+
+    public void updateShift(String shiftId, String shiftName, String startTime, String endTime,
+                            String allowedCheckInTime, double checkInRadius,
+                            Double latitude, Double longitude) {
         isLoading.setValue(true);
         disposables.add(
-                updateShiftUseCase.execute(shiftId, shiftName, startTime, endTime, latitude, longitude)
+                updateShiftUseCase.execute(shiftId, shiftName, startTime, endTime, allowedCheckInTime, checkInRadius, latitude != null ? latitude : 0.0, longitude != null ? longitude : 0.0)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
@@ -318,6 +415,16 @@ public class ManagerScheduleViewModel extends ViewModel {
     }
 
     public void assignWorkSchedule(String employeeId, String shiftId, String workDate) {
+        List<EmployeeWorkSchedule> currentSchedules = rawSchedules.getValue();
+        if (currentSchedules != null && workDate != null && employeeId != null) {
+            for (EmployeeWorkSchedule item : currentSchedules) {
+                if (employeeId.equals(item.getEmployeeId()) && workDate.equals(item.getWorkDate()) && item.getShift() != null) {
+                    String shiftName = item.getShift().getShiftName();
+                    errorMsg.setValue("Nhân viên này đã có ca làm (" + (shiftName != null ? shiftName : "Đã có ca") + ") trong ngày này. Mỗi nhân viên chỉ làm 1 ca/ngày!");
+                    return;
+                }
+            }
+        }
         isLoading.setValue(true);
         disposables.add(
                 assignShiftUseCase.execute(Collections.singletonList(employeeId), shiftId, workDate, null)
@@ -328,6 +435,7 @@ public class ManagerScheduleViewModel extends ViewModel {
                                     isLoading.setValue(false);
                                     isAssignSuccess.setValue(true);
                                     loadEmployeeWorkSchedules();
+                                    loadCompanyStaffs();
                                 },
                                 error -> {
                                     isLoading.setValue(false);

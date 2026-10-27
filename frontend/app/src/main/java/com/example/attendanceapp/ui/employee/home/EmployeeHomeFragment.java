@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,6 +20,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.attendanceapp.R;
+import com.example.attendanceapp.core.notification.ShiftAlarmScheduler;
+import com.example.attendanceapp.core.utils.ColorUtil;
+import com.example.attendanceapp.core.utils.DateTimeFormatUtils;
+import com.example.attendanceapp.core.utils.IntervalTicker;
+import com.example.attendanceapp.data.local.pref.SharedPreferenceApp;
 import com.example.attendanceapp.databinding.FragmentEmployeeHomeBinding;
 import com.example.attendanceapp.domain.model.CategoryType;
 import com.example.attendanceapp.domain.model.CheckState;
@@ -29,14 +35,13 @@ import com.example.attendanceapp.domain.model.WeekDay;
 import com.example.attendanceapp.ui.employee.home.category.EmployeeCategoryTypeAdapter;
 import com.example.attendanceapp.ui.employee.home.recent.EmployeeRecentAttendanceAdapter;
 import com.example.attendanceapp.ui.employee.home.weekday.EmployeeWeekDayAdapter;
-import com.example.attendanceapp.core.utils.ColorUtil;
-import com.example.attendanceapp.core.utils.DateTimeFormatUtils;
-import com.example.attendanceapp.core.utils.IntervalTicker;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
+
+import javax.inject.Inject;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -50,6 +55,9 @@ public class EmployeeHomeFragment extends Fragment {
     private EmployeeCategoryTypeAdapter employeeCategoryTypeAdapter;
     private EmployeeWeekDayAdapter weekDayAdapter;
     private EmployeeRecentAttendanceAdapter employeeRecentAttendanceAdapter;
+
+    @Inject
+    SharedPreferenceApp sharedPreferenceApp;
 
     private final IntervalTicker clockTicker = new IntervalTicker(CLOCK_TICK_INTERVAL_MS, this::updateClock);
 
@@ -67,7 +75,6 @@ public class EmployeeHomeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Khởi tạo ViewModel bằng Hilt / AndroidX ViewModelProvider
         viewModel = new ViewModelProvider(this).get(EmployeeHomeViewModel.class);
 
         setupStaticViews();
@@ -82,6 +89,14 @@ public class EmployeeHomeFragment extends Fragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        if (viewModel != null) {
+            viewModel.refreshData();
+        }
+    }
+
+    @Override
     public void onStop() {
         super.onStop();
         clockTicker.stop();
@@ -90,7 +105,7 @@ public class EmployeeHomeFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        binding = null; // Bắt buộc để giải phóng bộ nhớ tránh Memory Leak View Binding
+        binding = null;
     }
 
     // =====================================================================
@@ -98,32 +113,30 @@ public class EmployeeHomeFragment extends Fragment {
     // =====================================================================
 
     private void setupObservers() {
-        // A. Đăng ký observer cho LiveData
         viewModel.getUiState().observe(getViewLifecycleOwner(), state -> {
-            // B. Null safety check
             if (state == null || binding == null) return;
 
-            // C. Update từng phần UI
             updateHeader(state);
             updateNotificationBadge(state.shouldShowNotificationBadge());
 
-                // Cards UI State
+            // Render các thành phần giao diện chính (luôn hiển thị theo yêu cầu)
             renderTodayAttendanceCard(state);
             renderTodayShiftCard(state.getTodayShift());
 
-                 // Lists UI State (Dùng submitList cho ListAdapter/DiffUtil)
             updateWeekDaysAdapter(state.getWeekDays());
             updateRecentAttendancesAdapter(state.getRecentAttendances());
         });
     }
 
     private void updateNotificationBadge(boolean visible) {
+        if (binding == null) return;
         binding.includeHeader.notificationBadge.setVisibility(
                 visible ? View.VISIBLE : View.GONE
         );
     }
 
     private void updateHeader(EmployeeHomeUiState state) {
+        if (binding == null) return;
         binding.includeHeader.tvGreeting.setText(state.getUserName());
         binding.includeHeader.tvCompanyName.setText(state.getCompanyName());
 
@@ -136,14 +149,15 @@ public class EmployeeHomeFragment extends Fragment {
     }
 
     private void updateWeekDaysAdapter(List<WeekDay> weekDays) {
-        if (weekDays != null && weekDayAdapter != null) {
-            // Update data cho adapter
+        if (weekDays != null && weekDayAdapter != null && binding != null) {
+            // Luôn hiển thị layout_home_week
+            binding.includeWeek.getRoot().setVisibility(View.VISIBLE);
             weekDayAdapter.submitList(weekDays);
         }
     }
 
     private void updateRecentAttendancesAdapter(List<RecentAttendance> recentAttendances) {
-        if (recentAttendances != null && employeeRecentAttendanceAdapter != null) {
+        if (recentAttendances != null && employeeRecentAttendanceAdapter != null && binding != null) {
             employeeRecentAttendanceAdapter.submitList(recentAttendances);
 
             boolean isEmpty = recentAttendances.isEmpty();
@@ -157,40 +171,88 @@ public class EmployeeHomeFragment extends Fragment {
     // =====================================================================
 
     private void renderTodayAttendanceCard(EmployeeHomeUiState state) {
-        // Lấy dữ liệu từ state
+        if (binding == null) return;
+
         LocalTime checkInTime = state.getCheckInTime();
         LocalTime checkOutTime = state.getCheckOutTime();
         boolean hasShiftToday = state.getTodayShift() != null;
 
+        // Luôn hiển thị layout_home_today_card (card_today)
+        binding.includeTodayCard.cardToday.setVisibility(View.VISIBLE);
+
         if (hasShiftToday) {
-            binding.includeTodayCard.cardToday.setVisibility(View.VISIBLE);
             binding.includeTodayCard.tvCheckInTime.setText(DateTimeFormatUtils.formatTime(checkInTime));
             binding.includeTodayCard.tvCheckOutTime.setText(DateTimeFormatUtils.formatTime(checkOutTime));
             binding.includeTodayCard.tvWorkedHours.setText(DateTimeFormatUtils.formatWorkedHours(checkInTime, checkOutTime));
 
-            // Cập nhật nút Check-in/Check-out trenj TodayCard
             CheckState checkState = CheckState.from(checkInTime, checkOutTime);
             binding.includeTodayCard.btnCheckInCta.setText(checkState.getButtonText());
             binding.includeTodayCard.btnCheckInCta.setEnabled(checkState.isButtonEnabled());
+            binding.includeTodayCard.btnCheckInCta.setIconResource(R.drawable.ic_check_circle);
         } else {
-            binding.includeTodayCard.cardToday.setVisibility(View.GONE);
+            // Khi không có ca làm việc hôm nay: Vẫn hiển thị card với trạng thái ngày nghỉ
+            binding.includeTodayCard.tvCheckInTime.setText("--:--");
+            binding.includeTodayCard.tvCheckOutTime.setText("--:--");
+            binding.includeTodayCard.tvWorkedHours.setText("0giờ 00phút");
+
+            binding.includeTodayCard.btnCheckInCta.setText("Hôm nay nghỉ");
+            binding.includeTodayCard.btnCheckInCta.setEnabled(false);
+            binding.includeTodayCard.btnCheckInCta.setIconResource(R.drawable.ic_remove);
         }
     }
 
     private void renderTodayShiftCard(Shift todayShift) {
+        if (binding == null) return;
+
+        // Luôn hiển thị layout_home_today_shift
+        binding.includeShiftToday.getRoot().setVisibility(View.VISIBLE);
+
         if (todayShift != null && todayShift.getDate().equals(LocalDate.now())) {
-            binding.includeShiftToday.getRoot().setVisibility(View.VISIBLE);
+            // Có ca làm việc hôm nay
+            binding.includeShiftToday.tvExchangeShift.setVisibility(View.VISIBLE);
             binding.includeShiftToday.tvShiftName.setText(todayShift.getShiftName());
             binding.includeShiftToday.tvShiftTime.setText(todayShift.getShiftTime());
             binding.includeShiftToday.tvShiftLocation.setText(todayShift.getLocation());
 
+            if (binding.includeShiftToday.ivShiftIcon != null) {
+                binding.includeShiftToday.ivShiftIcon.setImageResource(R.drawable.ic_schedule);
+            }
+
             bindShiftStatusChip(todayShift.getStatus());
+            if (getContext() != null) {
+                ShiftAlarmScheduler.scheduleShiftAlarms(requireContext(), todayShift, sharedPreferenceApp);
+            }
+            binding.includeShiftToday.tvExchangeShift.setOnClickListener(v -> {
+                Bundle args = new Bundle();
+                args.putString("selected_shift_id", todayShift.getId());
+                args.putString("selected_shift_name", todayShift.getShiftName());
+                if (todayShift.getDate() != null) {
+                    args.putString("selected_shift_date", todayShift.getDate().toString());
+                }
+                navigateTo(R.id.action_employeeHomeFragment_to_employeeShiftExchangeFragment, args);
+            });
         } else {
-            binding.includeShiftToday.getRoot().setVisibility(View.GONE);
+            // KHÔNG CÓ CA LÀM VIỆC HÔM NAY: Hiển thị 1 card thông điệp ngày nghỉ
+            binding.includeShiftToday.tvExchangeShift.setVisibility(View.GONE);
+            binding.includeShiftToday.tvShiftName.setText("Không có ca làm việc hôm nay, hãy tận hưởng ngày nghỉ");
+            binding.includeShiftToday.tvShiftTime.setText("Nghỉ ngơi");
+            binding.includeShiftToday.tvShiftLocation.setText("Chúc bạn một ngày thư giãn và nạp lại năng lượng!");
+
+            if (binding.includeShiftToday.ivShiftIcon != null) {
+                binding.includeShiftToday.ivShiftIcon.setImageResource(R.drawable.ic_leave);
+            }
+
+            // Chip trạng thái ngày nghỉ
+            binding.includeShiftToday.tagShiftStatus.setText("Ngày nghỉ");
+            int bgColor = ColorUtil.getThemeColor(requireContext(), R.attr.colorAttendanceLeaveContainer);
+            int textColor = ColorUtil.getThemeColor(requireContext(), R.attr.colorAttendanceLeave);
+            binding.includeShiftToday.tagShiftStatus.setChipBackgroundColor(ColorStateList.valueOf(bgColor));
+            binding.includeShiftToday.tagShiftStatus.setTextColor(textColor);
         }
     }
 
     private void bindShiftStatusChip(ShiftStatus status) {
+        if (binding == null) return;
         ShiftStatus currentStatus = (status != null) ? status : ShiftStatus.PENDING;
         binding.includeShiftToday.tagShiftStatus.setText(currentStatus.getDisplayName());
 
@@ -203,7 +265,6 @@ public class EmployeeHomeFragment extends Fragment {
 
     private void updateClock() {
         if (binding == null) return;
-        // Đảm bảo chạy cập nhật UI trên Main Thread
         binding.getRoot().post(() -> {
             if (binding != null) {
                 binding.includeTodayCard.tvClock.setText(DateTimeFormatUtils.formatTime(LocalTime.now()));
@@ -222,7 +283,6 @@ public class EmployeeHomeFragment extends Fragment {
     }
 
     private void setupCategoryRecyclerView() {
-        // Khởi tạo Adapter theo chuẩn ListAdapter + Consumer Click Callback
         employeeCategoryTypeAdapter = new EmployeeCategoryTypeAdapter(this::onCategoryClicked);
 
         RecyclerView rv = binding.includeCategories.rvCategories;
@@ -230,10 +290,8 @@ public class EmployeeHomeFragment extends Fragment {
         rv.setHasFixedSize(true);
         rv.setAdapter(employeeCategoryTypeAdapter);
 
-        // Đổ danh sách Enum cố định ban đầu bằng submitList
         employeeCategoryTypeAdapter.submitList(Arrays.asList(CategoryType.values()));
 
-        // Scroll Indicator setup
         rv.post(this::updateScrollThumb);
         rv.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -246,8 +304,14 @@ public class EmployeeHomeFragment extends Fragment {
 
     private void setupWeekRecyclerView() {
         binding.includeWeek.rvWeekDays.setLayoutManager(new GridLayoutManager(requireContext(), 7));
-        binding.includeWeek.rvWeekDays.setHasFixedSize(true);
+//        binding.includeWeek.rvWeekDays.setHasFixedSize(true);
         weekDayAdapter = new EmployeeWeekDayAdapter();
+        weekDayAdapter.setOnDayClickListener(day -> {
+            if (day != null && day.getStatus() != null && getContext() != null) {
+                String dayTitle = day.isToday() ? "Hôm nay" : day.getDate().toString();
+                Toast.makeText(getContext(), dayTitle + ": " + day.getStatus().getDisplayName(), Toast.LENGTH_SHORT).show();
+            }
+        });
         binding.includeWeek.rvWeekDays.setAdapter(weekDayAdapter);
     }
 
@@ -266,9 +330,9 @@ public class EmployeeHomeFragment extends Fragment {
         binding.includeRecent.tvSeeAll.setOnClickListener(v -> navigateTo(R.id.action_employeeHomeFragment_to_employeeScheduleFragment));
     }
 
-// =====================================================================
-// 5. HELPER & NAVIGATION METHODS
-// =====================================================================
+    // =====================================================================
+    // 5. HELPER & NAVIGATION METHODS
+    // =====================================================================
 
     private void onCategoryClicked(CategoryType categoryType) {
         if (categoryType == null) return;
@@ -283,11 +347,18 @@ public class EmployeeHomeFragment extends Fragment {
     }
 
     private void navigateTo(int actionId) {
+        navigateTo(actionId, null);
+    }
+
+    private void navigateTo(int actionId, Bundle args) {
         NavController navController = NavHostFragment.findNavController(this);
-        // Safe check destination hiện tại để tránh Crash do click đúp (Double-click)
         if (navController.getCurrentDestination() != null
                 && navController.getCurrentDestination().getId() == R.id.employeeHomeFragment) {
-            navController.navigate(actionId);
+            if (args != null) {
+                navController.navigate(actionId, args);
+            } else {
+                navController.navigate(actionId);
+            }
         }
     }
 

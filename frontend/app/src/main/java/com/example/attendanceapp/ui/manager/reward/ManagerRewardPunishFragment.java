@@ -12,16 +12,30 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import com.example.attendanceapp.R;
+import com.example.attendanceapp.data.dto.response.manager.StaffItemResponse;
 import com.example.attendanceapp.databinding.FragmentManagerRewardPunishBinding;
+import com.example.attendanceapp.domain.repository.ManagerRepository;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.inject.Inject;
 
 import dagger.hilt.android.AndroidEntryPoint;
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 @AndroidEntryPoint
 public class ManagerRewardPunishFragment extends Fragment {
 
     private FragmentManagerRewardPunishBinding binding;
-    private static final String[] MOCK_EMPLOYEES =
-            {"Trần Thị Bình", "Lê Văn Cường", "Phạm Thu Hà", "Đỗ Minh Khoa", "Ngô Thị Lan"};
+    private final CompositeDisposable disposables = new CompositeDisposable();
+    private final List<String> employeeNames = new ArrayList<>();
+
+    @Inject
+    ManagerRepository managerRepository;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -34,6 +48,7 @@ public class ManagerRewardPunishFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         setupToolbar();
+        loadEmployees();
         setupListeners();
     }
 
@@ -44,15 +59,35 @@ public class ManagerRewardPunishFragment extends Fragment {
         binding.toolbarApp.setTitle("Khen thưởng / Phạt");
     }
 
+    private void loadEmployees() {
+        disposables.add(
+                managerRepository.getStaffs()
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                response -> {
+                                    employeeNames.clear();
+                                    if (response != null && response.getData() != null) {
+                                        for (StaffItemResponse staff : response.getData()) {
+                                            if (staff.getNameStaff() != null && !staff.getNameStaff().isEmpty()) {
+                                                employeeNames.add(staff.getNameStaff());
+                                            }
+                                        }
+                                    }
+                                },
+                                error -> {
+                                    Toast.makeText(getContext(), "Lỗi tải dữ liệu: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                                }
+                        )
+        );
+    }
+
     private void setupListeners() {
-// ManagerRewardPunishFragment — thay listener của tvSelectEmployee
-
-
         binding.tvSelectEmployee.setOnClickListener(v ->
                 new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
                         .setTitle("Chọn nhân sự")
-                        .setItems(MOCK_EMPLOYEES, (d, i) ->
-                                binding.tvSelectEmployee.setText(MOCK_EMPLOYEES[i]))
+                        .setItems(employeeNames.toArray(new String[0]), (d, i) ->
+                                binding.tvSelectEmployee.setText(employeeNames.get(i)))
                         .show());
 
         binding.btnSubmit.setOnClickListener(v -> {
@@ -73,6 +108,7 @@ public class ManagerRewardPunishFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        disposables.clear();
         binding = null;
     }
 }

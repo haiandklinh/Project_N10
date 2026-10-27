@@ -1,10 +1,6 @@
 package com.example.attendanceapp.data.repository;
 
-import com.example.attendanceapp.data.local.dao.UserDao;
-import com.example.attendanceapp.data.local.entity.UserEntity;
 import com.example.attendanceapp.data.local.pref.SharedPreferenceApp;
-import com.example.attendanceapp.data.mapper.UserMapper;
-import com.example.attendanceapp.domain.model.SavedAccountData;
 import com.example.attendanceapp.domain.model.UserRole;
 import com.example.attendanceapp.domain.model.UserStatus;
 import com.example.attendanceapp.domain.repository.AppStateRepository;
@@ -12,28 +8,23 @@ import com.example.attendanceapp.domain.repository.AppStateRepository;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.subjects.BehaviorSubject;
+
 /**
- * AppStateRepositoryImpl - Quản lý AppState & Profile Data
- * 
- * Session State (SharedPreferences):
- * - is_logged_in, is_account_saved, is_first_launch, user_role, user_status
- * 
- * Profile Data (Room DB):
- * - user_id, full_name, phone, company_name, invitation_code
+ * Session state (SharedPreferences): is_logged_in, is_account_saved, is_first_launch, user_role, user_status.
  */
 @Singleton
 public class AppStateRepositoryImpl implements AppStateRepository {
 
     private final SharedPreferenceApp sharedPreferenceApp;
-    private final UserDao userDao;
+    private final BehaviorSubject<Boolean> loggedInSubject;
 
     @Inject
-    public AppStateRepositoryImpl(SharedPreferenceApp sharedPreferenceApp, UserDao userDao) {
+    public AppStateRepositoryImpl(SharedPreferenceApp sharedPreferenceApp) {
         this.sharedPreferenceApp = sharedPreferenceApp;
-        this.userDao = userDao;
+        this.loggedInSubject = BehaviorSubject.createDefault(sharedPreferenceApp.isLoggedIn());
     }
-
-    // ===== SESSION STATE (SharedPreferences) =====
 
     @Override
     public boolean isLoggedIn() {
@@ -43,6 +34,12 @@ public class AppStateRepositoryImpl implements AppStateRepository {
     @Override
     public void setLoggedIn(boolean isLoggedIn) {
         sharedPreferenceApp.setLoggedIn(isLoggedIn);
+        loggedInSubject.onNext(isLoggedIn);
+    }
+
+    @Override
+    public Observable<Boolean> observeLoggedIn() {
+        return loggedInSubject.distinctUntilChanged();
     }
 
     @Override
@@ -77,8 +74,7 @@ public class AppStateRepositoryImpl implements AppStateRepository {
 
     @Override
     public UserRole getUserRole() {
-        String roleStr = sharedPreferenceApp.getUserRole();
-        return UserRole.fromString(roleStr);
+        return UserRole.fromString(sharedPreferenceApp.getUserRole());
     }
 
     @Override
@@ -91,48 +87,7 @@ public class AppStateRepositoryImpl implements AppStateRepository {
     @Override
     public void clearSession() {
         sharedPreferenceApp.clearSession();
-    }
-
-    // ===== PROFILE DATA (Room DB) =====
-
-    @Override
-    public SavedAccountData getSavedAccountData() {
-        try {
-            UserEntity entity = userDao.getCurrentUserSingle().blockingGet();
-            if (entity == null) {
-                return null;
-            }
-
-            return new SavedAccountData(
-                    entity.getName() != null ? entity.getName() : "Người dùng",
-                    entity.getCompanyName() != null ? entity.getCompanyName() : "Công ty",
-                    entity.getInvitationCode() != null ? entity.getInvitationCode() : "CODE",
-                    entity.getPhone()
-            );
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    @Override
-    public void saveAccountData(SavedAccountData accountData) {
-        if (accountData != null) {
-            sharedPreferenceApp.setAccountSaved(true);
-        }
-    }
-
-    // ===== TOKEN MANAGEMENT (TokenManager - EncryptedSharedPreferences) =====
-    // Note: Token management should be handled by TokenManager directly
-    // These methods are deprecated and should be removed in favor of TokenManager
-
-    @Override
-    public String getAuthToken() {
-        // TODO: Use TokenManager instead
-        return null;
-    }
-
-    @Override
-    public void saveAuthToken(String token) {
-        // TODO: Use TokenManager instead
+        sharedPreferenceApp.setLoggedIn(false);
+        loggedInSubject.onNext(false);
     }
 }

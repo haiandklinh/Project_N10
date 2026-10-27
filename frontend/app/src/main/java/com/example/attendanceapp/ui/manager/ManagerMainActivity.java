@@ -12,6 +12,7 @@ import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.attendanceapp.R;
 import com.example.attendanceapp.databinding.ActivityManagerMainBinding;
+import com.example.attendanceapp.core.notification.WebSocketNotificationManager;
 import com.example.attendanceapp.ui.manager.approval.ManagerApprovalViewModel;
 import com.example.attendanceapp.ui.manager.human.ManagerHumanViewModel;
 
@@ -24,6 +25,9 @@ public class ManagerMainActivity extends AppCompatActivity {
 
     @Inject
     SharedPreferences sharedPreferences;
+
+    @Inject
+    WebSocketNotificationManager webSocketManager;
 
     private ActivityManagerMainBinding binding;
     private NavController navController;
@@ -61,6 +65,32 @@ public class ManagerMainActivity extends AppCompatActivity {
         setupNavigation();
         setupCustomBottomNavListeners();
         observeBadgeCounts();
+        handleNotificationIntent(getIntent());
+        if (webSocketManager != null) {
+            webSocketManager.connect();
+        }
+    }
+
+    @Override
+    protected void onNewIntent(android.content.Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleNotificationIntent(intent);
+    }
+
+    private void handleNotificationIntent(android.content.Intent intent) {
+        if (intent != null && "NOTIFICATIONS".equals(intent.getStringExtra("EXTRA_NAVIGATE_TO"))) {
+            if (navController != null && binding != null) {
+                binding.getRoot().post(() -> {
+                    try {
+                        if (navController.getCurrentDestination() == null ||
+                                navController.getCurrentDestination().getId() != R.id.notificationFragment) {
+                            navController.navigate(R.id.notificationFragment);
+                        }
+                    } catch (Exception ignored) {}
+                });
+            }
+        }
     }
 
     private void observeBadgeCounts() {
@@ -259,6 +289,9 @@ public class ManagerMainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (webSocketManager != null) {
+            webSocketManager.disconnect();
+        }
         binding = null;
     }
 }

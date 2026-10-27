@@ -204,7 +204,8 @@
     <string name="checkin_not_determined">Not determined</string>
     <string name="checkin_enable_gps">Please turn on GPS location to check in</string>
     <string name="checkin_gps_enabled">GPS location enabled</string>
-    <string name="checkin_within_range">Within allowed radius (50m)</string>
+    <string name="checkin_within_range">Within allowed radius (%1$dm)</string>
+    <string name="checkin_within_range_default">Within allowed radius (50m)</string>
     <string name="checkin_network_stable">Stable network connection</string>
     <string name="checkin_determining_your_location">Determining your location</string>
     <string name="checkin_outside_allowed_area">You are outside the allowed attendance area</string>

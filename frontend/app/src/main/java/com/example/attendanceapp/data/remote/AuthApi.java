@@ -51,6 +51,6 @@ public interface AuthApi {
     Completable resetPassword(@Body ResetPasswordRequest request);
 
     // Chỉ dùng trong Authenticator, giữ Call để gọi đồng bộ
-    @POST("auth/refresh-token")
+    @POST("auth/refresh_token")
     Call<RefreshTokenResponse> refreshToken(@Body RefreshTokenRequest request);
 }

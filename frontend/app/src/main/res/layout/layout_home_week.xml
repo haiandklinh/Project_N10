@@ -25,6 +25,7 @@
         app:layout_constraintTop_toBottomOf="@id/tv_week_label"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         tools:itemCount="7"
         tools:listitem="@layout/item_home_week_day"
         tools:layoutManager="androidx.recyclerview.widget.GridLayoutManager"

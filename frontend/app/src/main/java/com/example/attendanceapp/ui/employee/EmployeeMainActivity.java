@@ -15,6 +15,23 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.example.attendanceapp.R;
 import com.example.attendanceapp.databinding.ActivityEmployeeMainBinding;
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Build;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import com.example.attendanceapp.core.notification.ShiftAlarmScheduler;
+import com.example.attendanceapp.core.notification.WebSocketNotificationManager;
+import com.example.attendanceapp.data.local.pref.SharedPreferenceApp;
+import com.example.attendanceapp.data.mapper.StaffScheduleMapper;
+import com.example.attendanceapp.domain.model.Shift;
+import com.example.attendanceapp.domain.repository.StaffRepository;
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import java.time.LocalDate;
+import java.util.concurrent.TimeUnit;
 import com.example.attendanceapp.core.utils.DarkModeAnimationHelper;
 
 import javax.inject.Inject;
@@ -26,6 +43,17 @@ public class EmployeeMainActivity extends AppCompatActivity {
 
     @Inject
     SharedPreferences sharedPreferences;
+
+    @Inject
+    WebSocketNotificationManager webSocketManager;
+
+    @Inject
+    StaffRepository staffRepository;
+
+    @Inject
+    SharedPreferenceApp sharedPreferenceApp;
+
+    private final CompositeDisposable disposables = new CompositeDisposable();
 
     private ActivityEmployeeMainBinding binding;
     private NavController navController;
@@ -57,6 +85,64 @@ public class EmployeeMainActivity extends AppCompatActivity {
         setupWindowInsets();
         setupNavigation();
         setupFab();
+        handleNotificationIntent(getIntent());
+        if (webSocketManager != null) {
+            webSocketManager.connect();
+        }
+
+        requestNotificationPermission();
+        startShiftMonitor();
+    }
+
+    private void requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, 102);
+            }
+        }
+    }
+
+    private void startShiftMonitor() {
+        if (staffRepository == null) return;
+        disposables.add(
+                Observable.interval(0, 30, TimeUnit.SECONDS)
+                        .flatMapSingle(tick -> staffRepository.getWorkSchedules().onErrorReturnItem(new com.example.attendanceapp.data.dto.response.BaseListResponse<>()))
+                        .filter(resp -> resp != null && resp.getData() != null)
+                        .map(resp -> StaffScheduleMapper.toShifts(resp.getData(), sharedPreferenceApp))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                shifts -> {
+                                    Shift todayShift = StaffScheduleMapper.pickTodayShift(shifts, LocalDate.now());
+                                    if (todayShift != null) {
+                                        ShiftAlarmScheduler.scheduleShiftAlarms(this, todayShift, sharedPreferenceApp);
+                                    }
+                                },
+                                throwable -> {}
+                        )
+        );
+    }
+
+    @Override
+    protected void onNewIntent(android.content.Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleNotificationIntent(intent);
+    }
+
+    private void handleNotificationIntent(android.content.Intent intent) {
+        if (intent != null && "NOTIFICATIONS".equals(intent.getStringExtra("EXTRA_NAVIGATE_TO"))) {
+            if (navController != null && binding != null) {
+                binding.getRoot().post(() -> {
+                    try {
+                        if (navController.getCurrentDestination() == null ||
+                                navController.getCurrentDestination().getId() != R.id.notificationFragment) {
+                            navController.navigate(R.id.notificationFragment);
+                        }
+                    } catch (Exception ignored) {}
+                });
+            }
+        }
     }
 
     private void applyAppTheme(String theme) {
@@ -167,6 +253,9 @@ public class EmployeeMainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (webSocketManager != null) {
+            webSocketManager.disconnect();
+        }
         binding = null;
     }
 }

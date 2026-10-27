@@ -12,17 +12,26 @@ public class ShiftOption implements Parcelable {
     private final String endTime;   // "12:00"
     private final Double latitude;
     private final Double longitude;
+    private final String allowedCheckInTime; // "07:30"
+    private final Double checkInRadius;      // 100.0
 
     public ShiftOption(String id, String title, String startTime, String endTime, Double latitude, Double longitude) {
+        this(id, title, startTime, endTime, latitude, longitude, startTime, 100.0);
+    }
+
+    public ShiftOption(String id, String title, String startTime, String endTime, Double latitude, Double longitude,
+                       String allowedCheckInTime, Double checkInRadius) {
         this.id = id;
         this.title = title;
         this.startTime = startTime;
         this.endTime = endTime;
         this.latitude = latitude;
         this.longitude = longitude;
+        this.allowedCheckInTime = allowedCheckInTime != null ? allowedCheckInTime : startTime;
+        this.checkInRadius = checkInRadius != null ? checkInRadius : 100.0;
     }
 
-    //1. CONSTRUCTOR ĐỌC DỮ LIỆU TỪ PARCEL
+    // 1. CONSTRUCTOR ĐỌC DỮ LIỆU TỪ PARCEL
     protected ShiftOption(Parcel in) {
         id = in.readString();
         title = in.readString();
@@ -38,10 +47,15 @@ public class ShiftOption implements Parcelable {
         } else {
             longitude = in.readDouble();
         }
+        allowedCheckInTime = in.readString();
+        if (in.readByte() == 0) {
+            checkInRadius = null;
+        } else {
+            checkInRadius = in.readDouble();
+        }
     }
 
-
-    //3. BIẾN CREATOR BẮT BUỘC ĐỂ ANDROID KHÔI PHỤC OBJECT
+    // 3. BIẾN CREATOR BẮT BUỘC ĐỂ ANDROID KHÔI PHỤC OBJECT
     public static final Creator<ShiftOption> CREATOR = new Creator<ShiftOption>() {
         @Override
         public ShiftOption createFromParcel(Parcel in) {
@@ -54,7 +68,7 @@ public class ShiftOption implements Parcelable {
         }
     };
 
-    //2. GHI DỮ LIỆU VÀO PARCEL
+    // 2. GHI DỮ LIỆU VÀO PARCEL
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(id);
@@ -73,7 +87,15 @@ public class ShiftOption implements Parcelable {
             dest.writeByte((byte) 1);
             dest.writeDouble(longitude);
         }
+        dest.writeString(allowedCheckInTime);
+        if (checkInRadius == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeDouble(checkInRadius);
+        }
     }
+
     @Override
     public int describeContents() {
         return 0;
@@ -85,6 +107,8 @@ public class ShiftOption implements Parcelable {
     public String getEndTime() { return endTime; }
     public Double getLatitude() { return latitude; }
     public Double getLongitude() { return longitude; }
+    public String getAllowedCheckInTime() { return allowedCheckInTime; }
+    public Double getCheckInRadius() { return checkInRadius; }
 
     /** Getter động phục vụ hiển thị UI: "08:00 - 12:00" */
     public String getTimeRange() {

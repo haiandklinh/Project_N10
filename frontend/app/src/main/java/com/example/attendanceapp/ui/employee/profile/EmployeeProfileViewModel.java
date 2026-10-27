@@ -5,8 +5,9 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.example.attendanceapp.domain.model.UserAccount;
-import com.example.attendanceapp.domain.repository.UserRepository;
 import com.example.attendanceapp.domain.usecase.auth.LogoutUseCase;
+import com.example.attendanceapp.domain.usecase.profile.GetProfileUseCase;
+import com.example.attendanceapp.domain.usecase.profile.ObserveCurrentUserUseCase;
 
 import javax.inject.Inject;
 
@@ -18,7 +19,8 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 @HiltViewModel
 public class EmployeeProfileViewModel extends ViewModel {
 
-    private final UserRepository userRepository;
+    private final ObserveCurrentUserUseCase observeCurrentUserUseCase;
+    private final GetProfileUseCase getProfileUseCase;
     private final LogoutUseCase logoutUseCase;
     private final CompositeDisposable disposables = new CompositeDisposable();
 
@@ -27,10 +29,17 @@ public class EmployeeProfileViewModel extends ViewModel {
     private final MutableLiveData<UserAccount> userAccount = new MutableLiveData<>();
 
     @Inject
-    public EmployeeProfileViewModel(UserRepository userRepository, LogoutUseCase logoutUseCase) {
-        this.userRepository = userRepository;
+    public EmployeeProfileViewModel(
+            ObserveCurrentUserUseCase observeCurrentUserUseCase,
+            GetProfileUseCase getProfileUseCase,
+            LogoutUseCase logoutUseCase
+    ) {
+        this.observeCurrentUserUseCase = observeCurrentUserUseCase;
+        this.getProfileUseCase = getProfileUseCase;
         this.logoutUseCase = logoutUseCase;
+
         observeUser();
+        loadProfile();
     }
 
     public LiveData<Boolean> getIsLoading() { return isLoading; }
@@ -38,15 +47,22 @@ public class EmployeeProfileViewModel extends ViewModel {
     public LiveData<UserAccount> getUserAccount() { return userAccount; }
 
     private void observeUser() {
-        disposables.add(userRepository.observeCurrentUser()
+        disposables.add(observeCurrentUserUseCase.execute()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                         userAccount::setValue,
                         throwable -> {
-                            // Handle error if needed
+                            // Bỏ qua: giữ dữ liệu hiện có
                         }
                 ));
+    }
+
+    public void loadProfile() {
+        // Đồng bộ hồ sơ mới nhất từ server/mock vào Room
+        disposables.add(getProfileUseCase.execute()
+                .subscribeOn(Schedulers.io())
+                .subscribe(profile -> { }, throwable -> { }));
     }
 
     public void logout() {

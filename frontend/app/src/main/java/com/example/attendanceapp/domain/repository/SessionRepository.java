@@ -1,36 +1,45 @@
 package com.example.attendanceapp.domain.repository;
 
+import com.example.attendanceapp.data.dto.response.manager.ManagerProfileResponse;
+import com.example.attendanceapp.data.dto.response.staff.StaffProfileResponse;
+import com.example.attendanceapp.domain.model.SavedAccountData;
 import com.example.attendanceapp.domain.model.UserAccount;
-import com.example.attendanceapp.domain.model.UserRole;
-import com.example.attendanceapp.domain.model.UserStatus;
 
-/**
- * Chỉ chịu trách nhiệm về SESSION & LOCAL PREFERENCES.
- * Không gọi Database/API — mọi thao tác remote nằm ở AuthRepository.
- */
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Maybe;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Single;
+
+/** Chỉ làm việc với Room (hồ sơ đang đăng nhập). Không gọi API. */
 public interface SessionRepository {
 
-    /** Lấy Vai trò (Role) của người dùng đang đăng nhập đã được lưu trong bộ nhớ */
-    UserRole getSavedUserRole();
+    /** Lưu số điện thoại vào Room (sử dụng khi login). */
+    Completable savePhoneNumber(String phoneNumber);
 
-    /** Lưu thông tin Vai trò người dùng vào bộ nhớ cục bộ */
-    void saveUserRole(UserRole role);
+    /** Lưu/ghi đè hồ sơ Nhân viên vào Room, trả về tài khoản đã map. */
+    Single<UserAccount> saveStaffProfile(StaffProfileResponse profile);
 
-    /** Lấy thông tin chi tiết tài khoản đang lưu phiên đăng nhập */
-    UserAccount getCurrentUser();
+    /** Lưu/ghi đè hồ sơ Quản lý vào Room, trả về tài khoản đã map. */
+    Single<UserAccount> saveManagerProfile(ManagerProfileResponse profile);
 
-    /** Lưu phiên đăng nhập người dùng */
-    void saveUserSession(UserAccount userAccount, boolean isLoggedIn);
+    /** Tài khoản hiện tại. Rỗng nếu chưa có. */
+    Maybe<UserAccount> getCurrentUser();
 
-    /** Lưu trạng thái duyệt của người dùng (APPROVED, PENDING_APPROVAL, NEEDS_ROLE_SELECTION) */
-    void saveUserStatus(UserStatus status);
+    /** Phát lại mỗi khi hồ sơ thay đổi. */
+    Observable<UserAccount> observeCurrentUser();
 
-    /** Lấy trạng thái duyệt của người dùng */
-    String getUserStatus();
+    Maybe<String> getCachedInvitationCode();
 
-    /** Kiểm tra trạng thái người dùng đã đăng nhập hay chưa */
-    boolean isLoggedIn();
+    Completable saveInvitationCode(String code);
 
-    /** Đăng xuất cục bộ - Xóa sạch thông tin phiên làm việc đã lưu */
-    void clearUserSession();
+    Completable savePendingJoinRequest(String invitationCode, String companyName);
+
+    Completable saveApprovalSuccess(String managerId);
+
+    Completable saveSelectedCompany(String companyId, String companyName, String position);
+
+    Maybe<SavedAccountData> getSavedAccountData();
+
+    /** Xóa toàn bộ dữ liệu người dùng trong Room. */
+    Completable clear();
 }

@@ -16,11 +16,13 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.attendanceapp.R;
+import com.example.attendanceapp.data.dto.request.staff.AttendanceAdjustmentRequest;
 import com.example.attendanceapp.databinding.FragmentEmployeeAdjustmentBinding;
 import com.example.attendanceapp.databinding.LayoutCreateAdjustmentBinding;
 import com.example.attendanceapp.domain.model.AdjustmentReasonType;
 import com.example.attendanceapp.domain.model.ApprovalStatus;
 import com.example.attendanceapp.domain.model.AttendanceAdjustment;
+import com.example.attendanceapp.domain.repository.StaffRepository;
 import com.google.android.material.tabs.TabLayout;
 
 import java.time.LocalDate;
@@ -31,13 +33,23 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
+
 import dagger.hilt.android.AndroidEntryPoint;
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 @AndroidEntryPoint
 public class EmployeeAdjustmentFragment extends Fragment {
 
     private FragmentEmployeeAdjustmentBinding binding;
     private EmployeeAdjustmentAdapter adapter;
+
+    @Inject
+    StaffRepository staffRepository;
+
+    private final CompositeDisposable disposables = new CompositeDisposable();
 
     // Danh sách gốc chứa tất cả dữ liệu
     private final List<AttendanceAdjustment> adjustmentList = new ArrayList<>();
@@ -71,7 +83,11 @@ public class EmployeeAdjustmentFragment extends Fragment {
     private void setupToolbar() {
         binding.toolbarApp.setTitle(getString(R.string.adjustment_title));
         binding.toolbarApp.setOnBackClickListener(() -> {
-            requireActivity().getOnBackPressedDispatcher().onBackPressed();
+            if (binding != null && binding.layoutCreateView.getVisibility() == View.VISIBLE) {
+                showListView();
+            } else {
+                requireActivity().getOnBackPressedDispatcher().onBackPressed();
+            }
         });
     }
 
@@ -104,35 +120,44 @@ public class EmployeeAdjustmentFragment extends Fragment {
             @Override
             public void onTabReselected(TabLayout.Tab tab) {}
         });
+
+        // 4. Lắng nghe sự kiện Bấm nút Hủy trên Form tạo
+        binding.includeCreateAdjustment.btnCancel.setOnClickListener(v -> showListView());
     }
 
-    /**
-     * Lọc danh sách RecyclerView theo vị trí Tab bằng Enum ApprovalStatus
-     */
     private void filterListByCurrentTab(int tabPosition) {
-        ApprovalStatus targetStatus;
+        List<AttendanceAdjustment> filteredList;
+
         switch (tabPosition) {
-            case 1:
-                targetStatus = ApprovalStatus.APPROVED;
+            case 0: // Chờ duyệt (PENDING)
+                filteredList = adjustmentList.stream()
+                        .filter(a -> a.getStatus() == ApprovalStatus.PENDING)
+                        .collect(Collectors.toList());
                 break;
-            case 2:
-                targetStatus = ApprovalStatus.REJECTED;
+            case 1: // Đã duyệt (APPROVED)
+                filteredList = adjustmentList.stream()
+                        .filter(a -> a.getStatus() == ApprovalStatus.APPROVED)
+                        .collect(Collectors.toList());
                 break;
-            case 0:
+            case 2: // Từ chối (REJECTED)
+                filteredList = adjustmentList.stream()
+                        .filter(a -> a.getStatus() == ApprovalStatus.REJECTED)
+                        .collect(Collectors.toList());
+                break;
             default:
-                targetStatus = ApprovalStatus.PENDING;
+                filteredList = new ArrayList<>(adjustmentList);
                 break;
         }
 
-        List<AttendanceAdjustment> filteredList = adjustmentList.stream()
-                .filter(item -> item.getStatus() == targetStatus)
-                .collect(Collectors.toList());
-
         adapter.updateData(filteredList);
 
-        boolean isEmpty = filteredList.isEmpty();
-        binding.rvAdjustments.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
-        binding.includeEmptyState.getRoot().setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+        if (filteredList.isEmpty()) {
+            binding.rvAdjustments.setVisibility(View.GONE);
+            binding.includeEmptyState.getRoot().setVisibility(View.VISIBLE);
+        } else {
+            binding.rvAdjustments.setVisibility(View.VISIBLE);
+            binding.includeEmptyState.getRoot().setVisibility(View.GONE);
+        }
     }
 
     private void showListView() {
@@ -141,8 +166,6 @@ public class EmployeeAdjustmentFragment extends Fragment {
 
         binding.tabLayoutStats.setVisibility(View.VISIBLE);
         binding.fabCreateAdjustment.show();
-
-        filterListByCurrentTab(binding.tabLayoutStats.getSelectedTabPosition());
     }
 
     private void showCreateView() {
@@ -183,6 +206,8 @@ public class EmployeeAdjustmentFragment extends Fragment {
         createBinding.btnSubmitRequest.setOnClickListener(v -> {
             String date = createBinding.etRequestDate.getText().toString().trim();
             String type = createBinding.actvAdjustmentType.getText().toString().trim();
+            String checkIn = createBinding.etCheckInTime.getText().toString().trim();
+            String checkOut = createBinding.etCheckOutTime.getText().toString().trim();
             String reason = createBinding.etReason.getText().toString().trim();
 
             if (date.isEmpty() || type.isEmpty() || reason.isEmpty()) {
@@ -190,10 +215,57 @@ public class EmployeeAdjustmentFragment extends Fragment {
                 return;
             }
 
-            Toast.makeText(requireContext(), getString(R.string.msg_adjustment_sent_success), Toast.LENGTH_SHORT).show();
+            createBinding.btnSubmitRequest.setEnabled(false);
 
-            clearFormFields();
-            showListView();
+            AttendanceAdjustmentRequest req = new AttendanceAdjustmentRequest(
+                    date,
+                    "shift_01",
+                    checkIn,
+                    checkOut,
+                    reason
+            );
+
+            disposables.add(staffRepository.requestAttendanceAdjustment("manager_01", req)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                            () -> {
+                                if (isAdded()) {
+                                    Toast.makeText(requireContext(), getString(R.string.msg_adjustment_sent_success), Toast.LENGTH_SHORT).show();
+
+                                    AdjustmentReasonType reasonType = AdjustmentReasonType.SUPPLEMENT_ATTENDANCE;
+                                    for (AdjustmentReasonType t : AdjustmentReasonType.values()) {
+                                        if (t.getLabel().equalsIgnoreCase(type)) {
+                                            reasonType = t;
+                                            break;
+                                        }
+                                    }
+
+                                    adjustmentList.add(0, new AttendanceAdjustment(
+                                            String.valueOf(System.currentTimeMillis()),
+                                            reasonType,
+                                            LocalDate.now(),
+                                            LocalTime.of(8, 0),
+                                            LocalTime.of(17, 30),
+                                            reason,
+                                            LocalDate.now(),
+                                            ApprovalStatus.PENDING
+                                    ));
+
+                                    updateTabTitlesAndStats();
+                                    filterListByCurrentTab(binding.tabLayoutStats.getSelectedTabPosition());
+                                    clearFormFields();
+                                    showListView();
+                                }
+                            },
+                            throwable -> {
+                                if (isAdded()) {
+                                    createBinding.btnSubmitRequest.setEnabled(true);
+                                    Toast.makeText(requireContext(), "Lỗi: " + throwable.getMessage(), Toast.LENGTH_LONG).show();
+                                }
+                            }
+                    )
+            );
         });
     }
 
@@ -204,6 +276,7 @@ public class EmployeeAdjustmentFragment extends Fragment {
         createBinding.etCheckInTime.setText("");
         createBinding.etCheckOutTime.setText("");
         createBinding.etReason.setText("");
+        createBinding.btnSubmitRequest.setEnabled(true);
     }
 
     private void showDatePickerDialog() {
@@ -211,7 +284,7 @@ public class EmployeeAdjustmentFragment extends Fragment {
         DatePickerDialog datePickerDialog = new DatePickerDialog(
                 requireContext(),
                 (view, year, month, dayOfMonth) -> {
-                    String selectedDate = String.format(Locale.getDefault(), "%02d/%02d/%d", dayOfMonth, month + 1, year);
+                    String selectedDate = String.format(Locale.getDefault(), "%04d-%02d-%02d", year, month + 1, dayOfMonth);
                     binding.includeCreateAdjustment.etRequestDate.setText(selectedDate);
                 },
                 calendar.get(Calendar.YEAR),
@@ -247,33 +320,33 @@ public class EmployeeAdjustmentFragment extends Fragment {
         adjustmentList.add(new AttendanceAdjustment(
                 "1",
                 AdjustmentReasonType.MISSING_CHECK_IN,
-                LocalDate.of(2026, 9, 10),
+                LocalDate.now().minusDays(2),
                 LocalTime.of(8, 5),
                 null,
                 "Quên chấm công vào do họp khách hàng ngay đầu giờ sáng.",
-                LocalDate.of(2026, 9, 11),
+                LocalDate.now().minusDays(1),
                 ApprovalStatus.PENDING
         ));
 
         adjustmentList.add(new AttendanceAdjustment(
                 "2",
                 AdjustmentReasonType.MISSING_CHECK_OUT,
-                LocalDate.of(2026, 9, 8),
+                LocalDate.now().minusDays(5),
                 null,
                 LocalTime.of(17, 30),
                 "Mất điện công ty cuối giờ không checkout được.",
-                LocalDate.of(2026, 9, 9),
+                LocalDate.now().minusDays(4),
                 ApprovalStatus.APPROVED
         ));
 
         adjustmentList.add(new AttendanceAdjustment(
                 "3",
                 AdjustmentReasonType.SUPPLEMENT_ATTENDANCE,
-                LocalDate.of(2026, 9, 5),
+                LocalDate.now().minusDays(8),
                 LocalTime.of(8, 30),
                 LocalTime.of(17, 30),
                 "Xe hỏng giữa đường.",
-                LocalDate.of(2026, 9, 6),
+                LocalDate.now().minusDays(7),
                 ApprovalStatus.REJECTED
         ));
 
@@ -301,6 +374,7 @@ public class EmployeeAdjustmentFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        disposables.clear();
         binding = null;
     }
 }

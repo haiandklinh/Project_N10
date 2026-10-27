@@ -13,19 +13,31 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.attendanceapp.R;
+import com.example.attendanceapp.data.dto.response.manager.StaffItemResponse;
 import com.example.attendanceapp.databinding.FragmentManagerPayrollBinding;
 import com.example.attendanceapp.domain.model.EmployeeStatus;
 import com.example.attendanceapp.domain.model.ManagerEmployeeItem;
+import com.example.attendanceapp.domain.repository.ManagerRepository;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import dagger.hilt.android.AndroidEntryPoint;
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 @AndroidEntryPoint
 public class ManagerPayrollFragment extends Fragment {
 
     private FragmentManagerPayrollBinding binding;
+    private ManagerPayrollAdapter adapter;
+    private final CompositeDisposable disposables = new CompositeDisposable();
+
+    @Inject
+    ManagerRepository managerRepository;
 
     @Nullable
     @Override
@@ -53,18 +65,48 @@ public class ManagerPayrollFragment extends Fragment {
     private void setupList() {
         binding.rvPayrollList.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        // Mock danh sách nhân sự cần tính lương chuẩn theo Use Case
-        List<ManagerEmployeeItem> mockEmployees = new ArrayList<>();
-        mockEmployees.add(new ManagerEmployeeItem("1", "NV001", "Nguyễn Văn Hoàng", null, "Nhân viên Sale", "Phòng Kinh doanh", "0987654321", "01/01/2026", EmployeeStatus.ACTIVE, 24, 1, 7700000));
-        mockEmployees.add(new ManagerEmployeeItem("2", "NV002", "Trần Thị Bình", null, "Thu ngân", "Phòng Kế toán", "0912345678", "15/02/2026", EmployeeStatus.ON_LEAVE, 22, 0, 6600000));
-        mockEmployees.add(new ManagerEmployeeItem("3", "NV003", "Lê Văn Cường", null, "Nhân viên Kho", "Phòng Vận hành", "0933445566", "10/03/2026", EmployeeStatus.TERMINATED, 26, 2, 8200000));
-
-        ManagerPayrollAdapter adapter = new ManagerPayrollAdapter(mockEmployees, employee -> {
-            // Bước 3-5: Chọn nhân viên và chuyển tiếp sang màn hình tính toán lương chi tiết
+        adapter = new ManagerPayrollAdapter(new ArrayList<>(), employee -> {
             Navigation.findNavController(requireView()).navigate(R.id.action_managerPayrollFragment_to_managerPayrollDetailFragment);
         });
 
         binding.rvPayrollList.setAdapter(adapter);
+        loadEmployeesFromApi();
+    }
+
+    private void loadEmployeesFromApi() {
+        if (managerRepository == null) return;
+        disposables.add(
+                managerRepository.getStaffs()
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                response -> {
+                                    if (response != null && response.getData() != null && !response.getData().isEmpty()) {
+                                        List<ManagerEmployeeItem> list = new ArrayList<>();
+                                        for (StaffItemResponse staff : response.getData()) {
+                                            String id = staff.getStaffId();
+                                            String code = "NV-" + (id != null && id.length() >= 4 ? id.substring(id.length() - 4) : (id != null ? id : ""));
+                                            EmployeeStatus status = "deactive".equalsIgnoreCase(staff.getStatus())
+                                                    ? EmployeeStatus.TERMINATED
+                                                    : EmployeeStatus.ACTIVE;
+                                            String pos = staff.getPosition() != null && !staff.getPosition().isEmpty() ? staff.getPosition() : "Nhân viên";
+                                            list.add(new ManagerEmployeeItem(
+                                                    id, code,
+                                                    staff.getNameStaff() != null ? staff.getNameStaff() : "Nhân viên",
+                                                    staff.getAvatar() != null ? staff.getAvatar() : "",
+                                                    pos, "Phòng ban chung", "",
+                                                    staff.getDateOfBirth() != null ? staff.getDateOfBirth() : "",
+                                                    status, 24, 0, 7500000
+                                            ));
+                                        }
+                                        adapter.updateData(list);
+                                    }
+                                },
+                                error -> {
+                                    // Bỏ qua lỗi kết nối
+                                }
+                        )
+        );
     }
 
     private void setupListeners() {
@@ -80,6 +122,7 @@ public class ManagerPayrollFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        disposables.clear();
         binding = null;
     }
 }

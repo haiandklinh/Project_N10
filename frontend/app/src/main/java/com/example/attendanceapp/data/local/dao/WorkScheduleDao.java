@@ -28,4 +28,7 @@ public interface WorkScheduleDao {
     
     @Query("DELETE FROM work_schedules WHERE employeeId = :employeeId AND workDate = :workDate")
     Completable deleteSchedule(String employeeId, String workDate);
+
+    @Query("DELETE FROM work_schedules")
+    Completable clearAll();
 }

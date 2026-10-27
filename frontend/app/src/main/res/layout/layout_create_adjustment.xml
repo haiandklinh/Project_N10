@@ -192,6 +192,19 @@
             android:textStyle="bold"
             app:cornerRadius="@dimen/radius_m" />
 
+        <!-- NÚT HỦY -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_cancel"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/button_height_default"
+            android:layout_marginTop="@dimen/spacing_s"
+            android:layout_marginHorizontal="@dimen/spacing_m"
+            android:text="Hủy"
+            android:textSize="@dimen/text_size_body_medium"
+            android:textStyle="bold"
+            app:cornerRadius="@dimen/radius_m" />
+
         <!-- CARD LƯU Ý -->
         <com.google.android.material.card.MaterialCardView
             style="@style/ItemCard"

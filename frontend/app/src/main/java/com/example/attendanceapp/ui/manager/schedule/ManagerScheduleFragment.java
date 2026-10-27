@@ -33,11 +33,16 @@ import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import javax.inject.Inject;
+import com.example.attendanceapp.data.local.pref.SharedPreferenceApp;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class ManagerScheduleFragment extends Fragment {
+
+    @Inject
+    SharedPreferenceApp sharedPreferenceApp;
 
     private FragmentManagerScheduleBinding binding;
     private ManagerScheduleViewModel viewModel;
@@ -270,6 +275,26 @@ public class ManagerScheduleFragment extends Fragment {
                     if (selectedDate == null) selectedDate = LocalDate.now();
 
                     if (pendingEmployeeForAssign != null) {
+                        if (selectedShift != null && sharedPreferenceApp != null) {
+                            if (selectedShift.getLatitude() != null && selectedShift.getLongitude() != null
+                                    && (selectedShift.getLatitude() != 0.0 || selectedShift.getLongitude() != 0.0)) {
+                                double radius = selectedShift.getCheckInRadius() != null && selectedShift.getCheckInRadius() > 0 ? selectedShift.getCheckInRadius() : sharedPreferenceApp.getShiftRadius(selectedShift.getTitle());
+                                if (radius <= 0) radius = sharedPreferenceApp.getLatestShiftRadius();
+                                if (radius <= 0) radius = 100.0;
+                                sharedPreferenceApp.saveShiftLocation(
+                                        selectedShift.getTitle(),
+                                        selectedShift.getLatitude(),
+                                        selectedShift.getLongitude(),
+                                        radius
+                                );
+                                sharedPreferenceApp.saveLatestShiftLocation(
+                                        selectedShift.getLatitude(),
+                                        selectedShift.getLongitude(),
+                                        radius,
+                                        ""
+                                );
+                            }
+                        }
                         viewModel.assignWorkSchedule(
                                 pendingEmployeeForAssign.getUserId(),
                                 selectedShift != null ? selectedShift.getId() : null,
@@ -287,12 +312,28 @@ public class ManagerScheduleFragment extends Fragment {
                 (requestKey, bundle) -> {
                     ShiftOption resultShift = bundle.getParcelable(AddShiftBottomSheet.EXTRA_RESULT_SHIFT);
                     if (resultShift != null && resultShift.getId() != null) {
+                        if (sharedPreferenceApp != null && resultShift.getLatitude() != null && resultShift.getLongitude() != null) {
+                            sharedPreferenceApp.saveShiftLocation(
+                                    resultShift.getTitle(),
+                                    resultShift.getLatitude(),
+                                    resultShift.getLongitude(),
+                                    resultShift.getCheckInRadius() != null ? resultShift.getCheckInRadius() : 100.0
+                            );
+                            sharedPreferenceApp.saveLatestShiftLocation(
+                                    resultShift.getLatitude(),
+                                    resultShift.getLongitude(),
+                                    resultShift.getCheckInRadius() != null ? resultShift.getCheckInRadius() : 100.0,
+                                    ""
+                            );
+                        }
                         // Dùng trực tiếp viewModel (ManagerScheduleViewModel)
                         viewModel.updateShift(
                                 resultShift.getId(),
                                 resultShift.getTitle(),
                                 resultShift.getStartTime(),
                                 resultShift.getEndTime(),
+                                resultShift.getAllowedCheckInTime(),
+                                resultShift.getCheckInRadius() != null ? resultShift.getCheckInRadius() : 100.0,
                                 resultShift.getLatitude(),
                                 resultShift.getLongitude()
                         );

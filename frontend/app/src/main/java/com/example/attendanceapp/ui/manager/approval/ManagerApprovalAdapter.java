@@ -57,6 +57,7 @@ public class ManagerApprovalAdapter extends RecyclerView.Adapter<ManagerApproval
         holder.binding.tvEmployeePosition.setText(item.getPosition());
         holder.binding.tvRequestType.setText(item.getType().getTitle());
         holder.binding.ivTypeIcon.setImageResource(item.getType().getIconResId());
+        com.example.attendanceapp.core.utils.AvatarLoader.loadAvatar(context, item.getEmployeeAvatarUrl(), holder.binding.ivEmployeeAvatar);
 
         String targetText = item.getTargetDateLabel() +
                 (item.getDetailLabel() != null && !item.getDetailLabel().isEmpty() ? " · " + item.getDetailLabel() : "");

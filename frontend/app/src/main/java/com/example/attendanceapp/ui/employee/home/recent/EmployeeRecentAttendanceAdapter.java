@@ -5,48 +5,48 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.ListAdapter;
-import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.attendanceapp.core.utils.ColorUtil;
+import com.example.attendanceapp.core.utils.DateTimeFormatUtils;
 import com.example.attendanceapp.databinding.ItemHomeRecentAttendanceBinding;
 import com.example.attendanceapp.domain.model.AttendanceStatus;
 import com.example.attendanceapp.domain.model.RecentAttendance;
-import com.example.attendanceapp.core.utils.ColorUtil;
-import com.example.attendanceapp.core.utils.DateTimeFormatUtils;
 
-public class EmployeeRecentAttendanceAdapter extends ListAdapter<RecentAttendance, EmployeeRecentAttendanceAdapter.RecentAttendanceViewHolder> {
+import java.util.ArrayList;
+import java.util.List;
+
+public class EmployeeRecentAttendanceAdapter extends RecyclerView.Adapter<EmployeeRecentAttendanceAdapter.RecentAttendanceViewHolder> {
+
+    private final List<RecentAttendance> items = new ArrayList<>();
+
     public EmployeeRecentAttendanceAdapter() {
-        super(new DiffUtil.ItemCallback<RecentAttendance>() {
-            @Override
-            public boolean areItemsTheSame(@NonNull RecentAttendance oldItem, @NonNull RecentAttendance newItem) {
-                return oldItem.getDate().equals(newItem.getDate());
-            }
+    }
 
-            @Override
-            public boolean areContentsTheSame(@NonNull RecentAttendance oldItem, @NonNull RecentAttendance newItem) {
-                return oldItem.getCheckIn().equals(newItem.getCheckIn())
-                        && oldItem.getCheckOut().equals(newItem.getCheckOut())
-                        && oldItem.getStatus().equals(newItem.getStatus());
-            }
-        });
+    public void submitList(List<RecentAttendance> newItems) {
+        items.clear();
+        if (newItems != null) {
+            items.addAll(newItems);
+        }
+        notifyDataSetChanged();
     }
 
     @NonNull
     @Override
     public RecentAttendanceViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         ItemHomeRecentAttendanceBinding binding = ItemHomeRecentAttendanceBinding.inflate(
-                        LayoutInflater.from(parent.getContext()),
-                        parent,
-                        false
-                );
+                LayoutInflater.from(parent.getContext()),
+                parent,
+                false
+        );
         return new RecentAttendanceViewHolder(binding);
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecentAttendanceViewHolder holder, int position) {
+        RecentAttendance item = items.get(position);
+        if (item == null) return;
 
-        RecentAttendance item = getItem(position);
         // 1. Ngày
         holder.binding.tvRecentDay.setText(DateTimeFormatUtils.formatDateDayMonth(item.getDate()));
         // 2. Check-in
@@ -57,30 +57,30 @@ public class EmployeeRecentAttendanceAdapter extends ListAdapter<RecentAttendanc
         bindStatus(holder, item.getStatus());
     }
 
+    @Override
+    public int getItemCount() {
+        return items.size();
+    }
 
     private void bindStatus(RecentAttendanceViewHolder holder, AttendanceStatus status) {
         if (status == null) {
             status = AttendanceStatus.NOT_CHECKED;
         }
-        // Lấy màu từ ColorUtil dựa trên thuộc tính trong enum AttendanceStatus
         int iconRes = status.getIconRes();
         int textColor = ColorUtil.getThemeColor(holder.itemView, status.getColorAttr());
         int containerColor = ColorUtil.getThemeColor(holder.itemView, status.getContainerColorAttr());
 
-        // Bind text hiển thị từ getDisplayName() của enum
         holder.binding.tagStatus.setText(status.getDisplayName());
         holder.binding.tagStatus.setTextColor(textColor);
         holder.binding.tagStatus.setChipBackgroundColor(ColorStateList.valueOf(containerColor));
 
-        // Bind Icon & Màu sắc cho Container
         holder.binding.ivStatusIcon.setImageResource(iconRes);
         holder.binding.ivStatusIcon.setColorFilter(textColor);
         holder.binding.statusIconContainer.setCardBackgroundColor(containerColor);
     }
 
-
     static class RecentAttendanceViewHolder extends RecyclerView.ViewHolder {
-        private final ItemHomeRecentAttendanceBinding binding;
+        final ItemHomeRecentAttendanceBinding binding;
         public RecentAttendanceViewHolder(ItemHomeRecentAttendanceBinding binding) {
             super(binding.getRoot());
             this.binding = binding;

@@ -295,11 +295,18 @@
         <!-- Tắt Margin xung quanh Chip -->
         <item name="android:layout_margin">0dp</item>
 
+        <!-- HIỂN THỊ DẤU TÍCH -->
+        <item name="checkedIconVisible">true</item>
+        <item name="checkedIconEnabled">true</item>
+
+        <!-- MÀU ICON DẤU TÍCH = MÀU TEXT CHIP -->
+        <item name="checkedIconTint">@color/filter_chip_text_selector</item>
+
         <!-- Tắt khoảng xén/margin nội bộ để đạt kích thước tối thiểu (Touch Target) -->
         <item name="chipMinTouchTargetSize">0dp</item>
 
-        <!-- Các thuộc tính sẵn có của bạn -->
-        <item name="chipCornerRadius">@dimen/radius_full</item>
+        <!-- Các thuộc tính sẵn có -->
+        <item name="chipCornerRadius">@dimen/radius_s</item>
         <item name="android:textSize">@dimen/text_size_label_medium</item>
         <item name="android:textColor">@color/filter_chip_text_selector</item>
         <item name="chipBackgroundColor">@color/filter_chip_bg_selector</item>
@@ -307,7 +314,6 @@
         <item name="chipStrokeWidth">1dp</item>
         <item name="showMotionSpec">@null</item>
         <item name="hideMotionSpec">@null</item>
-        <item name="checkedIconVisible">false</item>
     </style>
 
     <style name="ChipStatusStyle" parent="Widget.Material3.Chip.Assist">
@@ -326,7 +332,7 @@
         <item name="chipMinTouchTargetSize">0dp</item>
 
         <!-- 2. Chiều cao tối thiểu và các khoảng Margin/Inset chuẩn -->
-        <item name="chipMinHeight">26dp</item>
+        <item name="chipMinHeight">22dp</item>
         <item name="android:layout_margin">0dp</item>
         <item name="android:insetTop">0dp</item>
         <item name="android:insetBottom">0dp</item>
@@ -334,8 +340,8 @@
         <item name="android:insetRight">0dp</item>
 
         <!-- 3. Padding nội bộ gọn đẹp -->
-        <item name="chipStartPadding">6dp</item>
-        <item name="chipEndPadding">6dp</item>
+        <item name="chipStartPadding">4dp</item>
+        <item name="chipEndPadding">4dp</item>
         <item name="iconStartPadding">0dp</item>
         <item name="iconEndPadding">0dp</item>
     </style>

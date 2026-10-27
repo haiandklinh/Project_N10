@@ -17,6 +17,16 @@ public class UpdateShiftUseCase {
     }
 
     public Single<ShiftOption> execute(String shiftId, String shiftName, String startTime, String endTime, Double latitude, Double longitude) {
-        return shiftRepository.updateShift(shiftId, shiftName, startTime, endTime, latitude, longitude);
+        double lat = latitude != null ? latitude : 0.0;
+        double lon = longitude != null ? longitude : 0.0;
+        String allowedCheckIn = startTime != null ? startTime : "00:00";
+        double radius = 100.0;
+        return shiftRepository.updateShift(shiftId, shiftName, startTime, endTime, allowedCheckIn, radius, lat, lon);
+    }
+
+    public Single<ShiftOption> execute(String shiftId, String shiftName, String startTime, String endTime,
+                                       String allowedCheckInTime, double checkInRadius,
+                                       double latitude, double longitude) {
+        return shiftRepository.updateShift(shiftId, shiftName, startTime, endTime, allowedCheckInTime, checkInRadius, latitude, longitude);
     }
 }

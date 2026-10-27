@@ -14,8 +14,11 @@ public class HistoryAttendance {
     private final LocalDate date;
     private final LocalTime checkIn;
     private final LocalTime checkOut;
-    private final AttendanceStatus status;
+    private AttendanceStatus status;
     private final String location;
+    private final LocalTime startTime;
+    private final LocalTime endTime;
+    private final String shiftName;
 
     public HistoryAttendance(
             LocalDate date,
@@ -24,7 +27,7 @@ public class HistoryAttendance {
             AttendanceStatus status,
             String location
     ) {
-        this(UUID.randomUUID().toString(), "", date, checkIn, checkOut, status, location);
+        this(UUID.randomUUID().toString(), "", date, checkIn, checkOut, status, location, null, null, null);
     }
 
     public HistoryAttendance(
@@ -36,6 +39,21 @@ public class HistoryAttendance {
             AttendanceStatus status,
             String location
     ) {
+        this(id, userId, date, checkIn, checkOut, status, location, null, null, null);
+    }
+
+    public HistoryAttendance(
+            String id,
+            String userId,
+            LocalDate date,
+            LocalTime checkIn,
+            LocalTime checkOut,
+            AttendanceStatus status,
+            String location,
+            LocalTime startTime,
+            LocalTime endTime,
+            String shiftName
+    ) {
         this.id = id;
         this.userId = userId;
         this.date = date;
@@ -43,6 +61,9 @@ public class HistoryAttendance {
         this.checkOut = checkOut;
         this.status = status;
         this.location = location;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.shiftName = shiftName;
     }
 
     // Getters
@@ -52,7 +73,11 @@ public class HistoryAttendance {
     public LocalTime getCheckIn() { return checkIn; }
     public LocalTime getCheckOut() { return checkOut; }
     public AttendanceStatus getStatus() { return status; }
+    public void setStatus(AttendanceStatus status) { this.status = status; }
     public String getLocation() { return location; }
+    public LocalTime getStartTime() { return startTime; }
+    public LocalTime getEndTime() { return endTime; }
+    public String getShiftName() { return shiftName; }
 
     /**
      * Tính tổng số giờ làm việc dạng số thực double (dùng cho logic tính toán/tổng kết)

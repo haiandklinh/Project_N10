@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_bottom_sheet"
+    android:orientation="vertical"
+    android:paddingHorizontal="@dimen/spacing_xl"
+    android:paddingBottom="@dimen/spacing_2xl">
+
+    <!-- Drag Handle -->
+    <View
+        android:layout_width="36dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/spacing_s"
+        android:layout_marginBottom="@dimen/spacing_m"
+        android:background="@drawable/bg_handle" />
+
+    <!-- Top Bar with Title and Close -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/spacing_m">
+
+        <TextView
+            android:id="@+id/tvSheetHeader"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:text="Phân bổ chức vụ"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="@dimen/text_size_title_medium"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/btnCloseSheet"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Đóng"
+            android:padding="4dp"
+            android:src="@drawable/ic_close"
+            app:tint="?attr/colorOnSurfaceVariant" />
+    </RelativeLayout>
+
+    <!-- Employee Info Preview Card -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/MainCard"
+        app:cardBackgroundColor="?attr/colorSurfaceVariant"
+        android:layout_marginBottom="@dimen/spacing_m"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="0dp"
+        app:strokeWidth="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="@dimen/spacing_m">
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/ivEmployeeAvatar"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_avatar"
+                app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_m"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvEmployeeName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="@dimen/text_size_title_medium"
+                    android:textStyle="bold"
+                    tools:text="Nguyễn Văn A" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Ứng viên xin gia nhập công ty"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textSize="@dimen/text_size_body_small" />
+            </LinearLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Subtitle instruction -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/spacing_s"
+        android:text="Chọn chức vụ gợi ý hoặc nhập chức vụ tùy chỉnh:"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:textSize="@dimen/text_size_body_small" />
+
+    <!-- Suggested Position Chips -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/spacing_m"
+        android:scrollbars="none">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chipGroupSuggestions"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:singleLine="true">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipDev"
+                style="@style/ChipFilterStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Lập trình viên" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipAccountant"
+                style="@style/ChipFilterStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Kế toán" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipSales"
+                style="@style/ChipFilterStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Kinh doanh" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipHR"
+                style="@style/ChipFilterStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Nhân sự" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipOffice"
+                style="@style/ChipFilterStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Nhân viên văn phòng" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipIntern"
+                style="@style/ChipFilterStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Thực tập sinh" />
+        </com.google.android.material.chip.ChipGroup>
+    </HorizontalScrollView>
+
+    <!-- Custom Position Input Field -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilPosition"
+        style="@style/AppTextInputLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/spacing_l"
+        android:hint="Chức vụ đảm nhiệm"
+        app:boxCornerRadiusBottomEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusTopStart="12dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etPosition"
+            style="@style/AppTextInputEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textCapWords"
+            android:maxLines="1"
+            android:text="Nhân viên"
+            android:textColor="?attr/colorOnSurface" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Action Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnConfirmApprove"
+            android:layout_width="match_parent"
+            style="@style/ButtonFilledSmallStyle"
+            android:layout_height="@dimen/button_height_m"
+            android:text="Xác nhận phê duyệt"
+            android:textAllCaps="false"
+            android:textSize="@dimen/text_size_body_large"
+            android:textStyle="bold"
+            app:cornerRadius="12dp"
+            app:icon="@drawable/ic_check"
+            app:iconGravity="textStart" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCancel"
+            style="@style/ButtonOutlinedSmallStyle"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/button_height_m"
+            android:layout_marginTop="@dimen/spacing_xs"
+            android:text="Hủy bỏ"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="@dimen/text_size_body_medium" />
+    </LinearLayout>
+
+</LinearLayout>

@@ -40,6 +40,22 @@ public class TokenAuthenticator implements Authenticator {
             return null;
         }
 
+        // Bỏ qua nếu lỗi 401 là do API join-requests hoặc do nghiệp vụ Backend (ví dụ: Staff is in company) chứ không phải do Token hết hạn
+        try {
+            if (response.request().url().encodedPath().contains("join-requests")) {
+                return null;
+            }
+            if (response.body() != null) {
+                String errorBody = response.peekBody(1024).string();
+                if (errorBody != null) {
+                    String lower = errorBody.toLowerCase();
+                    if (lower.contains("staff is in company") || lower.contains("in company") || lower.contains("not found manager")) {
+                        return null;
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
+
         // Đồng bộ hóa để tránh nhiều API đồng thời cùng đi Refresh Token một lúc
         synchronized (this) {
             String currentAccessToken = tokenManager.getAccessToken();
@@ -82,7 +98,6 @@ public class TokenAuthenticator implements Authenticator {
             } else {
                 // Refresh Token hết hạn hoặc không hợp lệ -> Xóa Token và yêu cầu đăng nhập lại
                 tokenManager.clearTokens();
-                // TODO: Phát một Event hoặc gọi hàm chuyển vùng giao diện về AuthActivity/Login tại đây nếu cần
                 return null;
             }
         }

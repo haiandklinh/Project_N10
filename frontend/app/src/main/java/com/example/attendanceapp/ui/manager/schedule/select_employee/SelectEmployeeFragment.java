@@ -25,9 +25,11 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 import dagger.hilt.android.AndroidEntryPoint;
@@ -103,6 +105,21 @@ public class SelectEmployeeFragment extends Fragment {
                 String dayOfWeekName = date.getDayOfWeek().getDisplayName(TextStyle.FULL, new Locale("vi"));
                 String dateFormatted = date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
                 binding.tvAssignDateHint.setText("Xếp ca cho: " + dayOfWeekName + ", " + dateFormatted);
+            }
+        });
+
+        // Quan sát danh sách nhân viên ĐÃ CÓ CA trong ngày đang chọn để làm mờ và cập nhật trạng thái
+        viewModel.getAssignedShiftsMapLiveData().observe(getViewLifecycleOwner(), assignedMap -> {
+            if (adapter != null) {
+                adapter.setAssignedShiftsMap(assignedMap);
+            }
+            updateSelectionAllText();
+        });
+
+        viewModel.getErrorMessageLiveData().observe(getViewLifecycleOwner(), error -> {
+            if (error != null && !error.isEmpty()) {
+                Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
+                viewModel.clearErrorMessage();
             }
         });
     }
@@ -190,16 +207,33 @@ public class SelectEmployeeFragment extends Fragment {
         updateSelectionAllText();
         updateBottomBarCount();
     }
+
     private void setupSelectAll() {
         binding.tvSelectAll.setOnClickListener(v -> {
             if (filteredEmployees.isEmpty()) {
                 return;
             }
 
-            boolean allSelected = true;
-            for (ManagerEmployeeItem employee : filteredEmployees) {
+            Map<String, String> assignedMap = viewModel.getAssignedShiftsMapLiveData().getValue();
+            if (assignedMap == null) assignedMap = new HashMap<>();
+
+            // Chỉ xét những nhân viên CHƯA CÓ CA trong ngày đang chọn
+            List<ManagerEmployeeItem> selectableEmployees = new ArrayList<>();
+            for (ManagerEmployeeItem emp : filteredEmployees) {
+                if (!assignedMap.containsKey(emp.getUserId())) {
+                    selectableEmployees.add(emp);
+                }
+            }
+
+            if (selectableEmployees.isEmpty()) {
+                Toast.makeText(getContext(), "Tất cả nhân viên trong danh sách đều đã có ca làm trong ngày này!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            boolean allSelectableSelected = true;
+            for (ManagerEmployeeItem employee : selectableEmployees) {
                 if (!selectedEmployeeIds.contains(employee.getUserId())) {
-                    allSelected = false;
+                    allSelectableSelected = false;
                     break;
                 }
             }
@@ -208,14 +242,14 @@ public class SelectEmployeeFragment extends Fragment {
             if (currentSelected == null) currentSelected = new ArrayList<>();
             List<ManagerEmployeeItem> newList = new ArrayList<>(currentSelected);
 
-            if (allSelected) {
-                // Hủy chọn tất cả các nhân viên đang hiển thị
-                for (ManagerEmployeeItem filtered : filteredEmployees) {
+            if (allSelectableSelected) {
+                // Hủy chọn tất cả các nhân viên có thể chọn đang hiển thị
+                for (ManagerEmployeeItem filtered : selectableEmployees) {
                     newList.removeIf(item -> item.getUserId().equals(filtered.getUserId()));
                 }
             } else {
-                // Chọn tất cả các nhân viên đang hiển thị (tránh trùng)
-                for (ManagerEmployeeItem filtered : filteredEmployees) {
+                // Chọn tất cả các nhân viên chưa có ca (tránh trùng)
+                for (ManagerEmployeeItem filtered : selectableEmployees) {
                     boolean alreadyIn = false;
                     for (ManagerEmployeeItem item : newList) {
                         if (item.getUserId().equals(filtered.getUserId())) {
@@ -232,15 +266,31 @@ public class SelectEmployeeFragment extends Fragment {
             viewModel.setSelectedEmployees(newList);
         });
     }
+
     private void updateSelectionAllText() {
         if (filteredEmployees.isEmpty()) {
             binding.tvSelectAll.setText("Chọn tất cả");
             return;
         }
 
+        Map<String, String> assignedMap = viewModel.getAssignedShiftsMapLiveData().getValue();
+        if (assignedMap == null) assignedMap = new HashMap<>();
+
+        List<ManagerEmployeeItem> selectableEmployees = new ArrayList<>();
+        for (ManagerEmployeeItem emp : filteredEmployees) {
+            if (!assignedMap.containsKey(emp.getUserId())) {
+                selectableEmployees.add(emp);
+            }
+        }
+
+        if (selectableEmployees.isEmpty()) {
+            binding.tvSelectAll.setText("Tất cả đã có ca");
+            return;
+        }
+
         boolean allSelected = true;
 
-        for (ManagerEmployeeItem employee : filteredEmployees) {
+        for (ManagerEmployeeItem employee : selectableEmployees) {
             if (!selectedEmployeeIds.contains(employee.getUserId())) {
                 allSelected = false;
                 break;
@@ -253,6 +303,7 @@ public class SelectEmployeeFragment extends Fragment {
                         : "Chọn tất cả"
         );
     }
+
     private void setupBottomBar() {
         updateBottomBarCount();
 

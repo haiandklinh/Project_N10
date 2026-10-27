@@ -73,6 +73,20 @@ public final class ApiErrorMapper {
         } catch (Exception ignored) {
             // Body không phải JSON: dùng message mặc định
         }
+
+        // Chuẩn hóa một số thông báo lỗi tiếng Anh từ FastAPI Backend sang tiếng Việt thân thiện
+        if (message != null) {
+            if ("Invitation code is invalid or expired".equalsIgnoreCase(message)) {
+                message = "Mã mời không hợp lệ hoặc đã hết hạn";
+            } else if ("Not found Staff in System".equalsIgnoreCase(message)) {
+                message = "Không tìm thấy hồ sơ nhân viên trong hệ thống";
+            } else if ("Not found Manager".equalsIgnoreCase(message)) {
+                message = "Không tìm thấy thông tin quản lý cho mã mời này";
+            } else if (message.toLowerCase().contains("not approve")) {
+                message = "Yêu cầu gia nhập chưa được quản lý phê duyệt";
+            }
+        }
+
         return new AppException(message, e.code(), errorCode);
     }
 }

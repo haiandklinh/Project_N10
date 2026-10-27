@@ -9,7 +9,7 @@ import androidx.lifecycle.ViewModel;
 import com.example.attendanceapp.domain.model.Gender;
 import com.example.attendanceapp.domain.model.UserAccount;
 import com.example.attendanceapp.domain.model.UserRole;
-import com.example.attendanceapp.domain.repository.UserRepository;
+import com.example.attendanceapp.domain.usecase.profile.GetCurrentUserUseCase;
 import com.example.attendanceapp.domain.usecase.profile.UpdateProfileUseCase;
 
 import java.time.LocalDate;
@@ -25,7 +25,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 public class EmployeeEditBasicInfoViewModel extends ViewModel {
 
     private final UpdateProfileUseCase updateProfileUseCase;
-    private final UserRepository userRepository;
+    private final GetCurrentUserUseCase getCurrentUserUseCase;
     private final CompositeDisposable disposables = new CompositeDisposable();
 
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
@@ -34,9 +34,10 @@ public class EmployeeEditBasicInfoViewModel extends ViewModel {
     private final MutableLiveData<UserAccount> userAccount = new MutableLiveData<>();
 
     @Inject
-    public EmployeeEditBasicInfoViewModel(UpdateProfileUseCase updateProfileUseCase, UserRepository userRepository) {
+    public EmployeeEditBasicInfoViewModel(UpdateProfileUseCase updateProfileUseCase,
+                                          GetCurrentUserUseCase getCurrentUserUseCase) {
         this.updateProfileUseCase = updateProfileUseCase;
-        this.userRepository = userRepository;
+        this.getCurrentUserUseCase = getCurrentUserUseCase;
         loadUserData();
     }
 
@@ -46,12 +47,14 @@ public class EmployeeEditBasicInfoViewModel extends ViewModel {
     public LiveData<UserAccount> getUserAccount() { return userAccount; }
 
     private void loadUserData() {
-        disposables.add(userRepository.getCurrentUser()
+        disposables.add(getCurrentUserUseCase.execute()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                         userAccount::setValue,
-                        throwable -> error.setValue(throwable.getMessage())
+                        throwable -> error.setValue(throwable.getMessage()),
+                        // Room trống: Maybe chỉ gọi onComplete
+                        () -> error.setValue("Chưa có thông tin tài khoản")
                 ));
     }
 

@@ -50,12 +50,8 @@ public class AssignedEmployeeAdapter extends RecyclerView.Adapter<AssignedEmploy
 
         holder.binding.tvName.setText(item.getFullName() != null ? item.getFullName() : "");
 
-        // Load Avatar
-        Glide.with(holder.itemView.getContext())
-                .load(item.getAvatarUrl())
-                .placeholder(R.drawable.ic_avatar)
-                .error(R.drawable.ic_avatar)
-                .into(holder.binding.ivAvatar);
+        // Load Avatar đồng bộ từ API
+        com.example.attendanceapp.core.utils.AvatarLoader.loadAvatar(holder.itemView.getContext(), item.getAvatarUrl(), holder.binding.ivAvatar);
 
         holder.binding.btnRemove.setOnClickListener(v -> {
             int currentPosition = holder.getBindingAdapterPosition();

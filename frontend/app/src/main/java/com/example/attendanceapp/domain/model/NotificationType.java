@@ -1,16 +1,39 @@
 package com.example.attendanceapp.domain.model;
 
+import androidx.annotation.AttrRes;
+import com.example.attendanceapp.R;
+
 /**
- * GIẢ ĐỊNH: các loại thông báo trong app. Nếu đã có enum tương tự ở nơi khác
- * trong project, xoá file này và dùng lại enum thật, đồng thời sửa NotificationAdapter
- * cho khớp.
+ * Các loại thông báo trong app.
  */
 public enum NotificationType {
-    HUMAN,
-    PAYROLL,        // Bảng lương
-    LEAVE,          // Nghỉ phép / Khiếu nại
-    SCHEDULE,       // Ca làm việc
-    ATTENDANCE,     // Nhắc nhở chấm công
-    SYSTEM,         // Thông báo hệ thống chung
-    AUTH            // Xác thực / OTP
+    HUMAN("NHÂN SỰ", R.attr.colorAttendanceLeaveContainer, R.attr.colorAttendanceLeave),
+    PAYROLL("BẢNG LƯƠNG", R.attr.colorAttendanceLateContainer, R.attr.colorAttendanceLate),
+    LEAVE("NGHỈ PHÉP", R.attr.colorAttendanceAbsentContainer, R.attr.colorAttendanceAbsent),
+    SCHEDULE("LỊCH TRÌNH", R.attr.colorAttendanceWeekendContainer, R.attr.colorAttendanceWeekend),
+    ATTENDANCE("CHẤM CÔNG", R.attr.colorAttendanceNotCheckedContainer, R.attr.colorAttendanceNotChecked),
+    SYSTEM("HỆ THỐNG", R.attr.colorAttendancePresentContainer, R.attr.colorAttendancePresent),
+    AUTH("XÁC THỰC", R.attr.colorAttendanceEarlyLeaveContainer, R.attr.colorAttendanceEarlyLeave);
+
+    private final String displayName;
+    @AttrRes private final int bgAttrRes;
+    @AttrRes private final int textColorAttrRes;
+
+    NotificationType(String displayName, @AttrRes int bgAttrRes, @AttrRes int textColorAttrRes) {
+        this.displayName = displayName;
+        this.bgAttrRes = bgAttrRes;
+        this.textColorAttrRes = textColorAttrRes;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public int getBgAttrRes() {
+        return bgAttrRes;
+    }
+
+    public int getTextColorAttrRes() {
+        return textColorAttrRes;
+    }
 }

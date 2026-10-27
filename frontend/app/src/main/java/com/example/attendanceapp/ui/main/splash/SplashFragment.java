@@ -15,12 +15,10 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
-
 import com.example.attendanceapp.R;
 import com.example.attendanceapp.databinding.FragmentAuthSplashBinding;
 import com.example.attendanceapp.domain.model.SplashDestination;
 import com.example.attendanceapp.domain.model.UserRole;
-import com.example.attendanceapp.ui.employee.EmployeeMainActivity;
 import com.example.attendanceapp.ui.manager.ManagerMainActivity;
 
 import dagger.hilt.android.AndroidEntryPoint;
@@ -55,6 +53,7 @@ public class SplashFragment extends Fragment {
     private void setupObservers() {
         viewModel.getDestination().observe(getViewLifecycleOwner(), this::navigateTo);
     }
+
     private void startSplashDelay() {
         delayedCheckRunnable = viewModel::checkAppState;
         handler.postDelayed(delayedCheckRunnable, SPLASH_DELAY_MS);
@@ -79,10 +78,7 @@ public class SplashFragment extends Fragment {
                 break;
 
             case HOME:
-                // 1. Lấy role từ ViewModel qua UseCase
                 UserRole userRole = viewModel.getUserRole();
-
-                // 2. Mở Activity tương ứng và Clear BackStack
                 navigateToRoleHome(userRole);
                 break;
 
@@ -94,17 +90,15 @@ public class SplashFragment extends Fragment {
     }
 
     private void navigateToRoleHome(UserRole role) {
-        Intent intent;
         if (role == UserRole.MANAGER) {
-            intent = new Intent(requireContext(), ManagerMainActivity.class);
+            Intent intent = new Intent(requireContext(), ManagerMainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            requireActivity().finish();
         } else {
-            intent = new Intent(requireContext(), EmployeeMainActivity.class);
+            NavController navController = NavHostFragment.findNavController(this);
+            navController.navigate(R.id.action_splashFragment_to_staffCompanySelectionFragment);
         }
-
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-
-        requireActivity().finish();
     }
 
     @Override

@@ -118,9 +118,9 @@
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/edtDob"
             style="@style/AppTextInputEditText"
-            android:focusable="false"
-            android:clickable="true"
-            android:inputType="none" />
+            android:hint="DD/MM/YYYY"
+            android:inputType="number"
+            android:maxLength="10" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <!-- Gender Selector Title -->

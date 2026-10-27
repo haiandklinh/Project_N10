@@ -71,13 +71,13 @@ public class EmployeeUpcomingShiftAdapter
 
         // 1. Cập nhật màu nền (Background Color) & Icon Color
         int backgroundColorAttr = isSelected ? R.attr.colorPrimaryContainer : R.attr.colorSurfaceVariant;
-        int bgColor = MaterialColors.getColor(binding.cardShiftIcon,
-                isSelected ? R.attr.colorSurfaceVariant : R.attr.colorPrimaryContainer);
+//        int bgColor = MaterialColors.getColor(binding.cardShiftIcon,
+//                isSelected ? R.attr.colorSurfaceVariant : R.attr.colorPrimaryContainer);
 
         binding.getRoot().setCardBackgroundColor(
                 MaterialColors.getColor(binding.getRoot(), backgroundColorAttr)
         );
-        binding.cardShiftIcon.setCardBackgroundColor(bgColor);
+//        binding.cardShiftIcon.setCardBackgroundColor(bgColor);
 
         // 2. Cập nhật độ rộng viền & màu viền (Stroke)
         binding.getRoot().setStrokeWidth(isSelected ? 4 : 0);
@@ -95,12 +95,12 @@ public class EmployeeUpcomingShiftAdapter
             binding.tvShiftDate.setText("");
         }
 
-        if (shift.getLocation() != null && !shift.getLocation().trim().isEmpty()) {
-            binding.tvShiftLocation.setText(shift.getLocation());
-            binding.tvShiftLocation.setVisibility(View.VISIBLE);
-        } else {
-            binding.tvShiftLocation.setVisibility(View.GONE);
+        String loc = shift.getLocation();
+        if (loc == null || loc.trim().isEmpty()) {
+            loc = "Vị trí ca làm việc";
         }
+        binding.tvShiftLocation.setText(loc);
+        binding.tvShiftLocation.setVisibility(View.VISIBLE);
 
         binding.tvShiftTime.setText(shift.getShiftTime());
     }

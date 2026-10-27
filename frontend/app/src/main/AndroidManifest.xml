@@ -13,6 +13,9 @@
     <!-- Lấy vị trí khi ứng dụng chạy ngầm (Android 10+) -->
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:name=".AttendanceApplication"
@@ -65,6 +68,16 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
+    <!-- Shift Notification Receiver -->
+        <receiver
+            android:name=".core.notification.ShiftNotificationReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="com.example.attendanceapp.ACTION_SHIFT_NOTIFICATION" />
+            </intent-filter>
+        </receiver>
 
     </application>
 

@@ -67,8 +67,12 @@ public class EmployeeHistoryAttendanceAdapter
 
         HistoryAttendance item = attendanceList.get(position);
 
-        // 1. Ngày tháng
-        holder.binding.tvRecentDay.setText(formatDate(item.getDate()));
+        // 1. Ngày tháng kèm ca làm việc
+        String dayText = formatDate(item.getDate());
+        if (item.getShiftName() != null && !item.getShiftName().trim().isEmpty()) {
+            dayText += " · " + item.getShiftName().trim();
+        }
+        holder.binding.tvRecentDay.setText(dayText);
 
         // 2. Check-in & Check-out
         holder.binding.tvRecentCheckIn.setText(formatTime(item.getCheckIn()));
@@ -82,13 +86,14 @@ public class EmployeeHistoryAttendanceAdapter
             holder.binding.cardTotalHours.setVisibility(View.GONE);
         }
 
-        // 4. Địa điểm / GPS
-        if (item.getLocation() != null && !item.getLocation().trim().isEmpty()) {
-            holder.binding.cardRecentRecord.setVisibility(View.VISIBLE);
-            holder.binding.tvLocationText.setText("GPS đã xác nhận · " + item.getLocation());
-        } else {
-            holder.binding.cardRecentRecord.setVisibility(View.GONE);
+        // 4. Vị trí ca làm việc thực tế
+        holder.binding.cardRecentRecord.setVisibility(View.VISIBLE);
+        String locationText = item.getLocation();
+        if (locationText == null || locationText.trim().isEmpty()) {
+            locationText = "Vị trí ca làm việc thực tế";
         }
+        holder.binding.layoutLocationInfo.setVisibility(View.VISIBLE);
+        holder.binding.tvLocationText.setText(locationText);
 
         // 5. Trạng thái & Dynamic Colors
         bindStatus(holder, item.getStatus());

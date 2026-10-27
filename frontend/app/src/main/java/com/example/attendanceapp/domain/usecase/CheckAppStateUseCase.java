@@ -1,7 +1,10 @@
 package com.example.attendanceapp.domain.usecase;
 
+import com.example.attendanceapp.data.local.TokenManager;
 import com.example.attendanceapp.domain.model.SplashDestination;
+import com.example.attendanceapp.domain.model.UserRole;
 import com.example.attendanceapp.domain.repository.AppStateRepository;
+import com.example.attendanceapp.domain.repository.SessionRepository;
 
 import javax.inject.Inject;
 
@@ -11,10 +14,16 @@ import javax.inject.Inject;
 public class CheckAppStateUseCase {
 
     private final AppStateRepository repository;
+    private final SessionRepository sessionRepository;
+    private final TokenManager tokenManager;
 
     @Inject
-    public CheckAppStateUseCase(AppStateRepository repository) {
+    public CheckAppStateUseCase(AppStateRepository repository, 
+                               SessionRepository sessionRepository,
+                               TokenManager tokenManager) {
         this.repository = repository;
+        this.sessionRepository = sessionRepository;
+        this.tokenManager = tokenManager;
     }
 
     public SplashDestination execute() {
@@ -25,7 +34,8 @@ public class CheckAppStateUseCase {
 
         android.util.Log.d("APP_STATE_DEBUG", "isLoggedIn: " + isLoggedIn
                 + " | isAccountSaved: " + isAccountSaved
-                + " | isFirstLaunch: " + isFirstLaunch);
+                + " | isFirstLaunch: " + isFirstLaunch
+                + " | hasToken: " + (tokenManager != null && tokenManager.hasToken()));
 
         // Force clear nếu là lần đầu launch
         if (isFirstLaunch) {
@@ -36,18 +46,29 @@ public class CheckAppStateUseCase {
             return SplashDestination.ONBOARDING;
         }
 
-        // Force clear nếu isLoggedIn nhưng Room DB không có user (data mismatch)
-        if (isLoggedIn && !hasValidSession()) {
-            android.util.Log.d("APP_STATE_DEBUG", "Force clear session - invalid session");
+        // Force clear nếu isLoggedIn nhưng Room DB không có user hoặc mất JWT Token (sau khi restore/reinstall)
+        if (isLoggedIn && (!hasValidSession() || !hasValidToken())) {
+            android.util.Log.d("APP_STATE_DEBUG", "Force clear session - invalid session or missing token");
             repository.clearSession();
             repository.setLoggedIn(false);
-            repository.setAccountSaved(false);
+            if (isAccountSaved) {
+                return SplashDestination.LOGIN_SAVED_ACCOUNT;
+            }
             return SplashDestination.ONBOARDING;
         }
 
         if (isLoggedIn) {
+            UserRole role = repository.getUserRole();
             String status = repository.getUserStatus();
-            if ("PENDING_APPROVAL".equals(status)) {
+
+            // Nếu là Nhân viên chưa được duyệt vào công ty, luôn ở màn hình chờ phê duyệt
+            if (role == UserRole.EMPLOYEE) {
+                if (!"APPROVED".equalsIgnoreCase(status)) {
+                    return SplashDestination.PENDING_APPROVAL;
+                }
+            }
+
+            if ("PENDING_APPROVAL".equalsIgnoreCase(status)) {
                 return SplashDestination.PENDING_APPROVAL;
             }
             return SplashDestination.HOME;
@@ -62,9 +83,13 @@ public class CheckAppStateUseCase {
 
     private boolean hasValidSession() {
         try {
-            return repository.getSavedAccountData() != null;
+            return sessionRepository.getSavedAccountData().blockingGet() != null;
         } catch (Exception e) {
             return false;
         }
+    }
+
+    private boolean hasValidToken() {
+        return tokenManager != null && tokenManager.hasToken();
     }
 }

@@ -27,6 +27,9 @@ public interface ShiftDao {
     @Query("DELETE FROM shifts WHERE id = :shiftId")
     Completable deleteShift(String shiftId);
 
+    @Query("DELETE FROM shifts")
+    Completable clearAll();
+
     @Query("SELECT * FROM shifts")
     Flowable<List<ShiftEntity>> observeAllShifts();
 

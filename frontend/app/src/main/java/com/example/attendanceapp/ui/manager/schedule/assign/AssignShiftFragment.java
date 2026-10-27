@@ -26,12 +26,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import javax.inject.Inject;
+import com.example.attendanceapp.data.local.pref.SharedPreferenceApp;
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class AssignShiftFragment extends Fragment {
 
     private FragmentManagerAssignShiftBinding binding;
+    @Inject
+    SharedPreferenceApp sharedPreferenceApp;
+
     private AssignShiftViewModel viewModel;
     private AssignedEmployeeAdapter employeeAdapter;
     private ShiftOptionAdapter shiftAdapter;
@@ -127,11 +132,29 @@ public class AssignShiftFragment extends Fragment {
                     }
 
                     if (resultShift != null) {
+                        if (sharedPreferenceApp != null && resultShift.getLatitude() != null && resultShift.getLongitude() != null) {
+                            sharedPreferenceApp.saveShiftLocation(
+                                    resultShift.getTitle(),
+                                    resultShift.getLatitude(),
+                                    resultShift.getLongitude(),
+                                    resultShift.getCheckInRadius() != null ? resultShift.getCheckInRadius() : 100.0
+                            );
+                        }
                         // Thêm ca làm việc mới
+                        if (sharedPreferenceApp != null && resultShift.getLatitude() != null && resultShift.getLongitude() != null) {
+                            sharedPreferenceApp.saveLatestShiftLocation(
+                                    resultShift.getLatitude(),
+                                    resultShift.getLongitude(),
+                                    resultShift.getCheckInRadius() != null ? resultShift.getCheckInRadius() : 100.0,
+                                    ""
+                            );
+                        }
                         viewModel.addShift(
                                 resultShift.getTitle(),
                                 resultShift.getStartTime(),
                                 resultShift.getEndTime(),
+                                resultShift.getAllowedCheckInTime(),
+                                resultShift.getCheckInRadius() != null ? resultShift.getCheckInRadius() : 100.0,
                                 resultShift.getLatitude(),
                                 resultShift.getLongitude()
                         );

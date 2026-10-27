@@ -1,32 +1,55 @@
 package com.example.attendanceapp.domain.usecase.profile;
 
+import com.example.attendanceapp.domain.model.UserAccount;
 import com.example.attendanceapp.domain.model.UserProfile;
 import com.example.attendanceapp.domain.model.UserRole;
-import com.example.attendanceapp.domain.repository.UserRepository;
+import com.example.attendanceapp.domain.repository.AppStateRepository;
+import com.example.attendanceapp.domain.repository.ManagerRepository;
+import com.example.attendanceapp.domain.repository.SessionRepository;
+import com.example.attendanceapp.domain.repository.StaffRepository;
 
 import javax.inject.Inject;
 
 import io.reactivex.rxjava3.core.Single;
 
+/**
+ * Lấy hồ sơ mới nhất từ server theo role đang đăng nhập (Repository tự cập nhật Room).
+ * Mất mạng hoặc lỗi server thì trả hồ sơ đang lưu trong Room; Room cũng trống thì báo lỗi gốc.
+ */
 public class GetProfileUseCase {
 
-    private final UserRepository userRepository;
+    private final StaffRepository staffRepository;
+    private final ManagerRepository managerRepository;
+    private final AppStateRepository appStateRepository;
+    private final SessionRepository sessionRepository;
 
     @Inject
-    public GetProfileUseCase(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public GetProfileUseCase(StaffRepository staffRepository,
+                             ManagerRepository managerRepository,
+                             AppStateRepository appStateRepository,
+                             SessionRepository sessionRepository) {
+        this.staffRepository = staffRepository;
+        this.managerRepository = managerRepository;
+        this.appStateRepository = appStateRepository;
+        this.sessionRepository = sessionRepository;
     }
 
     public Single<UserProfile> execute() {
-        return userRepository.getCurrentUser()
-                .flatMapSingle(account -> {
-                    UserRole role = account.getProfile().getRole();
-                    // Depending on how UserRepository is implemented, we might need a separate method for fetching
-                    // But usually, getCurrentUser() might be enough if it's synced with server.
-                    // For now, let's assume we want to refresh from server via a dedicated method in repository if available.
-                    // If not, we use the account info.
-                    return Single.just(account.getProfile());
-                })
-                .toSingle();
+        return Single.defer(() -> {
+            UserRole role = appStateRepository.getUserRole();
+            if (role == null) {
+                return Single.<UserProfile>error(new IllegalStateException("Chưa chọn vai trò"));
+            }
+
+            Single<UserAccount> remote = (role == UserRole.MANAGER)
+                    ? managerRepository.getProfile()
+                    : staffRepository.getProfile();
+
+            return remote
+                    .map(UserAccount::getProfile)
+                    .onErrorResumeNext(error -> sessionRepository.getCurrentUser()
+                            .map(UserAccount::getProfile)
+                            .switchIfEmpty(Single.<UserProfile>error(error)));
+        });
     }
 }

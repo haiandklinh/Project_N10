@@ -74,13 +74,20 @@ public class RegisterFragment extends Fragment {
         registerViewModel.getRegisterState().observe(getViewLifecycleOwner(), state -> {
             if (state instanceof RegisterState.Success) {
                 clearAllErrors();
-                Toast.makeText(requireContext(), R.string.auth_register_success, Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Đăng ký thành công! Đang thiết lập phiên đăng nhập...", Toast.LENGTH_SHORT).show();
 
                 String phone = binding.layoutStep1.edtPhone.getText().toString().trim();
+                String password = binding.layoutStep2.edtPassword.getText().toString().trim();
                 NavController navController = Navigation.findNavController(requireView());
 
-                // Sử dụng getPreviousBackStackEntry() an toàn và chuẩn Product hơn
+                // Truyền thông tin sang LoginFragment để tự động đăng nhập ngầm (Auto-login)
                 if (navController.getPreviousBackStackEntry() != null) {
+                    navController.getPreviousBackStackEntry()
+                            .getSavedStateHandle()
+                            .set("auto_login_phone", phone);
+                    navController.getPreviousBackStackEntry()
+                            .getSavedStateHandle()
+                            .set("auto_login_password", password);
                     navController.getPreviousBackStackEntry()
                             .getSavedStateHandle()
                             .set("registered_phone", phone);

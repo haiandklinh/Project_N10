@@ -48,7 +48,14 @@
         android:id="@+id/notificationFragment"
         android:name="com.example.attendanceapp.ui.main.common.notification.NotificationFragment"
         android:label="Thông báo"
-        tools:layout="@layout/fragment_notification" />
+        tools:layout="@layout/fragment_notification">
+        <action
+            android:id="@+id/action_notificationFragment_to_managerApprovalFragment"
+            app:destination="@id/managerApprovalFragment" />
+        <action
+            android:id="@+id/action_notificationFragment_to_managerJoinRequestFragment"
+            app:destination="@id/managerJoinRequestFragment" />
+    </fragment>
 
     <!-- Tab 2: Phê duyệt (Approvals) -->
     <fragment
@@ -148,6 +155,12 @@
         <action
             android:id="@+id/action_managerProfileFragment_to_managerSalaryConfigFragment"
             app:destination="@id/managerSalaryConfigFragment" />
+        <action
+            android:id="@+id/action_managerProfileFragment_to_managerRolePermissionFragment"
+            app:destination="@id/managerRolePermissionFragment" />
+        <action
+            android:id="@+id/action_managerProfileFragment_to_managerBusinessSettingsFragment"
+            app:destination="@id/managerBusinessSettingsFragment" />
     </fragment>
 
 
@@ -172,6 +185,20 @@
         android:name="com.example.attendanceapp.ui.manager.profile.ManagerSalaryConfigFragment"
         android:label="Thiết lập đơn giá ca"
         tools:layout="@layout/fragment_manager_salary_config" />
+
+    <!-- Phân quyền & Vai trò -->
+    <fragment
+        android:id="@+id/managerRolePermissionFragment"
+        android:name="com.example.attendanceapp.ui.manager.profile.ManagerRolePermissionFragment"
+        android:label="@string/manager_profile_permissions"
+        tools:layout="@layout/fragment_manager_role_permission" />
+
+    <!-- Cài đặt doanh nghiệp -->
+    <fragment
+        android:id="@+id/managerBusinessSettingsFragment"
+        android:name="com.example.attendanceapp.ui.manager.profile.ManagerBusinessSettingsFragment"
+        android:label="@string/manager_profile_company_settings"
+        tools:layout="@layout/fragment_manager_business_settings" />
 
     <!-- Chi tiết tính lương nhân sự -->
     <fragment

@@ -16,56 +16,27 @@ public final class Migrations {
     private Migrations() {
     }
 
-    // ===== Ví dụ 1: thêm cột =====
-    // Entity: @ColumnInfo(name = "phone") private String phone;   (nullable)
-    // public static final Migration MIGRATION_1_2 = new Migration(1, 2) {
-    //     @Override
-    //     public void migrate(@NonNull SupportSQLiteDatabase db) {
-    //         db.execSQL("ALTER TABLE users ADD COLUMN phone TEXT");
-    //     }
-    // };
-    //
-    // Cột NOT NULL thì bắt buộc có DEFAULT, và entity cũng phải khai báo defaultValue:
-    //   db.execSQL("ALTER TABLE users ADD COLUMN status INTEGER NOT NULL DEFAULT 0");
-    //   @ColumnInfo(name = "status", defaultValue = "0") private int status;
+    public static final Migration MIGRATION_4_5 = new Migration(4, 5) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase db) {
+            db.execSQL("ALTER TABLE `shifts` ADD COLUMN `allowedCheckInTime` TEXT");
+            db.execSQL("ALTER TABLE `shifts` ADD COLUMN `checkInRadius` REAL");
+        }
+    };
 
-    // ===== Ví dụ 2: thêm bảng mới =====
-    // public static final Migration MIGRATION_2_3 = new Migration(2, 3) {
-    //     @Override
-    //     public void migrate(@NonNull SupportSQLiteDatabase db) {
-    //         db.execSQL("CREATE TABLE IF NOT EXISTS `leave_requests` ("
-    //                 + "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "
-    //                 + "`user_id` INTEGER NOT NULL, "
-    //                 + "`reason` TEXT, "
-    //                 + "FOREIGN KEY(`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE)");
-    //         db.execSQL("CREATE INDEX IF NOT EXISTS `index_leave_requests_user_id` "
-    //                 + "ON `leave_requests` (`user_id`)");
-    //     }
-    // };
-
-    // ===== Ví dụ 3: thêm index =====
-    //   db.execSQL("CREATE INDEX IF NOT EXISTS `index_shifts_user_id` ON `shifts` (`user_id`)");
-
-    // ===== Ví dụ 4: đổi tên / xóa / đổi kiểu cột (tạo lại bảng) =====
-    // SQLite không hỗ trợ đầy đủ, nên làm theo 4 bước:
-    // public static final Migration MIGRATION_3_4 = new Migration(3, 4) {
-    //     @Override
-    //     public void migrate(@NonNull SupportSQLiteDatabase db) {
-    //         db.execSQL("CREATE TABLE `users_new` ("
-    //                 + "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "
-    //                 + "`full_name` TEXT NOT NULL)");              // cấu trúc MỚI
-    //         db.execSQL("INSERT INTO `users_new` (`id`, `full_name`) "
-    //                 + "SELECT `id`, `name` FROM `users`");        // copy dữ liệu
-    //         db.execSQL("DROP TABLE `users`");
-    //         db.execSQL("ALTER TABLE `users_new` RENAME TO `users`");
-    //         // nhớ tạo lại index nếu bảng cũ có
-    //     }
-    // };
+    public static final Migration MIGRATION_5_6 = new Migration(5, 6) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase db) {
+            db.execSQL("ALTER TABLE `notifications` ADD COLUMN `role` TEXT");
+        }
+    };
 
     /**
      * Thêm migration mới vào đây theo thứ tự. Ví dụ:
      * public static final Migration[] ALL = { MIGRATION_1_2, MIGRATION_2_3 };
      */
     public static final Migration[] ALL = {
+            MIGRATION_4_5,
+            MIGRATION_5_6
     };
 }

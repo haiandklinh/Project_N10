@@ -6,8 +6,9 @@ import com.example.attendanceapp.R;
 public enum ShiftStatus {
     PENDING("Chưa vào ca", R.attr.colorAttendanceNotCheckedContainer, R.attr.colorAttendanceNotChecked),
     WORKING("Đang làm việc", R.attr.colorAttendancePresentContainer, R.attr.colorAttendancePresent),
-    COMPLETED("Đã hoàn thành", R.attr.colorAttendanceLeave, R.attr.colorAttendanceLeaveContainer),
-    ABSENT("Vắng mặt", R.attr.colorAttendanceAbsent, R.attr.colorAttendanceAbsentContainer);
+    COMPLETED("Đã hoàn thành", R.attr.colorAttendancePresentContainer, R.attr.colorAttendancePresent),
+    NOT_CHECKED_IN("Chưa chấm công", R.attr.colorAttendanceLateContainer, R.attr.colorAttendanceLate),
+    ABSENT("Vắng mặt", R.attr.colorAttendanceAbsentContainer, R.attr.colorAttendanceAbsent);
 
     private final String displayName;
     @AttrRes private final int bgAttrRes;

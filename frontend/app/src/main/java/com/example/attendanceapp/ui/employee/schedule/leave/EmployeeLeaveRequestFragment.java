@@ -15,10 +15,12 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
+import com.example.attendanceapp.data.dto.request.staff.CreateLeaveRequest;
 import com.example.attendanceapp.databinding.FragmentLeaveRequestBinding;
 import com.example.attendanceapp.domain.model.ApprovalRequestType;
 import com.example.attendanceapp.domain.model.ApprovalStatus;
 import com.example.attendanceapp.domain.model.LeaveRequest;
+import com.example.attendanceapp.domain.repository.StaffRepository;
 import com.google.android.material.datepicker.MaterialDatePicker;
 
 import java.text.SimpleDateFormat;
@@ -27,10 +29,23 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import javax.inject.Inject;
+
+import dagger.hilt.android.AndroidEntryPoint;
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+
+@AndroidEntryPoint
 public class EmployeeLeaveRequestFragment extends Fragment {
 
     private FragmentLeaveRequestBinding binding;
     private final String[] availableShifts = {"Ca sáng (08:00 - 12:00)", "Ca chiều (13:30 - 17:30)", "Ca hành chính (08:00 - 17:30)", "Ca tối (18:00 - 22:00)"};
+
+    @Inject
+    StaffRepository staffRepository;
+
+    private final CompositeDisposable disposables = new CompositeDisposable();
 
     @Nullable
     @Override
@@ -118,7 +133,7 @@ public class EmployeeLeaveRequestFragment extends Fragment {
                     .build();
 
             datePicker.addOnPositiveButtonClickListener(selection -> {
-                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
                 binding.etDate.setText(sdf.format(new Date(selection)));
                 binding.tilDate.setError(null);
             });
@@ -197,25 +212,35 @@ public class EmployeeLeaveRequestFragment extends Fragment {
     }
 
     private void sendRequest(ApprovalRequestType type, String date, String shiftInfo, String reason, boolean isEmergency) {
-        LeaveRequest request = new LeaveRequest();
-        request.setId(String.valueOf(System.currentTimeMillis()));
-        request.setType(type); // Refactor: Dùng Enum ApprovalRequestType
-        request.setTargetDate(date);
-        request.setShiftId(shiftInfo);
-        request.setReason(reason);
-        request.setEmergency(isEmergency);
-        request.setStatus(ApprovalStatus.PENDING); // Refactor: Dùng Enum ApprovalStatus.PENDING
-        request.setCreatedAt(System.currentTimeMillis());
+        binding.btnSubmit.setEnabled(false);
 
-        // TODO: Gọi ViewModel gửi dữ liệu lên Room DB / API Server ở đây
+        String shiftOffId = TextUtils.isEmpty(shiftInfo) ? "shift_01" : shiftInfo;
+        CreateLeaveRequest request = new CreateLeaveRequest(date, shiftOffId, reason);
 
-        Toast.makeText(requireContext(), "Gửi đơn " + type.getTitle() + " thành công!", Toast.LENGTH_SHORT).show();
-        Navigation.findNavController(requireView()).navigateUp();
+        disposables.add(staffRepository.requestLeave(request)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        () -> {
+                            if (isAdded()) {
+                                Toast.makeText(requireContext(), "Gửi đơn " + type.getTitle() + " thành công!", Toast.LENGTH_SHORT).show();
+                                Navigation.findNavController(requireView()).navigateUp();
+                            }
+                        },
+                        throwable -> {
+                            if (isAdded()) {
+                                binding.btnSubmit.setEnabled(true);
+                                Toast.makeText(requireContext(), "Lỗi: " + throwable.getMessage(), Toast.LENGTH_LONG).show();
+                            }
+                        }
+                )
+        );
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        disposables.clear();
         binding = null;
     }
 }

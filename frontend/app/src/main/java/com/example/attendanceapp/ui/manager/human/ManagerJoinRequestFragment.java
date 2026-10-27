@@ -17,7 +17,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.attendanceapp.R;
 import com.example.attendanceapp.databinding.FragmentManagerJoinRequestBinding;
-import com.example.attendanceapp.domain.model.ApprovalStatus;
 import com.example.attendanceapp.domain.model.JoinRequestItem;
 
 import java.util.ArrayList;
@@ -31,7 +30,6 @@ public class ManagerJoinRequestFragment extends Fragment {
     private FragmentManagerJoinRequestBinding binding;
     private ManagerHumanViewModel viewModel;
     private ManagerJoinRequestAdapter adapter;
-    private List<JoinRequestItem> sampleRequests;
 
     @Nullable
     @Override
@@ -43,13 +41,16 @@ public class ManagerJoinRequestFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        // Shared ViewModel to update badge count
+        // Shared ViewModel to update badge count & sync invitation code
         viewModel = new ViewModelProvider(requireActivity()).get(ManagerHumanViewModel.class);
 
         setupToolbar();
         setupRecyclerView();
-        loadJoinRequests();
         setupListeners();
+        observeViewModel();
+        
+        // Gọi load dữ liệu thực tế từ backend
+        viewModel.loadJoinRequests();
     }
 
     private void setupToolbar() {
@@ -62,69 +63,96 @@ public class ManagerJoinRequestFragment extends Fragment {
     private void setupListeners() {
         if (binding.btnJoinCopyCode != null) {
             binding.btnJoinCopyCode.setOnClickListener(v -> {
+                String code = binding.tvJoinInviteCode.getText().toString();
+                if ("------".equals(code) || code.isEmpty()) {
+                    CompanyInvitationBottomSheet.newInstance().show(getChildFragmentManager(), CompanyInvitationBottomSheet.TAG);
+                    return;
+                }
                 ClipboardManager clipboard = (ClipboardManager) requireContext().getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData clip = ClipData.newPlainText("Invite Code", binding.tvJoinInviteCode.getText().toString());
-                clipboard.setPrimaryClip(clip);
-                Toast.makeText(requireContext(), getString(R.string.manager_profile_copy_success), Toast.LENGTH_SHORT).show();
+                if (clipboard != null) {
+                    ClipData clip = ClipData.newPlainText("Invite Code", code);
+                    clipboard.setPrimaryClip(clip);
+                    Toast.makeText(requireContext(), getString(R.string.manager_profile_copy_success), Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        if (binding.cardJoinInviteCode != null) {
+            binding.cardJoinInviteCode.setOnClickListener(v -> {
+                CompanyInvitationBottomSheet.newInstance().show(getChildFragmentManager(), CompanyInvitationBottomSheet.TAG);
             });
         }
     }
 
+    private void observeViewModel() {
+        // Đồng bộ mã mời
+        viewModel.invitationCode.observe(getViewLifecycleOwner(), code -> {
+            if (code != null && !code.trim().isEmpty()) {
+                binding.tvJoinInviteCode.setText(code);
+            } else {
+                binding.tvJoinInviteCode.setText("------");
+            }
+        });
+
+        // Đồng bộ danh sách đơn xin gia nhập từ backend
+        viewModel.joinRequests.observe(getViewLifecycleOwner(), list -> {
+            List<JoinRequestItem> safeList = (list != null) ? list : new ArrayList<>();
+            adapter.updateData(safeList);
+            updateEmptyState(safeList.isEmpty());
+        });
+
+        // Báo lỗi nếu có
+        viewModel.errorMessage.observe(getViewLifecycleOwner(), err -> {
+            if (err != null && !err.isEmpty()) {
+                Toast.makeText(requireContext(), err, Toast.LENGTH_SHORT).show();
+                viewModel.clearErrorMessage();
+            }
+        });
+    }
+
     private void setupRecyclerView() {
         binding.rvJoinRequests.setLayoutManager(new LinearLayoutManager(requireContext()));
-        sampleRequests = new ArrayList<>();
         
-        adapter = new ManagerJoinRequestAdapter(sampleRequests, new ManagerJoinRequestAdapter.OnActionListener() {
+        adapter = new ManagerJoinRequestAdapter(new ArrayList<>(), new ManagerJoinRequestAdapter.OnActionListener() {
             @Override
             public void onApprove(JoinRequestItem item, int position) {
-                Toast.makeText(requireContext(), "Đã chấp nhận nhân viên " + item.getFullName() + " vào doanh nghiệp", Toast.LENGTH_SHORT).show();
-                removeItem(position);
+                AssignPositionBottomSheet.newInstance(item.getId(), item.getFullName(), item.getAvatarUrl(), (staffId, fullName, avatarUrl, assignedPosition) -> {
+                    viewModel.handleJoinRequest(staffId, fullName, avatarUrl, assignedPosition, true, () -> {
+                        Toast.makeText(requireContext(), "Đã duyệt nhân sự " + fullName + " với chức vụ " + assignedPosition, Toast.LENGTH_SHORT).show();
+                    });
+                }).show(getChildFragmentManager(), AssignPositionBottomSheet.TAG);
             }
 
             @Override
             public void onReject(JoinRequestItem item, int position) {
-                Toast.makeText(requireContext(), "Đã từ chối yêu cầu của " + item.getFullName(), Toast.LENGTH_SHORT).show();
-                removeItem(position);
+                viewModel.handleJoinRequest(item.getId(), item.getFullName(), item.getAvatarUrl(), "", false, () -> {
+                    Toast.makeText(requireContext(), "Đã từ chối yêu cầu của " + item.getFullName(), Toast.LENGTH_SHORT).show();
+                });
             }
         });
         
         binding.rvJoinRequests.setAdapter(adapter);
     }
 
-    private void removeItem(int position) {
-        if (sampleRequests != null && position >= 0 && position < sampleRequests.size()) {
-            sampleRequests.remove(position);
-            adapter.updateData(new ArrayList<>(sampleRequests));
-            updateEmptyState();
-            viewModel.setJoinRequestCount(sampleRequests.size());
-        }
-    }
-
-    private void updateEmptyState() {
+    private void updateEmptyState(boolean isEmpty) {
         if (binding == null) return;
-        if (sampleRequests == null || sampleRequests.isEmpty()) {
+        if (isEmpty) {
             binding.rvJoinRequests.setVisibility(View.GONE);
             binding.includeEmptyState.getRoot().setVisibility(View.VISIBLE);
             binding.includeEmptyState.tvEmptyTitle.setText("Không có yêu cầu nào");
-            binding.includeEmptyState.tvEmptySubtitle.setText("Tất cả đơn xin gia nhập đã được xử lý.");
+            binding.includeEmptyState.tvEmptySubtitle.setText("Chia sẻ mã mời của bạn để nhân viên gửi yêu cầu tham gia công ty.");
         } else {
             binding.rvJoinRequests.setVisibility(View.VISIBLE);
             binding.includeEmptyState.getRoot().setVisibility(View.GONE);
         }
     }
 
-    private void loadJoinRequests() {
-        sampleRequests.clear();
-        // Mock data cho danh sách đơn xin gia nhập đang chờ duyệt
-        sampleRequests.add(new JoinRequestItem("1", "Nguyễn Văn A", null, "0901234567", "BKS-2024", "2 phút trước", ApprovalStatus.PENDING));
-        sampleRequests.add(new JoinRequestItem("2", "Phạm Thanh Sơn", null, "0988776655", "BKS-CODE-2024", "10 phút trước", ApprovalStatus.PENDING));
-        sampleRequests.add(new JoinRequestItem("3", "Trần Thị B", null, "0977665544", "BKS-2024", "15 phút trước", ApprovalStatus.PENDING));
-        sampleRequests.add(new JoinRequestItem("4", "Lê Thị Hồng", null, "0912345678", "BKS-CODE-2024", "30 phút trước", ApprovalStatus.PENDING));
-        sampleRequests.add(new JoinRequestItem("5", "Hoàng Văn C", null, "0966554433", "BKS-2024", "1 giờ trước", ApprovalStatus.PENDING));
-
-        adapter.updateData(new ArrayList<>(sampleRequests));
-        updateEmptyState();
-        viewModel.setJoinRequestCount(sampleRequests.size());
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (viewModel != null) {
+            viewModel.loadJoinRequests();
+        }
     }
 
     @Override
@@ -133,4 +161,3 @@ public class ManagerJoinRequestFragment extends Fragment {
         binding = null;
     }
 }
-

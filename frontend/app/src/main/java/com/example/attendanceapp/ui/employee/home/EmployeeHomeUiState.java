@@ -19,7 +19,6 @@ public class EmployeeHomeUiState {
     private final List<WeekDay> weekDays;
     private final List<RecentAttendance> recentAttendances;
 
-
     private final boolean showNotificationBadge;
     private final boolean isLoading;
     private final String errorMessage;
@@ -43,16 +42,23 @@ public class EmployeeHomeUiState {
 
     // --- State khởi tạo nhanh trong ViewModel ---
     public static EmployeeHomeUiState loading() {
+        return loading(null);
+    }
+
+    public static EmployeeHomeUiState loading(List<WeekDay> weekDays) {
         return new EmployeeHomeUiState(null, null, null, null, null, null,
-                null, null, false, true, null);
+                weekDays, null, false, true, null);
     }
 
     public static EmployeeHomeUiState error(String message) {
-        return new EmployeeHomeUiState(null, null, null, null, null, null,
-                null, null, false, false, message);
+        return error(message, null);
     }
 
-    // TODO: Sử dụng khi tích hợp UseCase - tạo state success từ dữ liệu thực
+    public static EmployeeHomeUiState error(String message, List<WeekDay> weekDays) {
+        return new EmployeeHomeUiState(null, null, null, null, null, null,
+                weekDays, null, false, false, message);
+    }
+
     public static EmployeeHomeUiState success(String userName, String companyName, String avatarUrl,
                                               Shift todayShift, LocalTime checkInTime, LocalTime checkOutTime,
                                               List<WeekDay> weekDays, List<RecentAttendance> recentAttendances,

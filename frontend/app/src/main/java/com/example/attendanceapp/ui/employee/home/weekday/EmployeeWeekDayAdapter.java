@@ -4,20 +4,21 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.ListAdapter;
-import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.attendanceapp.R;
+import com.example.attendanceapp.core.utils.ColorUtil;
 import com.example.attendanceapp.databinding.ItemHomeWeekDayBinding;
 import com.example.attendanceapp.domain.model.AttendanceStatus;
 import com.example.attendanceapp.domain.model.WeekDay;
-import com.example.attendanceapp.core.utils.ColorUtil;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
-public class EmployeeWeekDayAdapter extends ListAdapter<WeekDay, EmployeeWeekDayAdapter.HomeWeekDayViewHolder> {
+public class EmployeeWeekDayAdapter extends RecyclerView.Adapter<EmployeeWeekDayAdapter.HomeWeekDayViewHolder> {
 
+    private final List<WeekDay> items = new ArrayList<>();
     private OnDayClickListener onDayClickListener;
 
     public interface OnDayClickListener {
@@ -25,18 +26,14 @@ public class EmployeeWeekDayAdapter extends ListAdapter<WeekDay, EmployeeWeekDay
     }
 
     public EmployeeWeekDayAdapter() {
-        super(new DiffUtil.ItemCallback<WeekDay>() {
-            @Override
-            public boolean areItemsTheSame(@NonNull WeekDay oldItem, @NonNull WeekDay newItem) {
-                return oldItem.getDate().equals(newItem.getDate());
-            }
+    }
 
-            @Override
-            public boolean areContentsTheSame(@NonNull WeekDay oldItem, @NonNull WeekDay newItem) {
-                return oldItem.getStatus() == newItem.getStatus()
-                        && oldItem.isToday() == newItem.isToday();
-            }
-        });
+    public void submitList(List<WeekDay> newItems) {
+        items.clear();
+        if (newItems != null) {
+            items.addAll(newItems);
+        }
+        notifyDataSetChanged();
     }
 
     public void setOnDayClickListener(OnDayClickListener listener) {
@@ -56,7 +53,12 @@ public class EmployeeWeekDayAdapter extends ListAdapter<WeekDay, EmployeeWeekDay
 
     @Override
     public void onBindViewHolder(@NonNull HomeWeekDayViewHolder holder, int position) {
-        holder.bind(getItem(position));
+        holder.bind(items.get(position));
+    }
+
+    @Override
+    public int getItemCount() {
+        return items.size();
     }
 
     class HomeWeekDayViewHolder extends RecyclerView.ViewHolder {
@@ -69,30 +71,23 @@ public class EmployeeWeekDayAdapter extends ListAdapter<WeekDay, EmployeeWeekDay
         }
 
         public void bind(WeekDay weekDay) {
+            if (weekDay == null) return;
             LocalDate today = LocalDate.now();
             LocalDate date = weekDay.getDate();
 
-            // 1. Gán Tên Thứ (T2, T3... CN)
             binding.tvDayName.setText(getDayLetter(date));
-
-            // 2. Bind Icon và Màu trạng thái
             bindStatus(weekDay.getStatus());
 
-            // 3. Highlight nền nếu là ngày hôm nay
-            if (weekDay.isToday()) {
-                binding.getRoot().setBackgroundResource(R.drawable.bg_weekday_today);
-            }
+            boolean isPastOrToday = date != null && (date.isBefore(today) || weekDay.isToday());
 
-            // 4. Đổi màu chữ tvDayName: Ngày trước hôm nay HOẶC hôm nay -> colorPrimary
-            if (date != null && (date.isBefore(today) || weekDay.isToday())) {
-                int primaryColor = ColorUtil.getThemeColor(itemView, R.attr.colorPrimary);
-                binding.tvDayName.setTextColor(primaryColor);
-            } else {
-                int defaultTextColor = ColorUtil.getThemeColor(itemView, R.attr.colorOnSurfaceVariant);
-                binding.tvDayName.setTextColor(defaultTextColor);
-            }
+            // Màu chữ: ngày đã qua hoặc hôm nay -> primary
+            int textColorAttr = isPastOrToday ? R.attr.colorPrimary : R.attr.colorOnSurfaceVariant;
+            binding.tvDayName.setTextColor(ColorUtil.getThemeColor(itemView, textColorAttr));
 
-            // 5. Sự kiện Click
+            // Màu nền card: chỉ hôm nay nổi bật
+            int cardColorAttr = weekDay.isToday() ? R.attr.colorPrimaryContainer : R.attr.colorSurfaceVariant;
+            binding.cardWeekDay.setCardBackgroundColor(ColorUtil.getThemeColor(itemView, cardColorAttr));
+
             itemView.setOnClickListener(v -> {
                 if (onDayClickListener != null) {
                     onDayClickListener.onDayClick(weekDay);
@@ -115,6 +110,8 @@ public class EmployeeWeekDayAdapter extends ListAdapter<WeekDay, EmployeeWeekDay
         }
 
         private void bindStatus(AttendanceStatus status) {
+            if (status == null) status = AttendanceStatus.NOT_CHECKED;
+
             int icon;
             int colorAttr;
 
@@ -132,11 +129,11 @@ public class EmployeeWeekDayAdapter extends ListAdapter<WeekDay, EmployeeWeekDay
                     colorAttr = R.attr.colorAttendanceAbsent;
                     break;
                 case LEAVE:
-                    icon = R.drawable.ic_check;
+                    icon = R.drawable.ic_leave;
                     colorAttr = R.attr.colorAttendanceLeave;
                     break;
                 case EARLY_LEAVE:
-                    icon = R.drawable.ic_check;
+                    icon = R.drawable.ic_early_leave;
                     colorAttr = R.attr.colorAttendanceEarlyLeave;
                     break;
                 case NOT_CHECKED:

@@ -1,82 +1,100 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_login_header"
-    android:fillViewport="true"
-    android:overScrollMode="never"
     tools:context=".ui.main.auth.login.LoginSavedAccountFragment">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <!-- 1. APP BAR LAYOUT (Chứa Header logo/welcome, co giãn mượt khi bàn phím đẩy lên) -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:paddingTop="50dp"
+        android:background="@android:color/transparent"
+        app:elevation="0dp"
+        app:statusBarForeground="@android:color/transparent">
 
-        <!-- 1. HEADER LAYOUT (Nằm vùng không gian phía trên Form) -->
-        <LinearLayout
-            android:id="@+id/headerLayout"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:paddingHorizontal="@dimen/spacing_s"
-            app:layout_constraintBottom_toTopOf="@+id/bottomSheet"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardLogo"
-                android:layout_width="@dimen/login_logo_size"
-                android:layout_height="@dimen/login_logo_size"
-                app:cardCornerRadius="@dimen/radius_full"
-                app:cardElevation="@dimen/elevation_none"
-                app:strokeWidth="@dimen/border_none">
-
-                <ImageView
-                    android:id="@+id/ivLogo"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:contentDescription="@string/app_name"
-                    android:padding="@dimen/spacing_l"
-                    android:src="@drawable/ic_logo" />
-            </com.google.android.material.card.MaterialCardView>
-
-            <TextView
-                android:id="@+id/tvWelcome"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_m"
-                android:fontFamily="sans-serif-black"
-                android:gravity="center"
-                android:text="Chào mừng quay trở lại"
-                android:textColor="?attr/colorOnPrimary"
-                android:textSize="@dimen/text_size_headline_medium" />
-
-            <TextView
-                android:id="@+id/tvSubtitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_2xs"
-                android:alpha="0.8"
-                android:gravity="center"
-                android:text="@string/login_welcome_subtitle"
-                android:textColor="?attr/colorOnPrimary"
-                android:textSize="@dimen/text_size_body_medium" />
-
-        </LinearLayout>
-
-        <!-- 2. FORM NỘI DUNG (Nền trắng bo góc, ghim xuống đáy) -->
-        <LinearLayout
-            android:id="@+id/bottomSheet"
+        <com.google.android.material.appbar.CollapsingToolbarLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/bg_bottom_sheet"
-            android:elevation="8dp"
+            android:background="@android:color/transparent"
+            app:contentScrim="@android:color/transparent"
+            app:statusBarScrim="@android:color/transparent"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed|snap">
+
+            <!-- KHỐI HEADER LAYOUT -->
+            <LinearLayout
+                android:id="@+id/headerLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingHorizontal="@dimen/spacing_xl"
+                android:paddingVertical="@dimen/spacing_3xl"
+                app:layout_collapseMode="parallax"
+                app:layout_collapseParallaxMultiplier="0.5">
+
+                <!-- LOGO & TÊN ỨNG DỤNG -->
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/iv_app_logo"
+                    android:layout_width="88dp"
+                    android:layout_height="88dp"
+                    android:layout_marginTop="@dimen/spacing_m"
+                    android:layout_marginBottom="@dimen/spacing_s"
+                    android:elevation="@dimen/spacing_s"
+                    android:src="@mipmap/ic_launcher"
+                    app:shapeAppearanceOverlay="@style/ImageCircleStyle" />
+
+                <TextView
+                    android:id="@+id/tvWelcome"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_m"
+                    android:fontFamily="sans-serif-black"
+                    android:gravity="center"
+                    android:text="Chào mừng quay trở lại"
+                    android:textColor="?attr/colorOnPrimary"
+                    android:textSize="@dimen/text_size_headline_medium" />
+
+                <TextView
+                    android:id="@+id/tvSubtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_2xs"
+                    android:alpha="0.8"
+                    android:gravity="center"
+                    android:text="@string/login_welcome_subtitle"
+                    android:textColor="?attr/colorOnPrimary"
+                    android:textSize="@dimen/text_size_body_medium" />
+
+            </LinearLayout>
+
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- 2. FORM NỘI DUNG (NestedScrollView để tự động đẩy và cuộn khi hiện Bàn phím) -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/bottomSheet"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_bottom_sheet"
+        android:elevation="8dp"
+        android:fillViewport="true"
+        android:overScrollMode="never"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingHorizontal="@dimen/spacing_xl"
             android:paddingTop="@dimen/spacing_2xl"
-            android:paddingBottom="@dimen/spacing_xl"
-            app:layout_constraintBottom_toBottomOf="parent">
+            android:paddingBottom="@dimen/spacing_xl">
 
             <!-- Card hiển thị User Profile đã lưu -->
             <com.google.android.material.card.MaterialCardView
@@ -98,12 +116,13 @@
                         android:id="@+id/ivUserAvatar"
                         android:layout_width="54dp"
                         android:layout_height="54dp"
+                        android:scaleType="centerCrop"
                         android:contentDescription="Ảnh người dùng"
                         android:padding="@dimen/border_width_s"
                         android:src="@drawable/ic_avatar"
                         app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
                         app:strokeColor="?attr/colorPrimary"
-                        app:strokeWidth="1.5dp" />
+                        app:strokeWidth="1dp" />
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -172,7 +191,8 @@
                     android:id="@+id/edtPassword"
                     style="@style/AppTextInputEditText"
                     android:hint="Nhập mật khẩu"
-                    android:inputType="textPassword" />
+                    android:inputType="textPassword"
+                    android:maxLines="1" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <TextView
@@ -293,7 +313,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="@dimen/spacing_3xl"
+                android:layout_marginTop="@dimen/spacing_xl"
                 app:cardBackgroundColor="?attr/colorSurfaceVariant"
                 app:cardCornerRadius="@dimen/radius_full"
                 app:cardElevation="0dp"
@@ -333,23 +353,61 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- Lò xo đẩy phần footer bảo mật xuống dưới -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <!-- KHỐI BẢO MẬT & BẢN QUYỀN -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_2xl"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="🔒 Hệ thống bảo mật dữ liệu điểm danh Doanh nghiệp"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textSize="@dimen/text_size_label_small" />
+
+                <TextView
+                    android:id="@+id/tvTerms"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_3xs"
+                    android:gravity="center"
+                    android:text="Điều khoản dịch vụ • Chính sách bảo mật"
+                    android:textColor="?attr/colorPrimary"
+                    android:textSize="@dimen/text_size_label_small" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_2xs"
+                    android:alpha="0.6"
+                    android:text="Phiên bản 1.0.0"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textSize="@dimen/text_size_label_small" />
+            </LinearLayout>
+
         </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
-        <!-- 3. PROGRESS INDICATOR (Căn giữa toàn bộ màn hình) -->
-        <ProgressBar
-            android:id="@+id/progressBar"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:indeterminate="true"
-            android:indeterminateTint="?attr/colorPrimary"
-            android:indeterminateTintMode="src_in"
-            android:visibility="gone"
-            android:elevation="10dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+    <!-- 3. PROGRESS INDICATOR (Căn giữa toàn màn hình) -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="center"
+        android:elevation="10dp"
+        android:indeterminate="true"
+        android:indeterminateTint="?attr/colorPrimary"
+        android:indeterminateTintMode="src_in"
+        android:visibility="gone" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-</ScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

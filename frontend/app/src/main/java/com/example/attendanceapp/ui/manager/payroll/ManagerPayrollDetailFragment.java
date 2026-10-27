@@ -16,19 +16,32 @@ import com.example.attendanceapp.R;
 import com.example.attendanceapp.databinding.FragmentManagerPayrollDetailBinding;
 import com.example.attendanceapp.domain.model.AttendanceStatus;
 import com.example.attendanceapp.domain.model.WeekDay;
+import com.example.attendanceapp.domain.repository.ManagerRepository;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import dagger.hilt.android.AndroidEntryPoint;
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 @AndroidEntryPoint
 public class ManagerPayrollDetailFragment extends Fragment {
 
     private FragmentManagerPayrollDetailBinding binding;
     private ManagerPayrollCalendarAdapter calendarAdapter;
+    private final CompositeDisposable disposables = new CompositeDisposable();
+
+    @Inject
+    ManagerRepository managerRepository;
 
     @Nullable
     @Override
@@ -42,8 +55,7 @@ public class ManagerPayrollDetailFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         setupToolbar();
-        setupCalendar();
-        setupMockData();
+        loadPayrollDetail();
         setupListeners();
     }
 
@@ -54,38 +66,76 @@ public class ManagerPayrollDetailFragment extends Fragment {
         binding.toolbarApp.setTitle("Chi tiết tính lương");
     }
 
-    private void setupCalendar() {
-        // Mock dữ liệu lịch chấm công trong tháng
-        List<WeekDay> mockDays = new ArrayList<>();
-        LocalDate now = LocalDate.now();
-        int daysInMonth = now.lengthOfMonth();
-        
-        for (int i = 1; i <= daysInMonth; i++) {
-            LocalDate date = LocalDate.of(now.getYear(), now.getMonth(), i);
-            AttendanceStatus status;
-            
-            // Mock ngẫu nhiên trạng thái để minh họa UI
-            if (i % 7 == 0 || i % 7 == 6) {
-                status = AttendanceStatus.WEEKEND;
-            } else if (i == 5) {
-                status = AttendanceStatus.LATE;
-            } else if (i == 12) {
-                status = AttendanceStatus.ABSENT;
-            } else if (i > now.getDayOfMonth()) {
-                status = AttendanceStatus.NOT_CHECKED;
-            } else {
-                status = AttendanceStatus.PRESENT;
-            }
-            
-            mockDays.add(new WeekDay(date, status, date.equals(now)));
-        }
+    private void loadPayrollDetail() {
+        disposables.add(
+                managerRepository.getPayrollDetail()
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                response -> {
+                                    try {
+                                        String jsonStr = response.string();
+                                        JSONObject json = new JSONObject(jsonStr);
 
-        calendarAdapter = new ManagerPayrollCalendarAdapter(mockDays, day -> {
+                                        JSONObject employee = json.getJSONObject("employee");
+                                        binding.tvDetailName.setText(employee.getString("full_name"));
+                                        binding.tvDetailCode.setText("Mã NV: " + employee.getString("code") + " • Vị trí: " + employee.getString("position"));
+
+                                        JSONObject stats = json.getJSONObject("statistics");
+                                        binding.rowShifts.tvStatTitle.setText("Số ca làm");
+                                        binding.rowShifts.tvStatValue.setText(stats.getInt("total_shifts") + " ca");
+
+                                        binding.rowPaidLeave.tvStatTitle.setText("Nghỉ có phép");
+                                        binding.rowPaidLeave.tvStatValue.setText(stats.getInt("paid_leave") + " ca");
+
+                                        binding.rowUnpaidLeave.tvStatTitle.setText("Nghỉ không phép");
+                                        binding.rowUnpaidLeave.tvStatValue.setText(stats.getInt("unpaid_leave") + " ca");
+
+                                        JSONObject salary = json.getJSONObject("salary");
+                                        binding.rowBasicSalary.tvStatTitle.setText("Lương cơ bản");
+                                        binding.rowBasicSalary.tvStatValue.setText(formatCurrency(salary.getInt("basic_salary")));
+
+                                        binding.tvTotalBonus.setText("+" + formatCurrency(salary.getInt("bonus")));
+                                        binding.tvTotalDeduction.setText(formatCurrency(salary.getInt("deduction")));
+                                        binding.tvFinalSalary.setText(formatCurrency(salary.getInt("final_salary")));
+
+                                        JSONArray calendarArray = json.getJSONArray("attendance_calendar");
+                                        List<WeekDay> days = new ArrayList<>();
+                                        LocalDate now = LocalDate.now();
+
+                                        for (int i = 0; i < calendarArray.length(); i++) {
+                                            JSONObject dayItem = calendarArray.getJSONObject(i);
+                                            LocalDate date = LocalDate.parse(dayItem.getString("date"));
+                                            AttendanceStatus status = AttendanceStatus.valueOf(dayItem.getString("status"));
+                                            days.add(new WeekDay(date, status, date.equals(now)));
+                                        }
+
+                                        setupCalendar(days);
+
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                        Toast.makeText(getContext(), "Lỗi phân tích dữ liệu", Toast.LENGTH_SHORT).show();
+                                    }
+                                },
+                                error -> {
+                                    Toast.makeText(getContext(), "Lỗi tải dữ liệu: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                                }
+                        )
+        );
+    }
+
+    private void setupCalendar(List<WeekDay> days) {
+        calendarAdapter = new ManagerPayrollCalendarAdapter(days, day -> {
             updateDayNote(day);
         });
 
         binding.rvPayrollCalendar.setLayoutManager(new GridLayoutManager(getContext(), 7));
         binding.rvPayrollCalendar.setAdapter(calendarAdapter);
+    }
+
+    private String formatCurrency(int amount) {
+        if (amount == 0) return "0đ";
+        return String.format("%,d đ", amount);
     }
 
     private void updateDayNote(WeekDay day) {
@@ -126,27 +176,6 @@ public class ManagerPayrollDetailFragment extends Fragment {
         binding.tvNoteShifts.setTextColor(ContextCompat.getColor(requireContext(), colorRes));
     }
 
-    private void setupMockData() {
-        binding.tvDetailName.setText("Nguyễn Văn Hoàng");
-        binding.tvDetailCode.setText("Mã NV: NV001 • Vị trí: Nhân viên Sale");
-
-        binding.rowShifts.tvStatTitle.setText("Số ca làm");
-        binding.rowShifts.tvStatValue.setText("24 ca");
-
-        binding.rowPaidLeave.tvStatTitle.setText("Nghỉ có phép");
-        binding.rowPaidLeave.tvStatValue.setText("1 ca");
-
-        binding.rowUnpaidLeave.tvStatTitle.setText("Nghỉ không phép");
-        binding.rowUnpaidLeave.tvStatValue.setText("0 ca");
-
-        binding.rowBasicSalary.tvStatTitle.setText("Lương cơ bản");
-        binding.rowBasicSalary.tvStatValue.setText("7.200.000 đ");
-
-        binding.tvTotalBonus.setText("+500.000đ");
-        binding.tvTotalDeduction.setText("0đ");
-        binding.tvFinalSalary.setText("7.700.000 đ");
-    }
-
     private void setupListeners() {
         binding.btnAddAdjustment.setOnClickListener(v -> {
             Toast.makeText(getContext(), "Thêm khoản thưởng / khấu trừ", Toast.LENGTH_SHORT).show();
@@ -161,6 +190,7 @@ public class ManagerPayrollDetailFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        disposables.clear();
         binding = null;
     }
 }

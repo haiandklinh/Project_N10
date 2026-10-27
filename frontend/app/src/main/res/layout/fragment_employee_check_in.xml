@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.core.widget.NestedScrollView
+    android:id="@+id/scroll_view_checkin"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -9,7 +10,6 @@
     android:clipToPadding="false"
     android:fillViewport="true"
     android:overScrollMode="never"
-    android:paddingBottom="100dp"
     tools:context=".ui.employee.checkin.EmployeeCheckInFragment"
     android:fitsSystemWindows="true">
 
@@ -83,6 +83,36 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:contentDescription="Bản đồ vị trí hiện tại" />
+
+                <!-- Lớp trong suốt xử lý chạm ngăn xung đột cuộn dọc với NestedScrollView -->
+                <View
+                    android:id="@+id/view_map_touch_interceptor"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@android:color/transparent" />
+
+                                <!-- Nút định vị nổi góc trên trái: Vị trí của tôi -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/btn_recenter_location"
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
+                    android:layout_gravity="top|start"
+                    android:layout_margin="@dimen/spacing_m"
+                    app:cardCornerRadius="19dp"
+                    app:cardElevation="3dp"
+                    app:strokeWidth="0dp"
+                    app:cardBackgroundColor="?attr/colorSurface"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_my_location"
+                        app:tint="?attr/colorPrimary"
+                        android:contentDescription="Định vị của tôi" />
+                </com.google.android.material.card.MaterialCardView>
 
                 <!-- Chip trạng thái nổi góc trên phải: Hợp lệ / Ngoài khu vực -->
                 <com.google.android.material.chip.Chip
@@ -198,13 +228,15 @@
                         app:tint="#4CAF50" />
 
                     <TextView
+                        android:id="@+id/tv_condition_range"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="@dimen/spacing_s"
                         android:layout_weight="1"
-                        android:text="@string/checkin_within_range"
+                        android:text="@string/checkin_within_range_default"
                         android:textColor="?attr/colorOnSurface"
-                        android:textSize="@dimen/text_size_body_small" />
+                        android:textSize="@dimen/text_size_body_small"
+                        tools:text="Trong bán kính cho phép (100m)" />
 
                 </LinearLayout>
 
@@ -270,12 +302,11 @@
             app:layout_constraintTop_toBottomOf="@id/btn_check_action" />
 
 
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/layout_today_summary_cards"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_s"
-            android:orientation="horizontal"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tv_today_summary_title">
@@ -287,43 +318,59 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="@dimen/spacing_2xs"
-                android:layout_weight="1"
-                app:cardBackgroundColor="?attr/colorPrimaryContainer">
+                app:cardBackgroundColor="?attr/colorPrimaryContainer"
+                app:layout_constraintEnd_toStartOf="@id/card_summary_check_out"
+                app:layout_constraintHorizontal_chainStyle="spread"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
-                <LinearLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:paddingTop="@dimen/spacing_l"
-                    android:paddingBottom="@dimen/spacing_l">
+                    android:padding="@dimen/spacing_m">
 
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:contentDescription="@null"
-                        android:src="@drawable/ic_history"
-                        app:tint="?attr/colorPrimary" />
-
+                    <!-- Tiêu đề trên cùng -->
                     <TextView
+                        android:id="@+id/tv_label_check_in"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/spacing_2xs"
                         android:text="@string/checkin_check_in_time"
                         android:textColor="?attr/colorOnSurfaceVariant"
-                        android:textSize="@dimen/text_size_body_small" />
+                        android:textSize="@dimen/text_size_body_small"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <!-- Hàng 2: Icon + Giờ Check-in cùng 1 hàng -->
+                    <ImageView
+                        android:id="@+id/iv_ic_check_in"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_history"
+                        app:layout_constraintBottom_toBottomOf="@id/tv_summary_check_in_time"
+                        app:layout_constraintEnd_toStartOf="@id/tv_summary_check_in_time"
+                        app:layout_constraintHorizontal_chainStyle="packed"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="@id/tv_summary_check_in_time"
+                        app:tint="?attr/colorPrimary" />
 
                     <TextView
                         android:id="@+id/tv_summary_check_in_time"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
+                        android:layout_marginStart="@dimen/spacing_2xs"
+                        android:layout_marginTop="4dp"
                         android:text="--:--"
                         android:textColor="?attr/colorOnSurface"
                         android:textSize="@dimen/text_size_title_medium"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/iv_ic_check_in"
+                        app:layout_constraintTop_toBottomOf="@id/tv_label_check_in" />
 
-                </LinearLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
             </com.google.android.material.card.MaterialCardView>
 
@@ -334,48 +381,62 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/spacing_2xs"
-                android:layout_weight="1"
-                app:cardBackgroundColor="?attr/colorPrimaryContainer">
+                app:cardBackgroundColor="?attr/colorPrimaryContainer"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/card_summary_check_in"
+                app:layout_constraintTop_toTopOf="parent">
 
-                <LinearLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:paddingTop="@dimen/spacing_l"
-                    android:paddingBottom="@dimen/spacing_l">
+                    android:padding="@dimen/spacing_m">
 
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:contentDescription="@null"
-                        android:src="@drawable/ic_history"
-                        app:tint="?attr/colorPrimary" />
-
+                    <!-- Tiêu đề trên cùng -->
                     <TextView
+                        android:id="@+id/tv_label_check_out"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/spacing_2xs"
                         android:text="@string/checkin_check_out_time"
                         android:textColor="?attr/colorOnSurfaceVariant"
-                        android:textSize="@dimen/text_size_body_small" />
+                        android:textSize="@dimen/text_size_body_small"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <!-- Hàng 2: Icon + Giờ Check-out cùng 1 hàng -->
+                    <ImageView
+                        android:id="@+id/iv_ic_check_out"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_history"
+                        app:layout_constraintBottom_toBottomOf="@id/tv_summary_check_out_time"
+                        app:layout_constraintEnd_toStartOf="@id/tv_summary_check_out_time"
+                        app:layout_constraintHorizontal_chainStyle="packed"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="@id/tv_summary_check_out_time"
+                        app:tint="?attr/colorPrimary" />
 
                     <TextView
                         android:id="@+id/tv_summary_check_out_time"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
+                        android:layout_marginStart="@dimen/spacing_2xs"
+                        android:layout_marginTop="4dp"
                         android:text="--:--"
                         android:textColor="?attr/colorOnSurface"
                         android:textSize="@dimen/text_size_title_medium"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/iv_ic_check_out"
+                        app:layout_constraintTop_toBottomOf="@id/tv_label_check_out" />
 
-                </LinearLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
             </com.google.android.material.card.MaterialCardView>
 
-        </LinearLayout>
-
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <!-- WARNING -->
         <com.google.android.material.card.MaterialCardView
@@ -420,7 +481,16 @@
 
             </LinearLayout>
 
+
         </com.google.android.material.card.MaterialCardView>
+
+        <Space
+            android:id="@+id/spacer_bottom_nav"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            app:layout_constraintTop_toBottomOf="@id/card_warning_out_of_range"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

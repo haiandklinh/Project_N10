@@ -1,8 +1,7 @@
 package com.example.attendanceapp.data.repository;
 
-import com.example.attendanceapp.data.dto.request.work.AssignWorkScheduleRequest;
+import com.example.attendanceapp.data.dto.request.schedule.AssignWorkScheduleRequest;
 import com.example.attendanceapp.data.dto.response.schedule.EmployeeWorkScheduleResponse;
-import com.example.attendanceapp.data.dto.response.schedule.StaffWorkScheduleResponse;
 import com.example.attendanceapp.data.local.dao.WorkScheduleDao;
 import com.example.attendanceapp.data.local.entity.WorkScheduleEntity;
 import com.example.attendanceapp.data.remote.ApiErrorMapper;
@@ -17,12 +16,13 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
 /**
- * Singleton: nguồn dữ liệu duy nhất cho lịch làm việc.
+ * Singleton: nguồn dữ liệu duy nhất cho lịch làm việc (phía Quản lý).
  * Xếp ca ở bất kỳ đâu cũng cập nhật vào Room, các ViewModel đang observe sẽ tự nhận.
  */
 @Singleton
@@ -49,13 +49,14 @@ public class ScheduleRepositoryImpl implements ScheduleRepository {
 
     @Override
     public Single<List<EmployeeWorkSchedule>> getEmployeeWorkSchedules() {
-        return scheduleApi.getEmployeeWorkSchedules()
-                .map(this::mapToDomainList)
+        return scheduleApi.getListStaffWorkSchedule()
+                .map(res -> mapToDomainList(res.getData()))
                 .flatMap(domainList -> {
                     List<WorkScheduleEntity> entities = domainList.stream()
                             .map(WorkScheduleEntity::fromDomain)
                             .collect(Collectors.toList());
-                    return workScheduleDao.insertOrUpdateSchedules(entities)
+                    return workScheduleDao.clearAll()
+                            .andThen(workScheduleDao.insertOrUpdateSchedules(entities))
                             .andThen(Single.just(domainList));
                 })
                 .subscribeOn(Schedulers.io())
@@ -63,52 +64,73 @@ public class ScheduleRepositoryImpl implements ScheduleRepository {
     }
 
     @Override
-    public Single<List<EmployeeWorkSchedule>> assignWorkSchedule(List<String> employeeIds, String shiftId, String workDate, String note) {
-        AssignWorkScheduleRequest request = new AssignWorkScheduleRequest(
-                employeeIds, shiftId, workDate, note
-        );
-        return scheduleApi.assignWorkSchedule(request)
-                .map(this::mapToDomainList)
-                .flatMap(domainList -> {
-                    List<WorkScheduleEntity> entities = domainList.stream()
-                            .map(WorkScheduleEntity::fromDomain)
-                            .collect(Collectors.toList());
-                    return workScheduleDao.insertOrUpdateSchedules(entities)
-                            .andThen(Single.just(domainList));
-                })
+    public Completable assignWorkSchedule(List<String> employeeIds, List<String> shiftIds, String workDate) {
+        if (employeeIds == null || employeeIds.isEmpty()) {
+            return Completable.error(new IllegalArgumentException("Chưa chọn nhân viên"));
+        }
+        if (shiftIds == null || shiftIds.isEmpty()) {
+            return Completable.error(new IllegalArgumentException("Chưa chọn ca làm"));
+        }
+        if (workDate == null || workDate.isEmpty()) {
+            return Completable.error(new IllegalArgumentException("Chưa chọn ngày làm"));
+        }
+
+        Completable assignAll = Observable.fromIterable(employeeIds)
+                .concatMapCompletable(employeeId ->
+                        scheduleApi.assignWorkSchedule(
+                                new AssignWorkScheduleRequest(employeeId, workDate, shiftIds)
+                        ).ignoreElement());
+
+        return assignAll
+                // Nếu lỗi giữa chừng, một số nhân viên đã được xếp: vẫn tải lại để Room khớp server rồi báo lỗi.
+                .onErrorResumeNext(e -> refreshQuietly().andThen(Completable.error(e)))
+                // Xếp xong mà tải lại lỗi thì không báo thất bại (tránh người dùng bấm xếp lại bị trùng).
+                .andThen(Completable.defer(this::refreshQuietly))
                 .subscribeOn(Schedulers.io())
-                .compose(ApiErrorMapper.forSingle("Xếp ca làm việc thất bại"));
+                .compose(ApiErrorMapper.forCompletable("Xếp ca làm việc thất bại"));
     }
 
-    @Override
-    public Single<List<StaffWorkScheduleResponse>> getStaffWorkSchedules(String date) {
-        return scheduleApi.getStaffWorkSchedules(date)
-                .subscribeOn(Schedulers.io())
-                .compose(ApiErrorMapper.forSingle("Lấy lịch làm việc thất bại"));
+    private Completable refreshQuietly() {
+        return getEmployeeWorkSchedules().ignoreElement().onErrorComplete();
     }
 
-    // --- Helper Methods ---
+    // --- Mapping ---
 
+    /**
+     * Server trả mỗi nhân viên kèm danh sách ca (shifts). Domain hiện chỉ có 1 ShiftInfo,
+     * nên tách thành mỗi ca một dòng. Nhân viên không có ca nào thì giữ 1 dòng với shift = null.
+     */
     private List<EmployeeWorkSchedule> mapToDomainList(List<EmployeeWorkScheduleResponse> responses) {
         List<EmployeeWorkSchedule> result = new ArrayList<>();
-        if (responses != null) {
-            for (EmployeeWorkScheduleResponse response : responses) {
-                if (response != null) {
-                    result.add(mapToDomain(response));
+        if (responses == null) {
+            return result;
+        }
+        for (EmployeeWorkScheduleResponse response : responses) {
+            if (response == null) continue;
+
+            List<EmployeeWorkScheduleResponse.ShiftInfo> shifts = response.getShifts();
+            if (shifts == null || shifts.isEmpty()) {
+                result.add(toDomain(response, null));
+                continue;
+            }
+            for (EmployeeWorkScheduleResponse.ShiftInfo shift : shifts) {
+                if (shift != null) {
+                    result.add(toDomain(response, shift));
                 }
             }
         }
         return result;
     }
 
-    private EmployeeWorkSchedule mapToDomain(EmployeeWorkScheduleResponse response) {
+    private EmployeeWorkSchedule toDomain(EmployeeWorkScheduleResponse response,
+                                          EmployeeWorkScheduleResponse.ShiftInfo shift) {
         EmployeeWorkSchedule.ShiftInfo shiftInfo = null;
-        if (response.getShift() != null) {
+        if (shift != null) {
             shiftInfo = new EmployeeWorkSchedule.ShiftInfo(
-                    response.getShift().getShiftId(),
-                    response.getShift().getShiftName(),
-                    response.getShift().getStartTime(),
-                    response.getShift().getEndTime()
+                    shift.getShiftId(),
+                    shift.getShiftName(),
+                    shift.getStartTime(),
+                    shift.getEndTime()
             );
         }
 

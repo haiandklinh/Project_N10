@@ -1,10 +1,12 @@
 package com.example.attendanceapp.ui.manager.schedule.assign;
 
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModel;
 
+import com.example.attendanceapp.core.notification.WebSocketNotificationManager;
 import com.example.attendanceapp.domain.model.EmployeeStatus;
 import com.example.attendanceapp.domain.model.EmployeeWorkSchedule;
 import com.example.attendanceapp.domain.model.ManagerEmployeeItem;
@@ -20,10 +22,14 @@ import com.example.attendanceapp.domain.usecase.shift.ObserveShiftsUseCase;
 import android.net.Uri;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import com.example.attendanceapp.data.dto.response.manager.StaffItemResponse;
+import com.example.attendanceapp.domain.repository.ManagerRepository;
 
 import javax.inject.Inject;
 
@@ -43,6 +49,8 @@ public class AssignShiftViewModel extends ViewModel {
     private final ObserveShiftsUseCase observeShiftsUseCase;
     private final ObserveEmployeeWorkSchedulesUseCase observeSchedulesUseCase;
     private final ExportScheduleUseCase exportScheduleUseCase;
+    private final WebSocketNotificationManager webSocketManager;
+    private final ManagerRepository managerRepository;
 
     private final CompositeDisposable disposables = new CompositeDisposable();
 
@@ -52,6 +60,9 @@ public class AssignShiftViewModel extends ViewModel {
     private final MutableLiveData<List<ShiftOption>> shiftsLiveData = new MutableLiveData<>();
     private final MutableLiveData<ShiftOption> selectedShiftLiveData = new MutableLiveData<>();
     private final MutableLiveData<List<LocalDate>> selectedDatesLiveData = new MutableLiveData<>(new ArrayList<>());
+
+    private final MutableLiveData<List<EmployeeWorkSchedule>> rawSchedulesLiveData = new MutableLiveData<>(new ArrayList<>());
+    private final MediatorLiveData<Map<String, String>> assignedShiftsMapLiveData = new MediatorLiveData<>();
 
     private final MutableLiveData<Boolean> isLoadingLiveData = new MutableLiveData<>(false);
     private final MutableLiveData<Boolean> assignSuccessLiveData = new MutableLiveData<>();
@@ -66,7 +77,9 @@ public class AssignShiftViewModel extends ViewModel {
             AssignShiftUseCase assignShiftUseCase,
             ObserveShiftsUseCase observeShiftsUseCase,
             ObserveEmployeeWorkSchedulesUseCase observeSchedulesUseCase,
-            ExportScheduleUseCase exportScheduleUseCase
+            ExportScheduleUseCase exportScheduleUseCase,
+            WebSocketNotificationManager webSocketManager,
+            ManagerRepository managerRepository
     ) {
         this.getShiftsUseCase = getShiftsUseCase;
         this.getEmployeeWorkSchedulesUseCase = getEmployeeWorkSchedulesUseCase;
@@ -75,10 +88,66 @@ public class AssignShiftViewModel extends ViewModel {
         this.observeShiftsUseCase = observeShiftsUseCase;
         this.observeSchedulesUseCase = observeSchedulesUseCase;
         this.exportScheduleUseCase = exportScheduleUseCase;
+        this.webSocketManager = webSocketManager;
+        this.managerRepository = managerRepository;
+
+        assignedShiftsMapLiveData.addSource(rawSchedulesLiveData, schedules -> updateAssignedShiftsMap());
+        assignedShiftsMapLiveData.addSource(selectedDatesLiveData, dates -> updateAssignedShiftsMap());
 
         observeRepositoryStreams();
         loadShifts();
         loadEmployees();
+    }
+
+    private void updateAssignedShiftsMap() {
+        List<LocalDate> dates = selectedDatesLiveData.getValue();
+        LocalDate date = (dates != null && !dates.isEmpty()) ? dates.get(0) : null;
+        if (date == null) {
+            assignedShiftsMapLiveData.setValue(new HashMap<>());
+            return;
+        }
+
+        String dateStr = date.toString();
+        List<EmployeeWorkSchedule> schedules = rawSchedulesLiveData.getValue();
+        Map<String, String> map = new HashMap<>();
+        if (schedules != null) {
+            for (EmployeeWorkSchedule s : schedules) {
+                if (s.getEmployeeId() != null && dateStr.equals(s.getWorkDate()) && s.getShift() != null) {
+                    String shiftName = s.getShift().getShiftName();
+                    if (shiftName == null || shiftName.isEmpty()) {
+                        shiftName = "Đã có ca";
+                    }
+                    map.put(s.getEmployeeId(), shiftName);
+                }
+            }
+        }
+        assignedShiftsMapLiveData.setValue(map);
+
+        // Tự động bỏ chọn các nhân viên đã có ca trong ngày đang chọn
+        List<ManagerEmployeeItem> currentSelected = selectedEmployeesLiveData.getValue();
+        if (currentSelected != null && !currentSelected.isEmpty()) {
+            List<ManagerEmployeeItem> validSelected = new ArrayList<>();
+            for (ManagerEmployeeItem emp : currentSelected) {
+                if (!map.containsKey(emp.getUserId())) {
+                    validSelected.add(emp);
+                }
+            }
+            if (validSelected.size() != currentSelected.size()) {
+                selectedEmployeesLiveData.setValue(validSelected);
+            }
+        }
+    }
+
+    public boolean hasShiftOnDate(String employeeId, String dateStr) {
+        if (employeeId == null || dateStr == null) return false;
+        List<EmployeeWorkSchedule> schedules = rawSchedulesLiveData.getValue();
+        if (schedules == null) return false;
+        for (EmployeeWorkSchedule s : schedules) {
+            if (employeeId.equals(s.getEmployeeId()) && dateStr.equals(s.getWorkDate()) && s.getShift() != null) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void exportToExcel() {
@@ -144,7 +213,14 @@ public class AssignShiftViewModel extends ViewModel {
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 schedules -> {
+                                    rawSchedulesLiveData.setValue(schedules);
                                     Map<String, ManagerEmployeeItem> distinct = new LinkedHashMap<>();
+                                    List<ManagerEmployeeItem> current = allEmployeesLiveData.getValue();
+                                    if (current != null) {
+                                        for (ManagerEmployeeItem item : current) {
+                                            if (item.getUserId() != null) distinct.put(item.getUserId(), item);
+                                        }
+                                    }
                                     for (EmployeeWorkSchedule s : schedules) {
                                         if (s.getEmployeeId() != null && !distinct.containsKey(s.getEmployeeId())) {
                                             distinct.put(s.getEmployeeId(), mapToManagerEmployeeItem(s));
@@ -159,6 +235,41 @@ public class AssignShiftViewModel extends ViewModel {
 
     public void loadEmployees() {
         isLoadingLiveData.setValue(true);
+        disposables.add(
+                managerRepository.getStaffs()
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                resp -> {
+                                    if (resp != null && resp.getData() != null) {
+                                        Map<String, ManagerEmployeeItem> map = new LinkedHashMap<>();
+                                        for (StaffItemResponse s : resp.getData()) {
+                                            if (s.getStaffId() != null) {
+                                                String empId = s.getStaffId();
+                                                String code = empId.length() >= 6 ? "NV" + empId.substring(0, 4).toUpperCase() : "NV001";
+                                                String pos = s.getPosition() != null && !s.getPosition().isEmpty() ? s.getPosition() : "Nhân viên";
+                                                String avatar = (s.getAvatar() != null && !s.getAvatar().isEmpty() && !"null".equalsIgnoreCase(s.getAvatar()) && !"none".equalsIgnoreCase(s.getAvatar())) ? s.getAvatar() : "";
+                                                EmployeeStatus status = "deactive".equalsIgnoreCase(s.getStatus()) ? EmployeeStatus.TERMINATED : EmployeeStatus.ACTIVE;
+                                                map.put(empId, new ManagerEmployeeItem(
+                                                        empId, code, s.getNameStaff() != null ? s.getNameStaff() : "Nhân viên",
+                                                        avatar, pos, "Cửa hàng Q1", "", "", status, 0, 0, 0
+                                                ));
+                                            }
+                                        }
+                                        List<ManagerEmployeeItem> current = allEmployeesLiveData.getValue();
+                                        if (current != null) {
+                                            for (ManagerEmployeeItem item : current) {
+                                                if (item.getUserId() != null && !map.containsKey(item.getUserId())) {
+                                                    map.put(item.getUserId(), item);
+                                                }
+                                            }
+                                        }
+                                        allEmployeesLiveData.setValue(new ArrayList<>(map.values()));
+                                    }
+                                },
+                                throwable -> {}
+                        )
+        );
         disposables.add(
                 getEmployeeWorkSchedulesUseCase.execute()
                         .subscribeOn(Schedulers.io())
@@ -175,12 +286,16 @@ public class AssignShiftViewModel extends ViewModel {
 
     private ManagerEmployeeItem mapToManagerEmployeeItem(EmployeeWorkSchedule schedule) {
         String id = schedule.getEmployeeId();
+        String code = id != null && id.length() >= 6 ? "NV" + id.substring(0, 4).toUpperCase() : "NV001";
+        String avatar = (schedule.getAvatar() != null && !schedule.getAvatar().isEmpty()
+                && !"null".equalsIgnoreCase(schedule.getAvatar()) && !"none".equalsIgnoreCase(schedule.getAvatar()))
+                ? schedule.getAvatar() : "";
         return new ManagerEmployeeItem(
                 id,
-                "NV-" + id.substring(Math.max(0, id.length() - 4)),
-                schedule.getName(),
-                schedule.getAvatar(),
-                schedule.getPosition(),
+                code,
+                schedule.getName() != null ? schedule.getName() : "Nhân viên",
+                avatar,
+                schedule.getPosition() != null ? schedule.getPosition() : "Nhân viên",
                 "Cửa hàng Q1",
                 "",
                 "",
@@ -190,6 +305,14 @@ public class AssignShiftViewModel extends ViewModel {
     }
 
     public void toggleEmployeeSelection(ManagerEmployeeItem employee) {
+        if (employee == null || employee.getUserId() == null) return;
+
+        Map<String, String> assignedMap = assignedShiftsMapLiveData.getValue();
+        if (assignedMap != null && assignedMap.containsKey(employee.getUserId())) {
+            errorMessageLiveData.setValue("Nhân viên " + employee.getFullName() + " đã có ca làm trong ngày này. Mỗi nhân viên chỉ làm 1 ca/ngày!");
+            return;
+        }
+
         List<ManagerEmployeeItem> currentSelected = new ArrayList<>(
                 selectedEmployeesLiveData.getValue() != null ? selectedEmployeesLiveData.getValue() : new ArrayList<>());
 
@@ -231,6 +354,7 @@ public class AssignShiftViewModel extends ViewModel {
         selectedDatesLiveData.setValue(dates);
         assignSuccessLiveData.setValue(null);
         errorMessageLiveData.setValue(null);
+        loadEmployees();
     }
 
     public void resetAssignState() {
@@ -256,9 +380,15 @@ public class AssignShiftViewModel extends ViewModel {
     }
 
     public void addShift(String shiftName, String startTime, String endTime, Double latitude, Double longitude) {
+        addShift(shiftName, startTime, endTime, startTime, 100.0, latitude, longitude);
+    }
+
+    public void addShift(String shiftName, String startTime, String endTime,
+                         String allowedCheckInTime, double checkInRadius,
+                         Double latitude, Double longitude) {
         isLoadingLiveData.setValue(true);
         disposables.add(
-                addShiftUseCase.execute(shiftName, startTime, endTime, latitude, longitude)
+                addShiftUseCase.execute(shiftName, startTime, endTime, allowedCheckInTime, checkInRadius, latitude, longitude)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
@@ -294,6 +424,18 @@ public class AssignShiftViewModel extends ViewModel {
             return;
         }
 
+        // Ràng buộc nghiệp vụ: 1 nhân viên 1 ngày chỉ được làm tối đa 1 ca
+        for (LocalDate date : selectedDates) {
+            String dateStr = date.toString();
+            for (ManagerEmployeeItem emp : employees) {
+                if (hasShiftOnDate(emp.getUserId(), dateStr)) {
+                    String dateFormatted = date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+                    errorMessageLiveData.setValue("Nhân viên " + emp.getFullName() + " đã có ca làm vào ngày " + dateFormatted + ". Mỗi nhân viên chỉ được làm tối đa 1 ca/ngày!");
+                    return;
+                }
+            }
+        }
+
         List<String> employeeIds = new ArrayList<>();
         for (ManagerEmployeeItem emp : employees) {
             employeeIds.add(emp.getUserId());
@@ -317,6 +459,10 @@ public class AssignShiftViewModel extends ViewModel {
                                 results -> {
                                     isLoadingLiveData.setValue(false);
                                     assignSuccessLiveData.setValue(true);
+                                    if (webSocketManager != null) {
+                                        String dateStr = (selectedDates != null && !selectedDates.isEmpty()) ? selectedDates.get(0).toString() : "";
+                                        webSocketManager.notifyScheduleAssigned(dateStr);
+                                    }
                                     loadEmployees();
                                 },
                                 throwable -> {
@@ -372,6 +518,7 @@ public class AssignShiftViewModel extends ViewModel {
 
     public LiveData<List<ManagerEmployeeItem>> getAllEmployeesLiveData() { return allEmployeesLiveData; }
     public LiveData<List<ManagerEmployeeItem>> getSelectedEmployeesLiveData() { return selectedEmployeesLiveData; }
+    public LiveData<Map<String, String>> getAssignedShiftsMapLiveData() { return assignedShiftsMapLiveData; }
     public LiveData<List<ShiftOption>> getShiftsLiveData() { return shiftsLiveData; }
     public LiveData<ShiftOption> getSelectedShiftLiveData() { return selectedShiftLiveData; }
     public LiveData<List<LocalDate>> getSelectedDatesLiveData() { return selectedDatesLiveData; }

@@ -6,12 +6,12 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
 import com.example.attendanceapp.BuildConfig;
+import com.example.attendanceapp.data.local.dao.NotificationDao;
 import com.example.attendanceapp.data.local.dao.ShiftDao;
 import com.example.attendanceapp.data.local.dao.UserDao;
 import com.example.attendanceapp.data.local.dao.WorkScheduleDao;
 import com.example.attendanceapp.data.local.database.AppDatabase;
 import com.example.attendanceapp.data.local.database.Migrations;
-
 
 import javax.inject.Singleton;
 
@@ -33,8 +33,6 @@ public final class DatabaseModule {
     @Provides
     @Singleton
     public static AppDatabase provideAppDatabase(@ApplicationContext Context context) {
-        Room.databaseBuilder(context, AppDatabase.class, DATABASE_NAME);
-
         RoomDatabase.Builder<AppDatabase> builder =
                 Room.databaseBuilder(context, AppDatabase.class, DATABASE_NAME)
                         .addMigrations(Migrations.ALL);
@@ -60,5 +58,10 @@ public final class DatabaseModule {
     @Provides
     public static WorkScheduleDao provideWorkScheduleDao(AppDatabase db) {
         return db.workScheduleDao();
+    }
+
+    @Provides
+    public static NotificationDao provideNotificationDao(AppDatabase db) {
+        return db.notificationDao();
     }
 }

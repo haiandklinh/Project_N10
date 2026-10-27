@@ -19,8 +19,16 @@ public class ManagerPayrollAdapter extends RecyclerView.Adapter<ManagerPayrollAd
     }
 
     public ManagerPayrollAdapter(List<ManagerEmployeeItem> employees, OnPayrollActionListener listener) {
-        this.employees = employees;
+        this.employees = employees != null ? new java.util.ArrayList<>(employees) : new java.util.ArrayList<>();
         this.listener = listener;
+    }
+
+    public void updateData(List<ManagerEmployeeItem> newEmployees) {
+        this.employees.clear();
+        if (newEmployees != null) {
+            this.employees.addAll(newEmployees);
+        }
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -51,6 +59,7 @@ public class ManagerPayrollAdapter extends RecyclerView.Adapter<ManagerPayrollAd
 
         public void bind(ManagerEmployeeItem employee) {
             binding.tvEmployeeName.setText(employee.getFullName());
+            com.example.attendanceapp.core.utils.AvatarLoader.loadAvatar(binding.getRoot().getContext(), employee.getAvatarUrl(), binding.ivAvatar);
             binding.tvEmployeeRole.setText(employee.getPosition() + " • Mã: " + employee.getEmployeeCode());
             binding.tvEmployeeStats.setText(employee.getShiftCountThisMonth() + " ca làm • " 
                     + employee.getLeaveCountThisMonth() + " nghỉ có phép");

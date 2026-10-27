@@ -3,13 +3,14 @@ package com.example.attendanceapp.core.di;
 import android.content.Context;
 
 import com.example.attendanceapp.BuildConfig;
+import com.example.attendanceapp.data.remote.AttendanceApi;
 import com.example.attendanceapp.data.remote.AuthApi;
 import com.example.attendanceapp.data.remote.AuthInterceptor;
-import com.example.attendanceapp.data.remote.MockInterceptor;
+import com.example.attendanceapp.data.remote.ManagerApi;
 import com.example.attendanceapp.data.remote.ScheduleApi;
 import com.example.attendanceapp.data.remote.ShiftApi;
+import com.example.attendanceapp.data.remote.StaffApi;
 import com.example.attendanceapp.data.remote.TokenAuthenticator;
-import com.example.attendanceapp.data.remote.UserApi;
 
 import java.util.concurrent.TimeUnit;
 
@@ -48,17 +49,11 @@ public class NetworkModule {
     }
 
     //Mock
-    @Provides
-    @Singleton
-    public MockInterceptor provideMockInterceptor(@ApplicationContext Context context) {
-        return new MockInterceptor(context);
-    }
 
     @Provides
     @Singleton
     public OkHttpClient provideOkHttpClient(
             AuthInterceptor authInterceptor,
-            MockInterceptor mockInterceptor,  //Mock
             TokenAuthenticator tokenAuthenticator,
             HttpLoggingInterceptor loggingInterceptor
     ) {
@@ -70,8 +65,6 @@ public class NetworkModule {
                 .addInterceptor(loggingInterceptor)
                 .authenticator(tokenAuthenticator);
 
-        // TODO: Comment khi chạy production , Uncomment khi test mock,
-        builder.addInterceptor(mockInterceptor);
 
         return builder.build();
     }
@@ -92,20 +85,34 @@ public class NetworkModule {
     public AuthApi provideApiService(Retrofit retrofit) {
         return retrofit.create(AuthApi.class);
     }
-    @Provides
-    @Singleton
-    public UserApi provideUserApi(Retrofit retrofit) {
-        return retrofit.create(UserApi.class);
-    }
 
     @Provides
     @Singleton
     public ScheduleApi provideScheduleApi(Retrofit retrofit) {
         return retrofit.create(ScheduleApi.class);
     }
+
     @Provides
     @Singleton
     public ShiftApi provideShiftApi(Retrofit retrofit) {
         return retrofit.create(ShiftApi.class);
+    }
+
+    @Provides
+    @Singleton
+    public StaffApi provideStaffApi(Retrofit retrofit) {
+        return retrofit.create(StaffApi.class);
+    }
+
+    @Provides
+    @Singleton
+    public ManagerApi provideManagerApi(Retrofit retrofit) {
+        return retrofit.create(ManagerApi.class);
+    }
+
+    @Provides
+    @Singleton
+    public AttendanceApi provideAttendanceApi(Retrofit retrofit) {
+        return retrofit.create(AttendanceApi.class);
     }
 }

@@ -20,7 +20,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import javax.inject.Inject;
+
 import dagger.hilt.android.AndroidEntryPoint;
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
 
 @AndroidEntryPoint
 public class HumanTabFragment extends Fragment {
@@ -31,6 +35,8 @@ public class HumanTabFragment extends Fragment {
     private FragmentHumanTabBinding binding;
     private ManagerHumanViewModel viewModel;
     private TabType tabType;
+
+    private final CompositeDisposable disposables = new CompositeDisposable();
 
     private ManagerEmployeeAdapter employeeAdapter;
     private ManagerDepartmentAdapter departmentAdapter;
@@ -69,7 +75,8 @@ public class HumanTabFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        viewModel = new ViewModelProvider(requireParentFragment()).get(ManagerHumanViewModel.class);
+        // Dùng requireActivity() để chia sẻ chung ViewModel với Activity & các fragment khác
+        viewModel = new ViewModelProvider(requireActivity()).get(ManagerHumanViewModel.class);
 
         setupUI();
         observeViewModel();
@@ -84,6 +91,8 @@ public class HumanTabFragment extends Fragment {
                 binding.scrollFilter.setVisibility(View.VISIBLE);
                 binding.btnAddAction.setVisibility(View.VISIBLE);
                 binding.btnAddAction.setText(R.string.human_invite_employee);
+                binding.btnAddAction.setOnClickListener(v -> showCompanyInvitationBottomSheet());
+                binding.layoutEmpty.getRoot().setOnClickListener(v -> showCompanyInvitationBottomSheet());
                 setupEmployeeTab();
                 break;
             case DEPARTMENTS:
@@ -142,6 +151,14 @@ public class HumanTabFragment extends Fragment {
                     currentSearchQuery = query.toLowerCase(Locale.ROOT).trim();
                     applyFilters();
                 });
+                viewModel.employees.observe(getViewLifecycleOwner(), list -> {
+                    allEmployees.clear();
+                    if (list != null) {
+                        allEmployees.addAll(list);
+                    }
+                    updateFilterChipCounts();
+                    applyFilters();
+                });
                 break;
             case DEPARTMENTS:
                 viewModel.departmentSearchQuery.observe(getViewLifecycleOwner(), query -> {
@@ -159,48 +176,15 @@ public class HumanTabFragment extends Fragment {
     }
 
     private void loadData() {
-        binding.progressBar.setVisibility(View.VISIBLE);
-        binding.layoutEmpty.getRoot().setVisibility(View.GONE);
+        binding.progressBar.setVisibility(View.GONE);
         
         if (tabType == TabType.EMPLOYEES) {
-            // Mock data loading
-            allEmployees.clear();
-            allEmployees.add(new ManagerEmployeeItem("u1", "NV001", "Trần Thị Bình", null,
-                    "Nhân viên bán hàng", "Cửa hàng Q1", "0901 111 222", "03/01/2025",
-                    EmployeeStatus.ACTIVE, 20, 1, 7200000));
-            allEmployees.add(new ManagerEmployeeItem("u2", "NV002", "Lê Văn Cường", null,
-                    "Nhân viên kho", "Kho vận", "0902222333", "12/03/2024",
-                    EmployeeStatus.ACTIVE, 22, 0, 7850000));
-            allEmployees.add(new ManagerEmployeeItem("u3", "NV003", "Phạm Thu Hà", null,
-                    "Thu ngân", "Cửa hàng Q1", "0903333444", "20/06/2025",
-                    EmployeeStatus.ACTIVE, 18, 2, 6500000));
-            allEmployees.add(new ManagerEmployeeItem("u4", "NV004", "Đỗ Minh Khoa", null,
-                    "Bảo vệ", "Cửa hàng Q3", "0904444555", "05/11/2023",
-                    EmployeeStatus.ACTIVE, 24, 0, 8100000));
-            allEmployees.add(new ManagerEmployeeItem("u5", "NV005", "Ngô Thị Lan", null,
-                    "Pha chế", "Cửa hàng Q1", "0905555666", "18/08/2025",
-                    EmployeeStatus.ON_LEAVE, 15, 3, 5200000));
-
-            binding.progressBar.setVisibility(View.GONE);
-            updateFilterChipCounts();
-            applyFilters();
+            viewModel.loadStaffs();
         } else if (tabType == TabType.DEPARTMENTS) {
             allDepartments.clear();
-            allDepartments.add("Phòng Kế toán");
-            allDepartments.add("Phòng Nhân sự");
-            allDepartments.add("Cửa hàng Q1");
-            allDepartments.add("Cửa hàng Q3");
-            allDepartments.add("Kho vận");
-            binding.progressBar.setVisibility(View.GONE);
             applyFilters();
         } else if (tabType == TabType.POSITIONS) {
             allPositions.clear();
-            allPositions.add("Nhân viên bán hàng");
-            allPositions.add("Nhân viên kho");
-            allPositions.add("Thu ngân");
-            allPositions.add("Bảo vệ");
-            allPositions.add("Pha chế");
-            binding.progressBar.setVisibility(View.GONE);
             applyFilters();
         }
     }
@@ -264,11 +248,38 @@ public class HumanTabFragment extends Fragment {
         if (binding == null) return;
         binding.rvList.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
         binding.layoutEmpty.getRoot().setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+
+        if (isEmpty) {
+            if (tabType == TabType.EMPLOYEES) {
+                binding.layoutEmpty.tvEmptyTitle.setText("Chưa có nhân sự nào");
+                binding.layoutEmpty.tvEmptySubtitle.setText("Công ty chưa có nhân sự nào. Bấm vào nút Thêm nhân sự để tạo mã mời.");
+            } else if (tabType == TabType.DEPARTMENTS) {
+                binding.layoutEmpty.tvEmptyTitle.setText("Chưa có phòng ban");
+                binding.layoutEmpty.tvEmptySubtitle.setText("Công ty chưa thiết lập phòng ban nào.");
+            } else if (tabType == TabType.POSITIONS) {
+                binding.layoutEmpty.tvEmptyTitle.setText("Chưa có chức vụ");
+                binding.layoutEmpty.tvEmptySubtitle.setText("Công ty chưa thiết lập chức vụ nào.");
+            }
+        }
+    }
+
+    private void showCompanyInvitationBottomSheet() {
+        CompanyInvitationBottomSheet sheet = CompanyInvitationBottomSheet.newInstance();
+        sheet.show(getChildFragmentManager(), CompanyInvitationBottomSheet.TAG);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (tabType == TabType.EMPLOYEES) {
+            loadData();
+        }
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        disposables.clear();
         binding = null;
     }
 }
