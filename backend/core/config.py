@@ -8,6 +8,8 @@ class Settings(BaseSettings):
     # Database
     DATABASE_URL :str
     DB_ECHO: bool
+    DB_SSL: bool = False
+
 
     # Redis
     REDIS_URL: str
@@ -38,7 +40,11 @@ class Settings(BaseSettings):
         case_sensitive = True # phân biệt hoa và thường
 
 settings = Settings()
-engine = create_async_engine(settings.DATABASE_URL,echo=settings.DB_ECHO)
+engine = create_async_engine(
+    settings.DATABASE_URL,
+    echo=settings.DB_ECHO,
+    connect_args={"ssl": True} if settings.DB_SSL else {},
+)
 SessionLocal = async_sessionmaker(
     bind=engine,
     class_=AsyncSession,
