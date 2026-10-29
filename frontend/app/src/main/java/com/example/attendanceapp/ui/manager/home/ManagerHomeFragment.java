@@ -121,7 +121,7 @@ public class ManagerHomeFragment extends Fragment {
                         () -> navigateTo(R.id.action_managerHomeFragment_to_managerScheduleFragment)),
                 new ManagerQuickAction("Duyệt đơn", R.drawable.ic_approval,
                         () -> navigateTo(R.id.action_managerHomeFragment_to_managerApprovalFragment)),
-                new ManagerQuickAction("Mã mời & Duyệt", R.drawable.ic_profile,
+                new ManagerQuickAction("Mã mời", R.drawable.ic_add_user,
                         () -> navigateTo(R.id.action_managerHomeFragment_to_managerJoinRequestFragment)),
                 new ManagerQuickAction("Bảng lương", R.drawable.ic_payroll,
                         () -> navigateTo(R.id.action_managerHomeFragment_to_managerPayrollFragment)),
@@ -173,10 +173,12 @@ public class ManagerHomeFragment extends Fragment {
     }
 
     private void setupTodayShifts() {
-        binding.includeTodayShifts.cardEmptyShifts.setVisibility(View.VISIBLE);
+        binding.includeTodayShifts.includeShiftToday.cardNoShift.setVisibility(View.VISIBLE);
+        binding.includeTodayShifts.includeShiftToday.tvNoShiftTitle.setText("Chưa có ca làm việc!");
+        binding.includeTodayShifts.includeShiftToday.tvNoShiftSubtitle.setText("Ấn vào đây để thiết lập ca làm việc");
         binding.includeTodayShifts.rvTodayShifts.setVisibility(View.GONE);
 
-        binding.includeTodayShifts.cardEmptyShifts.setOnClickListener(v ->
+        binding.includeTodayShifts.includeShiftToday.cardNoShift.setOnClickListener(v ->
                 navigateTo(R.id.action_managerHomeFragment_to_managerScheduleFragment));
 
         binding.includeTodayShifts.tvSeeAllShifts.setOnClickListener(v ->
@@ -186,7 +188,7 @@ public class ManagerHomeFragment extends Fragment {
     private void updateTodayShifts(ManagerHomeViewModel.ManagerHomeUiState state) {
         List<TodayShiftSummary> shifts = state.getTodayShifts();
         if (shifts != null && !shifts.isEmpty()) {
-            binding.includeTodayShifts.cardEmptyShifts.setVisibility(View.GONE);
+            binding.includeTodayShifts.includeShiftToday.cardNoShift.setVisibility(View.GONE);
             binding.includeTodayShifts.rvTodayShifts.setVisibility(View.VISIBLE);
 
             if (todayShiftAdapter == null) {
@@ -198,7 +200,7 @@ public class ManagerHomeFragment extends Fragment {
                 todayShiftAdapter.updateData(shifts);
             }
         } else {
-            binding.includeTodayShifts.cardEmptyShifts.setVisibility(View.VISIBLE);
+            binding.includeTodayShifts.includeShiftToday.cardNoShift.setVisibility(View.VISIBLE);
             binding.includeTodayShifts.rvTodayShifts.setVisibility(View.GONE);
         }
     }

@@ -25,12 +25,15 @@ import com.example.attendanceapp.databinding.FragmentEmployeeScheduleBinding;
 import com.example.attendanceapp.databinding.LayoutScheduleTimelineBinding;
 import com.example.attendanceapp.domain.model.Shift;
 import com.example.attendanceapp.domain.model.ShiftStatus;
+import com.example.attendanceapp.ui.employee.home.shift.EmployeeTodayShiftAdapter;
 import com.example.attendanceapp.ui.employee.schedule.shift.EmployeeUpcomingShiftAdapter;
 import com.example.attendanceapp.ui.employee.schedule.weekday.EmployeeScheduleWeekDayAdapter;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 
 import javax.inject.Inject;
@@ -45,6 +48,7 @@ public class EmployeeScheduleFragment extends Fragment {
     private FragmentEmployeeScheduleBinding binding;
     private EmployeeScheduleWeekDayAdapter employeeScheduleWeekDayAdapter;
     private EmployeeUpcomingShiftAdapter shiftAdapter;
+    private EmployeeTodayShiftAdapter todayShiftAdapter;
     private EmployeeScheduleViewModel viewModel;
     private final CompositeDisposable disposables = new CompositeDisposable();
     private io.reactivex.rxjava3.disposables.Disposable autoRefreshDisposable;
@@ -159,6 +163,22 @@ public class EmployeeScheduleFragment extends Fragment {
     private void setupTodayShiftActions() {
         if (binding.includeShiftToday == null) return;
 
+        if (binding.includeShiftToday.rvTodayShifts != null) {
+            binding.includeShiftToday.rvTodayShifts.setLayoutManager(new LinearLayoutManager(requireContext()));
+            todayShiftAdapter = new EmployeeTodayShiftAdapter(shift -> {
+                if (shift == null) return;
+                Bundle args = new Bundle();
+                args.putString("selected_shift_id", shift.getId());
+                args.putString("selected_shift_name", shift.getShiftName());
+                if (shift.getDate() != null) {
+                    args.putString("selected_shift_date", shift.getDate().toString());
+                }
+                Navigation.findNavController(requireView())
+                        .navigate(R.id.action_employeeScheduleFragment_to_employeeShiftExchangeFragment, args);
+            });
+            binding.includeShiftToday.rvTodayShifts.setAdapter(todayShiftAdapter);
+        }
+
         if (binding.includeShiftToday.tvExchangeShift != null) {
             binding.includeShiftToday.tvExchangeShift.setOnClickListener(v ->
                     Navigation.findNavController(v)
@@ -224,7 +244,7 @@ public class EmployeeScheduleFragment extends Fragment {
     }
 
     private void render(EmployeeScheduleViewModel.ScheduleUiState state) {
-        bindTodayShift(state.getTodayShift());
+        bindTodayShifts(state.getTodayShifts(), state.getTodayShift());
         shiftAdapter.submitList(state.getUpcomingShifts());
 
         employeeScheduleWeekDayAdapter.submitList(state.getWeekDays());
@@ -232,71 +252,61 @@ public class EmployeeScheduleFragment extends Fragment {
         updateWeekSummary(state.getTotalShifts(), state.getTotalHours());
     }
 
-    private void bindTodayShift(@Nullable Shift todayShift) {
-        if (binding.includeShiftToday == null || binding.includeShiftToday.cardTodayShift == null) return;
+    private void bindTodayShifts(List<Shift> todayShifts, @Nullable Shift fallbackShift) {
+        if (binding.includeShiftToday == null) return;
 
-        if (todayShift == null) {
-            binding.includeShiftToday.cardTodayShift.setVisibility(View.GONE);
+        List<Shift> shiftsToDisplay = todayShifts;
+        if ((shiftsToDisplay == null || shiftsToDisplay.isEmpty()) && fallbackShift != null) {
+            shiftsToDisplay = Collections.singletonList(fallbackShift);
+        }
+
+        if (shiftsToDisplay == null || shiftsToDisplay.isEmpty()) {
+            if (binding.includeShiftToday.includeCardNoShift.cardNoShift != null) {
+                binding.includeShiftToday.includeCardNoShift.cardNoShift.setVisibility(View.VISIBLE);
+            }
+            if (binding.includeShiftToday.rvTodayShifts != null) {
+                binding.includeShiftToday.rvTodayShifts.setVisibility(View.GONE);
+            }
+            if (binding.includeShiftToday.tvExchangeShift != null) {
+                binding.includeShiftToday.tvExchangeShift.setVisibility(View.GONE);
+            }
             return;
         }
-        binding.includeShiftToday.cardTodayShift.setVisibility(View.VISIBLE);
 
+        if (binding.includeShiftToday.includeCardNoShift.cardNoShift != null) {
+            binding.includeShiftToday.includeCardNoShift.cardNoShift.setVisibility(View.GONE);
+        }
+        if (binding.includeShiftToday.rvTodayShifts != null) {
+            binding.includeShiftToday.rvTodayShifts.setVisibility(View.VISIBLE);
+        }
         if (binding.includeShiftToday.tvExchangeShift != null) {
+            binding.includeShiftToday.tvExchangeShift.setVisibility(View.VISIBLE);
+            Shift firstShift = shiftsToDisplay.get(0);
             binding.includeShiftToday.tvExchangeShift.setOnClickListener(v -> {
                 Bundle args = new Bundle();
-                args.putString("selected_shift_id", todayShift.getId());
-                args.putString("selected_shift_name", todayShift.getShiftName());
-                if (todayShift.getDate() != null) {
-                    args.putString("selected_shift_date", todayShift.getDate().toString());
+                args.putString("selected_shift_id", firstShift.getId());
+                args.putString("selected_shift_name", firstShift.getShiftName());
+                if (firstShift.getDate() != null) {
+                    args.putString("selected_shift_date", firstShift.getDate().toString());
                 }
                 Navigation.findNavController(v)
                         .navigate(R.id.action_employeeScheduleFragment_to_employeeShiftExchangeFragment, args);
             });
         }
 
-        if (binding.includeShiftToday.tvShiftName != null) {
-            binding.includeShiftToday.tvShiftName.setText(todayShift.getShiftName());
+        if (todayShiftAdapter != null) {
+            todayShiftAdapter.submitList(shiftsToDisplay);
         }
 
-        if (binding.includeShiftToday.tvShiftTime != null) {
-            binding.includeShiftToday.tvShiftTime.setText(todayShift.getShiftTime());
-        }
-
-        if (binding.includeShiftToday.tvShiftLocation != null) {
-            String loc = todayShift.getLocation();
-            if (loc == null || loc.trim().isEmpty()) {
-                if (sharedPreferenceApp != null) {
-                    loc = sharedPreferenceApp.getShiftAddress(todayShift.getShiftName());
-                }
-            }
-            if (loc == null || loc.trim().isEmpty()) {
-                loc = "Vị trí ca làm việc";
-            }
-            binding.includeShiftToday.tvShiftLocation.setText(loc);
-            binding.includeShiftToday.tvShiftLocation.setVisibility(View.VISIBLE);
-        }
-
-        bindTodayShiftStatusChip(todayShift.getStatus());
         if (getContext() != null) {
-            ShiftAlarmScheduler.scheduleShiftAlarms(requireContext(), todayShift, sharedPreferenceApp);
+            for (Shift s : shiftsToDisplay) {
+                ShiftAlarmScheduler.scheduleShiftAlarms(requireContext(), s, sharedPreferenceApp);
+            }
         }
     }
 
-    private void bindTodayShiftStatusChip(ShiftStatus status) {
-        if (binding.includeShiftToday.tagShiftStatus == null) return;
-
-        ShiftStatus currentStatus = (status != null) ? status : ShiftStatus.PENDING;
-        binding.includeShiftToday.tagShiftStatus.setText(currentStatus.getDisplayName());
-
-        int bgAttr = currentStatus.getBgAttrRes();
-        int textColorAttr = currentStatus.getTextColorAttrRes();
-
-        binding.includeShiftToday.tagShiftStatus.setChipBackgroundColor(
-                ColorStateList.valueOf(ColorUtil.getThemeColor(requireContext(), bgAttr))
-        );
-        binding.includeShiftToday.tagShiftStatus.setTextColor(
-                ColorUtil.getThemeColor(requireContext(), textColorAttr)
-        );
+    private void bindTodayShift(@Nullable Shift todayShift) {
+        bindTodayShifts(todayShift != null ? Collections.singletonList(todayShift) : Collections.emptyList(), todayShift);
     }
 
     private void updateWeekRangeTitle(@Nullable LocalDate weekStart) {

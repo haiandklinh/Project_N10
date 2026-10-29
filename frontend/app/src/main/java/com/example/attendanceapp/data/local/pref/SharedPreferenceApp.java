@@ -2,9 +2,18 @@ package com.example.attendanceapp.data.local.pref;
 
 import android.content.SharedPreferences;
 
+import com.example.attendanceapp.core.utils.LocationUtils;
+import com.example.attendanceapp.domain.model.ApprovalStatus;
 import com.example.attendanceapp.domain.model.CheckState;
+import com.example.attendanceapp.domain.model.LeaveRequest;
 import com.example.attendanceapp.domain.model.UserRole;
 import com.example.attendanceapp.domain.model.UserStatus;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -117,7 +126,7 @@ public class SharedPreferenceApp {
         sharedPreferences.edit()
                 .putFloat(KEY_COMPANY_LAT, (float) lat)
                 .putFloat(KEY_COMPANY_LON, (float) lon)
-                .putString(KEY_COMPANY_ADDRESS, address)
+                .putString(KEY_COMPANY_ADDRESS, LocationUtils.stripCountryOrLastSegment(address))
                 .apply();
     }
 
@@ -160,7 +169,7 @@ public class SharedPreferenceApp {
                 .putFloat(KEY_LATEST_SHIFT_LON, (float) lon)
                 .putFloat(KEY_LATEST_SHIFT_RADIUS, (float) radius);
         if (address != null && !address.trim().isEmpty()) {
-            editor.putString(KEY_LATEST_SHIFT_ADDRESS, address);
+            editor.putString(KEY_LATEST_SHIFT_ADDRESS, LocationUtils.stripCountryOrLastSegment(address));
         }
         editor.apply();
     }
@@ -178,34 +187,34 @@ public class SharedPreferenceApp {
     }
 
     public String getLatestShiftAddress() {
-        return sharedPreferences.getString(KEY_LATEST_SHIFT_ADDRESS, null);
+        return LocationUtils.stripCountryOrLastSegment(sharedPreferences.getString(KEY_LATEST_SHIFT_ADDRESS, null));
     }
 
     public void saveShiftAddress(String shiftKey, String address) {
         if (shiftKey == null || address == null) return;
-        sharedPreferences.edit().putString("shift_addr_" + shiftKey.toLowerCase().trim(), address).apply();
+        sharedPreferences.edit().putString("shift_addr_" + shiftKey.toLowerCase().trim(), LocationUtils.stripCountryOrLastSegment(address)).apply();
     }
 
     public String getShiftAddress(String shiftKey) {
         if (shiftKey != null) {
             String addr = sharedPreferences.getString("shift_addr_" + shiftKey.toLowerCase().trim(), null);
             if (addr != null && !addr.trim().isEmpty()) {
-                return addr;
+                return LocationUtils.stripCountryOrLastSegment(addr);
             }
         }
         String latestAddr = getLatestShiftAddress();
         if (latestAddr != null && !latestAddr.trim().isEmpty()) {
-            return latestAddr;
+            return LocationUtils.stripCountryOrLastSegment(latestAddr);
         }
         String compAddr = getCompanyAddress();
         if (compAddr != null && !compAddr.trim().isEmpty()) {
-            return compAddr;
+            return LocationUtils.stripCountryOrLastSegment(compAddr);
         }
         return null;
     }
 
     public String getCompanyAddress() {
-        return sharedPreferences.getString(KEY_COMPANY_ADDRESS, null);
+        return LocationUtils.stripCountryOrLastSegment(sharedPreferences.getString(KEY_COMPANY_ADDRESS, null));
     }
 
     public void saveCompanyRadius(int radius) {
@@ -238,23 +247,26 @@ public class SharedPreferenceApp {
         if (state == null) return;
         SharedPreferences.Editor editor = sharedPreferences.edit();
         String stateVal = state.name();
+        String userId = getUserId();
 
         if (scheduleId != null && !scheduleId.trim().isEmpty()) {
-            editor.putString("att_state_sched_" + scheduleId, stateVal);
+            String keyPrefix = userId != null ? userId + "_" : "";
+            editor.putString("att_state_sched_" + keyPrefix + scheduleId, stateVal);
             if (state == CheckState.CHECKED_IN) {
-                editor.putString("att_in_sched_" + scheduleId, time);
+                editor.putString("att_in_sched_" + keyPrefix + scheduleId, time);
             } else if (state == CheckState.CHECKED_OUT) {
-                editor.putString("att_out_sched_" + scheduleId, time);
+                editor.putString("att_out_sched_" + keyPrefix + scheduleId, time);
             }
         }
 
         if (workday != null && shiftName != null) {
             String alias = workday.trim() + "_" + shiftName.trim().toLowerCase();
-            editor.putString("att_state_alias_" + alias, stateVal);
+            String keyPrefix = userId != null ? userId + "_" : "";
+            editor.putString("att_state_alias_" + keyPrefix + alias, stateVal);
             if (state == CheckState.CHECKED_IN) {
-                editor.putString("att_in_alias_" + alias, time);
+                editor.putString("att_in_alias_" + keyPrefix + alias, time);
             } else if (state == CheckState.CHECKED_OUT) {
-                editor.putString("att_out_alias_" + alias, time);
+                editor.putString("att_out_alias_" + keyPrefix + alias, time);
             }
         }
         editor.apply();
@@ -262,12 +274,15 @@ public class SharedPreferenceApp {
 
     public CheckState getShiftAttendanceState(String scheduleId, String workday, String shiftName) {
         String val = null;
+        String userId = getUserId();
+        String keyPrefix = userId != null ? userId + "_" : "";
+
         if (scheduleId != null && !scheduleId.trim().isEmpty()) {
-            val = sharedPreferences.getString("att_state_sched_" + scheduleId, null);
+            val = sharedPreferences.getString("att_state_sched_" + keyPrefix + scheduleId, null);
         }
         if (val == null && workday != null && shiftName != null) {
             String alias = workday.trim() + "_" + shiftName.trim().toLowerCase();
-            val = sharedPreferences.getString("att_state_alias_" + alias, null);
+            val = sharedPreferences.getString("att_state_alias_" + keyPrefix + alias, null);
         }
         if (val != null) {
             try {
@@ -279,24 +294,30 @@ public class SharedPreferenceApp {
 
     public String getShiftCheckInTime(String scheduleId, String workday, String shiftName) {
         String time = null;
+        String userId = getUserId();
+        String keyPrefix = userId != null ? userId + "_" : "";
+
         if (scheduleId != null && !scheduleId.trim().isEmpty()) {
-            time = sharedPreferences.getString("att_in_sched_" + scheduleId, null);
+            time = sharedPreferences.getString("att_in_sched_" + keyPrefix + scheduleId, null);
         }
         if (time == null && workday != null && shiftName != null) {
             String alias = workday.trim() + "_" + shiftName.trim().toLowerCase();
-            time = sharedPreferences.getString("att_in_alias_" + alias, null);
+            time = sharedPreferences.getString("att_in_alias_" + keyPrefix + alias, null);
         }
         return time;
     }
 
     public String getShiftCheckOutTime(String scheduleId, String workday, String shiftName) {
         String time = null;
+        String userId = getUserId();
+        String keyPrefix = userId != null ? userId + "_" : "";
+
         if (scheduleId != null && !scheduleId.trim().isEmpty()) {
-            time = sharedPreferences.getString("att_out_sched_" + scheduleId, null);
+            time = sharedPreferences.getString("att_out_sched_" + keyPrefix + scheduleId, null);
         }
         if (time == null && workday != null && shiftName != null) {
             String alias = workday.trim() + "_" + shiftName.trim().toLowerCase();
-            time = sharedPreferences.getString("att_out_alias_" + alias, null);
+            time = sharedPreferences.getString("att_out_alias_" + keyPrefix + alias, null);
         }
         return time;
     }
@@ -332,6 +353,89 @@ public class SharedPreferenceApp {
         if (yearMonth == null) return;
         int current = getMonthlyShiftExchangeCount(yearMonth);
         sharedPreferences.edit().putInt("shift_exchange_count_" + yearMonth, current + 1).apply();
+    }
+
+    // ===== LEAVE REQUEST DATES =====
+
+    public void saveLeaveDate(String date) {
+        if (date == null || date.trim().isEmpty()) return;
+        Set<String> set = getLeaveDates();
+        set.add(date.trim());
+        sharedPreferences.edit().putStringSet("employee_leave_dates", set).apply();
+    }
+
+    public Set<String> getLeaveDates() {
+        Set<String> set = sharedPreferences.getStringSet("employee_leave_dates", null);
+        return set != null ? new HashSet<>(set) : new HashSet<>();
+    }
+
+    public boolean isLeaveDate(String date) {
+        if (date == null || date.trim().isEmpty()) return false;
+        return getLeaveDates().contains(date.trim());
+    }
+
+    public boolean isLeaveDate(LocalDate date) {
+        if (date == null) return false;
+        return isLeaveDate(date.toString());
+    }
+
+    // ===== SUBMITTED LEAVE / REQUEST HISTORY =====
+
+    public void saveSubmittedLeaveRequest(LeaveRequest request) {
+        if (request == null) return;
+        List<LeaveRequest> list = getSubmittedLeaveRequests();
+        boolean updated = false;
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).getId() != null && list.get(i).getId().equals(request.getId())) {
+                list.set(i, request);
+                updated = true;
+                break;
+            }
+        }
+        if (!updated) {
+            list.add(0, request);
+        }
+        try {
+            String json = new com.google.gson.Gson().toJson(list);
+            sharedPreferences.edit().putString("employee_submitted_leave_requests", json).apply();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public List<LeaveRequest> getSubmittedLeaveRequests() {
+        String json = sharedPreferences.getString("employee_submitted_leave_requests", null);
+        if (json == null || json.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+        try {
+            java.lang.reflect.Type type = new com.google.gson.reflect.TypeToken<List<LeaveRequest>>() {}.getType();
+            List<LeaveRequest> list = new com.google.gson.Gson().fromJson(json, type);
+            return list != null ? list : new ArrayList<>();
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
+
+    public void updateSubmittedLeaveRequestStatus(String date, String type, ApprovalStatus newStatus) {
+        List<LeaveRequest> list = getSubmittedLeaveRequests();
+        boolean changed = false;
+        for (LeaveRequest req : list) {
+            if (req.getTargetDate() != null && req.getTargetDate().equals(date)) {
+                if (type == null || (req.getType() != null && req.getType().name().equalsIgnoreCase(type))) {
+                    req.setStatus(newStatus);
+                    changed = true;
+                }
+            }
+        }
+        if (changed) {
+            try {
+                String json = new com.google.gson.Gson().toJson(list);
+                sharedPreferences.edit().putString("employee_submitted_leave_requests", json).apply();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**

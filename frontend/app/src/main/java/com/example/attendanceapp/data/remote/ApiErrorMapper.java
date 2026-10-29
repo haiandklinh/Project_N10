@@ -37,7 +37,7 @@ public final class ApiErrorMapper {
         if (t instanceof AppException || t instanceof IllegalArgumentException) return t;
         if (t instanceof HttpException) return fromHttp((HttpException) t, defaultMessage);
         if (t instanceof IOException) {
-            return new AppException("Lỗi mạng. Vui lòng kiểm tra kết nối", 0, null);
+            return new AppException("Lỗi kết nối tới sever!", 0, null);
         }
         return new AppException(defaultMessage, 0, null);
     }
@@ -74,15 +74,21 @@ public final class ApiErrorMapper {
             // Body không phải JSON: dùng message mặc định
         }
 
-        // Chuẩn hóa một số thông báo lỗi tiếng Anh từ FastAPI Backend sang tiếng Việt thân thiện
+        // Chuẩn hóa thông báo lỗi từ FastAPI sang tiếng Việt
         if (message != null) {
-            if ("Invitation code is invalid or expired".equalsIgnoreCase(message)) {
+            String lowerMessage = message.toLowerCase(java.util.Locale.ROOT).trim();
+
+            if (lowerMessage.equals("invalid password")) {
+                message = "Mật khẩu không chính xác";
+            } else if (lowerMessage.equals("invalid phone number or password")) {
+                message = "Số điện thoại hoặc mật khẩu không chính xác";
+            } else if (lowerMessage.equals("invitation code is invalid or expired")) {
                 message = "Mã mời không hợp lệ hoặc đã hết hạn";
-            } else if ("Not found Staff in System".equalsIgnoreCase(message)) {
+            } else if (lowerMessage.equals("not found staff in system")) {
                 message = "Không tìm thấy hồ sơ nhân viên trong hệ thống";
-            } else if ("Not found Manager".equalsIgnoreCase(message)) {
+            } else if (lowerMessage.equals("not found manager")) {
                 message = "Không tìm thấy thông tin quản lý cho mã mời này";
-            } else if (message.toLowerCase().contains("not approve")) {
+            } else if (lowerMessage.contains("not approve")) {
                 message = "Yêu cầu gia nhập chưa được quản lý phê duyệt";
             }
         }

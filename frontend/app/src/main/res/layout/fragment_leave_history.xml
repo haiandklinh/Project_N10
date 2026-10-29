@@ -88,7 +88,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="@dimen/spacing_2xl"
-        android:layout_marginBottom="100dp"
+        android:layout_marginBottom="@dimen/spacing_2xl"
         android:text="Tạo đơn mới"
         app:icon="@drawable/ic_add"
         app:layout_constraintBottom_toBottomOf="parent"

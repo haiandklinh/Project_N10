@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.attendanceapp.R;
+import com.example.attendanceapp.core.utils.LocationUtils;
 import com.example.attendanceapp.databinding.ItemHistoryAttendanceBinding; // Tên binding theo layout XML 2 của bạn
 import com.example.attendanceapp.domain.model.AttendanceStatus;
 import com.example.attendanceapp.domain.model.HistoryAttendance;

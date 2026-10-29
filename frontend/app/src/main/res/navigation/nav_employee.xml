@@ -33,7 +33,15 @@
 
         <action
             android:id="@+id/action_employeeHomeFragment_to_employeeAdjustmentFragment"
-            app:destination="@id/employeeAdjustmentFragment" />
+            app:destination="@id/employeeAdjustmentRequestFragment" />
+
+        <action
+            android:id="@+id/action_employeeHomeFragment_to_employeeAdjustmentRequestFragment"
+            app:destination="@id/employeeAdjustmentRequestFragment" />
+
+        <action
+            android:id="@+id/action_employeeHomeFragment_to_employeeLeaveRequestFragment"
+            app:destination="@id/employeeLeaveRequestFragment" />
 
         <action
             android:id="@+id/action_employeeHomeFragment_to_employeeLeaveHistoryFragment"
@@ -138,10 +146,10 @@
             app:destination="@id/employeeCheckInFragment" />
         <action
             android:id="@+id/action_notificationFragment_to_employeeLeaveHistoryFragment"
-            app:destination="@id/employeeLeaveHistoryFragment" />
+            app:destination="@id/employeeCreateRequestContainerFragment" />
         <action
             android:id="@+id/action_notificationFragment_to_employeeAdjustmentFragment"
-            app:destination="@id/employeeAdjustmentFragment" />
+            app:destination="@id/employeeCreateRequestContainerFragment" />
         <action
             android:id="@+id/action_notificationFragment_to_employeePayrollFragment"
             app:destination="@id/employeePayrollFragment" />
@@ -173,34 +181,60 @@
         android:label="Thống kê công"
         tools:layout="@layout/fragment_statistics" />
 
-    <!-- Đơn xin điều chỉnh công / Giải trình đi muộn, quên check-out -->
-    <fragment
-        android:id="@+id/employeeAdjustmentFragment"
-        android:name="com.example.attendanceapp.ui.employee.home.adjustment.EmployeeAdjustmentFragment"
-        android:label="Yêu cầu điều chỉnh công"
-        tools:layout="@layout/fragment_employee_adjustment" />
-
 
     <!-- ================================================================= -->
     <!-- 3. NHÓM LỊCH TRÌNH & ĐƠN TỪ (SCHEDULE & REQUESTS)                 -->
     <!-- ================================================================= -->
 
-    <!-- Đơn xin nghỉ phép -->
+    <!-- Quản lý đơn từ chung (Nghỉ phép, Đổi ca, Điều chỉnh công) -->
     <fragment
-        android:id="@+id/employeeLeaveHistoryFragment"
-        android:name="com.example.attendanceapp.ui.employee.schedule.leave.EmployeeLeaveHistoryFragment"
-        android:label="Lịch sử đơn từ"
-        tools:layout="@layout/fragment_leave_history">
+        android:id="@+id/employeeCreateRequestContainerFragment"
+        android:name="com.example.attendanceapp.ui.employee.schedule.leave.EmployeeCreateRequestContainerFragment"
+        android:label="Quản lý đơn từ"
+        tools:layout="@layout/fragment_employee_create_request_container">
         <action
-            android:id="@+id/action_employeeLeaveHistoryFragment_to_employeeLeaveRequestFragment"
+            android:id="@+id/action_container_to_leaveRequest"
             app:destination="@id/employeeLeaveRequestFragment" />
+        <action
+            android:id="@+id/action_container_to_shiftExchange"
+            app:destination="@id/employeeShiftExchangeFragment" />
+        <action
+            android:id="@+id/action_container_to_adjustmentRequest"
+            app:destination="@id/employeeAdjustmentRequestFragment" />
     </fragment>
 
     <fragment
+        android:id="@+id/employeeLeaveHistoryFragment"
+        android:name="com.example.attendanceapp.ui.employee.schedule.leave.EmployeeCreateRequestContainerFragment"
+        android:label="Lịch sử đơn từ"
+        tools:layout="@layout/fragment_employee_create_request_container">
+        <action
+            android:id="@+id/action_employeeLeaveHistoryFragment_to_employeeLeaveRequestFragment"
+            app:destination="@id/employeeLeaveRequestFragment" />
+        <action
+            android:id="@+id/action_container_to_leaveRequest"
+            app:destination="@id/employeeLeaveRequestFragment" />
+        <action
+            android:id="@+id/action_container_to_shiftExchange"
+            app:destination="@id/employeeShiftExchangeFragment" />
+        <action
+            android:id="@+id/action_container_to_adjustmentRequest"
+            app:destination="@id/employeeAdjustmentRequestFragment" />
+    </fragment>
+
+    <!-- Tạo đơn xin nghỉ phép -->
+    <fragment
         android:id="@+id/employeeLeaveRequestFragment"
         android:name="com.example.attendanceapp.ui.employee.schedule.leave.EmployeeLeaveRequestFragment"
-        android:label="Tạo đơn nghỉ phép"
+        android:label="Tạo đơn xin nghỉ phép"
         tools:layout="@layout/fragment_leave_request" />
+
+    <!-- Tạo yêu cầu điều chỉnh công -->
+    <fragment
+        android:id="@+id/employeeAdjustmentRequestFragment"
+        android:name="com.example.attendanceapp.ui.employee.schedule.leave.EmployeeAdjustmentRequestFragment"
+        android:label="Yêu cầu điều chỉnh công"
+        tools:layout="@layout/fragment_employee_adjustment_request" />
 
     <!-- Yêu cầu đổi ca làm việc -->
     <fragment

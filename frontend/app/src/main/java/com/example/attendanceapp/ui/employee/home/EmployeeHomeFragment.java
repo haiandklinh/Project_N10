@@ -34,11 +34,13 @@ import com.example.attendanceapp.domain.model.ShiftStatus;
 import com.example.attendanceapp.domain.model.WeekDay;
 import com.example.attendanceapp.ui.employee.home.category.EmployeeCategoryTypeAdapter;
 import com.example.attendanceapp.ui.employee.home.recent.EmployeeRecentAttendanceAdapter;
+import com.example.attendanceapp.ui.employee.home.shift.EmployeeTodayShiftAdapter;
 import com.example.attendanceapp.ui.employee.home.weekday.EmployeeWeekDayAdapter;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -55,6 +57,7 @@ public class EmployeeHomeFragment extends Fragment {
     private EmployeeCategoryTypeAdapter employeeCategoryTypeAdapter;
     private EmployeeWeekDayAdapter weekDayAdapter;
     private EmployeeRecentAttendanceAdapter employeeRecentAttendanceAdapter;
+    private EmployeeTodayShiftAdapter employeeTodayShiftAdapter;
 
     @Inject
     SharedPreferenceApp sharedPreferenceApp;
@@ -121,7 +124,7 @@ public class EmployeeHomeFragment extends Fragment {
 
             // Render các thành phần giao diện chính (luôn hiển thị theo yêu cầu)
             renderTodayAttendanceCard(state);
-            renderTodayShiftCard(state.getTodayShift());
+            renderTodayShifts(state.getTodayShifts(), state.getTodayShift());
 
             updateWeekDaysAdapter(state.getWeekDays());
             updateRecentAttendancesAdapter(state.getRecentAttendances());
@@ -195,72 +198,62 @@ public class EmployeeHomeFragment extends Fragment {
             binding.includeTodayCard.tvCheckOutTime.setText("--:--");
             binding.includeTodayCard.tvWorkedHours.setText("0giờ 00phút");
 
-            binding.includeTodayCard.btnCheckInCta.setText("Hôm nay nghỉ");
+            binding.includeTodayCard.btnCheckInCta.setText("Chưa có ca làm");
             binding.includeTodayCard.btnCheckInCta.setEnabled(false);
             binding.includeTodayCard.btnCheckInCta.setIconResource(R.drawable.ic_remove);
         }
     }
 
-    private void renderTodayShiftCard(Shift todayShift) {
+    private void renderTodayShifts(List<Shift> todayShifts, Shift fallbackShift) {
         if (binding == null) return;
 
-        // Luôn hiển thị layout_home_today_shift
+        List<Shift> shiftsToDisplay = todayShifts;
+        if ((shiftsToDisplay == null || shiftsToDisplay.isEmpty()) && fallbackShift != null && fallbackShift.getDate() != null && fallbackShift.getDate().equals(LocalDate.now())) {
+            shiftsToDisplay = Collections.singletonList(fallbackShift);
+        }
+
+        // Luôn hiển thị layout_home_today_shift container
         binding.includeShiftToday.getRoot().setVisibility(View.VISIBLE);
 
-        if (todayShift != null && todayShift.getDate().equals(LocalDate.now())) {
-            // Có ca làm việc hôm nay
+        if (shiftsToDisplay != null && !shiftsToDisplay.isEmpty()) {
+            binding.includeShiftToday.includeCardNoShift.cardNoShift.setVisibility(View.GONE);
+            binding.includeShiftToday.rvTodayShifts.setVisibility(View.VISIBLE);
             binding.includeShiftToday.tvExchangeShift.setVisibility(View.VISIBLE);
-            binding.includeShiftToday.tvShiftName.setText(todayShift.getShiftName());
-            binding.includeShiftToday.tvShiftTime.setText(todayShift.getShiftTime());
-            binding.includeShiftToday.tvShiftLocation.setText(todayShift.getLocation());
 
-            if (binding.includeShiftToday.ivShiftIcon != null) {
-                binding.includeShiftToday.ivShiftIcon.setImageResource(R.drawable.ic_schedule);
+            if (employeeTodayShiftAdapter != null) {
+                employeeTodayShiftAdapter.submitList(shiftsToDisplay);
             }
 
-            bindShiftStatusChip(todayShift.getStatus());
             if (getContext() != null) {
-                ShiftAlarmScheduler.scheduleShiftAlarms(requireContext(), todayShift, sharedPreferenceApp);
+                for (Shift s : shiftsToDisplay) {
+                    ShiftAlarmScheduler.scheduleShiftAlarms(requireContext(), s, sharedPreferenceApp);
+                }
             }
+
+            Shift firstShift = shiftsToDisplay.get(0);
             binding.includeShiftToday.tvExchangeShift.setOnClickListener(v -> {
                 Bundle args = new Bundle();
-                args.putString("selected_shift_id", todayShift.getId());
-                args.putString("selected_shift_name", todayShift.getShiftName());
-                if (todayShift.getDate() != null) {
-                    args.putString("selected_shift_date", todayShift.getDate().toString());
+                args.putString("selected_shift_id", firstShift.getId());
+                args.putString("selected_shift_name", firstShift.getShiftName());
+                if (firstShift.getDate() != null) {
+                    args.putString("selected_shift_date", firstShift.getDate().toString());
                 }
                 navigateTo(R.id.action_employeeHomeFragment_to_employeeShiftExchangeFragment, args);
             });
         } else {
-            // KHÔNG CÓ CA LÀM VIỆC HÔM NAY: Hiển thị 1 card thông điệp ngày nghỉ
+            // Không có ca làm việc hôm nay: Hiển thị card Không có ca làm việc
+            binding.includeShiftToday.rvTodayShifts.setVisibility(View.GONE);
             binding.includeShiftToday.tvExchangeShift.setVisibility(View.GONE);
-            binding.includeShiftToday.tvShiftName.setText("Không có ca làm việc hôm nay, hãy tận hưởng ngày nghỉ");
-            binding.includeShiftToday.tvShiftTime.setText("Nghỉ ngơi");
-            binding.includeShiftToday.tvShiftLocation.setText("Chúc bạn một ngày thư giãn và nạp lại năng lượng!");
-
-            if (binding.includeShiftToday.ivShiftIcon != null) {
-                binding.includeShiftToday.ivShiftIcon.setImageResource(R.drawable.ic_leave);
-            }
-
-            // Chip trạng thái ngày nghỉ
-            binding.includeShiftToday.tagShiftStatus.setText("Ngày nghỉ");
-            int bgColor = ColorUtil.getThemeColor(requireContext(), R.attr.colorAttendanceLeaveContainer);
-            int textColor = ColorUtil.getThemeColor(requireContext(), R.attr.colorAttendanceLeave);
-            binding.includeShiftToday.tagShiftStatus.setChipBackgroundColor(ColorStateList.valueOf(bgColor));
-            binding.includeShiftToday.tagShiftStatus.setTextColor(textColor);
+            binding.includeShiftToday.includeCardNoShift.cardNoShift.setVisibility(View.VISIBLE);
+            binding.includeShiftToday.includeCardNoShift.ivChevronRight.setVisibility(View.GONE);
         }
     }
 
-    private void bindShiftStatusChip(ShiftStatus status) {
-        if (binding == null) return;
-        ShiftStatus currentStatus = (status != null) ? status : ShiftStatus.PENDING;
-        binding.includeShiftToday.tagShiftStatus.setText(currentStatus.getDisplayName());
-
-        int bgColor = ColorUtil.getThemeColor(requireContext(), currentStatus.getBgAttrRes());
-        int textColor = ColorUtil.getThemeColor(requireContext(), currentStatus.getTextColorAttrRes());
-
-        binding.includeShiftToday.tagShiftStatus.setChipBackgroundColor(ColorStateList.valueOf(bgColor));
-        binding.includeShiftToday.tagShiftStatus.setTextColor(textColor);
+    private void renderTodayShiftCard(Shift todayShift) {
+        List<Shift> list = (todayShift != null && todayShift.getDate() != null && todayShift.getDate().equals(LocalDate.now()))
+                ? Collections.singletonList(todayShift)
+                : Collections.emptyList();
+        renderTodayShifts(list, todayShift);
     }
 
     private void updateClock() {
@@ -279,7 +272,23 @@ public class EmployeeHomeFragment extends Fragment {
     private void setupStaticViews() {
         setupCategoryRecyclerView();
         setupWeekRecyclerView();
+        setupTodayShiftRecyclerView();
         setupRecentRecyclerView();
+    }
+
+    private void setupTodayShiftRecyclerView() {
+        binding.includeShiftToday.rvTodayShifts.setLayoutManager(new LinearLayoutManager(requireContext()));
+        employeeTodayShiftAdapter = new EmployeeTodayShiftAdapter(shift -> {
+            if (shift == null) return;
+            Bundle args = new Bundle();
+            args.putString("selected_shift_id", shift.getId());
+            args.putString("selected_shift_name", shift.getShiftName());
+            if (shift.getDate() != null) {
+                args.putString("selected_shift_date", shift.getDate().toString());
+            }
+            navigateTo(R.id.action_employeeHomeFragment_to_employeeShiftExchangeFragment, args);
+        });
+        binding.includeShiftToday.rvTodayShifts.setAdapter(employeeTodayShiftAdapter);
     }
 
     private void setupCategoryRecyclerView() {
@@ -338,9 +347,9 @@ public class EmployeeHomeFragment extends Fragment {
         if (categoryType == null) return;
         switch (categoryType) {
             case CHECK_IN: navigateTo(R.id.action_employeeHomeFragment_to_employeeCheckInFragment); break;
-            case ADJUSTMENT: navigateTo(R.id.action_employeeHomeFragment_to_employeeAdjustmentFragment); break;
+            case ADJUSTMENT: navigateTo(R.id.action_employeeHomeFragment_to_employeeAdjustmentRequestFragment); break;
             case SWAP_SHIFT: navigateTo(R.id.action_employeeHomeFragment_to_employeeShiftExchangeFragment); break;
-            case LEAVE_REQUEST: navigateTo(R.id.action_employeeHomeFragment_to_employeeLeaveHistoryFragment); break;
+            case LEAVE_REQUEST: navigateTo(R.id.action_employeeHomeFragment_to_employeeLeaveRequestFragment); break;
             case PAYROLL: navigateTo(R.id.action_employeeHomeFragment_to_employeePayrollFragment); break;
             case STATISTIC: navigateTo(R.id.action_employeeHomeFragment_to_employeeStatisticsFragment); break;
         }

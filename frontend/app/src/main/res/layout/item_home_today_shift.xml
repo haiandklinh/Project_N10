@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/card_today_shift"
+    style="@style/ItemCard"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/spacing_s"
+    android:foreground="?attr/selectableItemBackground"
+    app:cardBackgroundColor="?attr/colorSurface">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/spacing_m">
+
+        <!-- 1. ICON CA LÀM (Khung vuông bo góc chuẩn dimen) -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_shift_icon_bg"
+            android:layout_width="@dimen/icon_container_s"
+            android:layout_height="@dimen/icon_container_s"
+            app:cardBackgroundColor="?attr/colorPrimaryContainer"
+            app:cardCornerRadius="@dimen/radius_s"
+            app:cardElevation="0dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:strokeWidth="0dp">
+
+            <ImageView
+                android:id="@+id/iv_shift_icon"
+                android:layout_width="@dimen/icon_size_s"
+                android:layout_height="@dimen/icon_size_s"
+                android:layout_gravity="center"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_schedule"
+                app:tint="?attr/colorPrimary" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- 2. TÊN CA -->
+        <TextView
+            android:id="@+id/tv_shift_name"
+            style="@style/TitleTextMediumStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_s"
+            android:layout_marginEnd="@dimen/spacing_s"
+            android:ellipsize="end"
+            android:maxLines="1"
+            app:layout_constraintBottom_toBottomOf="@id/card_shift_icon_bg"
+            app:layout_constraintEnd_toStartOf="@id/tag_shift_status"
+            app:layout_constraintStart_toEndOf="@id/card_shift_icon_bg"
+            app:layout_constraintTop_toTopOf="@id/card_shift_icon_bg"
+            tools:text="Ca Sáng" />
+
+        <!-- 3. CHIP TRẠNG THÁI CA LÀM (Đưa lên góc phải) -->
+        <com.google.android.material.chip.Chip
+            android:id="@+id/tag_shift_status"
+            style="@style/ChipStatusStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Chưa vào ca"
+            app:chipBackgroundColor="?attr/colorSurfaceVariant"
+            app:layout_constraintBottom_toBottomOf="@id/card_shift_icon_bg"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/card_shift_icon_bg" />
+
+        <!-- 4. ĐƯỜNG KẺ NGANH (Divider) -->
+        <View
+            android:id="@+id/divider"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_marginTop="@dimen/spacing_2xs"
+            android:background="?attr/colorOutlineVariant"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/card_shift_icon_bg" />
+
+        <!-- 5. KHUNG GIỜ LÀM VIỆC (Có icon đồng hồ) -->
+        <ImageView
+            android:id="@+id/iv_shift_time"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_late"
+            app:layout_constraintBottom_toBottomOf="@id/tv_shift_time"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tv_shift_time"
+            app:tint="?attr/colorPrimary" />
+
+        <TextView
+            android:id="@+id/tv_shift_time"
+            style="@style/BodyTextSmallStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:layout_marginTop="@dimen/spacing_2xs"
+            android:textColor="?attr/colorPrimary"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/iv_shift_time"
+            app:layout_constraintTop_toBottomOf="@id/divider"
+            tools:text="08:00 - 17:00" />
+
+        <!-- 6. PHÂN CÁCH DỌC DIVIDER SMALL -->
+        <TextView
+            android:id="@+id/tv_divider_vertical"
+            style="@style/BodyTextSmallStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_s"
+            android:text="|"
+            android:textColor="?attr/colorOutline"
+            app:layout_constraintBottom_toBottomOf="@id/tv_shift_time"
+            app:layout_constraintStart_toEndOf="@id/tv_shift_time"
+            app:layout_constraintTop_toTopOf="@id/tv_shift_time" />
+
+        <!-- 7. ĐỊA ĐIỂM (Có icon vị trí) -->
+        <ImageView
+            android:id="@+id/iv_shift_location"
+            android:layout_width="14dp"
+            android:layout_height="14dp"
+            android:layout_marginStart="@dimen/spacing_s"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_location"
+            app:layout_constraintBottom_toBottomOf="@id/tv_shift_location"
+            app:layout_constraintStart_toEndOf="@id/tv_divider_vertical"
+            app:layout_constraintTop_toTopOf="@id/tv_shift_location"
+            app:tint="?attr/colorPrimary" />
+
+        <TextView
+            android:id="@+id/tv_shift_location"
+            style="@style/BodyTextSmallStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_2xs"
+            android:ellipsize="end"
+            android:maxLines="1"
+            app:layout_constraintBottom_toBottomOf="@id/tv_shift_time"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/iv_shift_location"
+            app:layout_constraintTop_toTopOf="@id/tv_shift_time"
+            tools:text="Văn phòng chính · Tầng 3, 123 Đường Láng..." />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

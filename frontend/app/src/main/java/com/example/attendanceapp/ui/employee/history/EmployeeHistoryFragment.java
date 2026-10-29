@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.attendanceapp.R;
 import com.example.attendanceapp.core.utils.IntervalTicker;
+import com.example.attendanceapp.core.utils.LocationUtils;
 import com.example.attendanceapp.data.dto.response.attendance.AttendanceRecordItemResponse;
 import com.example.attendanceapp.data.dto.response.attendance.AttendanceRecordPageResponse;
 import com.example.attendanceapp.data.dto.response.staff.StaffWorkScheduleResponse;
@@ -255,8 +256,6 @@ public class EmployeeHistoryFragment extends Fragment {
                             allAttendances.clear();
                             if (attendances != null && !attendances.isEmpty()) {
                                 allAttendances.addAll(attendances);
-                            } else {
-                                allAttendances.addAll(getSampleAttendances());
                             }
                             applyFilterAndUpdateList();
                             updateSummaryStats();
@@ -264,7 +263,6 @@ public class EmployeeHistoryFragment extends Fragment {
                         },
                         error -> {
                             allAttendances.clear();
-                            allAttendances.addAll(getSampleAttendances());
                             applyFilterAndUpdateList();
                             updateSummaryStats();
                             updateCalendar();
@@ -342,6 +340,10 @@ public class EmployeeHistoryFragment extends Fragment {
 
                     // Xác định trạng thái điểm danh
                     AttendanceStatus status;
+                    CheckState localState = sharedPreferenceApp != null ? sharedPreferenceApp.getShiftAttendanceState(
+                            shift.getWorkScheduleId(), schedule.getWorkDay(), shiftName
+                    ) : CheckState.NOT_CHECKED_IN;
+
                     if (checkIn != null) {
                         if (startTime != null && checkIn.isAfter(startTime)) {
                             status = AttendanceStatus.LATE; // Đi muộn
@@ -352,28 +354,22 @@ public class EmployeeHistoryFragment extends Fragment {
                         } else {
                             status = AttendanceStatus.PRESENT; // Đúng giờ
                         }
-                    } else {
-                        CheckState localState = sharedPreferenceApp != null ? sharedPreferenceApp.getShiftAttendanceState(
-                                shift.getWorkScheduleId(), schedule.getWorkDay(), shiftName
-                        ) : CheckState.NOT_CHECKED_IN;
-
-                        if (localState == CheckState.CHECKED_IN || localState == CheckState.CHECKED_OUT) {
-                            status = AttendanceStatus.PRESENT;
-                        } else if (scheduleDate.isBefore(today)) {
-                            status = AttendanceStatus.ABSENT; // Ngày quá khứ không chấm công -> Vắng mặt
-                        } else if (scheduleDate.equals(today)) {
-                            if (endTime != null && now.isAfter(endTime)) {
-                                // Đúng giờ vắng mặt: Hết ca mà chưa chấm công -> Vắng mặt
-                                status = AttendanceStatus.ABSENT;
-                            } else if (startTime != null && now.isAfter(startTime)) {
-                                // Quá giờ bắt đầu ca mà chưa check-in -> Đi muộn
-                                status = AttendanceStatus.LATE;
-                            } else {
-                                status = AttendanceStatus.NOT_CHECKED;
-                            }
+                    } else if (localState == CheckState.CHECKED_IN || localState == CheckState.CHECKED_OUT) {
+                        status = AttendanceStatus.PRESENT;
+                    } else if (scheduleDate.isBefore(today)) {
+                        status = AttendanceStatus.ABSENT; // Ngày quá khứ không chấm công -> Vắng mặt
+                    } else if (scheduleDate.equals(today)) {
+                        if (endTime != null && now.isAfter(endTime)) {
+                            status = AttendanceStatus.ABSENT; // Hết ca mà chưa chấm công -> Vắng mặt
+                        } else if (startTime != null && now.isAfter(startTime)) {
+                            status = AttendanceStatus.LATE; // Quá giờ bắt đầu ca mà chưa check-in -> Đi muộn
                         } else {
-                            status = AttendanceStatus.NOT_CHECKED;
+                            // Chưa đến giờ làm việc hôm nay -> bỏ qua
+                            continue;
                         }
+                    } else {
+                        // Ngày tương lai -> bỏ qua
+                        continue;
                     }
 
                     String location = resolveShiftLocation(shiftName);
@@ -405,17 +401,10 @@ public class EmployeeHistoryFragment extends Fragment {
             LocalTime startTime = parseTime(rec.getStartTime());
             LocalTime endTime = parseTime(rec.getEndTime());
 
+            // Hiển thị nếu có bản ghi từ server (đã check-in hoặc đang check-in)
             AttendanceStatus status = mapStatus(rec.getStatus());
             if (checkIn != null && startTime != null && checkIn.isAfter(startTime)) {
-                status = AttendanceStatus.LATE; // Đi muộn
-            } else if (checkIn == null) {
-                if (recDate.isBefore(today)) {
-                    status = AttendanceStatus.ABSENT;
-                } else if (recDate.equals(today) && endTime != null && now.isAfter(endTime)) {
-                    status = AttendanceStatus.ABSENT;
-                } else if (recDate.equals(today) && startTime != null && now.isAfter(startTime)) {
-                    status = AttendanceStatus.LATE;
-                }
+                status = AttendanceStatus.LATE;
             }
 
             String shiftName = rec.getShiftName() != null ? rec.getShiftName() : "";
@@ -443,10 +432,6 @@ public class EmployeeHistoryFragment extends Fragment {
                 item -> item.getStartTime() != null ? item.getStartTime() : (item.getCheckIn() != null ? item.getCheckIn() : LocalTime.MIDNIGHT),
                 Comparator.nullsLast(Comparator.reverseOrder())
         ));
-
-        if (list.isEmpty()) {
-            return getSampleAttendances();
-        }
 
         return list;
     }
@@ -598,133 +583,18 @@ public class EmployeeHistoryFragment extends Fragment {
         if (sharedPreferenceApp != null) {
             String addr = sharedPreferenceApp.getShiftAddress(shiftName);
             if (addr != null && !addr.trim().isEmpty()) {
-                return addr.trim();
+                return LocationUtils.stripCountryOrLastSegment(addr.trim());
             }
             String latestAddr = sharedPreferenceApp.getLatestShiftAddress();
             if (latestAddr != null && !latestAddr.trim().isEmpty()) {
-                return latestAddr.trim();
+                return LocationUtils.stripCountryOrLastSegment(latestAddr.trim());
             }
             String compAddr = sharedPreferenceApp.getCompanyAddress();
             if (compAddr != null && !compAddr.trim().isEmpty()) {
-                return compAddr.trim();
+                return LocationUtils.stripCountryOrLastSegment(compAddr.trim());
             }
         }
         return "Vị trí ca làm việc thực tế";
-    }
-
-    private List<HistoryAttendance> getSampleAttendances() {
-        LocalDate today = LocalDate.now();
-        LocalTime now = LocalTime.now();
-
-        // Kiểm tra xem hôm nay có check-in / check-out trong SharedPreferences không
-        LocalTime todayCheckIn = null;
-        LocalTime todayCheckOut = null;
-        AttendanceStatus todayStatus = AttendanceStatus.NOT_CHECKED;
-
-        if (sharedPreferenceApp != null) {
-            String inTime = sharedPreferenceApp.getShiftCheckInTime(null, today.toString(), null);
-            if (inTime != null) {
-                todayCheckIn = parseTime(inTime);
-            }
-            String outTime = sharedPreferenceApp.getShiftCheckOutTime(null, today.toString(), null);
-            if (outTime != null) {
-                todayCheckOut = parseTime(outTime);
-            }
-        }
-
-        LocalTime shiftStart = LocalTime.of(8, 0);
-        LocalTime shiftEnd = LocalTime.of(17, 0);
-
-        if (todayCheckIn != null) {
-            todayStatus = todayCheckIn.isAfter(shiftStart) ? AttendanceStatus.LATE : AttendanceStatus.PRESENT;
-        } else {
-            if (now.isAfter(shiftEnd)) {
-                todayStatus = AttendanceStatus.ABSENT; // Đúng giờ vắng mặt
-            } else if (now.isAfter(shiftStart)) {
-                todayStatus = AttendanceStatus.LATE; // Đi muộn
-            } else {
-                todayStatus = AttendanceStatus.NOT_CHECKED;
-            }
-        }
-
-        List<HistoryAttendance> samples = new ArrayList<>();
-        // 1. Ca hôm nay
-        samples.add(new HistoryAttendance(
-                UUID.randomUUID().toString(),
-                "",
-                today,
-                todayCheckIn,
-                todayCheckOut,
-                todayStatus,
-                resolveShiftLocation("Ca Sáng"),
-                shiftStart,
-                shiftEnd,
-                "Ca Sáng"
-        ));
-
-        // 2. Các ngày trước đó trong tháng (mới nhất lên đầu)
-        if (today.getDayOfMonth() > 1) {
-            LocalDate d1 = today.minusDays(1);
-            samples.add(new HistoryAttendance(
-                    UUID.randomUUID().toString(),
-                    "",
-                    d1,
-                    LocalTime.of(8, 15),
-                    LocalTime.of(17, 30),
-                    AttendanceStatus.LATE,
-                    resolveShiftLocation("Ca Sáng"),
-                    shiftStart,
-                    shiftEnd,
-                    "Ca Sáng"
-            ));
-        }
-        if (today.getDayOfMonth() > 2) {
-            LocalDate d2 = today.minusDays(2);
-            samples.add(new HistoryAttendance(
-                    UUID.randomUUID().toString(),
-                    "",
-                    d2,
-                    LocalTime.of(7, 55),
-                    LocalTime.of(17, 0),
-                    AttendanceStatus.PRESENT,
-                    resolveShiftLocation("Ca Sáng"),
-                    shiftStart,
-                    shiftEnd,
-                    "Ca Sáng"
-            ));
-        }
-        if (today.getDayOfMonth() > 3) {
-            LocalDate d3 = today.minusDays(3);
-            samples.add(new HistoryAttendance(
-                    UUID.randomUUID().toString(),
-                    "",
-                    d3,
-                    null,
-                    null,
-                    AttendanceStatus.ABSENT,
-                    resolveShiftLocation("Ca Sáng"),
-                    shiftStart,
-                    shiftEnd,
-                    "Ca Sáng"
-            ));
-        }
-        if (today.getDayOfMonth() > 4) {
-            LocalDate d4 = today.minusDays(4);
-            samples.add(new HistoryAttendance(
-                    UUID.randomUUID().toString(),
-                    "",
-                    d4,
-                    LocalTime.of(8, 0),
-                    LocalTime.of(16, 30),
-                    AttendanceStatus.EARLY_LEAVE,
-                    resolveShiftLocation("Ca Sáng"),
-                    shiftStart,
-                    shiftEnd,
-                    "Ca Sáng"
-            ));
-        }
-
-        return samples;
     }
 
     private void applyFilterAndUpdateList() {

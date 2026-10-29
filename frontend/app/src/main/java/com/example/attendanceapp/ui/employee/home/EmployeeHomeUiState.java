@@ -14,6 +14,7 @@ public class EmployeeHomeUiState {
     private final String avatarUrl;
 
     private final Shift todayShift;
+    private final List<Shift> todayShifts;
     private final LocalTime checkInTime;
     private final LocalTime checkOutTime;
     private final List<WeekDay> weekDays;
@@ -24,13 +25,14 @@ public class EmployeeHomeUiState {
     private final String errorMessage;
 
     public EmployeeHomeUiState(String userName, String companyName, String avatarUrl,
-                               Shift todayShift, LocalTime checkInTime, LocalTime checkOutTime,
+                               Shift todayShift, List<Shift> todayShifts, LocalTime checkInTime, LocalTime checkOutTime,
                                List<WeekDay> weekDays, List<RecentAttendance> recentAttendances,
                                boolean showNotificationBadge, boolean isLoading, String errorMessage) {
         this.userName = userName;
         this.companyName = companyName;
         this.avatarUrl = avatarUrl;
         this.todayShift = todayShift;
+        this.todayShifts = todayShifts != null ? todayShifts : Collections.emptyList();
         this.checkInTime = checkInTime;
         this.checkOutTime = checkOutTime;
         this.weekDays = weekDays != null ? weekDays : Collections.emptyList();
@@ -40,13 +42,22 @@ public class EmployeeHomeUiState {
         this.errorMessage = errorMessage;
     }
 
+    public EmployeeHomeUiState(String userName, String companyName, String avatarUrl,
+                               Shift todayShift, LocalTime checkInTime, LocalTime checkOutTime,
+                               List<WeekDay> weekDays, List<RecentAttendance> recentAttendances,
+                               boolean showNotificationBadge, boolean isLoading, String errorMessage) {
+        this(userName, companyName, avatarUrl, todayShift,
+                todayShift != null ? Collections.singletonList(todayShift) : Collections.emptyList(),
+                checkInTime, checkOutTime, weekDays, recentAttendances, showNotificationBadge, isLoading, errorMessage);
+    }
+
     // --- State khởi tạo nhanh trong ViewModel ---
     public static EmployeeHomeUiState loading() {
         return loading(null);
     }
 
     public static EmployeeHomeUiState loading(List<WeekDay> weekDays) {
-        return new EmployeeHomeUiState(null, null, null, null, null, null,
+        return new EmployeeHomeUiState(null, null, null, null, null, null, null,
                 weekDays, null, false, true, null);
     }
 
@@ -55,16 +66,25 @@ public class EmployeeHomeUiState {
     }
 
     public static EmployeeHomeUiState error(String message, List<WeekDay> weekDays) {
-        return new EmployeeHomeUiState(null, null, null, null, null, null,
+        return new EmployeeHomeUiState(null, null, null, null, null, null, null,
                 weekDays, null, false, false, message);
+    }
+
+    public static EmployeeHomeUiState success(String userName, String companyName, String avatarUrl,
+                                              Shift todayShift, List<Shift> todayShifts, LocalTime checkInTime, LocalTime checkOutTime,
+                                              List<WeekDay> weekDays, List<RecentAttendance> recentAttendances,
+                                              boolean showNotificationBadge) {
+        return new EmployeeHomeUiState(userName, companyName, avatarUrl, todayShift, todayShifts, checkInTime, checkOutTime, weekDays,
+                recentAttendances, showNotificationBadge, false, null);
     }
 
     public static EmployeeHomeUiState success(String userName, String companyName, String avatarUrl,
                                               Shift todayShift, LocalTime checkInTime, LocalTime checkOutTime,
                                               List<WeekDay> weekDays, List<RecentAttendance> recentAttendances,
                                               boolean showNotificationBadge) {
-        return new EmployeeHomeUiState(userName, companyName, avatarUrl, todayShift, checkInTime, checkOutTime, weekDays,
-                recentAttendances, showNotificationBadge, false, null);
+        return success(userName, companyName, avatarUrl, todayShift,
+                todayShift != null ? Collections.singletonList(todayShift) : Collections.emptyList(),
+                checkInTime, checkOutTime, weekDays, recentAttendances, showNotificationBadge);
     }
 
     // --- Getters ---
@@ -72,6 +92,7 @@ public class EmployeeHomeUiState {
     public String getCompanyName() { return companyName; }
     public String getAvatarUrl() { return avatarUrl; }
     public Shift getTodayShift() { return todayShift; }
+    public List<Shift> getTodayShifts() { return todayShifts; }
     public LocalTime getCheckInTime() { return checkInTime; }
     public LocalTime getCheckOutTime() { return checkOutTime; }
     public List<WeekDay> getWeekDays() { return weekDays; }

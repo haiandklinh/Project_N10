@@ -16,18 +16,24 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import com.example.attendanceapp.data.dto.request.staff.CreateLeaveRequest;
+import com.example.attendanceapp.data.dto.response.staff.StaffWorkScheduleResponse;
+import com.example.attendanceapp.data.local.pref.SharedPreferenceApp;
 import com.example.attendanceapp.databinding.FragmentLeaveRequestBinding;
 import com.example.attendanceapp.domain.model.ApprovalRequestType;
 import com.example.attendanceapp.domain.model.ApprovalStatus;
 import com.example.attendanceapp.domain.model.LeaveRequest;
+import com.example.attendanceapp.domain.model.ShiftOption;
+import com.example.attendanceapp.domain.repository.ShiftRepository;
 import com.example.attendanceapp.domain.repository.StaffRepository;
 import com.google.android.material.datepicker.MaterialDatePicker;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 import javax.inject.Inject;
 
@@ -40,12 +46,38 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 public class EmployeeLeaveRequestFragment extends Fragment {
 
     private FragmentLeaveRequestBinding binding;
-    private final String[] availableShifts = {"Ca sáng (08:00 - 12:00)", "Ca chiều (13:30 - 17:30)", "Ca hành chính (08:00 - 17:30)", "Ca tối (18:00 - 22:00)"};
 
     @Inject
     StaffRepository staffRepository;
 
+    @Inject
+    ShiftRepository shiftRepository;
+
+    @Inject
+    SharedPreferenceApp sharedPreferenceApp;
+
     private final CompositeDisposable disposables = new CompositeDisposable();
+
+    public static class ShiftItem {
+        public final String id;
+        public final String name;
+        public final String label;
+
+        public ShiftItem(String id, String name, String label) {
+            this.id = id;
+            this.name = name;
+            this.label = label;
+        }
+
+        @NonNull
+        @Override
+        public String toString() {
+            return label;
+        }
+    }
+
+    private final List<ShiftItem> shiftItemList = new ArrayList<>();
+    private ArrayAdapter<ShiftItem> shiftAdapter;
 
     @Nullable
     @Override
@@ -59,68 +91,45 @@ public class EmployeeLeaveRequestFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         setupToolbar();
-        setupDropdowns();
         setupDatePicker();
         setupInputWatchers();
-        readArgumentsBundle(); // Nhận dữ liệu truyền từ ScheduleFragment
+        setupShiftDropdown();
+        readArgumentsBundle();
         setupSubmitButton();
+
+        // Mặc định nạp ca làm cho ngày hiện tại nếu chưa chọn ngày
+        if (TextUtils.isEmpty(binding.etDate.getText())) {
+            String todayStr = LocalDate.now().toString();
+            binding.etDate.setText(todayStr);
+            loadShiftsForDate(todayStr);
+        } else {
+            loadShiftsForDate(binding.etDate.getText().toString().trim());
+        }
     }
 
     private void setupToolbar() {
-        binding.toolbarApp.setTitle("Tạo đơn đề nghị");
-        binding.toolbarApp.setBackButtonVisible(true);
-        binding.toolbarApp.setOnBackClickListener(() ->
-                Navigation.findNavController(requireView()).navigateUp()
-        );
+        if (getParentFragment() instanceof EmployeeCreateRequestContainerFragment) {
+            binding.toolbarApp.setVisibility(View.GONE);
+        } else {
+            binding.toolbarApp.setVisibility(View.VISIBLE);
+            binding.toolbarApp.setTitle("Tạo đơn xin nghỉ phép");
+            binding.toolbarApp.setBackButtonVisible(true);
+            binding.toolbarApp.setOnBackClickListener(() -> Navigation.findNavController(requireView()).navigateUp());
+        }
     }
 
-    private void setupDropdowns() {
-        // 1. Dropdown Loại đơn động từ Enum ApprovalRequestType
-        List<String> requestTypeTitles = new ArrayList<>();
-        for (ApprovalRequestType type : ApprovalRequestType.values()) {
-            requestTypeTitles.add(type.getTitle());
-        }
-
-        ArrayAdapter<String> adapterType = new ArrayAdapter<>(
-                requireContext(),
-                android.R.layout.simple_dropdown_item_1line,
-                requestTypeTitles
-        );
-        binding.actRequestType.setAdapter(adapterType);
-
-        binding.actRequestType.setOnItemClickListener((parent, view, position, id) -> {
-            ApprovalRequestType selectedType = ApprovalRequestType.values()[position];
-            if (selectedType == ApprovalRequestType.SWAP) {
-                binding.tilShiftInfo.setVisibility(View.VISIBLE);
-            } else {
-                binding.tilShiftInfo.setVisibility(View.GONE);
-                binding.actShiftInfo.setText("", false);
-            }
-        });
-
-        // 2. Dropdown Ca làm việc
-        ArrayAdapter<String> adapterShift = new ArrayAdapter<>(
-                requireContext(),
-                android.R.layout.simple_dropdown_item_1line,
-                availableShifts
-        );
-        binding.actShiftInfo.setAdapter(adapterShift);
+    private void setupShiftDropdown() {
+        shiftAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, shiftItemList);
+        binding.actShiftInfo.setAdapter(shiftAdapter);
     }
 
     private void readArgumentsBundle() {
-        if (getArguments() != null) {
-            String selectedDate = getArguments().getString("selectedDate");
-            String defaultTypeTitle = getArguments().getString("defaultType");
-
-            if (!TextUtils.isEmpty(selectedDate)) {
-                binding.etDate.setText(selectedDate);
-            }
-
-            if (!TextUtils.isEmpty(defaultTypeTitle)) {
-                binding.actRequestType.setText(defaultTypeTitle, false);
-                if (ApprovalRequestType.SWAP.getTitle().equals(defaultTypeTitle)) {
-                    binding.tilShiftInfo.setVisibility(View.VISIBLE);
-                }
+        Bundle bundle = getArguments();
+        if (bundle != null) {
+            String defaultDate = bundle.getString("selected_date");
+            if (!TextUtils.isEmpty(defaultDate)) {
+                binding.etDate.setText(defaultDate);
+                loadShiftsForDate(defaultDate);
             }
         }
     }
@@ -128,18 +137,119 @@ public class EmployeeLeaveRequestFragment extends Fragment {
     private void setupDatePicker() {
         binding.etDate.setOnClickListener(v -> {
             MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker()
-                    .setTitleText("Chọn ngày áp dụng")
+                    .setTitleText("Chọn ngày xin nghỉ")
                     .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
                     .build();
 
             datePicker.addOnPositiveButtonClickListener(selection -> {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-                binding.etDate.setText(sdf.format(new Date(selection)));
+                String selectedDate = sdf.format(new Date(selection));
+                binding.etDate.setText(selectedDate);
                 binding.tilDate.setError(null);
+                loadShiftsForDate(selectedDate);
             });
 
             datePicker.show(getChildFragmentManager(), "DATE_PICKER");
         });
+    }
+
+    /**
+     * Tải danh sách ca làm việc thực tế từ backend tương ứng với ngày được chọn.
+     */
+    private void loadShiftsForDate(String dateStr) {
+        if (dateStr == null || dateStr.trim().isEmpty()) return;
+
+        disposables.add(
+                staffRepository.getWorkSchedules()
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                response -> {
+                                    shiftItemList.clear();
+                                    boolean hasShiftsOnDay = false;
+
+                                    if (response != null && response.getData() != null) {
+                                        for (StaffWorkScheduleResponse ws : response.getData()) {
+                                            if (ws != null && dateStr.equals(ws.getWorkDay()) && ws.getShifts() != null) {
+                                                for (StaffWorkScheduleResponse.ShiftInfo si : ws.getShifts()) {
+                                                    if (si != null) {
+                                                        String shiftId = (si.getShiftId() != null && !si.getShiftId().trim().isEmpty())
+                                                                ? si.getShiftId().trim()
+                                                                : (si.getWorkScheduleId() != null ? si.getWorkScheduleId().trim() : "shift_01");
+                                                        String shiftName = si.getShiftName() != null ? si.getShiftName().trim() : "Ca làm việc";
+                                                        String timeRange = "";
+                                                        if (si.getStartTime() != null && si.getEndTime() != null) {
+                                                            timeRange = " (" + si.getStartTime() + " - " + si.getEndTime() + ")";
+                                                        }
+                                                        shiftItemList.add(new ShiftItem(shiftId, shiftName, shiftName + timeRange));
+                                                        hasShiftsOnDay = true;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    if (hasShiftsOnDay) {
+                                        shiftItemList.add(new ShiftItem("shift_all", "Cả ngày", "Cả ngày (Tất cả ca làm việc)"));
+                                        updateShiftDropdown();
+                                    } else {
+                                        // Nếu ngày này chưa được phân ca, nạp danh sách cấu hình ca chung của công ty
+                                        loadFallbackCompanyShifts();
+                                    }
+                                },
+                                throwable -> loadFallbackCompanyShifts()
+                        )
+        );
+    }
+
+    private void loadFallbackCompanyShifts() {
+        disposables.add(
+                shiftRepository.getShifts()
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                options -> {
+                                    shiftItemList.clear();
+                                    if (options != null && !options.isEmpty()) {
+                                        for (ShiftOption opt : options) {
+                                            String id = opt.getId() != null ? opt.getId().trim() : "shift_01";
+                                            String title = opt.getTitle() != null ? opt.getTitle().trim() : "Ca làm";
+                                            String timeRange = "";
+                                            if (opt.getStartTime() != null && opt.getEndTime() != null) {
+                                                timeRange = " (" + opt.getStartTime() + " - " + opt.getEndTime() + ")";
+                                            }
+                                            shiftItemList.add(new ShiftItem(id, title, title + timeRange));
+                                        }
+                                        shiftItemList.add(new ShiftItem("shift_all", "Cả ngày", "Cả ngày (Tất cả ca làm việc)"));
+                                    } else {
+                                        populateDefaultShiftItems();
+                                    }
+                                    updateShiftDropdown();
+                                },
+                                throwable -> {
+                                    shiftItemList.clear();
+                                    populateDefaultShiftItems();
+                                    updateShiftDropdown();
+                                }
+                        )
+        );
+    }
+
+    private void populateDefaultShiftItems() {
+        shiftItemList.add(new ShiftItem("shift_01", "Ca sáng", "Ca sáng (08:00 - 12:00)"));
+        shiftItemList.add(new ShiftItem("shift_02", "Ca chiều", "Ca chiều (13:30 - 17:30)"));
+        shiftItemList.add(new ShiftItem("shift_03", "Ca hành chính", "Ca hành chính (08:00 - 17:30)"));
+        shiftItemList.add(new ShiftItem("shift_all", "Cả ngày", "Cả ngày (Tất cả ca làm việc)"));
+    }
+
+    private void updateShiftDropdown() {
+        if (binding == null || getContext() == null) return;
+        shiftAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, shiftItemList);
+        binding.actShiftInfo.setAdapter(shiftAdapter);
+
+        if (!shiftItemList.isEmpty()) {
+            binding.actShiftInfo.setText(shiftItemList.get(0).label, false);
+        }
     }
 
     private void setupInputWatchers() {
@@ -149,7 +259,6 @@ public class EmployeeLeaveRequestFragment extends Fragment {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                binding.tilRequestType.setError(null);
                 binding.tilDate.setError(null);
                 binding.tilShiftInfo.setError(null);
                 binding.tilReason.setError(null);
@@ -159,7 +268,6 @@ public class EmployeeLeaveRequestFragment extends Fragment {
             public void afterTextChanged(Editable s) {}
         };
 
-        binding.actRequestType.addTextChangedListener(clearErrorWatcher);
         binding.etDate.addTextChangedListener(clearErrorWatcher);
         binding.actShiftInfo.addTextChangedListener(clearErrorWatcher);
         binding.etReason.addTextChangedListener(clearErrorWatcher);
@@ -167,25 +275,18 @@ public class EmployeeLeaveRequestFragment extends Fragment {
 
     private void setupSubmitButton() {
         binding.btnSubmit.setOnClickListener(v -> {
-            String typeTitle = binding.actRequestType.getText().toString().trim();
             String date = binding.etDate.getText().toString().trim();
-            String shiftInfo = binding.actShiftInfo.getText().toString().trim();
+            String shiftLabel = binding.actShiftInfo.getText().toString().trim();
             String reason = binding.etReason.getText() != null ? binding.etReason.getText().toString().trim() : "";
             boolean isEmergency = binding.cbIsEmergency.isChecked();
 
-            // Validate dữ liệu
-            if (TextUtils.isEmpty(typeTitle)) {
-                binding.tilRequestType.setError("Vui lòng chọn loại đơn từ");
-                return;
-            }
-
             if (TextUtils.isEmpty(date)) {
-                binding.tilDate.setError("Vui lòng chọn ngày áp dụng");
+                binding.tilDate.setError("Vui lòng chọn ngày xin nghỉ");
                 return;
             }
 
-            if (binding.tilShiftInfo.getVisibility() == View.VISIBLE && TextUtils.isEmpty(shiftInfo)) {
-                binding.tilShiftInfo.setError("Vui lòng chọn ca cần đổi");
+            if (TextUtils.isEmpty(shiftLabel)) {
+                binding.tilShiftInfo.setError("Vui lòng chọn ca xin nghỉ");
                 return;
             }
 
@@ -194,28 +295,25 @@ public class EmployeeLeaveRequestFragment extends Fragment {
                 return;
             }
 
-            // Parse từ tiêu đề được chọn sang Enum ApprovalRequestType
-            ApprovalRequestType requestType = null;
-            for (ApprovalRequestType type : ApprovalRequestType.values()) {
-                if (type.getTitle().equalsIgnoreCase(typeTitle)) {
-                    requestType = type;
+            String shiftId = "shift_01";
+            String shiftName = shiftLabel;
+            for (ShiftItem item : shiftItemList) {
+                if (item.label.equalsIgnoreCase(shiftLabel)) {
+                    shiftId = item.id;
+                    shiftName = item.name;
                     break;
                 }
             }
 
-            if (requestType == null) {
-                requestType = ApprovalRequestType.LEAVE; // Mặc định nếu không tìm thấy
-            }
-
-            sendRequest(requestType, date, shiftInfo, reason, isEmergency);
+            sendLeaveRequest(date, shiftId, shiftName, reason, isEmergency);
         });
     }
 
-    private void sendRequest(ApprovalRequestType type, String date, String shiftInfo, String reason, boolean isEmergency) {
+    private void sendLeaveRequest(String date, String shiftId, String shiftName, String reason, boolean isEmergency) {
         binding.btnSubmit.setEnabled(false);
 
-        String shiftOffId = TextUtils.isEmpty(shiftInfo) ? "shift_01" : shiftInfo;
-        CreateLeaveRequest request = new CreateLeaveRequest(date, shiftOffId, reason);
+        String finalReason = isEmergency ? "[ĐỘT XUẤT] " + reason : reason;
+        CreateLeaveRequest request = new CreateLeaveRequest(date, shiftId, finalReason);
 
         disposables.add(staffRepository.requestLeave(request)
                 .subscribeOn(Schedulers.io())
@@ -223,7 +321,23 @@ public class EmployeeLeaveRequestFragment extends Fragment {
                 .subscribe(
                         () -> {
                             if (isAdded()) {
-                                Toast.makeText(requireContext(), "Gửi đơn " + type.getTitle() + " thành công!", Toast.LENGTH_SHORT).show();
+                                if (sharedPreferenceApp != null) {
+                                    sharedPreferenceApp.saveLeaveDate(date);
+                                    String uid = sharedPreferenceApp.getUserId() != null ? sharedPreferenceApp.getUserId() : "staff";
+                                    LeaveRequest submitted = new LeaveRequest(
+                                            UUID.randomUUID().toString(),
+                                            uid,
+                                            ApprovalRequestType.LEAVE,
+                                            date,
+                                            shiftName,
+                                            finalReason,
+                                            isEmergency,
+                                            ApprovalStatus.PENDING,
+                                            System.currentTimeMillis()
+                                        );
+                                    sharedPreferenceApp.saveSubmittedLeaveRequest(submitted);
+                                }
+                                Toast.makeText(requireContext(), "Gửi đơn xin nghỉ phép thành công!", Toast.LENGTH_SHORT).show();
                                 Navigation.findNavController(requireView()).navigateUp();
                             }
                         },

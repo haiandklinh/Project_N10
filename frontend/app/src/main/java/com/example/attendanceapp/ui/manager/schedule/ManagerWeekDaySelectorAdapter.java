@@ -7,9 +7,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.attendanceapp.R;
 import com.example.attendanceapp.core.utils.ColorUtil;
 import com.example.attendanceapp.databinding.ItemScheduleWeekDayBinding;
 import com.example.attendanceapp.domain.model.DayStatus;
@@ -110,6 +110,7 @@ public class ManagerWeekDaySelectorAdapter extends RecyclerView.Adapter<ManagerW
         public void bind(LocalDate date) {
             Context context = itemView.getContext();
             boolean isSelected = date.equals(selectedDate);
+            boolean isToday = date.equals(LocalDate.now());
 
             // 1. Format Tên Thứ (T2, T3, T4... / CN)
             String dayOfWeekName = getShortDayOfWeekName(date);
@@ -122,39 +123,38 @@ public class ManagerWeekDaySelectorAdapter extends RecyclerView.Adapter<ManagerW
             DayStatus status = dayStatuses.getOrDefault(date, DayStatus.NONE);
             setupStatusIcon(status);
 
-            // 4. Xử lý UI Trạng thái Được chọn (Selected) vs Chưa chọn (Unselected)
-            int strokeWidth = 0;
-            int strokeColor = 0;
-            if (date.equals(LocalDate.now())) {
-                strokeWidth = (int) (1 * context.getResources().getDisplayMetrics().density); // 1dp
-                strokeColor = ColorUtil.getThemeColor(context, com.google.android.material.R.attr.colorOnPrimary);
-            }
-            binding.cardDayItem.setStrokeWidth(strokeWidth);
-            binding.cardDayItem.setStrokeColor(strokeColor);
+            // 4. Bỏ hoàn toàn stroke viền Card
+            binding.cardDayItem.setStrokeWidth(0);
 
+            // 5. Xử lý màu chữ Text: Ngày hôm nay -> primary, Các ngày khác -> colorOnSurfaceVariant
+            int textColor;
+            if (isToday) {
+                textColor = ColorUtil.getThemeColor(context, R.attr.colorPrimary);
+            } else {
+                textColor = ColorUtil.getThemeColor(
+                        context,
+                        com.google.android.material.R.attr.colorOnSurfaceVariant
+                );
+            }
+            binding.tvDayOfWeek.setTextColor(textColor);
+            binding.tvDayNumber.setTextColor(textColor);
+
+            // 6. Xử lý màu nền Card: Được chọn -> colorPrimaryContainer, Chưa chọn -> colorSurfaceVariant
             if (isSelected) {
-                // Card nổi bật khi được chọn
                 int containerColor = ColorUtil.getThemeColor(
                         context,
-                        com.google.android.material.R.attr.colorPrimaryContainer
+                        R.attr.colorPrimaryContainer
                 );
                 binding.cardDayItem.setCardBackgroundColor(containerColor);
-
-                int primaryColor = ColorUtil.getThemeColor(context, com.google.android.material.R.attr.colorSecondary);
-                binding.tvDayOfWeek.setTextColor(primaryColor);
-                binding.tvDayNumber.setTextColor(primaryColor);
             } else {
-                // Background mờ khi không được chọn
-                binding.cardDayItem.setCardBackgroundColor(
-                        ColorUtil.getThemeColor(context, com.google.android.material.R.attr.colorSurfaceVariant)
+                int surfaceVariantColor = ColorUtil.getThemeColor(
+                        context,
+                        com.google.android.material.R.attr.colorSurfaceVariant
                 );
-
-                int secondaryColor = ColorUtil.getThemeColor(context, com.google.android.material.R.attr.colorSecondary);
-                binding.tvDayOfWeek.setTextColor(secondaryColor);
-                binding.tvDayNumber.setTextColor(secondaryColor);
+                binding.cardDayItem.setCardBackgroundColor(surfaceVariantColor);
             }
 
-            // 5. Sự kiện Click ô ngày
+            // 7. Sự kiện Click ô ngày
             itemView.setOnClickListener(v -> {
                 setSelectedDate(date);
                 if (onDateSelectedListener != null) {

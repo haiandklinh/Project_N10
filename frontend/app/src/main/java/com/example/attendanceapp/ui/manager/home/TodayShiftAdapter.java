@@ -68,14 +68,19 @@ public class TodayShiftAdapter extends RecyclerView.Adapter<TodayShiftAdapter.Vi
         void bind(TodayShiftSummary shift, OnShiftClickListener listener) {
             if (shift == null) return;
 
+            // 1. Chỉ gán tên ca ở hàng trên
             String name = shift.getShiftName() != null ? shift.getShiftName() : "Ca làm việc";
+            binding.tvShiftName.setText(name);
+
+            // 2. Gán khung giờ ở hàng dưới (tv_shift_time)
             String timeRange = shift.getTimeRange();
             if (timeRange != null && !timeRange.trim().isEmpty()) {
-                binding.tvShiftName.setText(name + " · " + timeRange);
+                binding.tvShiftTime.setText(timeRange);
             } else {
-                binding.tvShiftName.setText(name);
+                binding.tvShiftTime.setText("--:-- - --:--");
             }
 
+            // 3. Địa điểm
             String location = shift.getLocation();
             if (location != null && !location.trim().isEmpty()) {
                 binding.tvShiftLocation.setText(location);
@@ -83,8 +88,8 @@ public class TodayShiftAdapter extends RecyclerView.Adapter<TodayShiftAdapter.Vi
                 binding.tvShiftLocation.setText("Văn phòng chính");
             }
 
-            // Chip hiển thị số nhân viên làm ca này
-            binding.tagShiftEmployeeCount.setText(shift.getEmployeeCount() + " NV");
+            // 4. Chip số nhân viên làm ca này
+            binding.tagShiftStatus .setText(shift.getEmployeeCount() + " nhân viên");
 
             binding.getRoot().setOnClickListener(v -> {
                 if (listener != null) {

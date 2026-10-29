@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?android:attr/colorBackground">
 
-    <!-- Import Toolbar dùng chung -->
+    <!-- Toolbar dùng chung (ẩn khi nhúng trong tab container) -->
     <com.example.attendanceapp.core.utils.ToolbarApp
         android:id="@+id/toolbar_app"
         android:layout_width="match_parent"
@@ -30,9 +29,53 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="@dimen/spacing_l">
+            android:padding="@dimen/spacing_m">
 
-            <!-- CARD KHU VỰC NHẬP ĐƠN TỪ -->
+            <!-- ===== LƯU Ý ===== -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/ItemCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_m"
+                app:cardBackgroundColor="?attr/colorSecondaryContainer"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/spacing_m">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_warning"
+                        app:tint="?attr/colorOnSecondaryContainer" />
+
+                    <TextView
+                        style="@style/BodyTextSmallStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_s"
+                        android:layout_weight="1"
+                        android:text="Đơn xin nghỉ phép sẽ được Quản lý xem xét và phê duyệt. Vui lòng chọn đúng ngày, ca và ghi rõ lý do."
+                        android:textColor="?attr/colorOnSecondaryContainer" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ===== NHÓM 1: NGÀY & CA ===== -->
+            <TextView
+                style="@style/TitleTextSmallStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_s"
+                android:text="Ngày và ca xin nghỉ"
+                android:textColor="?attr/colorPrimary"
+                android:textStyle="bold" />
+
             <com.google.android.material.card.MaterialCardView
                 style="@style/MainCard"
                 android:layout_width="match_parent"
@@ -45,45 +88,16 @@
                     android:orientation="vertical"
                     android:padding="@dimen/spacing_m">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Thông tin đơn đề nghị"
-                        android:textColor="?attr/colorPrimary"
-                        android:textSize="@dimen/text_size_title_medium"
-                        android:textStyle="bold"
-                        android:layout_marginBottom="@dimen/spacing_m" />
-
-                    <!-- LOẠI ĐƠN TỪ (Dropdown) -->
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/til_request_type"
-                        style="@style/SpinnerStyle"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="Loại đơn từ"
-                        app:startIconDrawable="@drawable/ic_category"
-                        app:startIconTint="?attr/colorPrimary"
-                        android:layout_marginBottom="@dimen/spacing_m">
-
-                        <AutoCompleteTextView
-                            android:id="@+id/act_request_type"
-                            style="@style/AppTextInputEditText"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:inputType="none"
-                            tools:ignore="LabelFor" />
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <!-- NGÀY ÁP DỤNG -->
+                    <!-- NGÀY XIN NGHỈ -->
                     <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/til_date"
                         style="@style/AppTextInputLayout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Chọn ngày áp dụng"
+                        android:layout_marginBottom="@dimen/spacing_m"
+                        android:hint="Chọn ngày xin nghỉ"
                         app:startIconDrawable="@drawable/ic_calendar"
-                        app:startIconTint="?attr/colorPrimary"
-                        android:layout_marginBottom="@dimen/spacing_m">
+                        app:startIconTint="?attr/colorPrimary">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/et_date"
@@ -95,18 +109,15 @@
                             android:inputType="none" />
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <!-- CA LÀM / CA HỌC ĐỔI (Dropdown/Select) -->
+                    <!-- CA XIN NGHỈ (Dropdown) -->
                     <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/til_shift_info"
                         style="@style/SpinnerStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Chọn ca làm / ca học cần đổi"
+                        android:hint="Chọn ca xin nghỉ"
                         app:startIconDrawable="@drawable/ic_history"
-                        app:startIconTint="?attr/colorPrimary"
-                        android:visibility="gone"
-                        android:layout_marginBottom="@dimen/spacing_m"
-                        tools:visibility="visible">
+                        app:startIconTint="?attr/colorPrimary">
 
                         <AutoCompleteTextView
                             android:id="@+id/act_shift_info"
@@ -116,15 +127,39 @@
                             android:inputType="none" />
                     </com.google.android.material.textfield.TextInputLayout>
 
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ===== NHÓM 2: LÝ DO ===== -->
+            <TextView
+                style="@style/TitleTextSmallStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_s"
+                android:text="Lý do xin nghỉ"
+                android:textColor="?attr/colorPrimary"
+                android:textStyle="bold" />
+
+            <com.google.android.material.card.MaterialCardView
+                style="@style/MainCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_m">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_m">
+
                     <!-- LÝ DO CỤ THỂ -->
                     <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/til_reason"
                         style="@style/AppTextInputLayout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Lý do cụ thể"
-                        app:startIconTint="?attr/colorPrimary"
-                        android:layout_marginBottom="@dimen/spacing_s">
+                        android:layout_marginBottom="@dimen/spacing_m"
+                        android:hint="Lý do xin nghỉ phép">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/et_reason"
@@ -137,14 +172,25 @@
                             android:minLines="3" />
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <!-- CHECKBOX NGHỈ ĐỘT XUẤT -->
-                    <com.google.android.material.checkbox.MaterialCheckBox
-                        android:id="@+id/cb_is_emergency"
+                    <!-- NGHỈ ĐỘT XUẤT (khối nhấn mạnh màu error của theme) -->
+                    <com.google.android.material.card.MaterialCardView
+                        style="@style/ItemCard"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Nghỉ đột xuất (Cần HR/Quản lý duyệt gấp trong ngày)"
-                        android:textColor="?attr/colorError"
-                        android:textSize="@dimen/text_size_body_small" />
+                        app:cardBackgroundColor="?attr/colorErrorContainer"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="0dp">
+
+                        <com.google.android.material.checkbox.MaterialCheckBox
+                            android:id="@+id/cb_is_emergency"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:paddingStart="@dimen/spacing_xs"
+                            android:text="Nghỉ đột xuất (Cần HR/Quản lý duyệt gấp trong ngày)"
+                            android:textColor="?attr/colorOnErrorContainer"
+                            android:textSize="@dimen/text_size_body_small"
+                            app:buttonTint="?attr/colorError" />
+                    </com.google.android.material.card.MaterialCardView>
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -157,8 +203,9 @@
         android:id="@+id/layout_bottom_action"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:cardElevation="@dimen/elevation_l"
+        app:cardBackgroundColor="?attr/colorSurface"
         app:cardCornerRadius="0dp"
+        app:cardElevation="@dimen/elevation_l"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <com.google.android.material.button.MaterialButton
@@ -167,7 +214,7 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/button_height_default"
             android:layout_margin="@dimen/spacing_m"
-            android:text="Gửi đơn phê duyệt" />
+            android:text="Gửi đơn xin nghỉ phép" />
     </com.google.android.material.card.MaterialCardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

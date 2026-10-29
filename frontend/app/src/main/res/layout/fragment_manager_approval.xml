@@ -9,13 +9,16 @@
     tools:context=".ui.manager.approval.ManagerApprovalFragment">
 
     <!-- Toolbar (không có nút back vì đây là tab gốc) -->
-    <com.example.attendanceapp.core.utils.ToolbarApp
+    <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar_app"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent"
+        android:layout_height="@dimen/button_height_m"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:title="Duyệt yêu cầu nhân sự"
+        app:titleCentered="false"
+        app:titleTextAppearance="@style/TitleTextLargeStyle" />
 
     <!-- Thanh lọc trạng thái -->
     <com.google.android.material.tabs.TabLayout

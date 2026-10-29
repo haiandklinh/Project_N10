@@ -26,7 +26,7 @@
         android:layout_height="68dp"
         android:layout_gravity="bottom"
         app:backgroundTint="?attr/colorSurfaceVariant"
-        app:elevation="8dp"
+        app:elevation="1dp"
         app:fabAlignmentMode="center"
         app:fabCradleMargin="8dp"
         app:fabCradleRoundedCornerRadius="24dp"

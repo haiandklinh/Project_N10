@@ -25,9 +25,11 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -56,6 +58,7 @@ public class ManagerScheduleViewModel extends ViewModel {
     private final MutableLiveData<LocalDate> currentWeekMonday = new MutableLiveData<>(LocalDate.now().with(DayOfWeek.MONDAY));
     // null = Tất cả, FILTER_UNASSIGNED = Chưa xếp, còn lại = shiftId
     private final MutableLiveData<String> selectedShiftFilter = new MutableLiveData<>(null);
+    private final MutableLiveData<Boolean> isPastDate = new MutableLiveData<>(false);
 
     private final MutableLiveData<List<EmployeeWorkSchedule>> rawSchedules = new MutableLiveData<>(new ArrayList<>());
     private final MutableLiveData<List<StaffItemResponse>> companyStaffs = new MutableLiveData<>(new ArrayList<>());
@@ -151,11 +154,22 @@ public class ManagerScheduleViewModel extends ViewModel {
         uiState.addSource(rawSchedules, schedules -> updateUiState());
         uiState.addSource(companyStaffs, staffs -> updateUiState());
         uiState.addSource(selectedShiftFilter, filter -> updateUiState());
-        uiState.addSource(selectedDate, date -> updateUiState());
+        uiState.addSource(selectedDate, date -> {
+            updateIsPastDate(date);
+            updateUiState();
+        });
         uiState.addSource(shiftOptions, options -> updateUiState());
         uiState.addSource(isLoading, loading -> updateUiState());
         uiState.addSource(errorMsg, error -> updateUiState());
         uiState.addSource(isAssignSuccess, success -> updateUiState());
+    }
+
+    private void updateIsPastDate(LocalDate date) {
+        if (date == null) {
+            isPastDate.setValue(false);
+            return;
+        }
+        isPastDate.setValue(date.isBefore(LocalDate.now()));
     }
 
     private void updateUiState() {
@@ -320,27 +334,26 @@ public class ManagerScheduleViewModel extends ViewModel {
         LocalDate selected = selectedDate.getValue();
         if (selected == null) selected = LocalDate.now();
 
-        // Tính toán phạm vi hiển thị (thường là 42 ngày cho grid tháng)
+        // Gom các ngày có ca vào Set một lần thay vì quét lại danh sách cho từng ô
+        Set<String> daysWithShift = new HashSet<>();
+        if (schedules != null) {
+            for (EmployeeWorkSchedule s : schedules) {
+                if (s.getWorkDate() != null && s.getShift() != null) {
+                    daysWithShift.add(s.getWorkDate());
+                }
+            }
+        }
+
+        // Phạm vi grid tháng: 42 ngày
         LocalDate firstDayOfMonth = selected.withDayOfMonth(1);
         int dayOfWeekOfFirst = firstDayOfMonth.getDayOfWeek().getValue();
         LocalDate gridStartDate = firstDayOfMonth.minusDays(dayOfWeekOfFirst - 1);
 
         for (int i = 0; i < 42; i++) {
             LocalDate date = gridStartDate.plusDays(i);
-
-            long count = 0;
-            if (schedules != null) {
-                count = schedules.stream()
-                        .filter(s -> s.getWorkDate() != null && date.toString().equals(s.getWorkDate()) && s.getShift() != null)
-                        .count();
-            }
-
-            // Logic: Có ca -> Tích xanh, Không ca -> ! đỏ
-            if (count > 0) {
-                statuses.put(date, DayStatus.SUCCESS);
-            } else {
-                statuses.put(date, DayStatus.CRITICAL);
-            }
+            // Có ca -> SUCCESS, không có ca -> CRITICAL
+            statuses.put(date, daysWithShift.contains(date.toString())
+                    ? DayStatus.SUCCESS : DayStatus.CRITICAL);
         }
         return statuses;
     }
@@ -445,10 +458,14 @@ public class ManagerScheduleViewModel extends ViewModel {
         );
     }
 
-    // User Actions
+    // ===================== User Actions =====================
+    // QUY TẮC: luôn set currentWeekMonday TRƯỚC, selectedDate SAU CÙNG,
+    // vì selectedDate kích hoạt uiState và các observer ngay lập tức.
+
     public void setSelectedDate(LocalDate date) {
-        this.selectedDate.setValue(date);
+        if (date == null) return;
         this.currentWeekMonday.setValue(date.with(DayOfWeek.MONDAY));
+        this.selectedDate.setValue(date);
     }
 
     public void setFilter(String filter) {
@@ -462,14 +479,10 @@ public class ManagerScheduleViewModel extends ViewModel {
         if (isWeekMode) {
             LocalDate monday = currentWeekMonday.getValue();
             if (monday != null) {
-                LocalDate newMonday = monday.minusWeeks(1);
-                currentWeekMonday.setValue(newMonday);
-                selectedDate.setValue(newMonday);
+                setSelectedDate(monday.minusWeeks(1));
             }
         } else {
-            LocalDate newDate = current.minusMonths(1).withDayOfMonth(1);
-            selectedDate.setValue(newDate);
-            currentWeekMonday.setValue(newDate.with(DayOfWeek.MONDAY));
+            setSelectedDate(current.minusMonths(1).withDayOfMonth(1));
         }
     }
 
@@ -480,14 +493,10 @@ public class ManagerScheduleViewModel extends ViewModel {
         if (isWeekMode) {
             LocalDate monday = currentWeekMonday.getValue();
             if (monday != null) {
-                LocalDate newMonday = monday.plusWeeks(1);
-                currentWeekMonday.setValue(newMonday);
-                selectedDate.setValue(newMonday);
+                setSelectedDate(monday.plusWeeks(1));
             }
         } else {
-            LocalDate newDate = current.plusMonths(1).withDayOfMonth(1);
-            selectedDate.setValue(newDate);
-            currentWeekMonday.setValue(newDate.with(DayOfWeek.MONDAY));
+            setSelectedDate(current.plusMonths(1).withDayOfMonth(1));
         }
     }
 
@@ -495,6 +504,7 @@ public class ManagerScheduleViewModel extends ViewModel {
     public LiveData<ManagerScheduleUiState> getUiState() { return uiState; }
     public LiveData<LocalDate> getSelectedDate() { return selectedDate; }
     public LiveData<LocalDate> getCurrentWeekMonday() { return currentWeekMonday; }
+    public LiveData<Boolean> getIsPastDate() { return isPastDate; }
     public String getSelectedShiftFilter() { return selectedShiftFilter.getValue(); }
 
     @Override

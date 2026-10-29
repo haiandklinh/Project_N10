@@ -32,65 +32,37 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/tv_today_shifts_label" />
 
-    <!-- Card hiển thị khi chưa có ca làm việc hôm nay -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/card_empty_shifts"
-        style="@style/MainCard"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/spacing_s"
-        android:clickable="true"
-        android:focusable="true"
-        app:cardCornerRadius="@dimen/radius_m"
-        app:layout_constraintTop_toBottomOf="@id/tv_today_shifts_label"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:padding="@dimen/spacing_m">
-
-            <ImageView
-                android:layout_width="@dimen/icon_size_l"
-                android:layout_height="@dimen/icon_size_l"
-                android:contentDescription="@null"
-                android:src="@drawable/ic_schedule"
-                app:tint="?attr/colorPrimary" />
-
-            <TextView
-                android:id="@+id/tv_empty_shift_msg"
-                style="@style/BodyTextMediumStyle"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/spacing_s"
-                android:layout_marginEnd="@dimen/spacing_s"
-                android:layout_weight="1"
-                android:text="Chưa có ca làm việc, thiết lập ca làm việc"
-                android:textColor="?attr/colorOnSurface" />
-
-            <ImageView
-                android:layout_width="@dimen/icon_size_m"
-                android:layout_height="@dimen/icon_size_m"
-                android:contentDescription="@null"
-                android:src="@drawable/ic_chevron_right"
-                app:tint="?attr/colorOnSurfaceVariant" />
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_today_shifts"
+    <!-- CONTAINER CHỨA CẢ CARD TRỐNG VÀ RECYCLERVIEW -->
+    <FrameLayout
+        android:id="@+id/fl_today_shifts_container"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/spacing_s"
-        android:nestedScrollingEnabled="false"
-        android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/tv_today_shifts_label"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        tools:itemCount="3"
-        tools:listitem="@layout/item_shift_today" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_today_shifts_label">
+
+        <!-- 1. Card hiển thị khi chưa có ca làm việc -->
+        <include
+            android:id="@+id/include_shift_today"
+            layout="@layout/layout_empty_shift"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="visible"
+            tools:visibility="visible" />
+
+        <!-- 2. Danh sách ca làm việc -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_today_shifts"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:nestedScrollingEnabled="false"
+            android:visibility="gone"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:itemCount="3"
+            tools:listitem="@layout/item_shift_today"
+            tools:visibility="gone" />
+
+    </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

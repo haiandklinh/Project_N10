@@ -67,7 +67,8 @@
 
     <!-- ==================== ICON SIZES ==================== -->
 
-    <dimen name="icon_size_xs">12dp</dimen>
+    <dimen name="icon_size_2xs">12dp</dimen>
+    <dimen name="icon_size_xs">14dp</dimen>
     <dimen name="icon_size_s">16dp</dimen>
     <dimen name="icon_size_m">20dp</dimen>
     <dimen name="icon_size_l">24dp</dimen> <!-- Kích thước tiêu chuẩn cho Action Bar / Navigation -->
@@ -76,7 +77,7 @@
 
 
     <!-- ICON CONTAINER SIZES -->
-    <dimen name="icon_container_xs">20dp</dimen>
+    <dimen name="icon_container_xs">24dp</dimen>
     <dimen name="icon_container_s">28dp</dimen>
     <dimen name="icon_container_m">40dp</dimen>
     <dimen name="icon_container_l">48dp</dimen> <!-- Kích thước tiêu chuẩn cho Action Button / Circular Icon -->

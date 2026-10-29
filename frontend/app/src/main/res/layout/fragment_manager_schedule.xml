@@ -161,6 +161,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_xs"
                 android:clipToPadding="false"
+                android:visibility="gone"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/divider_calendar_top"
@@ -168,6 +169,16 @@
                 tools:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
                 tools:listitem="@layout/item_schedule_week_day"
                 tools:spanCount="7" />
+
+            <include
+                android:id="@+id/layout_calendar_month"
+                layout="@layout/layout_schedule_calendar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:visibility="visible"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/divider_calendar_top" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.card.MaterialCardView>
@@ -188,6 +199,51 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@id/btn_add_shift"
         tools:text="Hôm nay - Thứ 2, 29/9/2026" />
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_past_date_warning"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/spacing_m"
+        android:layout_marginTop="@dimen/spacing_xs"
+        android:visibility="gone"
+        app:cardBackgroundColor="?attr/colorAttendanceAbsentContainer"
+        app:cardCornerRadius="@dimen/radius_m"
+        app:cardElevation="0dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btn_add_shift"
+        app:strokeWidth="0dp"
+        tools:visibility="visible">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="@dimen/spacing_s">
+
+            <ImageView
+                android:id="@+id/iv_warning_icon"
+                android:layout_width="@dimen/icon_size_s"
+                android:layout_height="@dimen/icon_size_s"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_warning"
+                app:tint="?attr/colorAttendanceAbsent" />
+
+            <TextView
+                android:id="@+id/tv_past_date_warning"
+                style="@style/BodyTextSmallStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_s"
+                android:layout_weight="1"
+                android:text="Đây là ngày trong quá khứ. Bạn chỉ có thể xem lịch, không thể xếp hoặc chỉnh sửa ca."
+                android:textColor="?attr/colorAttendanceAbsent" />
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_add_shift"
@@ -214,7 +270,7 @@
         android:background="?attr/colorOutlineVariant"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btn_add_shift" />
+        app:layout_constraintTop_toBottomOf="@id/card_past_date_warning" />
 
     <HorizontalScrollView
         android:id="@+id/scroll_view_chips"
@@ -236,6 +292,7 @@
             app:selectionRequired="true"
             app:singleLine="true"
             app:singleSelection="true">
+
         </com.google.android.material.chip.ChipGroup>
     </HorizontalScrollView>
 
@@ -259,18 +316,6 @@
             tools:listitem="@layout/item_manager_schedule_employee" />
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-    <include
-        android:id="@+id/layout_calendar_month"
-        layout="@layout/layout_schedule_calendar"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginHorizontal="@dimen/spacing_xs"
-        android:layout_marginTop="@dimen/spacing_xs"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/card_header" />
 
     <include
         android:id="@+id/layout_empty_state"

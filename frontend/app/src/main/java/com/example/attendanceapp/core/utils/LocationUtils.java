@@ -40,7 +40,18 @@ public class LocationUtils {
     }
 
     private static final ExecutorService executor = Executors.newSingleThreadExecutor();
-    private static final Handler mainHandler = new Handler(Looper.getMainLooper());
+    private static volatile Handler mainHandler;
+
+    private static Handler getMainHandler() {
+        if (mainHandler == null) {
+            synchronized (LocationUtils.class) {
+                if (mainHandler == null) {
+                    mainHandler = new Handler(Looper.getMainLooper());
+                }
+            }
+        }
+        return mainHandler;
+    }
 
     private static String getMapboxToken(Context context) {
         if (context != null) {
@@ -77,7 +88,8 @@ public class LocationUtils {
                         }
                         String result = sb.toString().trim();
                         if (!result.isEmpty()) {
-                            mainHandler.post(() -> callback.onAddressFound(result));
+                            String cleanResult = stripCountryOrLastSegment(result);
+                            getMainHandler().post(() -> callback.onAddressFound(cleanResult));
                             return;
                         }
                     }
@@ -89,14 +101,36 @@ public class LocationUtils {
             // 2. Fallback sang Mapbox Reverse Geocoding API
             String mapboxAddress = fetchMapboxReverseGeocode(context, lat, lon);
             if (!TextUtils.isEmpty(mapboxAddress)) {
-                mainHandler.post(() -> callback.onAddressFound(mapboxAddress));
+                String cleanMapboxAddress = stripCountryOrLastSegment(mapboxAddress);
+                getMainHandler().post(() -> callback.onAddressFound(cleanMapboxAddress));
                 return;
             }
 
             // 3. Nếu cả 2 đều không được, trả về tọa độ dạng text
             String fallbackCoords = String.format(Locale.getDefault(), "%.6f, %.6f", lat, lon);
-            mainHandler.post(() -> callback.onAddressFound(fallbackCoords));
+            getMainHandler().post(() -> callback.onAddressFound(fallbackCoords));
         });
+    }
+
+    /**
+     * Loại bỏ phần tử/miền cuối cùng trong chuỗi địa chỉ (thường là tên quốc gia như "Việt Nam", "Vietnam").
+     * Ví dụ: "123 Đường Cầu Giấy, Quan Hoa, Cầu Giấy, Hà Nội, Việt Nam" -> "123 Đường Cầu Giấy, Quan Hoa, Cầu Giấy, Hà Nội"
+     */
+    public static String stripCountryOrLastSegment(String fullAddress) {
+        if (fullAddress == null) return null;
+        String trimmed = fullAddress.trim();
+        // Loại bỏ dấu phẩy hoặc chấm thừa ở cuối chuỗi
+        while (trimmed.endsWith(",") || trimmed.endsWith(".")) {
+            trimmed = trimmed.substring(0, trimmed.length() - 1).trim();
+        }
+        int lastComma = trimmed.lastIndexOf(',');
+        if (lastComma > 0) {
+            String candidate = trimmed.substring(0, lastComma).trim();
+            if (!candidate.isEmpty()) {
+                return candidate;
+            }
+        }
+        return trimmed;
     }
 
     /**
@@ -106,7 +140,7 @@ public class LocationUtils {
      */
     public static void getLocationFromAddress(Context context, String addressName, CoordinatesCallback callback) {
         if (TextUtils.isEmpty(addressName)) {
-            mainHandler.post(() -> callback.onError("Địa chỉ trống"));
+            getMainHandler().post(() -> callback.onError("Địa chỉ trống"));
             return;
         }
 
@@ -120,7 +154,7 @@ public class LocationUtils {
                     double parsedLat = Double.parseDouble(parts[0]);
                     double parsedLon = Double.parseDouble(parts[1]);
                     if (parsedLat >= -90 && parsedLat <= 90 && parsedLon >= -180 && parsedLon <= 180) {
-                        mainHandler.post(() -> callback.onCoordinatesFound(parsedLat, parsedLon));
+                        getMainHandler().post(() -> callback.onCoordinatesFound(parsedLat, parsedLon));
                         return;
                     }
                 } catch (NumberFormatException ignored) {}
@@ -136,7 +170,7 @@ public class LocationUtils {
                         double lat = addr.getLatitude();
                         double lon = addr.getLongitude();
                         if (lat != 0.0 || lon != 0.0) {
-                            mainHandler.post(() -> callback.onCoordinatesFound(lat, lon));
+                            getMainHandler().post(() -> callback.onCoordinatesFound(lat, lon));
                             return;
                         }
                     }
@@ -148,11 +182,11 @@ public class LocationUtils {
             // 3. Fallback sang Mapbox Forward Geocoding API
             double[] coords = fetchMapboxForwardGeocode(context, trimmed);
             if (coords != null && coords.length == 2) {
-                mainHandler.post(() -> callback.onCoordinatesFound(coords[0], coords[1]));
+                getMainHandler().post(() -> callback.onCoordinatesFound(coords[0], coords[1]));
                 return;
             }
 
-            mainHandler.post(() -> callback.onError("Không thể xác định tọa độ từ địa chỉ"));
+            getMainHandler().post(() -> callback.onError("Không thể xác định tọa độ từ địa chỉ"));
         });
     }
 

@@ -74,19 +74,31 @@ public class EmployeeWeekDayAdapter extends RecyclerView.Adapter<EmployeeWeekDay
             if (weekDay == null) return;
             LocalDate today = LocalDate.now();
             LocalDate date = weekDay.getDate();
+            boolean isToday = weekDay.isToday() || (date != null && date.equals(today));
 
             binding.tvDayName.setText(getDayLetter(date));
             bindStatus(weekDay.getStatus());
 
-            boolean isPastOrToday = date != null && (date.isBefore(today) || weekDay.isToday());
+            boolean isPastOrToday = date != null && (date.isBefore(today) || isToday);
 
-            // Màu chữ: ngày đã qua hoặc hôm nay -> primary
+            // 1. Màu chữ: ngày đã qua hoặc hôm nay -> primary
             int textColorAttr = isPastOrToday ? R.attr.colorPrimary : R.attr.colorOnSurfaceVariant;
             binding.tvDayName.setTextColor(ColorUtil.getThemeColor(itemView, textColorAttr));
 
-            // Màu nền card: chỉ hôm nay nổi bật
-            int cardColorAttr = weekDay.isToday() ? R.attr.colorPrimaryContainer : R.attr.colorSurfaceVariant;
+            // 2. Màu nền card: chỉ hôm nay nổi bật
+            int cardColorAttr = isToday ? R.attr.colorPrimaryContainer : R.attr.colorSurfaceVariant;
             binding.cardWeekDay.setCardBackgroundColor(ColorUtil.getThemeColor(itemView, cardColorAttr));
+
+            // 3. Viền 1dp màu colorPrimary cho ngày hôm nay
+            if (isToday) {
+                int strokeWidth = ColorUtil.dpToPx(itemView.getContext(), 1);
+                int primaryColor = ColorUtil.getThemeColor(itemView, R.attr.colorPrimary);
+
+                binding.cardWeekDay.setStrokeWidth(strokeWidth);
+                binding.cardWeekDay.setStrokeColor(primaryColor);
+            } else {
+                binding.cardWeekDay.setStrokeWidth(0);
+            }
 
             itemView.setOnClickListener(v -> {
                 if (onDayClickListener != null) {

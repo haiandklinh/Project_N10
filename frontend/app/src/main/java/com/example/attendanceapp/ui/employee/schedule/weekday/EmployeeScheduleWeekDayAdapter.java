@@ -89,6 +89,7 @@ public class EmployeeScheduleWeekDayAdapter extends RecyclerView.Adapter<Employe
             Context context = itemView.getContext();
             LocalDate date = weekDay.getDate();
             boolean isSelected = date.equals(selectedDate);
+            boolean isToday = date.equals(LocalDate.now());
 
             // 1. Format Tên Thứ (T2, T3, T4... / CN)
             String dayOfWeekName = getShortDayOfWeekName(date);
@@ -100,41 +101,35 @@ public class EmployeeScheduleWeekDayAdapter extends RecyclerView.Adapter<Employe
             // 3. Xử lý Icon chỉ báo trạng thái ca làm dựa theo AttendanceStatus
             setupStatusIcon(weekDay.getStatus());
 
-            // 4. Xử lý UI Trạng thái Được chọn (Selected) vs Chưa chọn (Unselected)
-            int strokeWidth = 0;
-            int strokeColor = 0;
-            if (date.equals(LocalDate.now())) {
-                strokeWidth = (int) (2 * context.getResources().getDisplayMetrics().density); // 2dp
-                strokeColor = ColorUtil.getThemeColor(context, com.google.android.material.R.attr.colorSecondary);
-            }
-            binding.cardDayItem.setStrokeWidth(strokeWidth);
-            binding.cardDayItem.setStrokeColor(strokeColor);
+            // 4. Bỏ hoàn toàn stroke viền Card
+            binding.cardDayItem.setStrokeWidth(0);
 
-            if (isSelected) {
-                // Card trắng nổi bật khi chọn
-                // Lấy màu từ Theme Attribute (R.attr.colorPrimaryContainer)
-                int containerColor = ColorUtil.getThemeColor(
-                        context,
-                        com.google.android.material.R.attr.colorPrimaryContainer
-                );
-                // Gán màu vào MaterialCardView
-                binding.cardDayItem.setCardBackgroundColor(containerColor);
-
-                int primaryColor = ColorUtil.getThemeColor(context, com.google.android.material.R.attr.colorSecondary);
-                binding.tvDayOfWeek.setTextColor(primaryColor);
-                binding.tvDayNumber.setTextColor(primaryColor);
+            // 5. Xử lý màu sắc Text (Ngày hôm nay luôn có màu colorPrimary)
+            int textColor;
+            if (isToday) {
+                textColor = ColorUtil.getThemeColor(context, R.attr.colorPrimary);
             } else {
-                // Background mờ khi không chọn
-                binding.cardDayItem.setCardBackgroundColor(
-                        ColorUtil.getThemeColor(context, com.google.android.material.R.attr.colorSurfaceVariant)
+                textColor = ColorUtil.getThemeColor(
+                        context,
+                        com.google.android.material.R.attr.colorOnSurfaceVariant
                 );
+            }
+            binding.tvDayOfWeek.setTextColor(textColor);
+            binding.tvDayNumber.setTextColor(textColor);
 
-                int secondaryColor = ColorUtil.getThemeColor(context, com.google.android.material.R.attr.colorSecondary);
-                binding.tvDayOfWeek.setTextColor(secondaryColor);
-                binding.tvDayNumber.setTextColor(secondaryColor);
+            // 6. Xử lý màu nền Card khi Chọn vs Không chọn
+            if (isSelected) {
+                int containerColor = ColorUtil.getThemeColor(context, R.attr.colorPrimaryContainer);
+                binding.cardDayItem.setCardBackgroundColor(containerColor);
+            } else {
+                int surfaceVariantColor = ColorUtil.getThemeColor(
+                        context,
+                        com.google.android.material.R.attr.colorSurfaceVariant
+                );
+                binding.cardDayItem.setCardBackgroundColor(surfaceVariantColor);
             }
 
-            // 5. Sự kiện Click ô ngày
+            // 7. Sự kiện Click ô ngày
             itemView.setOnClickListener(v -> {
                 setSelectedDate(date);
                 if (onDayClickListener != null) {

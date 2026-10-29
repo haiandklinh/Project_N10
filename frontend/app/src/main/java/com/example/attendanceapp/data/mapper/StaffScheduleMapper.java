@@ -1,6 +1,5 @@
 package com.example.attendanceapp.data.mapper;
 
-
 import com.example.attendanceapp.data.dto.response.staff.StaffWorkScheduleResponse;
 import com.example.attendanceapp.data.local.pref.SharedPreferenceApp;
 import com.example.attendanceapp.domain.model.AttendanceStatus;
@@ -136,12 +135,12 @@ public final class StaffScheduleMapper {
                     return ShiftStatus.ABSENT;
                 }
             }
-            
+
             // Nếu đã qua giờ bắt đầu ca làm mà chưa bấm check-in -> Chưa chấm công
             if (startTime != null && now.isAfter(startTime)) {
                 return ShiftStatus.NOT_CHECKED_IN;
             }
-            
+
             // Chưa đến thời gian vào ca -> Chưa vào ca
             return ShiftStatus.PENDING;
         }
@@ -159,6 +158,18 @@ public final class StaffScheduleMapper {
             }
         }
         return last;
+    }
+
+    /** Danh sách tất cả các ca hôm nay. Trả về rỗng nếu không có ca nào. */
+    public static List<Shift> pickTodayShifts(List<Shift> shifts, LocalDate today) {
+        List<Shift> result = new ArrayList<>();
+        if (shifts == null) return result;
+        for (Shift shift : shifts) {
+            if (today.equals(shift.getDate())) {
+                result.add(shift);
+            }
+        }
+        return result;
     }
 
     /** Các ca sau hôm nay, tối đa limit ca. */
@@ -186,23 +197,70 @@ public final class StaffScheduleMapper {
     }
 
     /**
-     * 7 ngày của tuần bắt đầu từ weekStart. Chưa có API chấm công nên chưa biết đi làm hay vắng:
-     * ngày thường là NOT_CHECKED, Thứ 7/Chủ nhật không có ca là WEEKEND.
+     * 7 ngày của tuần bắt đầu từ weekStart.
+     * Quy tắc trạng thái đồng bộ:
+     * - Ngày có ca: đã chấm (PRESENT), quá hạn chưa chấm (ABSENT), chưa chấm (NOT_CHECKED)
+     * - Ngày KHÔNG có ca:
+     *   + Nếu là cuối tuần (T7, CN): WEEKEND
+     *   + Nếu có đơn nghỉ phép: LEAVE
+     *   + Còn lại: NOT_CHECKED (chứ không phải LEAVE)
      */
     public static List<WeekDay> buildWeekDays(List<Shift> shifts, LocalDate weekStart, LocalDate today) {
+        return buildWeekDays(shifts, weekStart, today, null);
+    }
+
+    public static List<WeekDay> buildWeekDays(List<Shift> shifts, LocalDate weekStart, LocalDate today, SharedPreferenceApp pref) {
         Set<LocalDate> scheduledDates = new HashSet<>();
-        for (Shift shift : shifts) {
-            scheduledDates.add(shift.getDate());
+        Set<LocalDate> presentDates = new HashSet<>();
+
+        if (shifts != null) {
+            for (Shift shift : shifts) {
+                if (shift == null || shift.getDate() == null) continue;
+                LocalDate d = shift.getDate();
+                scheduledDates.add(d);
+
+                if (pref != null) {
+                    CheckState cs = pref.getShiftAttendanceState(
+                            shift.getId(), d.toString(), shift.getShiftName()
+                    );
+                    if (cs == CheckState.CHECKED_IN || cs == CheckState.CHECKED_OUT) {
+                        presentDates.add(d);
+                    }
+                }
+                if (shift.getStatus() == ShiftStatus.WORKING || shift.getStatus() == ShiftStatus.COMPLETED) {
+                    presentDates.add(d);
+                }
+            }
         }
 
         List<WeekDay> weekDays = new ArrayList<>();
         for (int i = 0; i < 7; i++) {
             LocalDate date = weekStart.plusDays(i);
-            boolean weekend = date.getDayOfWeek() == DayOfWeek.SATURDAY
-                    || date.getDayOfWeek() == DayOfWeek.SUNDAY;
-            AttendanceStatus status = (weekend && !scheduledDates.contains(date))
-                    ? AttendanceStatus.WEEKEND
-                    : AttendanceStatus.NOT_CHECKED;
+            boolean isWeekend = (date.getDayOfWeek() == DayOfWeek.SATURDAY || date.getDayOfWeek() == DayOfWeek.SUNDAY);
+            boolean hasShift = scheduledDates.contains(date);
+            boolean hasAttendance = presentDates.contains(date);
+            boolean isLeave = (pref != null && pref.isLeaveDate(date));
+
+            AttendanceStatus status;
+            if (hasShift) {
+                if (hasAttendance) {
+                    status = AttendanceStatus.PRESENT;
+                } else if (date.isBefore(today)) {
+                    status = AttendanceStatus.ABSENT;
+                } else {
+                    status = AttendanceStatus.NOT_CHECKED;
+                }
+            } else {
+                if (isWeekend) {
+                    status = AttendanceStatus.WEEKEND;
+                } else if (isLeave) {
+                    status = AttendanceStatus.LEAVE;
+                } else {
+                    // Những ngày chưa được xếp ca (trừ ngày làm đơn nghỉ phép, ngày cuối tuần) là NOT_CHECKED
+                    status = AttendanceStatus.NOT_CHECKED;
+                }
+            }
+
             weekDays.add(new WeekDay(date, status, date.equals(today)));
         }
         return weekDays;

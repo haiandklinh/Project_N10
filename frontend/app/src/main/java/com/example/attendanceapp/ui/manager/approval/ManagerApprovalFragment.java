@@ -8,6 +8,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -76,9 +78,7 @@ public class ManagerApprovalFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         viewModel = new ViewModelProvider(requireActivity()).get(ManagerApprovalViewModel.class);
 
-        binding.toolbarApp.setTitle("Duyệt yêu cầu");
-        binding.toolbarApp.setBackButtonVisible(false);
-
+        applyWindowInsets();
         loadApprovalRequests();
         setupList();
         setupStatusTabs();
@@ -89,7 +89,13 @@ public class ManagerApprovalFragment extends Fragment {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(notification -> loadApprovalRequests(), throwable -> {}));
     }
-
+    private void applyWindowInsets() {
+        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, insets) -> {
+            int statusBarHeight = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
+            v.setPadding(v.getPaddingLeft(), statusBarHeight, v.getPaddingRight(), v.getPaddingBottom());
+            return insets;
+        });
+    }
     private void loadApprovalRequests() {
         binding.swipeRefreshLayout.setRefreshing(true);
         disposables.add(

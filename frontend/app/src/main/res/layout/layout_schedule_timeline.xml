@@ -18,8 +18,9 @@
         <!-- ==================== HEADER NAVIGATION (CÂN GIỮA ĐỀU) ==================== -->
         <ImageView
             android:id="@+id/btn_prev_week"
-            android:layout_width="@dimen/icon_size_m"
-            android:layout_height="@dimen/icon_size_m"
+            android:layout_width="@dimen/icon_size_l"
+            android:layout_height="@dimen/icon_size_l"
+            android:layout_marginTop="@dimen/spacing_3xs"
             android:background="@drawable/bg_time_chip"
             android:clickable="true"
             android:contentDescription="Tuần trước"
@@ -46,8 +47,9 @@
 
         <ImageView
             android:id="@+id/btn_next_week"
-            android:layout_width="@dimen/icon_size_m"
-            android:layout_height="@dimen/icon_size_m"
+            android:layout_width="@dimen/icon_size_l"
+            android:layout_height="@dimen/icon_size_l"
+            android:layout_marginTop="@dimen/spacing_3xs"
             android:background="@drawable/bg_time_chip"
             android:clickable="true"
             android:contentDescription="Tuần sau"

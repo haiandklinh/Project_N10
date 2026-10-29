@@ -77,8 +77,8 @@
     <!-- Chấm đỏ thông báo chưa đọc: mặc định ẩn, code sẽ bật khi có thông báo mới -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/notification_badge"
-        android:layout_width="@dimen/icon_size_xs"
-        android:layout_height="@dimen/icon_size_xs"
+        android:layout_width="@dimen/icon_size_2xs"
+        android:layout_height="@dimen/icon_size_2xs"
         android:visibility="gone"
         app:cardBackgroundColor="?attr/colorAttendanceAbsent"
         app:cardCornerRadius="@dimen/radius_full"

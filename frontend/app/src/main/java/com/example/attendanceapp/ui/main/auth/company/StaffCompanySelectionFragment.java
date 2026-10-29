@@ -15,6 +15,10 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+
 import com.example.attendanceapp.R;
 import com.example.attendanceapp.databinding.FragmentStaffCompanySelectionBinding;
 import com.example.attendanceapp.domain.model.UserRole;
@@ -59,10 +63,39 @@ public class StaffCompanySelectionFragment extends Fragment {
 
         viewModel = new ViewModelProvider(this).get(StaffCompanySelectionViewModel.class);
 
+        setupWindowInsets();
         setupRecyclerView();
         setupListeners();
         setupFragmentResultListener();
         observeViewModel();
+    }
+
+    private void setupWindowInsets() {
+        // 1. Xử lý phần Header (Status Bar)
+        int initialHeaderPaddingTop = binding.layoutHeader.getPaddingTop();
+        ViewCompat.setOnApplyWindowInsetsListener(binding.layoutHeader, (v, insets) -> {
+            Insets statusBars = insets.getInsets(WindowInsetsCompat.Type.statusBars());
+            v.setPadding(
+                    v.getPaddingLeft(),
+                    statusBars.top + initialHeaderPaddingTop,
+                    v.getPaddingRight(),
+                    v.getPaddingBottom()
+            );
+            return insets;
+        });
+
+        // 2. Xử lý phần Bottom Actions (Navigation Bar)
+        int initialBottomPaddingBottom = binding.layoutBottomActions.getPaddingBottom();
+        ViewCompat.setOnApplyWindowInsetsListener(binding.layoutBottomActions, (v, insets) -> {
+            Insets navigationBars = insets.getInsets(WindowInsetsCompat.Type.navigationBars());
+            v.setPadding(
+                    v.getPaddingLeft(),
+                    v.getPaddingTop(),
+                    v.getPaddingRight(),
+                    navigationBars.bottom + initialBottomPaddingBottom
+            );
+            return insets;
+        });
     }
 
     private void setupRecyclerView() {
@@ -75,7 +108,6 @@ public class StaffCompanySelectionFragment extends Fragment {
         binding.swipeRefreshLayout.setOnRefreshListener(() -> viewModel.loadCompanies());
 
         binding.btnJoinAnotherCompany.setOnClickListener(v -> showEnterCodeBottomSheet());
-        binding.btnEmptyJoinCode.setOnClickListener(v -> showEnterCodeBottomSheet());
 
         binding.btnLogout.setOnClickListener(v -> {
             new AlertDialog.Builder(requireContext())
@@ -111,12 +143,20 @@ public class StaffCompanySelectionFragment extends Fragment {
     private void observeViewModel() {
         viewModel.companies.observe(getViewLifecycleOwner(), list -> {
             if (list == null || list.isEmpty()) {
+                // Khi chưa tham gia công ty nào
                 binding.layoutEmpty.setVisibility(View.VISIBLE);
                 binding.rvCompanies.setVisibility(View.GONE);
+
+                // Đổi chữ nút hành động thành "Tham gia công ty"
+                binding.btnJoinAnotherCompany.setText("Tham gia công ty");
             } else {
+                // Khi đã tham gia ít nhất 1 công ty
                 binding.layoutEmpty.setVisibility(View.GONE);
                 binding.rvCompanies.setVisibility(View.VISIBLE);
                 adapter.setItems(list);
+
+                // Đổi chữ nút hành động thành "Tham gia công ty khác"
+                binding.btnJoinAnotherCompany.setText("Tham gia công ty khác");
             }
         });
 
@@ -135,7 +175,6 @@ public class StaffCompanySelectionFragment extends Fragment {
             binding.btnJoinAnotherCompany.setEnabled(!loading);
             binding.btnLogout.setEnabled(!loading);
             binding.rvCompanies.setEnabled(!loading);
-            binding.btnEmptyJoinCode.setEnabled(!loading);
         });
 
         viewModel.errorMessage.observe(getViewLifecycleOwner(), error -> {

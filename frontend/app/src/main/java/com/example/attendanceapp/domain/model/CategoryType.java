@@ -6,7 +6,7 @@ public enum CategoryType {
     CHECK_IN("Chấm công", R.drawable.ic_check_circle),
     ADJUSTMENT("Điều chỉnh", R.drawable.ic_adjust),
     SWAP_SHIFT("Đổi ca", R.drawable.ic_refresh),
-    LEAVE_REQUEST("Đơn từ", R.drawable.ic_form),
+    LEAVE_REQUEST("Xin nghỉ phép", R.drawable.ic_form),
     PAYROLL("Bảng lương", R.drawable.ic_payroll),
     STATISTIC("Thống kê", R.drawable.ic_chart);
 

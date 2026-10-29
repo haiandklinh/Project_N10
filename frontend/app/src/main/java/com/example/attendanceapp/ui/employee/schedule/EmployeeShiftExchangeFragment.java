@@ -100,10 +100,15 @@ public class EmployeeShiftExchangeFragment extends Fragment {
     }
 
     private void setupToolbar() {
-        binding.toolbarApp.setTitle("Yêu cầu đổi ca");
-        binding.toolbarApp.setOnBackClickListener(() -> {
-            requireActivity().getOnBackPressedDispatcher().onBackPressed();
-        });
+        if (getParentFragment() instanceof com.example.attendanceapp.ui.employee.schedule.leave.EmployeeCreateRequestContainerFragment) {
+            binding.toolbarApp.setVisibility(View.GONE);
+        } else {
+            binding.toolbarApp.setVisibility(View.VISIBLE);
+            binding.toolbarApp.setTitle("Yêu cầu đổi ca");
+            binding.toolbarApp.setOnBackClickListener(() -> {
+                requireActivity().getOnBackPressedDispatcher().onBackPressed();
+            });
+        }
     }
 
     private void setupQuotaDisplay() {

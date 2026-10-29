@@ -4,15 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/layout_calendar_root"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:paddingBottom="@dimen/spacing_m">
+    android:layout_height="wrap_content">
 
     <!-- Header Thứ trong tuần với Background và Vách ngăn -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/calendar_week_header"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="?attr/colorSecondary"
         android:paddingVertical="@dimen/spacing_s"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -25,7 +23,7 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:text="T2"
-            android:textColor="?attr/colorOnSecondary"
+            android:textColor="?attr/colorSurfaceVariant"
             android:textSize="@dimen/text_size_label_medium"
             android:textStyle="bold"
             app:layout_constraintEnd_toStartOf="@id/v_div_header_1"
@@ -75,7 +73,7 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:text="T4"
-            android:textColor="?attr/colorOnSecondary"
+            android:textColor="?attr/colorSurfaceVariant"
             android:textSize="@dimen/text_size_label_medium"
             android:textStyle="bold"
             app:layout_constraintEnd_toStartOf="@id/v_div_header_3"
@@ -100,7 +98,7 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:text="T5"
-            android:textColor="?attr/colorOnSecondary"
+            android:textColor="?attr/colorSurfaceVariant"
             android:textSize="@dimen/text_size_label_medium"
             android:textStyle="bold"
             app:layout_constraintEnd_toStartOf="@id/v_div_header_4"
@@ -125,7 +123,7 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:text="T6"
-            android:textColor="?attr/colorOnSecondary"
+            android:textColor="?attr/colorSurfaceVariant"
             android:textSize="@dimen/text_size_label_medium"
             android:textStyle="bold"
             app:layout_constraintEnd_toStartOf="@id/v_div_header_5"
@@ -150,7 +148,7 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:text="T7"
-            android:textColor="?attr/colorOnSecondary"
+            android:textColor="?attr/colorSurfaceVariant"
             android:textSize="@dimen/text_size_label_medium"
             android:textStyle="bold"
             app:layout_constraintEnd_toStartOf="@id/v_div_header_6"
@@ -197,7 +195,7 @@
         android:id="@+id/rv_calendar_grid"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/spacing_xs"
+
         android:nestedScrollingEnabled="false"
         android:paddingHorizontal="@dimen/spacing_3xs"
         app:layout_constraintTop_toBottomOf="@id/divider_header"
@@ -233,18 +231,18 @@
             android:layout_columnWeight="1"
             android:gravity="center_vertical"
             android:orientation="horizontal">
-            <View
-                android:layout_width="8dp"
-                android:layout_height="8dp"
-                android:background="@drawable/bg_status_dot"
+            <ImageView
+                android:layout_width="@dimen/icon_size_s"
+                android:layout_height="@dimen/icon_size_s"
+                android:background="@drawable/ic_check"
                 android:backgroundTint="?attr/colorAttendancePresent" />
             <TextView
                 style="@style/BodyTextSmallStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"
-                android:text="Đủ quân số"
-                android:textColor="?attr/colorOnSurfaceVariant" />
+                android:text="Đã xếp lịch"
+                android:textColor="?attr/colorSurfaceVariant" />
         </LinearLayout>
 
         <!-- Cảnh báo -->
@@ -254,18 +252,18 @@
             android:layout_columnWeight="1"
             android:gravity="center_vertical"
             android:orientation="horizontal">
-            <View
-                android:layout_width="8dp"
-                android:layout_height="8dp"
-                android:background="@drawable/bg_status_dot"
+            <ImageView
+                android:layout_width="@dimen/icon_size_s"
+                android:layout_height="@dimen/icon_size_s"
+                android:background="@drawable/ic_warning"
                 android:backgroundTint="?attr/colorAttendanceLate" />
             <TextView
                 style="@style/BodyTextSmallStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"
-                android:text="Chờ duyệt"
-                android:textColor="?attr/colorOnSurfaceVariant" />
+                android:text="Bản nháp"
+                android:textColor="?attr/colorSurfaceVariant" />
         </LinearLayout>
 
         <!-- Critical -->
@@ -275,18 +273,18 @@
             android:layout_columnWeight="1"
             android:gravity="center_vertical"
             android:orientation="horizontal">
-            <View
-                android:layout_width="8dp"
-                android:layout_height="8dp"
-                android:background="@drawable/bg_status_dot"
+            <ImageView
+                android:layout_width="@dimen/icon_size_s"
+                android:layout_height="@dimen/icon_size_s"
+                android:background="@drawable/ic_warning"
                 android:backgroundTint="?attr/colorAttendanceAbsent" />
             <TextView
                 style="@style/BodyTextSmallStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"
-                android:text="Thiếu ca"
-                android:textColor="?attr/colorOnSurfaceVariant" />
+                android:text="Chưa xếp lịch"
+                android:textColor="?attr/colorSurfaceVariant" />
         </LinearLayout>
 
     </GridLayout>

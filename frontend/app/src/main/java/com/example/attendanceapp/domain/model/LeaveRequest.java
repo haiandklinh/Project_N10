@@ -3,13 +3,15 @@ package com.example.attendanceapp.domain.model;
 public class LeaveRequest {
     private String id;
     private String userId;
-    private ApprovalRequestType type; // Refactor: String -> ApprovalRequestType
-    private String targetDate;        // Ngày xin nghỉ / Ngày đổi ca
-    private String shiftId;           // ID ca làm muốn đổi (nếu có)
+    private ApprovalRequestType type;
+    private String targetDate;        // Ngày xin nghỉ / Ngày đổi ca / Ngày điều chỉnh
+    private String shiftId;           // ID ca làm muốn đổi (nếu có) / Tên ca
     private String reason;
     private boolean isEmergency;       // Nghỉ đột xuất
-    private ApprovalStatus status;    // Refactor: String -> ApprovalStatus
+    private ApprovalStatus status;
     private long createdAt;
+    private String checkInTime;       // Dành riêng cho điều chỉnh công
+    private String checkOutTime;      // Dành riêng cho điều chỉnh công
 
     public LeaveRequest() {
     }
@@ -17,6 +19,12 @@ public class LeaveRequest {
     public LeaveRequest(String id, String userId, ApprovalRequestType type, String targetDate,
                         String shiftId, String reason, boolean isEmergency,
                         ApprovalStatus status, long createdAt) {
+        this(id, userId, type, targetDate, shiftId, reason, isEmergency, status, createdAt, null, null);
+    }
+
+    public LeaveRequest(String id, String userId, ApprovalRequestType type, String targetDate,
+                        String shiftId, String reason, boolean isEmergency,
+                        ApprovalStatus status, long createdAt, String checkInTime, String checkOutTime) {
         this.id = id;
         this.userId = userId;
         this.type = type;
@@ -26,6 +34,8 @@ public class LeaveRequest {
         this.isEmergency = isEmergency;
         this.status = status;
         this.createdAt = createdAt;
+        this.checkInTime = checkInTime;
+        this.checkOutTime = checkOutTime;
     }
 
     public String getId() {
@@ -98,5 +108,21 @@ public class LeaveRequest {
 
     public void setCreatedAt(long createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getCheckInTime() {
+        return checkInTime;
+    }
+
+    public void setCheckInTime(String checkInTime) {
+        this.checkInTime = checkInTime;
+    }
+
+    public String getCheckOutTime() {
+        return checkOutTime;
+    }
+
+    public void setCheckOutTime(String checkOutTime) {
+        this.checkOutTime = checkOutTime;
     }
 }

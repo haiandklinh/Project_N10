@@ -15,6 +15,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -126,12 +127,15 @@ public class EmployeeScheduleViewModel extends ViewModel {
 
         LocalDate today = LocalDate.now();
         List<Shift> weekShifts = StaffScheduleMapper.inRange(allShifts, currentWeekStart, currentWeekStart.plusDays(6));
+        List<Shift> todayShifts = StaffScheduleMapper.pickTodayShifts(allShifts, today);
+        Shift todayShift = StaffScheduleMapper.pickTodayShift(allShifts, today);
 
         scheduleUiState.setValue(ScheduleUiState.success(
-                StaffScheduleMapper.pickTodayShift(allShifts, today),
+                todayShift,
+                todayShifts,
                 StaffScheduleMapper.upcoming(allShifts, today, UPCOMING_LIMIT),
                 currentWeekStart,
-                StaffScheduleMapper.buildWeekDays(allShifts, currentWeekStart, today),
+                StaffScheduleMapper.buildWeekDays(allShifts, currentWeekStart, today, sharedPreferenceApp),
                 weekShifts.size(),
                 StaffScheduleMapper.totalHours(weekShifts)
         ));
@@ -149,18 +153,20 @@ public class EmployeeScheduleViewModel extends ViewModel {
         private final boolean isLoading;
         private final String error;
         private final Shift todayShift;              // null nếu hôm nay không có ca
+        private final List<Shift> todayShifts;
         private final List<Shift> upcomingShifts;
         private final LocalDate weekStart;
         private final List<WeekDay> weekDays;
         private final int totalShifts;               // số ca trong tuần đang xem
         private final double totalHours;             // tổng giờ trong tuần đang xem
 
-        private ScheduleUiState(boolean isLoading, String error, Shift todayShift,
+        private ScheduleUiState(boolean isLoading, String error, Shift todayShift, List<Shift> todayShifts,
                                 List<Shift> upcomingShifts, LocalDate weekStart,
                                 List<WeekDay> weekDays, int totalShifts, double totalHours) {
             this.isLoading = isLoading;
             this.error = error;
             this.todayShift = todayShift;
+            this.todayShifts = todayShifts != null ? todayShifts : (todayShift != null ? Collections.singletonList(todayShift) : Collections.emptyList());
             this.upcomingShifts = upcomingShifts;
             this.weekStart = weekStart;
             this.weekDays = weekDays;
@@ -169,24 +175,33 @@ public class EmployeeScheduleViewModel extends ViewModel {
         }
 
         public static ScheduleUiState loading() {
-            return new ScheduleUiState(true, null, null, new ArrayList<>(), null, new ArrayList<>(), 0, 0);
+            return new ScheduleUiState(true, null, null, Collections.emptyList(), new ArrayList<>(), null, new ArrayList<>(), 0, 0);
         }
 
         public static ScheduleUiState error(String error) {
             return new ScheduleUiState(false, error != null ? error : "Đã có lỗi xảy ra",
-                    null, new ArrayList<>(), null, new ArrayList<>(), 0, 0);
+                    null, Collections.emptyList(), new ArrayList<>(), null, new ArrayList<>(), 0, 0);
+        }
+
+        public static ScheduleUiState success(Shift todayShift, List<Shift> todayShifts, List<Shift> upcomingShifts,
+                                              LocalDate weekStart, List<WeekDay> weekDays,
+                                              int totalShifts, double totalHours) {
+            return new ScheduleUiState(false, null, todayShift, todayShifts, upcomingShifts,
+                    weekStart, weekDays, totalShifts, totalHours);
         }
 
         public static ScheduleUiState success(Shift todayShift, List<Shift> upcomingShifts,
                                               LocalDate weekStart, List<WeekDay> weekDays,
                                               int totalShifts, double totalHours) {
-            return new ScheduleUiState(false, null, todayShift, upcomingShifts,
-                    weekStart, weekDays, totalShifts, totalHours);
+            return success(todayShift,
+                    todayShift != null ? Collections.singletonList(todayShift) : Collections.emptyList(),
+                    upcomingShifts, weekStart, weekDays, totalShifts, totalHours);
         }
 
         public boolean isLoading() { return isLoading; }
         public String getError() { return error; }
         public Shift getTodayShift() { return todayShift; }
+        public List<Shift> getTodayShifts() { return todayShifts != null ? todayShifts : Collections.emptyList(); }
         public List<Shift> getUpcomingShifts() { return upcomingShifts; }
         public LocalDate getWeekStart() { return weekStart; }
         public List<WeekDay> getWeekDays() { return weekDays; }

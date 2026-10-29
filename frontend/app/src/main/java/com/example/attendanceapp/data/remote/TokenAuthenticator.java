@@ -19,11 +19,10 @@ import okhttp3.Response;
 import okhttp3.Route;
 import retrofit2.Call;
 
+/// File TokenAuthenticator.java này là phần xử lý tự động làm mới Access Token khi backend trả về lỗi HTTP 401.
 @Singleton
 public class TokenAuthenticator implements Authenticator {
-
     private final TokenManager tokenManager;
-    // Sử dụng Provider<AuthApi> để tránh vòng lặp phụ thuộc (Circular Dependency)
     private final Provider<AuthApi> authApiProvider;
 
     @Inject

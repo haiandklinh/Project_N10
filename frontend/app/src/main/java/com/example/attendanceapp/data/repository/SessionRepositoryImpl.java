@@ -223,7 +223,8 @@ public class SessionRepositoryImpl implements SessionRepository {
                     String name = entity.getName();
                     String companyName = entity.getCompanyName();
                     String companyId = entity.getCompanyId();
-                    String invitationCode = entity.getInvitationCode();
+//                    String invitationCode = entity.getInvitationCode();
+                    String invitationCode = null;
                     String avatarUrl = entity.getAvatarUrl();
                     String role = entity.getRole();
                     String dob = entity.getDateOfBirth();

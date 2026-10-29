@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?android:attr/colorBackground"
+    tools:context=".ui.manager.attendance_history.ManagerAttendanceHistoryFragment">
+
+    <!-- ==================== TOOLBAR ==================== -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        app:layout_constraintTop_toTopOf="parent"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        app:title="Lịch sử chấm công"
+        app:titleTextColor="?attr/colorOnSurface" />
+
+    <!-- ==================== HEADER: TUẦN / THÁNG TOGGLE + NAVIGATION ==================== -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/spacing_l"
+        android:layout_marginTop="@dimen/spacing_xs"
+        app:cardBackgroundColor="@drawable/bg_card_gradient"
+        app:cardCornerRadius="@dimen/radius_m"
+        app:cardElevation="0dp"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:strokeWidth="0dp">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_card_gradient"
+            android:padding="@dimen/spacing_m">
+
+            <!-- Tab Toggle: Tuần / Tháng -->
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:id="@+id/toggle_period"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                app:checkedButton="@id/btn_week"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:selectionRequired="true"
+                app:singleSelection="true">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_week"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:text="Tuần"
+                    android:textSize="@dimen/text_size_body_small" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_month"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:text="Tháng"
+                    android:textSize="@dimen/text_size_body_small" />
+
+            </com.google.android.material.button.MaterialButtonToggleGroup>
+
+            <!-- Period Navigation: < Tuần/Tháng X > -->
+            <LinearLayout
+                android:id="@+id/layout_period_navigation"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_m"
+                android:gravity="center"
+                android:orientation="horizontal"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/toggle_period">
+
+                <ImageView
+                    android:id="@+id/btn_prev_period"
+                    android:layout_width="@dimen/icon_size_xl"
+                    android:layout_height="@dimen/icon_size_xl"
+                    android:background="@drawable/bg_time_icon_circle"
+                    android:clickable="true"
+                    android:contentDescription="Trước"
+                    android:focusable="true"
+                    android:padding="@dimen/spacing_xs"
+                    android:src="@drawable/ic_chevron_left"
+                    app:tint="?attr/colorOnPrimary" />
+
+                <TextView
+                    android:id="@+id/tv_period_title"
+                    style="@style/TitleTextMediumStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="@dimen/spacing_s"
+                    android:textColor="?attr/colorOnPrimary"
+                    tools:text="Tuần 27/10 - 02/11" />
+
+                <ImageView
+                    android:id="@+id/btn_next_period"
+                    android:layout_width="@dimen/icon_size_xl"
+                    android:layout_height="@dimen/icon_size_xl"
+                    android:background="@drawable/bg_time_icon_circle"
+                    android:clickable="true"
+                    android:contentDescription="Sau"
+                    android:focusable="true"
+                    android:padding="@dimen/spacing_xs"
+                    android:src="@drawable/ic_chevron_right"
+                    app:tint="?attr/colorOnPrimary" />
+
+            </LinearLayout>
+
+            <!-- Thống kê summary -->
+            <LinearLayout
+                android:id="@+id/layout_stats"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_m"
+                android:baselineAligned="false"
+                android:orientation="horizontal"
+                app:layout_constraintTop_toBottomOf="@id/layout_period_navigation">
+
+                <!-- Đúng giờ -->
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/WaterCard"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/spacing_xs"
+                    android:layout_weight="1">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingVertical="@dimen/spacing_xs">
+
+                        <TextView
+                            android:id="@+id/tv_present_count"
+                            style="@style/TitleTextLargeStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0"
+                            android:textColor="?attr/colorSurfaceVariant" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/history_status_on_time"
+                            android:textColor="?attr/colorSurfaceVariant"
+                            android:textSize="@dimen/text_size_body_small" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Đi muộn -->
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/WaterCard"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/spacing_xs"
+                    android:layout_weight="1">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingVertical="@dimen/spacing_xs">
+
+                        <TextView
+                            android:id="@+id/tv_late_count"
+                            style="@style/TitleTextLargeStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0"
+                            android:textColor="?attr/colorSurfaceVariant" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/history_status_late"
+                            android:textColor="?attr/colorSurfaceVariant"
+                            android:textSize="@dimen/text_size_body_small" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Vắng -->
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/WaterCard"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/spacing_xs"
+                    android:layout_weight="1">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingVertical="@dimen/spacing_xs">
+
+                        <TextView
+                            android:id="@+id/tv_absent_count"
+                            style="@style/TitleTextLargeStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0"
+                            android:textColor="?attr/colorSurfaceVariant" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/history_status_absent"
+                            android:textColor="?attr/colorSurfaceVariant"
+                            android:textSize="@dimen/text_size_body_small" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Về sớm -->
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/WaterCard"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingVertical="@dimen/spacing_xs">
+
+                        <TextView
+                            android:id="@+id/tv_early_leave_count"
+                            style="@style/TitleTextLargeStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0"
+                            android:textColor="?attr/colorSurfaceVariant" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/history_status_early_leave"
+                            android:textColor="?attr/colorSurfaceVariant"
+                            android:textSize="@dimen/text_size_body_small" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- ==================== FILTER CHIPS ==================== -->
+    <HorizontalScrollView
+        android:id="@+id/scroll_view_chips"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_s"
+        android:clipToPadding="false"
+        android:fillViewport="true"
+        android:paddingHorizontal="@dimen/spacing_l"
+        android:scrollbars="none"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/card_header">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chip_group_filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:checkedChip="@id/chip_filter_all"
+            app:selectionRequired="true"
+            app:singleLine="true"
+            app:singleSelection="true">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_filter_all"
+                style="@style/ChipFilterStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="@string/history_filter_all" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_filter_present"
+                style="@style/ChipFilterStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/history_filter_present" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_filter_late"
+                style="@style/ChipFilterStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/history_filter_late" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_filter_absent"
+                style="@style/ChipFilterStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/history_filter_absent" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_filter_early"
+                style="@style/ChipFilterStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/history_filter_early" />
+        </com.google.android.material.chip.ChipGroup>
+    </HorizontalScrollView>
+
+    <!-- ==================== ATTENDANCE LIST ==================== -->
+    <FrameLayout
+        android:id="@+id/content_container"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/spacing_2xs"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/scroll_view_chips">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_attendance_history"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:paddingHorizontal="@dimen/spacing_xs"
+            android:paddingBottom="@dimen/spacing_l"
+            tools:itemCount="5"
+            tools:listitem="@layout/item_manager_attendance_history" />
+
+        <include
+            android:id="@+id/include_empty_state"
+            layout="@layout/layout_empty_state"
+            android:visibility="gone" />
+
+        <!-- Loading -->
+        <ProgressBar
+            android:id="@+id/progress_loading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone" />
+
+    </FrameLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -19,21 +19,18 @@
 
         <TextView
             android:id="@+id/tvWelcomeTitle"
+            style="@style/TitleTextLargeStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Công ty của bạn"
-            android:textColor="?android:attr/textColorPrimary"
-            android:textSize="22sp"
-            android:textStyle="bold" />
+            android:text="Công ty của bạn" />
 
         <TextView
             android:id="@+id/tvWelcomeSubtitle"
+            style="@style/BodyTextMediumStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="Chọn không gian làm việc bạn muốn truy cập:"
-            android:textColor="?android:attr/textColorSecondary"
-            android:textSize="14sp" />
+            android:text="Chọn không gian làm việc bạn muốn truy cập" />
     </LinearLayout>
 
     <!-- Swipe Refresh & List Section -->
@@ -54,9 +51,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:clipToPadding="false"
-                android:paddingTop="@dimen/spacing_xs"
-                android:paddingBottom="@dimen/spacing_m"
-                tools:listitem="@layout/item_staff_company" />
+                android:padding="@dimen/spacing_m"
+                tools:listitem="@layout/item_staff_company"
+                tools:visibility="gone"/>
 
             <!-- Empty State View -->
             <LinearLayout
@@ -67,7 +64,7 @@
                 android:orientation="vertical"
                 android:padding="@dimen/spacing_xl"
                 android:visibility="gone"
-                tools:visibility="gone">
+                tools:visibility="visible">
 
                 <ImageView
                     android:layout_width="120dp"
@@ -92,13 +89,6 @@
                     android:textColor="?android:attr/textColorSecondary"
                     android:textSize="14sp" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnEmptyJoinCode"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/spacing_l"
-                    android:text="Nhập mã mời gia nhập"
-                    app:icon="@drawable/ic_add" />
             </LinearLayout>
 
         </FrameLayout>
@@ -118,22 +108,27 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnJoinAnotherCompany"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="@dimen/button_height_m"
             android:paddingVertical="12dp"
             android:text="Tham gia công ty khác"
-            style="@style/Widget.Material3.Button.TonalButton"
+            style="@style/ButtonMaxWidthStyle"
             app:icon="@drawable/ic_add"
+            app:iconTint="?attr/colorPrimary"
+            android:textColor="?attr/colorPrimary"
+            android:backgroundTint="?attr/colorPrimaryContainer"
             app:iconGravity="textStart" />
 
         <!-- Nút Đăng xuất -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnLogout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_height="@dimen/button_height_m"
+            android:layout_marginTop="@dimen/spacing_s"
             android:text="Đăng xuất tài khoản"
             android:textColor="?attr/colorError"
-            style="@style/Widget.Material3.Button.TextButton" />
+            style="@style/ButtonOutlinedSmallStyle"
+            app:cornerRadius="@dimen/radius_full"
+            app:strokeColor="?attr/colorError"/>
     </LinearLayout>
 
     <!-- Loading Indicator -->

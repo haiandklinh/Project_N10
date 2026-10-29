@@ -317,7 +317,7 @@
                 style="@style/ItemCard"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="@dimen/spacing_2xs"
+                android:layout_marginEnd="@dimen/spacing_l"
                 app:cardBackgroundColor="?attr/colorPrimaryContainer"
                 app:layout_constraintEnd_toStartOf="@id/card_summary_check_out"
                 app:layout_constraintHorizontal_chainStyle="spread"
@@ -341,19 +341,6 @@
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
-                    <!-- Hàng 2: Icon + Giờ Check-in cùng 1 hàng -->
-                    <ImageView
-                        android:id="@+id/iv_ic_check_in"
-                        android:layout_width="18dp"
-                        android:layout_height="18dp"
-                        android:contentDescription="@null"
-                        android:src="@drawable/ic_history"
-                        app:layout_constraintBottom_toBottomOf="@id/tv_summary_check_in_time"
-                        app:layout_constraintEnd_toStartOf="@id/tv_summary_check_in_time"
-                        app:layout_constraintHorizontal_chainStyle="packed"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="@id/tv_summary_check_in_time"
-                        app:tint="?attr/colorPrimary" />
 
                     <TextView
                         android:id="@+id/tv_summary_check_in_time"
@@ -367,7 +354,7 @@
                         android:textStyle="bold"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toEndOf="@id/iv_ic_check_in"
+                        app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@id/tv_label_check_in" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
@@ -403,19 +390,6 @@
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
-                    <!-- Hàng 2: Icon + Giờ Check-out cùng 1 hàng -->
-                    <ImageView
-                        android:id="@+id/iv_ic_check_out"
-                        android:layout_width="18dp"
-                        android:layout_height="18dp"
-                        android:contentDescription="@null"
-                        android:src="@drawable/ic_history"
-                        app:layout_constraintBottom_toBottomOf="@id/tv_summary_check_out_time"
-                        app:layout_constraintEnd_toStartOf="@id/tv_summary_check_out_time"
-                        app:layout_constraintHorizontal_chainStyle="packed"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="@id/tv_summary_check_out_time"
-                        app:tint="?attr/colorPrimary" />
 
                     <TextView
                         android:id="@+id/tv_summary_check_out_time"
@@ -429,7 +403,7 @@
                         android:textStyle="bold"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toEndOf="@id/iv_ic_check_out"
+                        app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@id/tv_label_check_out" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>

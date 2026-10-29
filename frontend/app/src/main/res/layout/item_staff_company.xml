@@ -16,8 +16,8 @@
         <!-- Company Icon Container -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardIconContainer"
-            android:layout_width="@dimen/avatar_size_s"
-            android:layout_height="@dimen/avatar_size_s"
+            android:layout_width="@dimen/avatar_size_m"
+            android:layout_height="@dimen/avatar_size_m"
             app:cardBackgroundColor="?attr/colorPrimaryContainer"
             app:cardCornerRadius="@dimen/radius_s"
             app:cardElevation="0dp"
@@ -29,12 +29,13 @@
             <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:contentDescription="@null"
                 android:padding="@dimen/spacing_s"
-                android:src="@drawable/ic_home"
+                android:src="@drawable/ic_company"
                 app:tint="?attr/colorPrimary" />
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Company Name -->
+        <!-- 1. HÀNG 1: Company Name -->
         <TextView
             android:id="@+id/tvCompanyName"
             style="@style/TitleTextSmallStyle"
@@ -44,13 +45,12 @@
             android:layout_marginEnd="@dimen/spacing_s"
             android:ellipsize="end"
             android:maxLines="1"
-            app:layout_constraintBottom_toTopOf="@id/tvManagerName"
-            app:layout_constraintEnd_toStartOf="@id/tvPosition"
+            app:layout_constraintEnd_toStartOf="@id/ivArrow"
             app:layout_constraintStart_toEndOf="@id/cardIconContainer"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="Tập đoàn FPT" />
 
-        <!-- Manager Name -->
+        <!-- 2. HÀNG 2: Manager Name -->
         <TextView
             android:id="@+id/tvManagerName"
             style="@style/BodyTextSmallStyle"
@@ -61,22 +61,27 @@
             android:layout_marginEnd="@dimen/spacing_s"
             android:ellipsize="end"
             android:maxLines="1"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/tvPosition"
+            app:layout_constraintEnd_toStartOf="@id/ivArrow"
             app:layout_constraintStart_toEndOf="@id/cardIconContainer"
             app:layout_constraintTop_toBottomOf="@id/tvCompanyName"
             tools:text="Quản Lý: Nguyễn Văn A" />
 
-        <!-- Position Chip -->
-        <com.google.android.material.chip.Chip
+        <!-- 3. HÀNG 3: Position Text (Đã chuyển từ Chip thành TextView màu primary) -->
+        <TextView
             android:id="@+id/tvPosition"
-            style="@style/ChipStatusStyle"
-            android:layout_width="wrap_content"
+            style="@style/BodyTextSmallStyle"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/spacing_xs"
+            android:layout_marginTop="2dp"
+            android:layout_marginEnd="@dimen/spacing_s"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="?attr/colorPrimary"
+            android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/ivArrow"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/tvManagerName"
+            app:layout_constraintTop_toBottomOf="@+id/tvManagerName"
             tools:text="Nhân viên" />
 
         <!-- Arrow Indicator -->
@@ -84,11 +89,12 @@
             android:id="@+id/ivArrow"
             android:layout_width="20dp"
             android:layout_height="20dp"
+            android:contentDescription="@null"
             android:src="@drawable/ic_chevron_right"
-            app:tint="?android:attr/textColorSecondary"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="?android:attr/textColorSecondary" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

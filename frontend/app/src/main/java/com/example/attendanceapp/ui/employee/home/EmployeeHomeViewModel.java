@@ -182,7 +182,8 @@ public class EmployeeHomeViewModel extends ViewModel {
 
     private EmployeeHomeUiState buildState(UserAccount user, List<StaffWorkScheduleResponse> schedules) {
         LocalDate today = LocalDate.now();
-        Shift todayShift = findTodayShift(schedules, today, user.getUserId());
+        List<Shift> todayShifts = findTodayShifts(schedules, today, user.getUserId());
+        Shift todayShift = findTodayShift(todayShifts);
         LocalTime checkInTime = null;
         LocalTime checkOutTime = null;
         if (todayShift != null && sharedPreferenceApp != null) {
@@ -195,6 +196,7 @@ public class EmployeeHomeViewModel extends ViewModel {
                 user.getCompanyName(),
                 user.getAvatarUrl(),
                 todayShift,
+                todayShifts,
                 checkInTime,
                 checkOutTime,
                 buildWeekDays(schedules, today),
@@ -209,11 +211,11 @@ public class EmployeeHomeViewModel extends ViewModel {
     // 3. MAP LỊCH TỪ SERVER SANG DOMAIN
     // =====================================================================
 
-    /** Ca hôm nay: ca đầu tiên chưa kết thúc (theo giờ bắt đầu), nếu đã hết thì lấy ca cuối. Không có ca thì null. */
-    private Shift findTodayShift(List<StaffWorkScheduleResponse> schedules, LocalDate today, String employeeId) {
+    /** Danh sách tất cả các ca hôm nay của nhân viên, sắp xếp theo giờ bắt đầu */
+    private List<Shift> findTodayShifts(List<StaffWorkScheduleResponse> schedules, LocalDate today, String employeeId) {
         List<Shift> candidates = new ArrayList<>();
 
-        if (schedules == null) return null;
+        if (schedules == null) return candidates;
 
         for (StaffWorkScheduleResponse item : schedules) {
             if (item == null || item.getShifts() == null) continue;
@@ -268,10 +270,15 @@ public class EmployeeHomeViewModel extends ViewModel {
             }
         }
 
-        if (candidates.isEmpty()) return null;
-
         candidates.sort(Comparator.comparing(Shift::getStartTime,
                 Comparator.nullsLast(Comparator.naturalOrder())));
+
+        return candidates;
+    }
+
+    /** Ca hôm nay: ca đầu tiên chưa kết thúc (theo giờ bắt đầu), nếu đã hết thì lấy ca cuối. Không có ca thì null. */
+    private Shift findTodayShift(List<Shift> candidates) {
+        if (candidates == null || candidates.isEmpty()) return null;
 
         LocalTime now = LocalTime.now();
         for (Shift shift : candidates) {
@@ -335,9 +342,11 @@ public class EmployeeHomeViewModel extends ViewModel {
             } else {
                 if (isWeekend) {
                     status = AttendanceStatus.WEEKEND;
-                } else {
-                    // Ngày thường không có ca làm việc -> Trạng thái nghỉ phép
+                } else if (sharedPreferenceApp != null && sharedPreferenceApp.isLeaveDate(date)) {
                     status = AttendanceStatus.LEAVE;
+                } else {
+                    // Ngày chưa được xếp ca (trừ ngày làm đơn nghỉ phép, ngày cuối tuần) là NOT_CHECKED
+                    status = AttendanceStatus.NOT_CHECKED;
                 }
             }
 
@@ -353,7 +362,7 @@ public class EmployeeHomeViewModel extends ViewModel {
         for (int i = 0; i < 7; i++) {
             LocalDate date = monday.plusDays(i);
             boolean isWeekend = (date.getDayOfWeek() == DayOfWeek.SATURDAY || date.getDayOfWeek() == DayOfWeek.SUNDAY);
-            AttendanceStatus status = isWeekend ? AttendanceStatus.WEEKEND : AttendanceStatus.LEAVE;
+            AttendanceStatus status = isWeekend ? AttendanceStatus.WEEKEND : AttendanceStatus.NOT_CHECKED;
             weekDays.add(new WeekDay(date, status, date.equals(today)));
         }
         return weekDays;

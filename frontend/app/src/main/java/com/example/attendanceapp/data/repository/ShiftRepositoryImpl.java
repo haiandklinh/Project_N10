@@ -29,7 +29,6 @@ import retrofit2.HttpException;
  */
 @Singleton
 public class ShiftRepositoryImpl implements ShiftRepository {
-
     private final ShiftApi shiftApi;
     private final ShiftDao shiftDao;
     private final SharedPreferenceApp sharedPreferenceApp;

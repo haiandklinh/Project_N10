@@ -8,6 +8,7 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.attendanceapp.R;
+import com.example.attendanceapp.core.utils.ColorUtil;
 import com.example.attendanceapp.databinding.ItemHistoryCalendarDayBinding;
 import com.example.attendanceapp.domain.model.AttendanceStatus;
 import com.example.attendanceapp.domain.model.WeekDay;
@@ -86,15 +87,19 @@ public class EmployeeCalendarDayAdapter extends RecyclerView.Adapter<EmployeeCal
 
             // Highlight hôm nay
             if (day.isToday()) {
-                binding.getRoot().setBackgroundResource(
-                        R.drawable.bg_weekday_today
+                binding.cardCalendarDay.setCardBackgroundColor(
+                        ColorUtil.getThemeColor(itemView, R.attr.colorPrimaryContainer)
+                );
+                binding.cardCalendarDay.setStrokeColor(
+                        ColorUtil.getThemeColor(itemView, R.attr.colorPrimary)
                 );
 
-              binding.tvDayNumber.setTextColor(
-                        ContextCompat.getColor(
-                                itemView.getContext(),
-                                R.color.attendance_present
-                        )
+                // Đổi 1dp sang px
+                int strokeWidthPx = ColorUtil.dpToPx(itemView.getContext(), 1);
+                binding.cardCalendarDay.setStrokeWidth(strokeWidthPx);
+
+                binding.tvDayNumber.setTextColor(
+                        ColorUtil.getThemeColor(itemView, R.attr.colorPrimary)
                 );
             }
         }

@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.attendanceapp.R;
+import com.example.attendanceapp.data.local.pref.SharedPreferenceApp;
 import com.example.attendanceapp.databinding.FragmentManagerScheduleBinding;
 import com.example.attendanceapp.domain.model.ManagerEmployeeItem;
 import com.example.attendanceapp.domain.model.ShiftOption;
@@ -33,23 +34,24 @@ import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+
 import javax.inject.Inject;
-import com.example.attendanceapp.data.local.pref.SharedPreferenceApp;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class ManagerScheduleFragment extends Fragment {
-
     @Inject
     SharedPreferenceApp sharedPreferenceApp;
-
     private FragmentManagerScheduleBinding binding;
     private ManagerScheduleViewModel viewModel;
     private AssignShiftViewModel assignViewModel;
     private ManagerScheduleEmployeeAdapter adapter;
 
     private ManagerEmployeeItem pendingEmployeeForAssign;
+
+    // Dấu vết lần dựng chip gần nhất, để tránh dựng lại (làm thanh chip giật) khi chỉ đổi ngày
+    private String lastChipSignature = null;
 
     @Nullable
     @Override
@@ -71,6 +73,9 @@ public class ManagerScheduleFragment extends Fragment {
         setupFabAdd();
         setupBottomSheetResultListener();
 
+        // Đồng bộ hiển thị ban đầu với chế độ đang được chọn trên toggle
+        applyModeVisibility();
+
         setupObserves();
     }
 
@@ -80,6 +85,20 @@ public class ManagerScheduleFragment extends Fragment {
             v.setPadding(v.getPaddingLeft(), statusBarHeight, v.getPaddingRight(), v.getPaddingBottom());
             return insets;
         });
+    }
+
+    private boolean isMonthMode() {
+        return binding.toggleGroupTime.getCheckedButtonId() == R.id.btn_mode_month;
+    }
+
+    /**
+     * Chế độ Tuần: hiện strip 7 ngày. Chế độ Tháng: hiện lịch tháng.
+     * Phần xếp ca (hint, nút Xếp ca, chip, danh sách nhân viên) luôn hiển thị ở cả hai chế độ.
+     */
+    private void applyModeVisibility() {
+        boolean isMonth = isMonthMode();
+        binding.rvWeekDays.setVisibility(isMonth ? View.GONE : View.VISIBLE);
+        binding.layoutCalendarMonth.getRoot().setVisibility(isMonth ? View.VISIBLE : View.GONE);
     }
 
     private void setupObserves() {
@@ -97,24 +116,32 @@ public class ManagerScheduleFragment extends Fragment {
             // Render UI
             updateEmployeeList(state.getEmployees(), state.getShiftOptions());
             updateShiftChips(state.getShiftOptions());
-            updateWeekDaySelector(state);
 
-            if (binding.toggleGroupTime.getCheckedButtonId() == R.id.btn_mode_month) {
+            if (isMonthMode()) {
                 updateMonthCalendar(state);
+            } else {
+                updateWeekDaySelector(state);
             }
         });
 
+        // uiState đã phát lại mỗi khi selectedDate đổi, nên ở đây chỉ cập nhật tiêu đề
         viewModel.getSelectedDate().observe(getViewLifecycleOwner(), date -> updateTitleText());
+
+        // Observe isPastDate để disable các action khi chọn ngày quá khứ
+        viewModel.getIsPastDate().observe(getViewLifecycleOwner(), isPast -> {
+            binding.btnAddShift.setEnabled(!isPast);
+            binding.btnAddShift.setAlpha(isPast ? 0.5f : 1.0f);
+            binding.cardPastDateWarning.setVisibility(isPast ? View.VISIBLE : View.GONE);
+        });
     }
 
     private void updateEmployeeList(List<ManagerEmployeeItem> employees, List<ShiftOption> shiftOptions) {
         adapter.updateData(employees);
 
         boolean isListEmpty = employees.isEmpty();
-        boolean isWeekMode = binding.toggleGroupTime.getCheckedButtonId() == R.id.btn_mode_week;
 
         binding.rvEmployees.setVisibility(isListEmpty ? View.GONE : View.VISIBLE);
-        binding.layoutEmptyState.getRoot().setVisibility((isWeekMode && isListEmpty) ? View.VISIBLE : View.GONE);
+        binding.layoutEmptyState.getRoot().setVisibility(isListEmpty ? View.VISIBLE : View.GONE);
 
         if (isListEmpty) {
             String filter = viewModel.getSelectedShiftFilter();
@@ -169,12 +196,10 @@ public class ManagerScheduleFragment extends Fragment {
             gridDays.add(gridStartDate.plusDays(i));
         }
 
+        // Bấm ngày chỉ chọn ngày, vẫn ở chế độ tháng
         ManagerMonthCalendarAdapter monthAdapter = new ManagerMonthCalendarAdapter(
                 gridDays, selectedDate, selectedDate,
-                date -> {
-                    viewModel.setSelectedDate(date);
-                    binding.toggleGroupTime.check(R.id.btn_mode_week);
-                }
+                date -> viewModel.setSelectedDate(date)
         );
         monthAdapter.setDayStatuses(state.getDayStatuses());
 
@@ -183,39 +208,25 @@ public class ManagerScheduleFragment extends Fragment {
     }
 
     private void setupWeekNavigation() {
-        binding.btnPrevMonth.setOnClickListener(v -> {
-            boolean isWeek = binding.toggleGroupTime.getCheckedButtonId() == R.id.btn_mode_week;
-            viewModel.prevWeekOrMonth(isWeek);
-        });
-
-        binding.btnNextMonth.setOnClickListener(v -> {
-            boolean isWeek = binding.toggleGroupTime.getCheckedButtonId() == R.id.btn_mode_week;
-            viewModel.nextWeekOrMonth(isWeek);
-        });
+        binding.btnPrevMonth.setOnClickListener(v -> viewModel.prevWeekOrMonth(!isMonthMode()));
+        binding.btnNextMonth.setOnClickListener(v -> viewModel.nextWeekOrMonth(!isMonthMode()));
 
         binding.toggleGroupTime.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
-            if (isChecked) {
-                boolean isWeek = checkedId == R.id.btn_mode_week;
-                binding.rvWeekDays.setVisibility(isWeek ? View.VISIBLE : View.GONE);
-                binding.layoutCalendarMonth.getRoot().setVisibility(isWeek ? View.GONE : View.VISIBLE);
+            if (!isChecked) return;
 
-                binding.tvScheduleHint.setVisibility(isWeek ? View.VISIBLE : View.GONE);
-                binding.btnAddShift.setVisibility(isWeek ? View.VISIBLE : View.GONE);
-                binding.divider1.setVisibility(isWeek ? View.VISIBLE : View.GONE);
-                binding.scrollViewChips.setVisibility(isWeek ? View.VISIBLE : View.GONE);
-                binding.swipeRefreshLayout.setVisibility(isWeek ? View.VISIBLE : View.GONE);
+            // Chỉ đổi giữa strip 7 ngày và lịch tháng
+            applyModeVisibility();
 
-                // Cập nhật hiển thị empty state và lịch tháng
-                ManagerScheduleUiState state = viewModel.getUiState().getValue();
-                boolean isListEmpty = state != null && (state.getEmployees() == null || state.getEmployees().isEmpty());
-                binding.layoutEmptyState.getRoot().setVisibility((isWeek && isListEmpty) ? View.VISIBLE : View.GONE);
-
-                if (!isWeek && state != null) {
+            ManagerScheduleUiState state = viewModel.getUiState().getValue();
+            if (state != null) {
+                if (isMonthMode()) {
                     updateMonthCalendar(state);
+                } else {
+                    updateWeekDaySelector(state);
                 }
-
-                updateTitleText();
             }
+
+            updateTitleText();
         });
     }
 
@@ -224,7 +235,7 @@ public class ManagerScheduleFragment extends Fragment {
         LocalDate monday = viewModel.getCurrentWeekMonday().getValue();
         if (selectedDate == null || monday == null) return;
 
-        if (binding.toggleGroupTime.getCheckedButtonId() == R.id.btn_mode_week) {
+        if (!isMonthMode()) {
             LocalDate sunday = monday.plusDays(6);
             DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM");
             String rangeText = monday.format(fmt) + " – " + sunday.format(fmt) + "/" + monday.getYear();
@@ -245,6 +256,10 @@ public class ManagerScheduleFragment extends Fragment {
 
     private void setupEmployeeList() {
         adapter = new ManagerScheduleEmployeeAdapter(new ArrayList<>(), (employee, position) -> {
+            Boolean isPast = viewModel.getIsPastDate().getValue();
+            if (Boolean.TRUE.equals(isPast)) {
+                return;
+            }
             LocalDate selectedDate = viewModel.getSelectedDate().getValue();
             if (selectedDate == null) selectedDate = LocalDate.now();
             openQuickAssignBottomSheet(employee, selectedDate);
@@ -326,7 +341,6 @@ public class ManagerScheduleFragment extends Fragment {
                                     ""
                             );
                         }
-                        // Dùng trực tiếp viewModel (ManagerScheduleViewModel)
                         viewModel.updateShift(
                                 resultShift.getId(),
                                 resultShift.getTitle(),
@@ -359,6 +373,11 @@ public class ManagerScheduleFragment extends Fragment {
     }
 
     private void updateShiftChips(List<ShiftOption> shiftOptions) {
+        // Chỉ dựng lại chip khi danh sách ca hoặc bộ lọc thật sự đổi
+        String signature = buildChipSignature(shiftOptions);
+        if (signature.equals(lastChipSignature)) return;
+        lastChipSignature = signature;
+
         binding.chipGroupShifts.removeAllViews();
 
         // 1. Chip "Tất cả"
@@ -380,6 +399,19 @@ public class ManagerScheduleFragment extends Fragment {
         addFilterChip("Chưa xếp", ManagerScheduleViewModel.FILTER_UNASSIGNED, null);
     }
 
+    private String buildChipSignature(List<ShiftOption> shiftOptions) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(viewModel.getSelectedShiftFilter()).append('|');
+        if (shiftOptions != null) {
+            for (ShiftOption o : shiftOptions) {
+                sb.append(o.getId()).append(':')
+                        .append(o.getTitle()).append(':')
+                        .append(o.getTimeRange()).append(';');
+            }
+        }
+        return sb.toString();
+    }
+
     private void addFilterChip(String label, String filterValue, ShiftOption shiftOption) {
         Chip chip = (Chip) getLayoutInflater().inflate(R.layout.item_filter_chip, binding.chipGroupShifts, false);
         chip.setText(label);
@@ -399,11 +431,15 @@ public class ManagerScheduleFragment extends Fragment {
         });
 
         // Bắt sự kiện ấn giữ (Long Click) để chỉnh sửa hoặc xóa ca
+        // Chỉ cho phép khi không phải ngày quá khứ
         if (shiftOption != null) {
-            chip.setOnLongClickListener(v -> {
-                showShiftActionMenu(v, shiftOption);
-                return true;
-            });
+            Boolean isPast = viewModel.getIsPastDate().getValue();
+            if (isPast == null || !isPast) {
+                chip.setOnLongClickListener(v -> {
+                    showShiftActionMenu(v, shiftOption);
+                    return true;
+                });
+            }
         }
 
         binding.chipGroupShifts.addView(chip);
@@ -416,17 +452,14 @@ public class ManagerScheduleFragment extends Fragment {
 
         popup.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == 1) {
-                // Mở BottomSheet sửa ca
                 AddShiftBottomSheet bottomSheet = AddShiftBottomSheet.newInstanceForEdit(shift);
                 bottomSheet.show(getChildFragmentManager(), "edit_shift_from_chip");
                 return true;
             } else if (item.getItemId() == 2) {
-                // Xác nhận xóa ca
                 new MaterialAlertDialogBuilder(requireContext())
                         .setTitle("Xóa ca làm việc")
                         .setMessage("Bạn có chắc chắn muốn xóa " + shift.getTitle() + " không?")
                         .setPositiveButton("Xóa", (dialog, which) -> {
-                            // Dùng trực tiếp viewModel (ManagerScheduleViewModel)
                             viewModel.deleteShift(shift);
                             Toast.makeText(getContext(), "Đã xóa ca " + shift.getTitle(), Toast.LENGTH_SHORT).show();
                         })
@@ -442,6 +475,7 @@ public class ManagerScheduleFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        lastChipSignature = null;
         binding = null;
     }
 }

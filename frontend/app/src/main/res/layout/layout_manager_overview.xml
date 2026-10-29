@@ -75,20 +75,20 @@
                 android:layout_marginTop="@dimen/spacing_l"
                 android:alpha="0.5"
                 android:contentDescription="@null"
-                android:src="@drawable/ic_profile"
+                android:src="@drawable/ic_company"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tv_overview_label"
                 app:tint="?attr/colorOnPrimary" />
 
             <TextView
                 android:id="@+id/tv_total_employees"
+                style="@style/TitleTextLargeStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/spacing_2xs"
                 android:text="24"
+                android:textSize="32dp"
                 android:textColor="?attr/colorOnPrimary"
-                android:textSize="36sp"
-                android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="@id/iv_employees_icon"
                 app:layout_constraintStart_toEndOf="@id/iv_employees_icon"
                 app:layout_constraintTop_toTopOf="@id/iv_employees_icon" />
@@ -102,14 +102,15 @@
                 android:text="nhân viên đang hoạt động"
                 android:textColor="?attr/colorOnPrimary"
                 app:layout_constraintBottom_toBottomOf="@id/tv_total_employees"
-                app:layout_constraintStart_toEndOf="@id/tv_total_employees" />
+                app:layout_constraintStart_toEndOf="@id/tv_total_employees"
+                app:layout_constraintTop_toTopOf="@+id/tv_total_employees" />
 
             <!-- 4 Ô THỐNG KÊ TRẠNG THÁI CHẤM CÔNG -->
             <LinearLayout
                 android:id="@+id/layout_stats_grid"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_l"
+                android:layout_marginTop="@dimen/spacing_m"
                 android:baselineAligned="false"
                 android:orientation="horizontal"
                 app:layout_constraintTop_toBottomOf="@id/iv_employees_icon">

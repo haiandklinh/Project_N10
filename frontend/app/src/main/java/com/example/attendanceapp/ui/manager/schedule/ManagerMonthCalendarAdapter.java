@@ -144,7 +144,7 @@ public class ManagerMonthCalendarAdapter extends RecyclerView.Adapter<ManagerMon
                     colorRes = R.color.attendance_late;
                     break;
                 case CRITICAL:
-                    iconRes = R.drawable.ic_close;
+                    iconRes = R.drawable.ic_warning;
                     colorRes = R.color.attendance_absent;
                     break;
                 default:

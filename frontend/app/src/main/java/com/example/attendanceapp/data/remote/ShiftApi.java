@@ -26,7 +26,7 @@ public interface ShiftApi {
     @POST("shifts")
     Single<ShiftItemResponse> createShift(@Body ShiftItemRequest request);
 
-    // 4. PATCH /shifts/{id_shift} - Update Shift (Sửa @PUT -> @PATCH)
+    // 4. PATCH /shifts/{id_shift}
     @PATCH("shifts/{id_shift}")
     Single<ShiftItemResponse> updateShift(
             @Path("id_shift") String shiftId,
