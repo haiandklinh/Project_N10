@@ -44,6 +44,8 @@ engine = create_async_engine(
     settings.DATABASE_URL,
     echo=settings.DB_ECHO,
     connect_args={"ssl": True} if settings.DB_SSL else {},
+    pool_pre_ping=True,
+    pool_recycle=300,
 )
 SessionLocal = async_sessionmaker(
     bind=engine,
