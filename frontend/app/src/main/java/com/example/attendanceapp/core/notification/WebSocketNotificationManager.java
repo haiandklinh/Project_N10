@@ -52,6 +52,7 @@ public class WebSocketNotificationManager {
     private final PublishSubject<Boolean> joinApprovalSubject = PublishSubject.create();
 
     private WebSocket webSocket;
+    private String connectedUrl;
     private boolean isManuallyClosed = false;
 
     @Inject
@@ -80,9 +81,6 @@ public class WebSocketNotificationManager {
     }
 
     public synchronized void connect() {
-        if (webSocket != null) return;
-        isManuallyClosed = false;
-
         String token = tokenManager.getAccessToken();
         if (token == null || token.isEmpty()) {
             Log.d(TAG, "Cannot connect WebSocket: No access token");
@@ -90,6 +88,18 @@ public class WebSocketNotificationManager {
         }
 
         String wsUrl = buildWebSocketUrl();
+        if (webSocket != null) {
+            if (wsUrl.equals(connectedUrl)) {
+                return;
+            }
+            // Vai trò đã thay đổi (Manager <-> Employee): đóng kết nối cũ để nối đúng endpoint
+            webSocket.close(1000, "Role changed");
+            webSocket = null;
+            connectedUrl = null;
+        }
+
+        isManuallyClosed = false;
+        connectedUrl = wsUrl;
         Log.d(TAG, "Connecting to WebSocket: " + wsUrl);
 
         Request request = new Request.Builder()
@@ -118,14 +128,20 @@ public class WebSocketNotificationManager {
             @Override
             public void onClosed(@NonNull WebSocket webSocket, int code, @NonNull String reason) {
                 Log.d(TAG, "WebSocket closed: " + reason);
-                WebSocketNotificationManager.this.webSocket = null;
+                if (WebSocketNotificationManager.this.webSocket == webSocket) {
+                    WebSocketNotificationManager.this.webSocket = null;
+                    WebSocketNotificationManager.this.connectedUrl = null;
+                }
                 scheduleReconnect();
             }
 
             @Override
             public void onFailure(@NonNull WebSocket webSocket, @NonNull Throwable t, @Nullable Response response) {
                 Log.w(TAG, "WebSocket failure: " + t.getMessage());
-                WebSocketNotificationManager.this.webSocket = null;
+                if (WebSocketNotificationManager.this.webSocket == webSocket) {
+                    WebSocketNotificationManager.this.webSocket = null;
+                    WebSocketNotificationManager.this.connectedUrl = null;
+                }
                 scheduleReconnect();
             }
         });
@@ -133,6 +149,7 @@ public class WebSocketNotificationManager {
 
     public synchronized void disconnect() {
         isManuallyClosed = true;
+        connectedUrl = null;
         if (webSocket != null) {
             webSocket.close(1000, "App closed");
             webSocket = null;
@@ -193,12 +210,18 @@ public class WebSocketNotificationManager {
                 String message = isApproved
                         ? "Chúc mừng! Quản lý đã phê duyệt yêu cầu gia nhập công ty của bạn."
                         : "Rất tiếc! Yêu cầu gia nhập công ty của bạn đã bị từ chối.";
-                dispatchNotification(title, message, NotificationType.SYSTEM);
+                dispatchNotificationForRole(title, message, NotificationType.SYSTEM, UserRole.EMPLOYEE);
                 return;
             }
 
             String event = obj.optString("event", "");
             String typeStr = obj.optString("type", obj.optString("Type", event));
+            UserRole currentRole = appStateRepository.getUserRole();
+            if (!NotificationRolePolicy.isAllowedForRole(typeStr, currentRole)) {
+                Log.d(TAG, "Ignored WebSocket notification type " + typeStr + " for role " + currentRole);
+                return;
+            }
+
             JSONObject data = obj.optJSONObject("data");
             if (data == null) {
                 data = obj;
@@ -282,11 +305,11 @@ public class WebSocketNotificationManager {
                 default:
                     title = data.optString("title", data.optString("Title", "Thông báo mới"));
                     message = data.optString("message", data.optString("Message", "Bạn có thông báo mới từ hệ thống"));
-                    type = NotificationType.SYSTEM;
+                    type = NotificationRolePolicy.mapNotificationType(typeStr);
                     break;
             }
 
-            dispatchNotification(title, message, type);
+            dispatchNotificationForRole(title, message, type, currentRole);
 
         } catch (Exception e) {
             Log.e(TAG, "Error parsing WebSocket message", e);
@@ -294,9 +317,28 @@ public class WebSocketNotificationManager {
     }
 
     /**
-     * Tạo thông báo, lưu vào Room DB, đẩy System Notification lên thanh trạng thái và phát Event.
+     * Tạo thông báo cho vai trò hiện tại, lưu vào Room DB, đẩy System Notification và phát Event.
      */
     public void dispatchNotification(String title, String message, NotificationType type) {
+        dispatchNotificationForRole(title, message, type, null);
+    }
+
+    /**
+     * Tạo thông báo chỉ khi người dùng hiện tại thuộc {@code targetRole}
+     * (hoặc {@code targetRole == null} cho thông báo hệ thống chung).
+     */
+    public void dispatchNotificationForRole(
+            String title,
+            String message,
+            NotificationType type,
+            @Nullable UserRole targetRole
+    ) {
+        UserRole currentRole = appStateRepository.getUserRole();
+        if (!NotificationRolePolicy.isTargetRoleAllowed(targetRole, currentRole)) {
+            Log.d(TAG, "Blocked notification '" + title + "' for currentRole=" + currentRole + ", targetRole=" + targetRole);
+            return;
+        }
+
         Notification notification = new Notification(
                 UUID.randomUUID().toString(),
                 title,
@@ -306,10 +348,8 @@ public class WebSocketNotificationManager {
                 false
         );
 
-        // 1. Lưu vào Room DB bất đồng bộ
-        UserRole currentRole = appStateRepository.getUserRole();
-        String roleStr = currentRole != null ? currentRole.name() : null;
-        notificationDao.insert(NotificationEntity.fromDomain(notification, roleStr))
+        // 1. Lưu vào Room DB bất đồng bộ với đúng role hiện tại
+        notificationDao.insert(NotificationEntity.fromDomain(notification, currentRole.name()))
                 .subscribeOn(Schedulers.io())
                 .subscribe(() -> {
                     Log.d(TAG, "Saved notification to Room: " + notification.getId());
@@ -332,7 +372,7 @@ public class WebSocketNotificationManager {
 
     public void notifyJoinCompanyRequest(String employeeName) {
         String msg = (employeeName != null ? employeeName : "Nhân viên mới") + " đã gửi yêu cầu gia nhập công ty.";
-        dispatchNotification("Yêu cầu gia nhập mới", msg, NotificationType.SYSTEM);
+        dispatchNotificationForRole("Yêu cầu gia nhập mới", msg, NotificationType.SYSTEM, UserRole.MANAGER);
     }
 
     public void notifyShiftChangeRequest(String employeeName, String workDay, String reason) {
@@ -340,7 +380,7 @@ public class WebSocketNotificationManager {
         if (reason != null && !reason.trim().isEmpty()) {
             msg += ": " + reason;
         }
-        dispatchNotification("Yêu cầu đổi ca mới", msg, NotificationType.SCHEDULE);
+        dispatchNotificationForRole("Yêu cầu đổi ca mới", msg, NotificationType.SCHEDULE, UserRole.MANAGER);
     }
 
     public void notifyLeaveRequest(String employeeName, String workDay, String reason) {
@@ -348,7 +388,7 @@ public class WebSocketNotificationManager {
         if (reason != null && !reason.trim().isEmpty()) {
             msg += ": " + reason;
         }
-        dispatchNotification("Đơn xin nghỉ phép mới", msg, NotificationType.LEAVE);
+        dispatchNotificationForRole("Đơn xin nghỉ phép mới", msg, NotificationType.LEAVE, UserRole.MANAGER);
     }
 
     public void notifyAttendanceAdjustment(String employeeName, String workday, String reason) {
@@ -356,17 +396,17 @@ public class WebSocketNotificationManager {
         if (reason != null && !reason.trim().isEmpty()) {
             msg += ": " + reason;
         }
-        dispatchNotification("Yêu cầu điều chỉnh chấm công", msg, NotificationType.ATTENDANCE);
+        dispatchNotificationForRole("Yêu cầu điều chỉnh chấm công", msg, NotificationType.ATTENDANCE, UserRole.MANAGER);
     }
 
     public void notifyApprovalResult(String requestType, boolean approved, String reason) {
         String title = (approved ? "Đã duyệt: " : "Từ chối: ") + requestType;
         String msg = reason != null && !reason.trim().isEmpty() ? reason : (approved ? "Yêu cầu của bạn đã được phê duyệt." : "Yêu cầu của bạn đã bị từ chối.");
-        dispatchNotification(title, msg, NotificationType.SYSTEM);
+        dispatchNotificationForRole(title, msg, NotificationType.SYSTEM, UserRole.EMPLOYEE);
     }
 
     public void notifyScheduleAssigned(String date) {
         String msg = "Quản lý đã xếp lịch làm việc mới cho ngày " + (date != null ? date : "sắp tới");
-        dispatchNotification("Lịch làm việc mới", msg, NotificationType.SCHEDULE);
+        dispatchNotificationForRole("Lịch làm việc mới", msg, NotificationType.SCHEDULE, UserRole.EMPLOYEE);
     }
 }

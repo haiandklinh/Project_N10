@@ -808,13 +808,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f266c859-d2e1-495b-9007-94bd9ef85a91" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/domain/usecase/CheckAppStateUseCase.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/domain/usecase/CheckAppStateUseCase.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/employee/history/calendar/EmployeeCalendarDayAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/employee/history/calendar/EmployeeCalendarDayAdapter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/employee/home/weekday/EmployeeWeekDayAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/employee/home/weekday/EmployeeWeekDayAdapter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/employee/schedule/weekday/EmployeeScheduleWeekDayAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/employee/schedule/weekday/EmployeeScheduleWeekDayAdapter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/schedule/ManagerMonthCalendarAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/schedule/ManagerMonthCalendarAdapter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/schedule/ManagerWeekDaySelectorAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/schedule/ManagerWeekDaySelectorAdapter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/fragment_auth_pending_approval.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/fragment_auth_pending_approval.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/core/notification/WebSocketNotificationManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/core/notification/WebSocketNotificationManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/data/local/dao/NotificationDao.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/data/local/dao/NotificationDao.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/data/repository/NotificationRepositoryImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/data/repository/NotificationRepositoryImpl.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
