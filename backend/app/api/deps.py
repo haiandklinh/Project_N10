@@ -7,12 +7,14 @@ from repositories.account_repository import AccountRepository
 from repositories.attendance_repository import AttendanceRepository
 from repositories.manager_repository import ManagerRepository
 from repositories.payroll_repository import PayrollRepository
+from repositories.report_repository import ReportRepository
 from repositories.staff_repository import StaffRepository
 from repositories.work_schedule_repository import WorkScheduleRepository
 from services.account_service import AccountService
 from services.attendance_service import AttendanceService
 from services.manager_service import ManagerService
 from services.payroll_service import PayrollService
+from services.report_service import ReportService
 from services.staff_service import StaffService
 from services.work_schedule_service import WorkScheduleService
 from repositories.shift_repository import ShiftRepository
@@ -66,6 +68,12 @@ def get_payroll_service(
 ):
     repository = PayrollRepository(db)
     return PayrollService(repository)
+
+def get_report_service(
+    db = Depends(get_db)
+) :
+    repository = ReportRepository(db)
+    return ReportService(repository)
 
 def get_current_account(
     credentials: HTTPAuthorizationCredentials = Depends(security)

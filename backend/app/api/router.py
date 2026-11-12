@@ -8,7 +8,7 @@ from app.api.v1.work_schedule import router as workschedule_router
 from app.api.v1.shift import router as shift_router
 from app.api.v1.attendance import router as attendance_router
 from app.api.v1.payroll import router as payroll_router
-
+from app.api.v1.report import router as report_router
 
 
 api_router = APIRouter()
@@ -21,3 +21,4 @@ api_router.include_router(workschedule_router)
 api_router.include_router(shift_router)
 api_router.include_router(attendance_router)
 api_router.include_router(payroll_router)
+api_router.include_router(report_router)

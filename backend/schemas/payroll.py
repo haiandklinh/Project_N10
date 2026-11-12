@@ -134,3 +134,7 @@ class ManagerPayrollHistoryItem(BaseSchema):
 
 class ListManagerPayrollHistory(BaseSchema):
     data: list[ManagerPayrollHistoryItem]
+
+
+
+
