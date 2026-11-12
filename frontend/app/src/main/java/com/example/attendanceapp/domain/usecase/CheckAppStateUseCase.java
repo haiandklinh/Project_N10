@@ -2,7 +2,6 @@ package com.example.attendanceapp.domain.usecase;
 
 import com.example.attendanceapp.data.local.TokenManager;
 import com.example.attendanceapp.domain.model.SplashDestination;
-import com.example.attendanceapp.domain.model.UserRole;
 import com.example.attendanceapp.domain.repository.AppStateRepository;
 import com.example.attendanceapp.domain.repository.SessionRepository;
 
@@ -58,19 +57,12 @@ public class CheckAppStateUseCase {
         }
 
         if (isLoggedIn) {
-            UserRole role = repository.getUserRole();
             String status = repository.getUserStatus();
-
-            // Nếu là Nhân viên chưa được duyệt vào công ty, luôn ở màn hình chờ phê duyệt
-            if (role == UserRole.EMPLOYEE) {
-                if (!"APPROVED".equalsIgnoreCase(status)) {
-                    return SplashDestination.PENDING_APPROVAL;
-                }
-            }
 
             if ("PENDING_APPROVAL".equalsIgnoreCase(status)) {
                 return SplashDestination.PENDING_APPROVAL;
             }
+
             return SplashDestination.HOME;
         }
         if (isAccountSaved) {

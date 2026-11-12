@@ -14,6 +14,8 @@ import com.example.attendanceapp.domain.usecase.auth.CreateProfileUseCase;
 import com.example.attendanceapp.domain.usecase.auth.LoginUseCase;
 import com.example.attendanceapp.domain.usecase.profile.LoadProfileAfterRoleUseCase;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import javax.inject.Inject;
 
 import dagger.hilt.android.lifecycle.HiltViewModel;
@@ -140,7 +142,9 @@ public class LoginViewModel extends ViewModel {
                         },
                         throwable -> {
                             isLoading.setValue(false);
-                            roleSetupEvent.setValue(new RoleSetupEvent.ShowPersonalInfoForm());
+                            String message = throwable.getMessage();
+                            roleSetupEvent.setValue(new RoleSetupEvent.ShowError(
+                                    message != null ? message : "Không thể tải hồ sơ. Vui lòng thử lại."));
                         }
                 ));
     }
@@ -214,6 +218,7 @@ public class LoginViewModel extends ViewModel {
     /** Tạo hồ sơ Nhân viên và Gửi yêu cầu gia nhập qua mã mời */
     public void submitEmployeeInvitationCode(String invitationCode) {
         isLoading.setValue(true);
+        AtomicBoolean profileSaved = new AtomicBoolean(false);
 
         disposables.add(createProfileUseCase.createStaffProfile(
                         pendingProfile.getFullName(),
@@ -231,6 +236,7 @@ public class LoginViewModel extends ViewModel {
                     }
                     return io.reactivex.rxjava3.core.Completable.error(throwable);
                 })
+                .doOnComplete(() -> profileSaved.set(true))
                 .andThen(createProfileUseCase.joinCompanyWithCode(
                         invitationCode,
                         pendingProfile.getFullName(),
@@ -251,7 +257,14 @@ public class LoginViewModel extends ViewModel {
                                 roleSetupEvent.setValue(new RoleSetupEvent.NavigateToPendingApproval(invitationCode, companyName));
                             }
                         },
-                        throwable -> handleError(throwable.getMessage())
+                        throwable -> {
+                            if (profileSaved.get()) {
+                                isLoading.setValue(false);
+                                roleSetupEvent.setValue(new RoleSetupEvent.EmployeeJoinFailed(throwable.getMessage()));
+                            } else {
+                                handleError(throwable.getMessage());
+                            }
+                        }
                 ));
     }
 
@@ -280,6 +293,10 @@ public class LoginViewModel extends ViewModel {
         public static class ShowCompanyNameForm extends RoleSetupEvent {}
         public static class ShowInvitationCodeForm extends RoleSetupEvent {}
         public static class NavigateToCompanySelection extends RoleSetupEvent {}
+        public static class EmployeeJoinFailed extends RoleSetupEvent {
+            public final String message;
+            public EmployeeJoinFailed(String message) { this.message = message; }
+        }
         public static class ShowError extends RoleSetupEvent {
             public final String message;
             public ShowError(String message) { this.message = message; }

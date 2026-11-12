@@ -45,14 +45,19 @@ public class RegisterUseCase {
      * Đăng ký tài khoản
      * Lưu ý: Không lưu vào Room DB ở đây vì user chưa có profile đầy đủ (tên, công ty)
      * Thông tin đầy đủ sẽ được lưu khi user login lần đầu (API getMe)
+     *
+     * FIX Bug 3: Sau đăng ký chỉ đánh dấu isAccountSaved = true.
+     * KHÔNG lưu PENDING_APPROVAL vì người dùng vừa tạo tài khoản, chưa gửi join request
+     * vào công ty nào — trạng thái sẽ được xác định chính xác sau khi login và load profile.
      */
     public Completable execute(String phoneNumber, String password) {
         return authRepository.register(phoneNumber, password)
                 .doOnComplete(() -> {
-                    // Chỉ lưu trạng thái tài khoản đã đăng ký vào SharedPreferences
-                    // Không lưu vào Room DB vì chưa có thông tin profile
+                    // Chỉ đánh dấu đã lưu tài khoản, không gán trạng thái PENDING_APPROVAL
+                    // vì người dùng chưa tham gia doanh nghiệp nào tại thời điểm này.
+                    // Trạng thái thực sẽ được xác định ở LoginUseCase khi load profile sau đăng nhập.
                     appStateRepository.setAccountSaved(true);
-                    appStateRepository.saveUserStatus(UserStatus.PENDING_APPROVAL);
+                    appStateRepository.saveUserStatus(UserStatus.NEEDS_ROLE_SELECTION);
                 });
     }
 }

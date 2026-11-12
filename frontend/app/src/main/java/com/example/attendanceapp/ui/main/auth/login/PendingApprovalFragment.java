@@ -74,18 +74,23 @@ public class PendingApprovalFragment extends Fragment {
 
     private void setupViews() {
         // Hiển thị thông tin mã mời và tên công ty ban đầu nếu có từ Bundle
-        if (inviteCode != null && !inviteCode.isEmpty()) {
+        if (inviteCode != null && !inviteCode.trim().isEmpty()) {
             binding.tvInviteCode.setText(inviteCode);
+        } else {
+            binding.tvInviteCode.setText("CHỜ DUYỆT");
         }
-        if (companyName != null && !companyName.isEmpty()) {
+        if (companyName != null && !companyName.trim().isEmpty()) {
             if (!companyName.equals(inviteCode)) {
                 binding.tvCompanyName.setText(companyName);
             } else {
-                binding.tvCompanyName.setText("Đang tải...");
+                binding.tvCompanyName.setText("Doanh nghiệp");
             }
+        } else {
+            binding.tvCompanyName.setText("Doanh nghiệp đang chờ phê duyệt");
         }
 
         binding.btnCheckStatus.setOnClickListener(v -> viewModel.checkApprovalStatus());
+        binding.btnCancelRequest.setOnClickListener(v -> viewModel.cancelJoinRequest());
         binding.btnLogout.setOnClickListener(v -> logout());
 
         // Đảm bảo không cho phép đi vào Guest Mode
@@ -111,7 +116,28 @@ public class PendingApprovalFragment extends Fragment {
         viewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
             binding.progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
             binding.btnCheckStatus.setEnabled(!isLoading);
+            binding.btnCancelRequest.setEnabled(!isLoading);
             binding.btnLogout.setEnabled(!isLoading);
+        });
+
+        viewModel.getLogoutComplete().observe(getViewLifecycleOwner(), complete -> {
+            if (Boolean.TRUE.equals(complete) && isAdded()) {
+                Navigation.findNavController(requireView())
+                        .navigate(R.id.action_pendingApprovalFragment_to_loginFragment);
+            }
+        });
+
+        viewModel.getCancelComplete().observe(getViewLifecycleOwner(), complete -> {
+            if (Boolean.TRUE.equals(complete) && isAdded()) {
+                Navigation.findNavController(requireView())
+                        .navigate(R.id.action_pendingApprovalFragment_to_staffCompanySelectionFragment);
+            }
+        });
+
+        viewModel.getLogoutError().observe(getViewLifecycleOwner(), error -> {
+            if (error != null && !error.isEmpty() && isAdded()) {
+                Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show();
+            }
         });
 
         // Observe kết quả kiểm tra phê duyệt (thủ công hoặc realtime qua WebSocket)
@@ -137,11 +163,7 @@ public class PendingApprovalFragment extends Fragment {
     }
 
     private void logout() {
-        // 1. Xóa sạch Session đăng nhập
         viewModel.logout();
-
-        // 2. Điều hướng quay về màn hình Đăng nhập
-        Navigation.findNavController(requireView()).navigate(R.id.action_pendingApprovalFragment_to_loginFragment);
     }
 
     @Override

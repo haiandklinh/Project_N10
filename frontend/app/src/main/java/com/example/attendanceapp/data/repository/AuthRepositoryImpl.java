@@ -51,7 +51,17 @@ public class AuthRepositoryImpl implements AuthRepository {
 
     @Override
     public Completable login(String phoneNumber, String password) {
-        return authApi.login(new LoginRequest(phoneNumber, password))
+        return sessionRepository.getSavedAccountData()
+                .map(data -> data.phone)
+                .defaultIfEmpty("")
+                .onErrorReturnItem("")
+                .flatMapCompletable(savedPhone -> {
+                    if (savedPhone == null || savedPhone.trim().isEmpty() || !savedPhone.trim().equalsIgnoreCase(phoneNumber.trim())) {
+                        appStateRepository.clearSession();
+                    }
+                    return Completable.complete();
+                })
+                .andThen(authApi.login(new LoginRequest(phoneNumber, password)))
                 .flatMapCompletable(auth -> {
                     tokenManager.saveTokens(auth.getAccessToken(), auth.getRefreshToken());
                     appStateRepository.setLoggedIn(true);

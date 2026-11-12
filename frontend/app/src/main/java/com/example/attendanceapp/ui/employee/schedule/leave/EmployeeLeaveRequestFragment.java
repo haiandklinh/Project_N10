@@ -313,7 +313,8 @@ public class EmployeeLeaveRequestFragment extends Fragment {
         binding.btnSubmit.setEnabled(false);
 
         String finalReason = isEmergency ? "[ĐỘT XUẤT] " + reason : reason;
-        CreateLeaveRequest request = new CreateLeaveRequest(date, shiftId, finalReason);
+        String actualShiftId = (shiftId == null || shiftId.equals("shift_all") || shiftId.startsWith("shift_")) ? null : shiftId;
+        CreateLeaveRequest request = new CreateLeaveRequest(date, actualShiftId, finalReason);
 
         disposables.add(staffRepository.requestLeave(request)
                 .subscribeOn(Schedulers.io())

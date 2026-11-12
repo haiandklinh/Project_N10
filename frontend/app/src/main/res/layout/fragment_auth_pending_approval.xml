@@ -175,6 +175,16 @@
             app:iconGravity="textStart"
             app:iconPadding="@dimen/spacing_s" />
 
+        <!-- Cancel Request Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCancelRequest"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="@dimen/spacing_s"
+            android:text="Hủy yêu cầu"
+            app:cornerRadius="@dimen/radius_full" />
+
         <!-- Secondary Logout Button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_logout"
@@ -182,7 +192,7 @@
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:layout_marginTop="@dimen/spacing_s"
-            android:text="Hủy yêu cầu"
+            android:text="Đăng xuất tài khoản"
             android:textColor="@color/md_theme_light_error"
             app:strokeColor="@color/md_theme_light_error"
             app:strokeWidth="1dp" />

@@ -29,6 +29,9 @@ public class PendingApprovalViewModel extends ViewModel {
     private final CompositeDisposable disposables = new CompositeDisposable();
 
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
+    private final MutableLiveData<Boolean> logoutComplete = new MutableLiveData<>(false);
+    private final MutableLiveData<Boolean> cancelComplete = new MutableLiveData<>(false);
+    private final MutableLiveData<String> logoutError = new MutableLiveData<>();
     private final MutableLiveData<ApprovalStatusState> approvalStatusState = new MutableLiveData<>();
     private final MutableLiveData<CompanyInfo> companyInfo = new MutableLiveData<>();
 
@@ -63,6 +66,18 @@ public class PendingApprovalViewModel extends ViewModel {
 
     public LiveData<CompanyInfo> getCompanyInfo() {
         return companyInfo;
+    }
+
+    public LiveData<Boolean> getLogoutComplete() {
+        return logoutComplete;
+    }
+
+    public LiveData<Boolean> getCancelComplete() {
+        return cancelComplete;
+    }
+
+    public LiveData<String> getLogoutError() {
+        return logoutError;
     }
 
     public void init(String inviteCode, String companyName) {
@@ -163,15 +178,50 @@ public class PendingApprovalViewModel extends ViewModel {
                 ));
     }
 
+    /** Hủy yêu cầu gia nhập công ty */
+    public void cancelJoinRequest() {
+        if (Boolean.TRUE.equals(isLoading.getValue())) {
+            return;
+        }
+        isLoading.setValue(true);
+        disposables.add(sessionRepository.clearPendingRequest()
+                .andThen(io.reactivex.rxjava3.core.Completable.fromAction(() -> appStateRepository.saveUserStatus(UserStatus.NEEDS_ROLE_SELECTION)))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        () -> {
+                            isLoading.setValue(false);
+                            cancelComplete.setValue(true);
+                        },
+                        throwable -> {
+                            isLoading.setValue(false);
+                            String message = throwable.getMessage();
+                            logoutError.setValue(message != null ? message : "Không thể hủy yêu cầu");
+                        }
+                ));
+    }
+
     /** Đăng xuất tài khoản sử dụng RxJava 3 Completable */
     public void logout() {
+        if (Boolean.TRUE.equals(isLoading.getValue())) {
+            return;
+        }
         isLoading.setValue(true);
         disposables.add(authRepository.logout()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                        () -> isLoading.setValue(false),
-                        throwable -> isLoading.setValue(false)
+                        () -> {
+                            isLoading.setValue(false);
+                            logoutComplete.setValue(true);
+                        },
+                        throwable -> {
+                            isLoading.setValue(false);
+                            String message = throwable.getMessage();
+                            logoutError.setValue(message != null
+                                    ? message
+                                    : "Không thể đăng xuất. Vui lòng thử lại.");
+                        }
                 ));
     }
 

@@ -48,6 +48,13 @@ public class SessionRepositoryImpl implements SessionRepository {
                 .onErrorReturnItem(Optional.empty())
                 .defaultIfEmpty(Optional.empty())
                 .flatMapCompletable(opt -> {
+                    UserEntity oldEntity = opt.orElse(null);
+                    if (oldEntity != null && oldEntity.getPhone() != null && !oldEntity.getPhone().equals(phoneNumber.trim())) {
+                        userDao.clearAllUsers();
+                        UserEntity newEntity = new UserEntity("", "", phoneNumber.trim(), "", "NEEDS_ROLE_SELECTION");
+                        return Completable.fromAction(() -> userDao.insertOrUpdateUser(newEntity));
+                    }
+
                     UserEntity entity = opt.orElseGet(() -> new UserEntity("", "", phoneNumber, "", "NEEDS_ROLE_SELECTION"));
                     entity.setPhone(phoneNumber);
                     return Completable.fromAction(() -> userDao.insertOrUpdateUser(entity));
@@ -71,6 +78,7 @@ public class SessionRepositoryImpl implements SessionRepository {
                     UserProfile userProfile = UserMapper.toUserProfile(profile);
                     UserAccount account = new UserAccount.Builder()
                             .phoneNumber(phone)
+                            .firstLogin(false)
                             .invitationCode(inviteCode)
                             .profile(userProfile)
                             .build();
@@ -105,6 +113,7 @@ public class SessionRepositoryImpl implements SessionRepository {
                     UserProfile userProfile = UserMapper.toUserProfile(profile);
                     UserAccount account = new UserAccount.Builder()
                             .phoneNumber(phone)
+                            .firstLogin(false)
                             .invitationCode(inviteCode)
                             .profile(userProfile)
                             .build();
@@ -216,6 +225,25 @@ public class SessionRepositoryImpl implements SessionRepository {
     }
 
     @Override
+    public Completable clearPendingRequest() {
+        return userDao.getCurrentUserSingle()
+                .map(Optional::of)
+                .onErrorReturnItem(Optional.empty())
+                .defaultIfEmpty(Optional.empty())
+                .flatMapCompletable(opt -> {
+                    UserEntity entity = opt.orElse(null);
+                    if (entity != null) {
+                        entity.setInvitationCode("");
+                        entity.setCompanyName("");
+                        entity.setStatus("NEEDS_ROLE_SELECTION");
+                        return Completable.fromAction(() -> userDao.updateUser(entity));
+                    }
+                    return Completable.complete();
+                })
+                .subscribeOn(Schedulers.io());
+    }
+
+    @Override
     public Completable clear() {
         return userDao.getCurrentUserSingle()
                 .flatMapCompletable(entity -> {
@@ -223,10 +251,10 @@ public class SessionRepositoryImpl implements SessionRepository {
                     String name = entity.getName();
                     String companyName = entity.getCompanyName();
                     String companyId = entity.getCompanyId();
-//                    String invitationCode = entity.getInvitationCode();
-                    String invitationCode = null;
+                    String invitationCode = entity.getInvitationCode();
                     String avatarUrl = entity.getAvatarUrl();
                     String role = entity.getRole();
+                    String status = entity.getStatus();
                     String dob = entity.getDateOfBirth();
                     String gender = entity.getGender();
 
@@ -245,7 +273,7 @@ public class SessionRepositoryImpl implements SessionRepository {
                                         name != null ? name : "",
                                         phone != null ? phone : "",
                                         role != null ? role : "",
-                                        "NEEDS_ROLE_SELECTION",
+                                        status != null ? status : "NEEDS_ROLE_SELECTION",
                                         dob,
                                         gender,
                                         avatarUrl,

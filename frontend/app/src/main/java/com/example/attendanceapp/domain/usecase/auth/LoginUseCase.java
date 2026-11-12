@@ -7,24 +7,29 @@ import com.example.attendanceapp.domain.model.UserStatus;
 import com.example.attendanceapp.domain.repository.AppStateRepository;
 import com.example.attendanceapp.domain.repository.AuthRepository;
 import com.example.attendanceapp.domain.repository.ManagerRepository;
+import com.example.attendanceapp.domain.repository.SessionRepository;
 import com.example.attendanceapp.domain.repository.StaffRepository;
 
 import javax.inject.Inject;
 
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class LoginUseCase {
 
     private final AuthRepository authRepository;
     private final AppStateRepository appStateRepository;
+    private final SessionRepository sessionRepository;
     private final StaffRepository staffRepository;
     private final ManagerRepository managerRepository;
 
     @Inject
     public LoginUseCase(AuthRepository authRepository, AppStateRepository appStateRepository,
-                        StaffRepository staffRepository, ManagerRepository managerRepository) {
+                        SessionRepository sessionRepository, StaffRepository staffRepository,
+                        ManagerRepository managerRepository) {
         this.authRepository = authRepository;
         this.appStateRepository = appStateRepository;
+        this.sessionRepository = sessionRepository;
         this.staffRepository = staffRepository;
         this.managerRepository = managerRepository;
     }
@@ -46,31 +51,94 @@ public class LoginUseCase {
                     appStateRepository.setAccountSaved(true);
                 })
                 .andThen(Single.defer(() -> {
-                    UserRole savedRole = appStateRepository.getUserRole();
-                    if (savedRole == UserRole.MANAGER) {
-                        return managerRepository.getProfile()
-                                .onErrorResumeNext(throwable -> fallbackAccount(phone, UserRole.MANAGER));
-                    } else if (savedRole == UserRole.EMPLOYEE) {
-                        return staffRepository.getProfile()
-                                .onErrorResumeNext(throwable -> fallbackAccount(phone, UserRole.EMPLOYEE));
-                    }
-
-                    // Nếu chưa có vai trò được lưu (sau khi đăng xuất hoặc cài đặt lại),
-                    // tự động thăm dò profile Quản lý trước, nếu không có thì thăm dò profile Nhân viên
-                    return managerRepository.getProfile()
-                            .onErrorResumeNext(managerErr -> staffRepository.getProfile())
-                            .onErrorResumeNext(bothErr -> {
-                                // Cả hai đều chưa tạo hồ sơ -> hiển thị dialog chọn vai trò
-                                UserProfile profile = new UserProfile.Builder()
-                                        .status(UserStatus.NEEDS_ROLE_SELECTION)
-                                        .build();
-                                return Single.just(new UserAccount.Builder()
-                                        .phoneNumber(phone.trim())
-                                        .firstLogin(true)
-                                        .profile(profile)
-                                        .build());
-                            });
+                    UserRole appRole = appStateRepository.getUserRole();
+                    RoleHolder fallbackRole = new RoleHolder(appRole);
+                    return sessionRepository.getCurrentUser()
+                            .map(user -> new RoleHolder(user.getRole()))
+                            .filter(holder -> holder.role != null)
+                            .defaultIfEmpty(fallbackRole)
+                            .onErrorReturnItem(fallbackRole)
+                            .flatMap(holder -> loadAccountForRole(phone, holder.role));
                 }));
+    }
+
+    private Single<UserAccount> loadAccountForRole(String phone, UserRole savedRole) {
+        if (savedRole == UserRole.MANAGER) {
+            return managerRepository.getProfile()
+                    .onErrorResumeNext(throwable -> fallbackAccount(phone, UserRole.MANAGER));
+        }
+        if (savedRole == UserRole.EMPLOYEE) {
+            return staffRepository.getProfile()
+                    .flatMap(userAccount -> Single.fromCallable(() -> {
+                                String code = sessionRepository.getCachedInvitationCode().blockingGet();
+                                return code != null ? code.trim() : "";
+                            })
+                            .subscribeOn(Schedulers.io())
+                            .flatMap(inviteCode -> {
+                                if (inviteCode.isEmpty()) {
+                                    return Single.just(userAccount);
+                                }
+                                return staffRepository.checkCompanyApprovalStatus(inviteCode)
+                                        .map(isApproved -> {
+                                            if (!isApproved) {
+                                                UserProfile profile = new UserProfile.Builder()
+                                                        .userId(userAccount.getProfile().getUserId())
+                                                        .fullName(userAccount.getProfile().getFullName())
+                                                        .gender(userAccount.getProfile().getGender())
+                                                        .dateOfBirth(userAccount.getProfile().getDateOfBirth())
+                                                        .avatarUrl(userAccount.getProfile().getAvatarUrl())
+                                                        .role(UserRole.EMPLOYEE)
+                                                        .status(UserStatus.PENDING_APPROVAL)
+                                                        .companyName(userAccount.getProfile().getCompanyName())
+                                                        .build();
+                                                return userAccount.withProfile(profile);
+                                            }
+                                            return userAccount;
+                                        });
+                            }))
+                    .onErrorResumeNext(throwable -> fallbackAccount(phone, UserRole.EMPLOYEE));
+        }
+
+        // Tài khoản mới chưa có vai trò đã lưu: dò hồ sơ trước khi yêu cầu chọn vai trò.
+        return managerRepository.getProfile()
+                .onErrorResumeNext(managerErr -> staffRepository.getProfile()
+                        .flatMap(userAccount -> Single.fromCallable(() -> {
+                                    String code = sessionRepository.getCachedInvitationCode().blockingGet();
+                                    return code != null ? code.trim() : "";
+                                })
+                                .subscribeOn(Schedulers.io())
+                                .flatMap(inviteCode -> {
+                                    if (inviteCode.isEmpty()) {
+                                        return Single.just(userAccount);
+                                    }
+                                    return staffRepository.checkCompanyApprovalStatus(inviteCode)
+                                            .map(isApproved -> {
+                                                if (!isApproved) {
+                                                    UserProfile profile = new UserProfile.Builder()
+                                                            .userId(userAccount.getProfile().getUserId())
+                                                            .fullName(userAccount.getProfile().getFullName())
+                                                            .gender(userAccount.getProfile().getGender())
+                                                            .dateOfBirth(userAccount.getProfile().getDateOfBirth())
+                                                            .avatarUrl(userAccount.getProfile().getAvatarUrl())
+                                                            .role(UserRole.EMPLOYEE)
+                                                            .status(UserStatus.PENDING_APPROVAL)
+                                                            .companyName(userAccount.getProfile().getCompanyName())
+                                                            .build();
+                                                    return userAccount.withProfile(profile);
+                                                }
+                                                return userAccount;
+                                            });
+                                })))
+                .onErrorResumeNext(bothErr -> {
+                    UserRole savedRoleFallback = appStateRepository.getUserRole();
+                    if (savedRoleFallback != null) {
+                        return fallbackAccount(phone, savedRoleFallback);
+                    }
+                    return sessionRepository.getCurrentUser()
+                            .map(user -> user.getRole() != null ? user.getRole() : UserRole.EMPLOYEE)
+                            .defaultIfEmpty(UserRole.EMPLOYEE)
+                            .flatMap(role -> fallbackAccount(phone, role));
+                });
     }
 
     private Single<UserAccount> fallbackAccount(String phone, UserRole role) {
@@ -83,6 +151,14 @@ public class LoginUseCase {
                 .firstLogin(false)
                 .profile(profile)
                 .build());
+    }
+
+    private static final class RoleHolder {
+        private final UserRole role;
+
+        private RoleHolder(UserRole role) {
+            this.role = role;
+        }
     }
 
     public Single<Boolean> checkPhoneExists(String phone) {

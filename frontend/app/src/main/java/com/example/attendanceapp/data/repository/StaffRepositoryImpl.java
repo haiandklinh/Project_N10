@@ -139,8 +139,9 @@ public class StaffRepositoryImpl implements StaffRepository {
 
     @Override
     public Single<Boolean> checkCompanyApprovalStatus(String invitationCode) {
-        // 1. Ưu tiên kiểm tra qua GET /staffs/my-company
-        // Đây là nguồn dữ liệu chuẩn xác nhất: Khi Quản lý duyệt đơn, nhân viên sẽ lập tức có trong danh sách my-company
+        // Nguồn dữ liệu chuẩn xác duy nhất: GET /staffs/my-company
+        // - Nếu có công ty trong danh sách -> Quản lý ĐÃ DUYỆT (APPROVED).
+        // - Nếu danh sách rỗng -> Vẫn ĐANG CHỜ DUYỆT (PENDING_APPROVAL).
         return api.getMyCompanies()
                 .subscribeOn(Schedulers.io())
                 .flatMap(response -> {
@@ -153,53 +154,28 @@ public class StaffRepositoryImpl implements StaffRepository {
                         return session.saveSelectedCompany(managerId, companyName, position)
                                 .doOnComplete(() -> appState.saveUserStatus(UserStatus.APPROVED))
                                 .toSingleDefault(true);
-                    }
-
-                    // 2. Nếu my-company chưa có, kiểm tra tiếp qua invitation code nếu có
-                    if (invitationCode != null && !invitationCode.trim().isEmpty()) {
-                        return checkStatusViaInvitationCode(invitationCode.trim());
-                    }
-
-                    appState.saveUserStatus(UserStatus.PENDING_APPROVAL);
-                    return Single.just(false);
-                })
-                .onErrorResumeNext(error -> {
-                    // Nếu getMyCompanies gặp lỗi, fallback kiểm tra qua invitation code
-                    if (invitationCode != null && !invitationCode.trim().isEmpty()) {
-                        return checkStatusViaInvitationCode(invitationCode.trim());
-                    }
-                    appState.saveUserStatus(UserStatus.PENDING_APPROVAL);
-                    return Single.just(false);
-                });
-    }
-
-    private Single<Boolean> checkStatusViaInvitationCode(String invitationCode) {
-        return api.getManagerIdByInvitationCode(invitationCode.trim())
-                .subscribeOn(Schedulers.io())
-                .map(StaffRepositoryImpl::extractManagerId)
-                .flatMap(managerId -> {
-                    if (managerId != null && !managerId.isEmpty()) {
-                        return session.saveApprovalSuccess(managerId)
-                                .doOnComplete(() -> appState.saveUserStatus(UserStatus.APPROVED))
-                                .toSingleDefault(true);
                     } else {
                         appState.saveUserStatus(UserStatus.PENDING_APPROVAL);
                         return Single.just(false);
                     }
                 })
-                .onErrorResumeNext(throwable -> {
+                .onErrorResumeNext(error -> {
                     appState.saveUserStatus(UserStatus.PENDING_APPROVAL);
                     return Single.just(false);
                 });
     }
 
     private static String extractManagerId(ResponseBody body) throws Exception {
-        JSONObject json = readJson(body);
-        String id = json.optString("request_id", json.optString("id", json.optString("id_manager", "")));
-        if (!id.isEmpty()) {
-            return id;
-        }
-        String content = body.string().replace("\"", "").trim();
+        String raw = body.string();
+        try {
+            JSONObject json = new JSONObject(raw);
+            String id = json.optString("request_id", json.optString("id", json.optString("id_manager", "")));
+            if (!id.isEmpty()) {
+                return id;
+            }
+        } catch (Exception ignored) {}
+
+        String content = raw.replace("\"", "").trim();
         if (!content.isEmpty()) {
             return content;
         }
@@ -207,7 +183,8 @@ public class StaffRepositoryImpl implements StaffRepository {
     }
 
     private static ManagerInfo toManagerInfo(ResponseBody body) throws Exception {
-        JSONObject json = readJson(body);
+        String raw = body.string();
+        JSONObject json = new JSONObject(raw);
         String companyName = json.optString("company", json.optString("company_name", ""));
         String managerId = json.optString("request_id", json.optString("id", json.optString("id_manager", "")));
         String managerName = json.optString("manager_name", json.optString("name", companyName));
@@ -283,22 +260,37 @@ public class StaffRepositoryImpl implements StaffRepository {
     @Override
     public Completable requestLeave(CreateLeaveRequest request) {
         return session.getCurrentUser()
-                .map(user -> user.getCompanyId() != null ? user.getCompanyId() : "")
+                .map(user -> user.getCompanyId() != null && !user.getCompanyId().trim().isEmpty() ? user.getCompanyId() : "")
                 .defaultIfEmpty("")
                 .flatMapCompletable(managerId -> {
-                    if (managerId.isEmpty()) {
-                        return Completable.error(new IllegalStateException("Chưa tham gia công ty"));
+                    if (!managerId.isEmpty()) {
+                        return executeLeaveRequest(managerId.trim(), request);
                     }
-                    return api.requestLeave(managerId, request)
-                            .subscribeOn(Schedulers.io())
-                            .doOnSuccess(ignored -> {
-                                String reason = request != null ? request.getReason() : "";
-                                String workday = request != null ? request.getWorkDayOff() : "";
-                                webSocketManager.notifyLeaveRequest("Bạn", workday, reason);
-                            })
-                            .ignoreElement();
+                    return api.getMyCompanies()
+                            .flatMapCompletable(response -> {
+                                if (response != null && response.getData() != null && !response.getData().isEmpty()) {
+                                    StaffCompanyResponse first = response.getData().get(0);
+                                    String fetchedManagerId = first.getManagerId();
+                                    if (fetchedManagerId != null && !fetchedManagerId.trim().isEmpty()) {
+                                        return session.saveSelectedCompany(fetchedManagerId.trim(), first.getCompanyName(), first.getPositionStaff())
+                                                .andThen(executeLeaveRequest(fetchedManagerId.trim(), request));
+                                    }
+                                }
+                                return Completable.error(new IllegalStateException("Chưa tham gia công ty hoặc không tìm thấy thông tin quản lý"));
+                            });
                 })
                 .compose(ApiErrorMapper.forCompletable("Gửi yêu cầu nghỉ phép thất bại"));
+    }
+
+    private Completable executeLeaveRequest(String managerId, CreateLeaveRequest request) {
+        return api.requestLeave(managerId, request)
+                .subscribeOn(Schedulers.io())
+                .doOnSuccess(ignored -> {
+                    String reason = request != null ? request.getReason() : "";
+                    String workday = request != null ? request.getWorkDayOff() : "";
+                    webSocketManager.notifyLeaveRequest("Bạn", workday, reason);
+                })
+                .ignoreElement();
     }
 
     @Override

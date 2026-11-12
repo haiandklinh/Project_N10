@@ -113,12 +113,14 @@ public class LoginFragment extends Fragment {
                 Toast.makeText(requireContext(), "Đăng nhập thành công", Toast.LENGTH_SHORT).show();
 
                 // Kiểm tra luồng đăng nhập dựa trên trạng thái tài khoản
-                if (user.isFirstLogin() || user.getRole() == null) {
-                    showRoleSelectionDialog();
-                } else if (user.getStatus() == UserStatus.PENDING_APPROVAL) {
+                if (user.getStatus() == UserStatus.PENDING_APPROVAL) {
                     navigateToPendingApproval(user.getInvitationCode(), user.getCompanyName());
-                } else {
+                } else if (user.getRole() != null) {
                     navigateToRoleHome(user.getRole());
+                } else if (user.isFirstLogin()) {
+                    showRoleSelectionDialog();
+                } else {
+                    navigateToRoleHome(UserRole.EMPLOYEE);
                 }
             } else if (state instanceof LoginState.Error) {
                 String errorMsg = ((LoginState.Error) state).message;
@@ -144,6 +146,14 @@ public class LoginFragment extends Fragment {
                         .show(getChildFragmentManager(), EnterInvitationCodeBottomSheet.TAG);
 
             } else if (event instanceof LoginViewModel.RoleSetupEvent.NavigateToCompanySelection) {
+                Navigation.findNavController(requireView())
+                        .navigate(R.id.action_loginFragment_to_staffCompanySelectionFragment);
+
+            } else if (event instanceof LoginViewModel.RoleSetupEvent.EmployeeJoinFailed) {
+                String message = ((LoginViewModel.RoleSetupEvent.EmployeeJoinFailed) event).message;
+                Toast.makeText(requireContext(),
+                        TextUtils.isEmpty(message) ? "Không thể gửi yêu cầu tham gia công ty" : message,
+                        Toast.LENGTH_LONG).show();
                 Navigation.findNavController(requireView())
                         .navigate(R.id.action_loginFragment_to_staffCompanySelectionFragment);
 
