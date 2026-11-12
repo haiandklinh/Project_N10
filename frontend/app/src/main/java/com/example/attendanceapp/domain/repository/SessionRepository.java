@@ -42,6 +42,9 @@ public interface SessionRepository {
 
     Maybe<SavedAccountData> getSavedAccountData();
 
+    /** Hủy yêu cầu gia nhập (xóa mã mời và đưa trạng thái về ban đầu). */
+    Completable clearPendingRequest();
+
     /** Xóa toàn bộ dữ liệu người dùng trong Room. */
     Completable clear();
 }

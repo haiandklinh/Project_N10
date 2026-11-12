@@ -230,6 +230,25 @@ public class SessionRepositoryImpl implements SessionRepository {
     }
 
     @Override
+    public Completable clearPendingRequest() {
+        return userDao.getCurrentUserSingle()
+                .map(Optional::of)
+                .onErrorReturnItem(Optional.empty())
+                .defaultIfEmpty(Optional.empty())
+                .flatMapCompletable(opt -> {
+                    UserEntity entity = opt.orElse(null);
+                    if (entity != null) {
+                        entity.setInvitationCode("");
+                        entity.setCompanyName("");
+                        entity.setStatus("NEEDS_ROLE_SELECTION");
+                        return Completable.fromAction(() -> userDao.updateUser(entity));
+                    }
+                    return Completable.complete();
+                })
+                .subscribeOn(Schedulers.io());
+    }
+
+    @Override
     public Completable clear() {
         return userDao.getCurrentUserSingle()
                 .flatMapCompletable(entity -> {
