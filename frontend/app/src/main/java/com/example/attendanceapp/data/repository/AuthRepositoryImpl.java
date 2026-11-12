@@ -51,12 +51,24 @@ public class AuthRepositoryImpl implements AuthRepository {
 
     @Override
     public Completable login(String phoneNumber, String password) {
-        return authApi.login(new LoginRequest(phoneNumber, password))
+        String normalizedPhone = phoneNumber != null ? phoneNumber.trim() : "";
+        return sessionRepository.getSavedAccountData()
+                .map(data -> data.phone != null ? data.phone.trim() : "")
+                .defaultIfEmpty("")
+                .onErrorReturnItem("")
+                .flatMapCompletable(savedPhone -> {
+                    // Nếu đăng nhập bằng SĐT khác với tài khoản đã lưu trước đó, xóa sạch session role cũ
+                    if (savedPhone.isEmpty() || !savedPhone.equalsIgnoreCase(normalizedPhone)) {
+                        appStateRepository.clearSession();
+                    }
+                    return Completable.complete();
+                })
+                .andThen(authApi.login(new LoginRequest(phoneNumber, password)))
                 .flatMapCompletable(auth -> {
                     tokenManager.saveTokens(auth.getAccessToken(), auth.getRefreshToken());
                     appStateRepository.setLoggedIn(true);
                     // Lưu số điện thoại vào Room để giữ lại khi save profile
-                    return sessionRepository.savePhoneNumber(phoneNumber.trim());
+                    return sessionRepository.savePhoneNumber(normalizedPhone);
                 })
                 .doOnError(error -> clearLocalTokensAndState())
                 .compose(ApiErrorMapper.forCompletable("Số điện thoại hoặc mật khẩu không chính xác"));

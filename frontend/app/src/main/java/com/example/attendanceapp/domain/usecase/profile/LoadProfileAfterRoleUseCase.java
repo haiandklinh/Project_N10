@@ -36,7 +36,15 @@ public class LoadProfileAfterRoleUseCase {
                 : staffRepository.getProfile();
 
         return call
-                .map(ProfileResult::exists)
+                .map(account -> {
+                    String fullName = (account != null && account.getProfile() != null)
+                            ? account.getProfile().getFullName()
+                            : null;
+                    if (fullName == null || fullName.trim().isEmpty()) {
+                        return ProfileResult.notFound();
+                    }
+                    return ProfileResult.exists(account);
+                })
                 .onErrorResumeNext(e -> ProfileErrors.isNotFound(e)
                         ? Single.just(ProfileResult.notFound())
                         : Single.<ProfileResult>error(e));

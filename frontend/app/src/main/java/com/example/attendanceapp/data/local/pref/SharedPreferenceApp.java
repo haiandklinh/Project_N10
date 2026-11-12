@@ -456,7 +456,7 @@ public class SharedPreferenceApp {
 
     public void saveInvitationCode(String code, long ttlSeconds) {
         if (code == null || code.trim().isEmpty()) return;
-        long ttl = (ttlSeconds > 0) ? ttlSeconds : 86400L;
+        long ttl = (ttlSeconds > 0) ? Math.min(ttlSeconds, 86399L) : 86399L;
         sharedPreferences.edit()
                 .putString(KEY_INVITATION_CODE, code.trim())
                 .putLong(KEY_INVITATION_CREATED_AT, System.currentTimeMillis())
@@ -470,10 +470,10 @@ public class SharedPreferenceApp {
             return null;
         }
         long createdAt = sharedPreferences.getLong(KEY_INVITATION_CREATED_AT, 0L);
-        long ttlSeconds = sharedPreferences.getLong(KEY_INVITATION_TTL_SECONDS, 86400L);
+        long ttlSeconds = sharedPreferences.getLong(KEY_INVITATION_TTL_SECONDS, 86399L);
         long elapsedMillis = System.currentTimeMillis() - createdAt;
 
-        // Nếu đã vượt quá thời hạn 24 giờ (86400 giây) -> Mã hết hạn!
+        // Nếu đã vượt quá thời hạn TTL -> Mã hết hạn!
         if (elapsedMillis >= ttlSeconds * 1000L) {
             clearInvitationCode();
             return null;
@@ -487,7 +487,7 @@ public class SharedPreferenceApp {
             return 0L;
         }
         long createdAt = sharedPreferences.getLong(KEY_INVITATION_CREATED_AT, 0L);
-        long ttlSeconds = sharedPreferences.getLong(KEY_INVITATION_TTL_SECONDS, 86400L);
+        long ttlSeconds = sharedPreferences.getLong(KEY_INVITATION_TTL_SECONDS, 86399L);
         long expireAt = createdAt + (ttlSeconds * 1000L);
         long remaining = expireAt - System.currentTimeMillis();
         return Math.max(0L, remaining);

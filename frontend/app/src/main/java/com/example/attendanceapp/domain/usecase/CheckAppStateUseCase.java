@@ -61,6 +61,12 @@ public class CheckAppStateUseCase {
             UserRole role = repository.getUserRole();
             String status = repository.getUserStatus();
 
+            if (role == null || "NEEDS_ROLE_SELECTION".equalsIgnoreCase(status)) {
+                repository.clearSession();
+                repository.setLoggedIn(false);
+                return SplashDestination.LOGIN;
+            }
+
             // Nếu là Nhân viên chưa được duyệt vào công ty, luôn ở màn hình chờ phê duyệt
             if (role == UserRole.EMPLOYEE) {
                 if (!"APPROVED".equalsIgnoreCase(status)) {

@@ -80,6 +80,7 @@
 
             <!-- FAQ 1 -->
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_faq_1"
                 style="@style/MainCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -101,6 +102,7 @@
                         android:orientation="vertical">
 
                         <TextView
+                            android:id="@+id/tv_faq_question_1"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="Làm thế nào để thêm nhân viên mới vào hệ thống?"
@@ -109,6 +111,7 @@
                             android:textStyle="bold" />
 
                         <TextView
+                            android:id="@+id/tv_faq_answer_1"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="@dimen/spacing_2xs"
@@ -128,6 +131,7 @@
 
             <!-- FAQ 2 -->
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_faq_2"
                 style="@style/MainCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -149,6 +153,7 @@
                         android:orientation="vertical">
 
                         <TextView
+                            android:id="@+id/tv_faq_question_2"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="Làm thế nào để sửa ca làm việc đã xếp?"
@@ -157,6 +162,7 @@
                             android:textStyle="bold" />
 
                         <TextView
+                            android:id="@+id/tv_faq_answer_2"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="@dimen/spacing_2xs"
@@ -173,6 +179,18 @@
                         app:tint="?attr/colorOnSurfaceVariant" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:id="@+id/tv_faq_empty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_l"
+                android:gravity="center"
+                android:paddingVertical="@dimen/spacing_m"
+                android:text="Không tìm thấy câu hỏi phù hợp"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="@dimen/text_size_body_medium"
+                android:visibility="gone" />
 
             <!-- Contact Support Section -->
             <TextView

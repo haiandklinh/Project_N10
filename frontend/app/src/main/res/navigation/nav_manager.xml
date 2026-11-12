@@ -257,7 +257,7 @@
         android:id="@+id/managerHelpCenterFragment"
         android:name="com.example.attendanceapp.ui.manager.profile.ManagerHelpCenterFragment"
         android:label="Trung tâm trợ giúp"
-        tools:layout="@layout/fragment_help_center" />
+        tools:layout="@layout/fragment_manager_help_center" />
 
     <!-- Màn hình Giới thiệu ứng dụng -->
     <fragment

@@ -99,8 +99,11 @@ public class ManagerRepositoryImpl implements ManagerRepository {
                     if (response.getCompany() == null || response.getCompany().isEmpty()) {
                         response.setCompany(request.getCompany());
                     }
-                    if (response.getAvatar() == null || response.getAvatar().isEmpty()) {
-                        response.setAvatar(request.getAvatar());
+                    if (isPlaceholderAvatar(response.getAvatar())) {
+                        response.setAvatar(isPlaceholderAvatar(request.getAvatar()) ? null : request.getAvatar());
+                    }
+                    if (!isPlaceholderAvatar(response.getAvatar()) && context != null) {
+                        StaffAvatarCache.saveAvatar(context, response.getFullName(), null, response.getAvatar());
                     }
                     return response;
                 })
@@ -115,13 +118,13 @@ public class ManagerRepositoryImpl implements ManagerRepository {
     @Override
     public Single<UserAccount> updateProfile(UpdateManagerProfileRequest request) {
         String avatar = request.getAvatar();
-        if (avatar != null && !avatar.isEmpty() && context != null) {
+        if (!isPlaceholderAvatar(avatar) && context != null) {
             String cloudUrl = CloudImageUploader.uploadAvatarSync(context, avatar);
-            if (cloudUrl != null && !cloudUrl.isEmpty()) {
+            if (!isPlaceholderAvatar(cloudUrl)) {
                 request.setAvatar(cloudUrl);
             }
         }
-        if (request.getAvatar() != null && !request.getAvatar().isEmpty() && context != null) {
+        if (!isPlaceholderAvatar(request.getAvatar()) && context != null) {
             StaffAvatarCache.saveAvatar(context, request.getFullName(), null, request.getAvatar());
         }
         return api.updateManagerProfile(request)
@@ -133,8 +136,11 @@ public class ManagerRepositoryImpl implements ManagerRepository {
                     if (response.getCompany() == null || response.getCompany().isEmpty()) {
                         response.setCompany(request.getCompany());
                     }
-                    if (response.getAvatar() == null || response.getAvatar().isEmpty()) {
-                        response.setAvatar(request.getAvatar());
+                    if (isPlaceholderAvatar(response.getAvatar())) {
+                        response.setAvatar(isPlaceholderAvatar(request.getAvatar()) ? null : request.getAvatar());
+                    }
+                    if (!isPlaceholderAvatar(response.getAvatar()) && context != null) {
+                        StaffAvatarCache.saveAvatar(context, response.getFullName(), null, response.getAvatar());
                     }
                     return response;
                 })
@@ -149,14 +155,23 @@ public class ManagerRepositoryImpl implements ManagerRepository {
                 .compose(ApiErrorMapper.forSingle("Cập nhật hồ sơ Quản lý thất bại"));
     }
 
+    private boolean isPlaceholderAvatar(String avatar) {
+        if (avatar == null) return true;
+        String trimmed = avatar.trim();
+        return trimmed.isEmpty()
+                || "null".equalsIgnoreCase(trimmed)
+                || "none".equalsIgnoreCase(trimmed)
+                || "string".equalsIgnoreCase(trimmed);
+    }
+
     // ===== Invitation Code =====
 
     @Override
     public Single<String> getInvitationCode() {
         return session.getCachedInvitationCode()
                 .switchIfEmpty(
-                        // Gọi server với TTL mặc định 86400s (24h)
-                        api.getInvitationCode(86400)
+                        // Gọi server với TTL mặc định 86399s (~24h, hợp lệ chuẩn time 00:00:00 - 23:59:59)
+                        api.getInvitationCode(86399)
                                 .subscribeOn(Schedulers.io())
                                 .map(CompanyInvitationResponse::getOtp)
                                 .flatMap(code -> session.saveInvitationCode(code).toSingleDefault(code))
@@ -166,7 +181,7 @@ public class ManagerRepositoryImpl implements ManagerRepository {
 
     @Override
     public Single<CompanyInvitationResponse> generateInvitationCode(int expiresIn) {
-        int validExpires = (expiresIn > 0) ? expiresIn : 86400;
+        int validExpires = (expiresIn > 0) ? Math.min(expiresIn, 86399) : 86399;
         return api.getInvitationCode(validExpires)
                 .subscribeOn(Schedulers.io())
                 .flatMap(response -> {

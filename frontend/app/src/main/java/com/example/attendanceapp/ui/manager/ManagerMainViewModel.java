@@ -33,8 +33,10 @@ public class ManagerMainViewModel extends ViewModel {
             R.id.managerStatisticFragment,
             R.id.assignShiftFragment,
             R.id.assignShiftSuccessFragment,
-            R.id.selectEmployeeFragment
-
+            R.id.selectEmployeeFragment,
+            R.id.managerHelpCenterFragment,
+            R.id.managerAboutFragment,
+            R.id.managerPolicyFragment
     );
 
     @Inject

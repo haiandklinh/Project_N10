@@ -115,12 +115,12 @@ public class LoginFragment extends Fragment {
                 // Kiểm tra luồng đăng nhập dựa trên trạng thái tài khoản
                 if (user.getStatus() == UserStatus.PENDING_APPROVAL) {
                     navigateToPendingApproval(user.getInvitationCode(), user.getCompanyName());
-                } else if (user.getRole() != null) {
-                    navigateToRoleHome(user.getRole());
-                } else if (user.isFirstLogin()) {
+                } else if (user.getStatus() == UserStatus.NEEDS_ROLE_SELECTION
+                        || user.isFirstLogin()
+                        || user.getRole() == null) {
                     showRoleSelectionDialog();
                 } else {
-                    navigateToRoleHome(UserRole.EMPLOYEE);
+                    navigateToRoleHome(user.getRole());
                 }
             } else if (state instanceof LoginState.Error) {
                 String errorMsg = ((LoginState.Error) state).message;

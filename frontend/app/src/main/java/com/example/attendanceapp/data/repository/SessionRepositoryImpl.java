@@ -47,13 +47,29 @@ public class SessionRepositoryImpl implements SessionRepository {
 
     @Override
     public Completable savePhoneNumber(String phoneNumber) {
+        String normalizedPhone = phoneNumber != null ? phoneNumber.trim() : "";
         return userDao.getCurrentUserSingle()
                 .map(Optional::of)
                 .onErrorReturnItem(Optional.empty())
                 .defaultIfEmpty(Optional.empty())
                 .flatMapCompletable(opt -> {
-                    UserEntity entity = opt.orElseGet(() -> new UserEntity("", "", phoneNumber, "", "NEEDS_ROLE_SELECTION"));
-                    entity.setPhone(phoneNumber);
+                    UserEntity oldEntity = opt.orElse(null);
+                    if (oldEntity != null && (oldEntity.getPhone() == null
+                            || !oldEntity.getPhone().trim().equalsIgnoreCase(normalizedPhone))) {
+                        // Đổi sang tài khoản khác: xóa user cũ trong Room để không mang role/companyId cũ
+                        userDao.clearAllUsers();
+                        sharedPreferenceApp.clearInvitationCode();
+                        if (handledRequestManager != null) {
+                            handledRequestManager.clear();
+                        }
+                        UserEntity newEntity = new UserEntity("", "", normalizedPhone, "", "NEEDS_ROLE_SELECTION");
+                        return Completable.fromAction(() -> userDao.insertOrUpdateUser(newEntity));
+                    }
+
+                    UserEntity entity = oldEntity != null
+                            ? oldEntity
+                            : new UserEntity("", "", normalizedPhone, "", "NEEDS_ROLE_SELECTION");
+                    entity.setPhone(normalizedPhone);
                     return Completable.fromAction(() -> userDao.insertOrUpdateUser(entity));
                 })
                 .subscribeOn(Schedulers.io());
@@ -82,15 +98,7 @@ public class SessionRepositoryImpl implements SessionRepository {
                     UserEntity entityToSave = UserMapper.toEntity(account);
                     if (companyName != null && !companyName.isEmpty()) entityToSave.setCompanyName(companyName);
                     if (companyId != null && !companyId.isEmpty()) entityToSave.setCompanyId(companyId);
-                    if ((entityToSave.getAvatarUrl() == null || entityToSave.getAvatarUrl().isEmpty())
-                            && old != null && old.getAvatarUrl() != null && !old.getAvatarUrl().isEmpty()) {
-                        entityToSave.setAvatarUrl(old.getAvatarUrl());
-                    }
-                    if (old != null && old.getId() != 0) {
-                        entityToSave.setId(old.getId());
-                    }
-                    userDao.insertOrUpdateUser(entityToSave);
-                    return account;
+                    return persistPreservingAvatar(account, entityToSave, old);
                 })
                 .subscribeOn(Schedulers.io());
     }
@@ -114,15 +122,7 @@ public class SessionRepositoryImpl implements SessionRepository {
                             .build();
 
                     UserEntity entityToSave = UserMapper.toEntity(account);
-                    if ((entityToSave.getAvatarUrl() == null || entityToSave.getAvatarUrl().isEmpty())
-                            && old != null && old.getAvatarUrl() != null && !old.getAvatarUrl().isEmpty()) {
-                        entityToSave.setAvatarUrl(old.getAvatarUrl());
-                    }
-                    if (old != null && old.getId() != 0) {
-                        entityToSave.setId(old.getId());
-                    }
-                    userDao.insertOrUpdateUser(entityToSave);
-                    return account;
+                    return persistPreservingAvatar(account, entityToSave, old);
                 })
                 .subscribeOn(Schedulers.io());
     }
@@ -153,10 +153,34 @@ public class SessionRepositoryImpl implements SessionRepository {
         return sharedPreferenceApp.getRemainingInvitationTimeMillis();
     }
 
+    private UserAccount persistPreservingAvatar(UserAccount account, UserEntity entityToSave, UserEntity old) {
+        String effectiveAvatar = !isPlaceholderAvatar(entityToSave.getAvatarUrl())
+                ? entityToSave.getAvatarUrl()
+                : (old != null && !isPlaceholderAvatar(old.getAvatarUrl()) ? old.getAvatarUrl() : null);
+        entityToSave.setAvatarUrl(effectiveAvatar);
+        if (old != null && old.getId() != 0) {
+            entityToSave.setId(old.getId());
+        }
+        userDao.insertOrUpdateUser(entityToSave);
+        if (!java.util.Objects.equals(effectiveAvatar, account.getAvatarUrl())) {
+            return account.withProfile(account.getProfile().toBuilder().avatarUrl(effectiveAvatar).build());
+        }
+        return account;
+    }
+
+    private boolean isPlaceholderAvatar(String avatar) {
+        if (avatar == null) return true;
+        String trimmed = avatar.trim();
+        return trimmed.isEmpty()
+                || "null".equalsIgnoreCase(trimmed)
+                || "none".equalsIgnoreCase(trimmed)
+                || "string".equalsIgnoreCase(trimmed);
+    }
+
     @Override
     public Completable saveInvitationCode(String code) {
         if (code != null && !code.trim().isEmpty()) {
-            sharedPreferenceApp.saveInvitationCode(code.trim(), 86400L); // Có hiệu lực trong 24 giờ
+            sharedPreferenceApp.saveInvitationCode(code.trim(), 86399L); // Có hiệu lực tối đa 23h59m59s
         }
         return userDao.getCurrentUserSingle()
                 .map(Optional::of)
@@ -245,6 +269,24 @@ public class SessionRepositoryImpl implements SessionRepository {
                     }
                     return Completable.complete();
                 })
+                .subscribeOn(Schedulers.io());
+    }
+
+    @Override
+    public Completable resetForNewAccount(String phoneNumber) {
+        String normalizedPhone = phoneNumber != null ? phoneNumber.trim() : "";
+        return Completable.fromAction(() -> {
+                    userDao.clearAllUsers();
+                    sharedPreferenceApp.clearInvitationCode();
+                    if (handledRequestManager != null) {
+                        handledRequestManager.clear();
+                    }
+                })
+                .andThen(notificationDao.clearAll())
+                .andThen(Completable.fromAction(() -> {
+                    UserEntity newEntity = new UserEntity("", "", normalizedPhone, "", "NEEDS_ROLE_SELECTION");
+                    userDao.insertOrUpdateUser(newEntity);
+                }))
                 .subscribeOn(Schedulers.io());
     }
 

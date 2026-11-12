@@ -54,14 +54,14 @@ public class CompanyInvitationBottomSheet extends BottomSheetDialogFragment {
     private void setupListeners() {
         binding.btnCloseSheet.setOnClickListener(v -> dismiss());
 
-        // Bấm Tạo mã công ty (24 giờ = 86400 giây)
+        // Bấm Tạo mã công ty (23h59m59s = 86399 giây, khớp schema time của backend)
         binding.btnGenerateCode.setOnClickListener(v -> {
-            viewModel.generateInvitationCode(86400);
+            viewModel.generateInvitationCode(86399);
         });
 
         // Bấm Tạo mã mới khác
         binding.btnRegenerateCode.setOnClickListener(v -> {
-            viewModel.generateInvitationCode(86400);
+            viewModel.generateInvitationCode(86399);
         });
 
         // Bấm Sao chép mã

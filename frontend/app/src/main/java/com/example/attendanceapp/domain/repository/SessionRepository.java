@@ -45,6 +45,9 @@ public interface SessionRepository {
     /** Hủy yêu cầu gia nhập (xóa mã mời và đưa trạng thái về ban đầu). */
     Completable clearPendingRequest();
 
+    /** Xóa toàn bộ dữ liệu tài khoản cũ trong Room và khởi tạo phiên sạch cho SĐT mới đăng ký. */
+    Completable resetForNewAccount(String phoneNumber);
+
     /** Xóa toàn bộ dữ liệu người dùng trong Room. */
     Completable clear();
 }

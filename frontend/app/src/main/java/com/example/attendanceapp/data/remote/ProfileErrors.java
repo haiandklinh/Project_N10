@@ -21,7 +21,15 @@ public final class ProfileErrors {
     }
 
     public static boolean isNotFound(Throwable e) {
-        return e instanceof AppException
-                && PROFILE_NOT_FOUND.equals(((AppException) e).getErrorCode());
+        if (!(e instanceof AppException)) {
+            return false;
+        }
+        AppException ex = (AppException) e;
+        if (PROFILE_NOT_FOUND.equals(ex.getErrorCode()) || ex.getHttpCode() == 404) {
+            return true;
+        }
+        String msg = ex.getMessage() != null ? ex.getMessage().toLowerCase(java.util.Locale.ROOT) : "";
+        return (ex.getHttpCode() == 400 || ex.getHttpCode() == 403 || ex.getHttpCode() == 422)
+                && (msg.contains("not found") || msg.contains("không tìm thấy") || msg.contains("chưa có hồ sơ"));
     }
 }

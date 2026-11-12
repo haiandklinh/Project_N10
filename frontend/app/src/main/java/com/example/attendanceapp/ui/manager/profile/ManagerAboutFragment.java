@@ -1,9 +1,5 @@
 package com.example.attendanceapp.ui.manager.profile;
 
-import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,12 +12,19 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import com.example.attendanceapp.R;
+import com.example.attendanceapp.core.utils.SupportUiHelper;
+import com.example.attendanceapp.data.local.pref.SharedPreferenceApp;
 import com.example.attendanceapp.databinding.FragmentAboutBinding;
+
+import javax.inject.Inject;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class ManagerAboutFragment extends Fragment {
+
+    @Inject
+    SharedPreferenceApp sharedPreferenceApp;
 
     private FragmentAboutBinding binding;
 
@@ -41,7 +44,7 @@ public class ManagerAboutFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         setupToolbar();
-        displayAppVersion();
+        SupportUiHelper.bindAppVersion(requireContext(), binding.tvAppVersion);
         setupListeners();
     }
 
@@ -56,43 +59,28 @@ public class ManagerAboutFragment extends Fragment {
         });
     }
 
-    private void displayAppVersion() {
-        try {
-            PackageManager pm = requireContext().getPackageManager();
-            PackageInfo pInfo = pm.getPackageInfo(requireContext().getPackageName(), 0);
-            String version = pInfo.versionName;
-            binding.tvAppVersion.setText("Phiên bản " + version);
-        } catch (Exception e) {
-            e.printStackTrace();
-            binding.tvAppVersion.setText("Phiên bản 1.0.0");
-        }
-    }
-
     private void setupListeners() {
         // Điều hướng trực tiếp đến ID điểm đến trong cùng đồ thị nav_manager để tránh lỗi Action
         binding.btnPrivacyPolicy.setOnClickListener(v -> {
             try {
-                Navigation.findNavController(v).navigate(R.id.managerPolicyFragment);
+                Navigation.findNavController(v).navigate(R.id.action_managerAboutFragment_to_managerPolicyFragment);
             } catch (Exception e) {
                 e.printStackTrace();
                 Toast.makeText(getContext(), "Không thể mở chính sách bảo mật", Toast.LENGTH_SHORT).show();
             }
         });
 
-        // Mở ứng dụng Email an toàn có try-catch tránh crash khi thiếu ứng dụng mail (ví dụ máy ảo)
-        binding.btnContactSupport.setOnClickListener(v -> sendSupportEmail());
-    }
-
-    private void sendSupportEmail() {
-        try {
-            Intent intent = new Intent(Intent.ACTION_SENDTO);
-            intent.setData(Uri.parse("mailto:support@attendanceapp.com"));
-            intent.putExtra(Intent.EXTRA_SUBJECT, "[AttendanceApp] Báo lỗi / Yêu cầu hỗ trợ (Quản lý)");
-            startActivity(intent);
-        } catch (Exception e) {
-            e.printStackTrace();
-            Toast.makeText(getContext(), "Không tìm thấy ứng dụng email trên thiết bị", Toast.LENGTH_SHORT).show();
-        }
+        binding.btnContactSupport.setOnClickListener(v -> {
+            String supportEmail = SupportUiHelper.resolveOrDefault(
+                    sharedPreferenceApp != null ? sharedPreferenceApp.getCompanyEmail() : null,
+                    SupportUiHelper.DEFAULT_SUPPORT_EMAIL
+            );
+            SupportUiHelper.sendSupportEmail(
+                    requireContext(),
+                    supportEmail,
+                    "[AttendanceApp] Báo lỗi / Yêu cầu hỗ trợ (Quản lý)"
+            );
+        });
     }
 
     @Override

@@ -138,6 +138,8 @@ public class ManagerProfileFragment extends Fragment {
 
         binding.rowLanguage.getRoot().setOnClickListener(v -> showLanguagePicker());
         binding.rowThemes.getRoot().setOnClickListener(v -> showThemePickerBottomSheet());
+        binding.rowHelpSupport.getRoot().setOnClickListener(v -> Navigation.findNavController(v).navigate(R.id.action_managerProfileFragment_to_managerHelpCenterFragment));
+        binding.rowAboutApp.getRoot().setOnClickListener(v -> Navigation.findNavController(v).navigate(R.id.action_managerProfileFragment_to_managerAboutFragment));
         binding.rowDarkMode.switchRow.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (buttonView.isPressed()) DarkModeAnimationHelper.startCloseCurtainAnimation(requireActivity(), isChecked);
         });

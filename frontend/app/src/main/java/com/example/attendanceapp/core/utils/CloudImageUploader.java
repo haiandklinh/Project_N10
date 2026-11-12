@@ -98,11 +98,14 @@ public final class CloudImageUploader {
             try (Response response = HTTP_CLIENT.newCall(request).execute()) {
                 if (response.isSuccessful() && response.body() != null) {
                     String publicUrl = response.body().string().trim();
-                    if (publicUrl.startsWith("http://") || publicUrl.startsWith("https://")) {
+                    if ((publicUrl.startsWith("http://") || publicUrl.startsWith("https://"))
+                            && isUrlReachable(publicUrl)) {
                         Log.i(TAG, "Upload avatar thành công lên Cloud URL: " + publicUrl);
                         // Cập nhật vào Cache cục bộ để hiển thị ngay lập tức
                         StaffAvatarCache.saveAvatar(context, null, null, publicUrl);
                         return publicUrl;
+                    } else {
+                        Log.w(TAG, "URL ảnh cloud trả về không tải được: " + publicUrl);
                     }
                 }
             }
@@ -117,9 +120,34 @@ public final class CloudImageUploader {
             } catch (Exception ignored) {}
         }
 
-        // 4. Fallback: Nếu không có kết nối Internet ra ngoài (môi trường mạng nội bộ),
-        // trả về Base64 / URI hiện tại để không gây crash app
+        // 4. Fallback: Nếu không có kết nối Internet hoặc cloud trả link lỗi (404),
+        // giữ nguyên đường dẫn file cục bộ để máy hiện tại luôn hiển thị được ảnh.
         return clean;
+    }
+
+    private static boolean isUrlReachable(String url) {
+        try {
+            Request checkReq = new Request.Builder()
+                    .url(url)
+                    .head()
+                    .build();
+            try (Response resp = HTTP_CLIENT.newCall(checkReq).execute()) {
+                if (resp.isSuccessful()) {
+                    return true;
+                }
+            }
+            Request getReq = new Request.Builder()
+                    .url(url)
+                    .get()
+                    .header("Range", "bytes=0-0")
+                    .build();
+            try (Response resp = HTTP_CLIENT.newCall(getReq).execute()) {
+                return resp.isSuccessful();
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "Kiểm tra URL ảnh thất bại: " + e.getMessage());
+            return false;
+        }
     }
 
     /**

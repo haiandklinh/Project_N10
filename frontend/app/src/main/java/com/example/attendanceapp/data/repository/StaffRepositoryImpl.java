@@ -96,8 +96,27 @@ public class StaffRepositoryImpl implements StaffRepository {
                 );
             }
         }
-        return api.createStaffProfile(request)
+        final CreateStaffProfileRequest finalRequest = request;
+        if (finalRequest.getAvatar() != null && !finalRequest.getAvatar().isEmpty() && context != null) {
+            StaffAvatarCache.saveAvatar(context, finalRequest.getFullName(), null, finalRequest.getAvatar());
+        }
+        return api.createStaffProfile(finalRequest)
                 .subscribeOn(Schedulers.io())
+                .map(response -> {
+                    if (response.getFullName() == null || response.getFullName().isEmpty()) {
+                        response.setFullName(finalRequest.getFullName());
+                    }
+                    if (response.getBirthDate() == null || response.getBirthDate().isEmpty()) {
+                        response.setBirthDate(finalRequest.getDate());
+                    }
+                    if (response.getGender() == null || response.getGender().isEmpty()) {
+                        response.setGender(finalRequest.getGender());
+                    }
+                    if (isPlaceholderAvatar(response.getAvatar())) {
+                        response.setAvatar(finalRequest.getAvatar());
+                    }
+                    return response;
+                })
                 .flatMap(session::saveStaffProfile)
                 .doOnSuccess(account -> {
                     appState.saveUserRole(UserRole.EMPLOYEE);
@@ -117,13 +136,31 @@ public class StaffRepositoryImpl implements StaffRepository {
                 request.setAvatar(cloudUrl);
             }
         }
-        if (request.getAvatar() != null && !request.getAvatar().isEmpty()) {
+        if (request.getAvatar() != null && !request.getAvatar().isEmpty() && context != null) {
             StaffAvatarCache.saveAvatar(context, request.getFullName(), null, request.getAvatar());
         }
         return api.updateStaffProfile(request)
                 .subscribeOn(Schedulers.io())
+                .map(response -> {
+                    if (response.getFullName() == null || response.getFullName().isEmpty()) {
+                        response.setFullName(request.getFullName());
+                    }
+                    if (isPlaceholderAvatar(response.getAvatar())) {
+                        response.setAvatar(request.getAvatar());
+                    }
+                    return response;
+                })
                 .flatMap(session::saveStaffProfile)
                 .compose(ApiErrorMapper.forSingle("Cập nhật hồ sơ Nhân viên thất bại"));
+    }
+
+    private boolean isPlaceholderAvatar(String avatar) {
+        if (avatar == null) return true;
+        String trimmed = avatar.trim();
+        return trimmed.isEmpty()
+                || "null".equalsIgnoreCase(trimmed)
+                || "none".equalsIgnoreCase(trimmed)
+                || "string".equalsIgnoreCase(trimmed);
     }
 
     // ===== Gia nhập công ty =====

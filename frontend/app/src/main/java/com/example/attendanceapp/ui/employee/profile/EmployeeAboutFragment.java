@@ -1,9 +1,5 @@
 package com.example.attendanceapp.ui.employee.profile;
 
-import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,12 +11,19 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import com.example.attendanceapp.R;
+import com.example.attendanceapp.core.utils.SupportUiHelper;
+import com.example.attendanceapp.data.local.pref.SharedPreferenceApp;
 import com.example.attendanceapp.databinding.FragmentAboutBinding;
+
+import javax.inject.Inject;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class EmployeeAboutFragment extends Fragment {
+
+    @Inject
+    SharedPreferenceApp sharedPreferenceApp;
 
     private FragmentAboutBinding binding;
 
@@ -40,7 +43,7 @@ public class EmployeeAboutFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         setupToolbar();
-        displayAppVersion();
+        SupportUiHelper.bindAppVersion(requireContext(), binding.tvAppVersion);
         setupListeners();
     }
 
@@ -51,18 +54,6 @@ public class EmployeeAboutFragment extends Fragment {
         );
     }
 
-    private void displayAppVersion() {
-        try {
-            PackageManager pm = requireContext().getPackageManager();
-            PackageInfo pInfo = pm.getPackageInfo(requireContext().getPackageName(), 0);
-            String version = pInfo.versionName;
-            binding.tvAppVersion.setText("Phiên bản " + version);
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-            binding.tvAppVersion.setText("Phiên bản 1.0.0");
-        }
-    }
-
     private void setupListeners() {
         // 1. Chuyển sang màn hình Điều khoản & Chính sách bảo mật (PolicyFragment)
         binding.btnPrivacyPolicy.setOnClickListener(v ->
@@ -70,17 +61,17 @@ public class EmployeeAboutFragment extends Fragment {
         );
 
         // 2. Mở ứng dụng Email để gửi yêu cầu hỗ trợ kỹ thuật
-        binding.btnContactSupport.setOnClickListener(v -> sendSupportEmail());
-    }
-
-    private void sendSupportEmail() {
-        Intent intent = new Intent(Intent.ACTION_SENDTO);
-        intent.setData(Uri.parse("mailto:support@attendanceapp.com"));
-        intent.putExtra(Intent.EXTRA_SUBJECT, "[AttendanceApp] Báo lỗi / Yêu cầu hỗ trợ");
-
-        if (intent.resolveActivity(requireContext().getPackageManager()) != null) {
-            startActivity(intent);
-        }
+        binding.btnContactSupport.setOnClickListener(v -> {
+            String supportEmail = SupportUiHelper.resolveOrDefault(
+                    sharedPreferenceApp != null ? sharedPreferenceApp.getCompanyEmail() : null,
+                    SupportUiHelper.DEFAULT_SUPPORT_EMAIL
+            );
+            SupportUiHelper.sendSupportEmail(
+                    requireContext(),
+                    supportEmail,
+                    "[AttendanceApp] Báo lỗi / Yêu cầu hỗ trợ"
+            );
+        });
     }
 
     @Override

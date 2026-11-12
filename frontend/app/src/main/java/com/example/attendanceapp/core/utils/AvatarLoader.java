@@ -3,6 +3,7 @@ package com.example.attendanceapp.core.utils;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.util.Base64;
 import android.widget.ImageView;
@@ -10,7 +11,11 @@ import android.widget.ImageView;
 import androidx.annotation.Nullable;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.example.attendanceapp.R;
 import com.example.attendanceapp.data.local.StaffAvatarCache;
 
@@ -51,14 +56,10 @@ public final class AvatarLoader {
             return;
         }
 
-        if (avatarUrl == null || avatarUrl.trim().isEmpty()
-                || "null".equalsIgnoreCase(avatarUrl.trim())
-                || "none".equalsIgnoreCase(avatarUrl.trim())) {
+        if (isInvalidAvatar(avatarUrl)) {
             // Tra cứu từ StaffAvatarCache theo Tên nhân viên hoặc avatar mới nhất
             String cached = StaffAvatarCache.getEffectiveAvatar(context, null, staffName, null);
-            if (cached != null && !cached.trim().isEmpty()
-                    && !"null".equalsIgnoreCase(cached.trim())
-                    && !"none".equalsIgnoreCase(cached.trim())) {
+            if (!isInvalidAvatar(cached)) {
                 avatarUrl = cached;
             } else {
                 imageView.setImageResource(placeholderResId);
@@ -67,11 +68,6 @@ public final class AvatarLoader {
         }
 
         String trimmed = avatarUrl.trim();
-
-        // Tự động lưu cache theo Tên nhân viên để các màn hình khác truy xuất
-        if (staffName != null && !staffName.trim().isEmpty()) {
-            StaffAvatarCache.saveAvatar(context, staffName, null, trimmed);
-        }
 
         // 1. Base64 Image (thường trả về trong notification content của API)
         if (trimmed.startsWith("data:image") || (!trimmed.startsWith("http") && !trimmed.startsWith("file") && !trimmed.startsWith("content") && trimmed.length() > 150)) {
@@ -84,6 +80,9 @@ public final class AvatarLoader {
 
                 // Caching local file để các màn hình khác dùng filename có thể truy xuất nhanh
                 saveDecodedBytesToCache(context, decodedBytes);
+                if (staffName != null && !staffName.trim().isEmpty()) {
+                    StaffAvatarCache.saveAvatar(context, staffName, null, trimmed);
+                }
 
                 Glide.with(context)
                         .asBitmap()
@@ -96,15 +95,52 @@ public final class AvatarLoader {
             } catch (Exception ignored) {}
         }
 
-        // 2. HTTP / HTTPS URL
+        // 2. HTTP / HTTPS URL (nếu tải lỗi 404/mạng thì fallback sang ảnh cục bộ đã lưu)
         if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+            final Context appContext = context.getApplicationContext();
             Glide.with(context)
                     .load(trimmed)
                     .placeholder(placeholderResId)
                     .error(placeholderResId)
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .listener(new RequestListener<Drawable>() {
+                        @Override
+                        public boolean onLoadFailed(
+                                @Nullable GlideException e,
+                                Object model,
+                                Target<Drawable> target,
+                                boolean isFirstResource
+                        ) {
+                            String localFallback = StaffAvatarCache.getEffectiveAvatar(appContext, null, staffName, null);
+                            if (!isInvalidAvatar(localFallback)
+                                    && !localFallback.startsWith("http://")
+                                    && !localFallback.startsWith("https://")) {
+                                imageView.post(() -> loadAvatar(appContext, localFallback, staffName, imageView, placeholderResId));
+                                return true;
+                            }
+                            return false;
+                        }
+
+                        @Override
+                        public boolean onResourceReady(
+                                Drawable resource,
+                                Object model,
+                                Target<Drawable> target,
+                                DataSource dataSource,
+                                boolean isFirstResource
+                        ) {
+                            if (staffName != null && !staffName.trim().isEmpty()) {
+                                StaffAvatarCache.saveAvatar(appContext, staffName, null, trimmed);
+                            }
+                            return false;
+                        }
+                    })
                     .into(imageView);
             return;
+        }
+
+        if (staffName != null && !staffName.trim().isEmpty()) {
+            StaffAvatarCache.saveAvatar(context, staffName, null, trimmed);
         }
 
         // 3. Content Uri
@@ -194,6 +230,15 @@ public final class AvatarLoader {
         } catch (Exception e) {
             imageView.setImageResource(placeholderResId);
         }
+    }
+
+    private static boolean isInvalidAvatar(@Nullable String value) {
+        if (value == null) return true;
+        String trimmed = value.trim();
+        return trimmed.isEmpty()
+                || "null".equalsIgnoreCase(trimmed)
+                || "none".equalsIgnoreCase(trimmed)
+                || "string".equalsIgnoreCase(trimmed);
     }
 
     private static void saveDecodedBytesToCache(Context context, byte[] bytes) {

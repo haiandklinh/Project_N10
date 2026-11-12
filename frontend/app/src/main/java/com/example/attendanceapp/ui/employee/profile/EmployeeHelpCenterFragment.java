@@ -1,12 +1,9 @@
 package com.example.attendanceapp.ui.employee.profile;
 
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -14,14 +11,25 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import com.example.attendanceapp.R;
+import com.example.attendanceapp.core.utils.SupportUiHelper;
+import com.example.attendanceapp.data.local.pref.SharedPreferenceApp;
 import com.example.attendanceapp.databinding.FragmentHelpCenterBinding;
+
+import java.util.Arrays;
+
+import javax.inject.Inject;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class EmployeeHelpCenterFragment extends Fragment {
 
+    @Inject
+    SharedPreferenceApp sharedPreferenceApp;
+
     private FragmentHelpCenterBinding binding;
+    private String supportPhone;
+    private String supportEmail;
 
     public EmployeeHelpCenterFragment() {
         // Required empty public constructor
@@ -40,6 +48,7 @@ public class EmployeeHelpCenterFragment extends Fragment {
 
         setupToolbar();
         setupViews();
+        setupFaqSearch();
         setupListeners();
     }
 
@@ -49,38 +58,68 @@ public class EmployeeHelpCenterFragment extends Fragment {
                 Navigation.findNavController(requireView()).navigateUp()
         );
     }
-    private void setupViews(){
-        binding.tvPhone.setText("0987654321");
-        binding.tvEmail.setText("attendanceapp2026@gmail.com");
+
+    private void setupViews() {
+        supportPhone = SupportUiHelper.resolveOrDefault(
+                sharedPreferenceApp != null ? sharedPreferenceApp.getCompanyPhone() : null,
+                SupportUiHelper.DEFAULT_SUPPORT_PHONE
+        );
+        supportEmail = SupportUiHelper.resolveOrDefault(
+                sharedPreferenceApp != null ? sharedPreferenceApp.getCompanyEmail() : null,
+                SupportUiHelper.DEFAULT_SUPPORT_EMAIL
+        );
+        binding.tvPhone.setText(supportPhone);
+        binding.tvEmail.setText(supportEmail);
     }
+
+    private void setupFaqSearch() {
+        SupportUiHelper.setupFaqSearchAndToggle(
+                binding.etSearchHelp,
+                binding.tvFaqEmpty,
+                Arrays.asList(
+                        new SupportUiHelper.FaqItem(
+                                binding.cardFaq1,
+                                binding.tvFaqAnswer1,
+                                binding.tvFaqQuestion1.getText().toString(),
+                                binding.tvFaqAnswer1.getText().toString()
+                        ),
+                        new SupportUiHelper.FaqItem(
+                                binding.cardFaq2,
+                                binding.tvFaqAnswer2,
+                                binding.tvFaqQuestion2.getText().toString(),
+                                binding.tvFaqAnswer2.getText().toString()
+                        ),
+                        new SupportUiHelper.FaqItem(
+                                binding.cardFaq3,
+                                binding.tvFaqAnswer3,
+                                binding.tvFaqQuestion3.getText().toString(),
+                                binding.tvFaqAnswer3.getText().toString()
+                        )
+                )
+        );
+    }
+
     private void setupListeners() {
         // Categories
-        binding.cardHelpAttendance.setOnClickListener(v -> 
-            Navigation.findNavController(v).navigate(R.id.action_employeeHelpCenterFragment_to_employeeCheckInFragment));
-        binding.cardHelpAccount.setOnClickListener(v -> 
-            Navigation.findNavController(v).navigate(R.id.action_employeeHelpCenterFragment_to_employeeEditBasicInfoFragment));
-        binding.cardHelpPayroll.setOnClickListener(v -> 
-            Navigation.findNavController(v).navigate(R.id.action_employeeHelpCenterFragment_to_employeePayrollFragment));
+        binding.cardHelpAttendance.setOnClickListener(v ->
+                Navigation.findNavController(v).navigate(R.id.action_employeeHelpCenterFragment_to_employeeCheckInFragment));
+        binding.cardHelpAccount.setOnClickListener(v ->
+                Navigation.findNavController(v).navigate(R.id.action_employeeHelpCenterFragment_to_employeeEditBasicInfoFragment));
+        binding.cardHelpPayroll.setOnClickListener(v ->
+                Navigation.findNavController(v).navigate(R.id.action_employeeHelpCenterFragment_to_employeePayrollFragment));
         binding.cardHelpRequests.setOnClickListener(v ->
-            Navigation.findNavController(v).navigate(R.id.action_employeeHelpCenterFragment_to_employeeLeaveRequestFragment));
+                Navigation.findNavController(v).navigate(R.id.action_employeeHelpCenterFragment_to_employeeLeaveRequestFragment));
 
-        // Contact Actions
-        binding.layoutCallSupport.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_DIAL);
-            intent.setData(Uri.parse("tel:0123456789"));
-            startActivity(intent);
-        });
+        // Contact Actions (đồng bộ đúng số điện thoại & email đang hiển thị)
+        binding.layoutCallSupport.setOnClickListener(v ->
+                SupportUiHelper.dialPhone(requireContext(), supportPhone));
 
-        binding.layoutEmailSupport.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_SENDTO);
-            intent.setData(Uri.parse("mailto:attendanceapp2026@gmail.com"));
-            intent.putExtra(Intent.EXTRA_SUBJECT, "Hỗ trợ ứng dụng AttendanceApp");
-            try {
-                startActivity(intent);
-            } catch (Exception e) {
-                Toast.makeText(getContext(), "Không tìm thấy ứng dụng email", Toast.LENGTH_SHORT).show();
-            }
-        });
+        binding.layoutEmailSupport.setOnClickListener(v ->
+                SupportUiHelper.sendSupportEmail(
+                        requireContext(),
+                        supportEmail,
+                        "Hỗ trợ ứng dụng AttendanceApp"
+                ));
     }
 
     @Override

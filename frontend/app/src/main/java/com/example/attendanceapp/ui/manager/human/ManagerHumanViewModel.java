@@ -109,7 +109,7 @@ public class ManagerHumanViewModel extends ViewModel {
 
     private void loadInitialInvitationCode() {
         // Tự động kiểm tra: nếu đã có mã hợp lệ trong 24h thì dùng ngay,
-        // nếu chưa có hoặc mã cũ đã quá 24h thì tự động gọi Server tạo mã mới (TTL 86400s = 24h)
+        // nếu chưa có hoặc mã cũ đã quá 24h thì tự động gọi Server tạo mã mới (TTL 86399s ~ 24h)
         disposables.add(managerRepository.getInvitationCode()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -513,13 +513,13 @@ public class ManagerHumanViewModel extends ViewModel {
 
     /**
      * Tạo mã mời mới từ server và đồng bộ vào Room Session
-     * @param expiresInSeconds Thời hạn hiệu lực tính bằng giây (ví dụ 86400 = 24 giờ)
+     * @param expiresInSeconds Thời hạn hiệu lực tính bằng giây (tối đa 86399 = 23h59m59s)
      */
     public void generateInvitationCode(int expiresInSeconds) {
         _isGeneratingCode.setValue(true);
         _errorMessage.setValue(null);
 
-        int validExpires = (expiresInSeconds > 0) ? expiresInSeconds : 86400;
+        int validExpires = (expiresInSeconds > 0) ? Math.min(expiresInSeconds, 86399) : 86399;
         disposables.add(managerRepository.generateInvitationCode(validExpires)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())

@@ -1,9 +1,11 @@
 package com.example.attendanceapp.domain.usecase.auth;
 
+import com.example.attendanceapp.data.local.TokenManager;
 import com.example.attendanceapp.domain.model.OtpPurpose;
 import com.example.attendanceapp.domain.model.UserStatus;
 import com.example.attendanceapp.domain.repository.AppStateRepository;
 import com.example.attendanceapp.domain.repository.AuthRepository;
+import com.example.attendanceapp.domain.repository.SessionRepository;
 
 import javax.inject.Inject;
 
@@ -13,11 +15,20 @@ import io.reactivex.rxjava3.core.Single;
 public class RegisterUseCase {
     private final AuthRepository authRepository;
     private final AppStateRepository appStateRepository;
+    private final SessionRepository sessionRepository;
+    private final TokenManager tokenManager;
 
     @Inject
-    public RegisterUseCase(AuthRepository authRepository, AppStateRepository appStateRepository) {
+    public RegisterUseCase(
+            AuthRepository authRepository,
+            AppStateRepository appStateRepository,
+            SessionRepository sessionRepository,
+            TokenManager tokenManager
+    ) {
         this.authRepository = authRepository;
         this.appStateRepository = appStateRepository;
+        this.sessionRepository = sessionRepository;
+        this.tokenManager = tokenManager;
     }
 
     /**
@@ -42,22 +53,16 @@ public class RegisterUseCase {
     }
 
     /**
-     * Đăng ký tài khoản
-     * Lưu ý: Không lưu vào Room DB ở đây vì user chưa có profile đầy đủ (tên, công ty)
-     * Thông tin đầy đủ sẽ được lưu khi user login lần đầu (API getMe)
-     *
-     * FIX Bug 3: Sau đăng ký chỉ đánh dấu isAccountSaved = true.
-     * KHÔNG lưu PENDING_APPROVAL vì người dùng vừa tạo tài khoản, chưa gửi join request
-     * vào công ty nào — trạng thái sẽ được xác định chính xác sau khi login và load profile.
+     * Đăng ký tài khoản mới và xóa sạch dữ liệu tài khoản cũ trong bộ nhớ local.
      */
     public Completable execute(String phoneNumber, String password) {
         return authRepository.register(phoneNumber, password)
-                .doOnComplete(() -> {
-                    // Chỉ đánh dấu đã lưu tài khoản, không gán trạng thái PENDING_APPROVAL
-                    // vì người dùng chưa tham gia doanh nghiệp nào tại thời điểm này.
-                    // Trạng thái thực sẽ được xác định ở LoginUseCase khi load profile sau đăng nhập.
-                    appStateRepository.setAccountSaved(true);
+                .andThen(Completable.fromAction(() -> {
+                    tokenManager.clearTokens();
+                    appStateRepository.clearSession();
+                    appStateRepository.setAccountSaved(false);
                     appStateRepository.saveUserStatus(UserStatus.NEEDS_ROLE_SELECTION);
-                });
+                }))
+                .andThen(sessionRepository.resetForNewAccount(phoneNumber));
     }
 }
