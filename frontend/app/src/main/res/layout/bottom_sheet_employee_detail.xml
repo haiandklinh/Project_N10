@@ -44,15 +44,15 @@
 
             <TextView
                 android:id="@+id/tv_name"
+                style="@style/TitleTextLargeStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="@dimen/text_size_title_large"
-                android:textStyle="bold"
                 tools:text="Phạm Thu Hà" />
 
             <TextView
                 android:id="@+id/tv_position"
                 style="@style/BodyTextMediumStyle"
+                android:layout_marginBottom="@dimen/spacing_2xs"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 tools:text="Thu ngân · Cửa hàng Q1" />
@@ -248,12 +248,24 @@
 
     </com.google.android.material.card.MaterialCardView>
 
+    <!-- Nút thay đổi trạng thái nhân viên (Nghỉ việc / Làm việc) -->
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/btn_close"
+        android:id="@+id/btn_toggle_status"
         style="@style/ButtonMaxWidthStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/spacing_xl"
+        android:text="Đánh dấu không còn làm việc"
+        app:icon="@drawable/ic_close"
+        app:iconGravity="textStart"
+        app:cornerRadius="@dimen/radius_full" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_close"
+        style="@style/ButtonOutlinedSmallStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_s"
         android:text="Đóng"
         app:cornerRadius="@dimen/radius_full" />
 

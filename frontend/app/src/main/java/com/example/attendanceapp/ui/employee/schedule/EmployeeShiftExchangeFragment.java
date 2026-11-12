@@ -13,9 +13,16 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.attendanceapp.data.dto.request.staff.ChangeShiftRequest;
+import com.example.attendanceapp.data.dto.response.BaseListResponse;
 import com.example.attendanceapp.data.dto.response.staff.StaffWorkScheduleResponse;
 import com.example.attendanceapp.data.local.pref.SharedPreferenceApp;
+import com.example.attendanceapp.data.local.dao.WorkScheduleDao;
+import com.example.attendanceapp.data.local.entity.WorkScheduleEntity;
+import com.example.attendanceapp.data.dto.response.BaseListResponse;
 import com.example.attendanceapp.databinding.FragmentShiftExchangeBinding;
+import com.example.attendanceapp.domain.model.ApprovalRequestType;
+import com.example.attendanceapp.domain.model.ApprovalStatus;
+import com.example.attendanceapp.domain.model.LeaveRequest;
 import com.example.attendanceapp.domain.model.Shift;
 import com.example.attendanceapp.domain.model.ShiftOption;
 import com.example.attendanceapp.domain.model.ShiftStatus;
@@ -32,11 +39,13 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.inject.Inject;
 
 import dagger.hilt.android.AndroidEntryPoint;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
@@ -52,6 +61,9 @@ public class EmployeeShiftExchangeFragment extends Fragment {
 
     @Inject
     ShiftRepository shiftRepository;
+
+    @Inject
+    WorkScheduleDao workScheduleDao;
 
     @Inject
     SharedPreferenceApp sharedPreferenceApp;
@@ -160,60 +172,118 @@ public class EmployeeShiftExchangeFragment extends Fragment {
     private void loadMyShiftsData() {
         binding.progressMyShifts.setVisibility(View.VISIBLE);
 
-        disposables.add(staffRepository.getWorkSchedules()
-                .subscribeOn(Schedulers.io())
+        disposables.add(Single.zip(
+                staffRepository.getWorkSchedules()
+                        .subscribeOn(Schedulers.io())
+                        .onErrorReturnItem(new BaseListResponse<>(new ArrayList<>())),
+                shiftRepository.getShifts()
+                        .subscribeOn(Schedulers.io())
+                        .onErrorReturnItem(new ArrayList<>()),
+                workScheduleDao.observeAllSchedules()
+                        .firstOrError()
+                        .subscribeOn(Schedulers.io())
+                        .onErrorReturnItem(new ArrayList<>()),
+                (scheduleResponse, companyShifts, roomWorkSchedules) -> {
+                    List<Shift> shifts = new ArrayList<>();
+                    LocalDate today = LocalDate.now();
+                    LocalTime now = LocalTime.now();
+
+                    if (scheduleResponse != null && scheduleResponse.getData() != null) {
+                        for (StaffWorkScheduleResponse item : scheduleResponse.getData()) {
+                            if (item == null || item.getShifts() == null) continue;
+
+                            LocalDate date = parseDate(item.getWorkDay());
+                            if (date == null) continue;
+
+                            for (StaffWorkScheduleResponse.ShiftInfo si : item.getShifts()) {
+                                if (si == null) continue;
+
+                                LocalTime st = parseTime(si.getStartTime(), LocalTime.of(8, 0));
+                                LocalTime et = parseTime(si.getEndTime(), LocalTime.of(17, 0));
+
+                                // Chỉ lấy ca chưa kết thúc (ngày tương lai hoặc hôm nay nhưng chưa hết ca)
+                                boolean isUpcoming = date.isAfter(today) || (date.isEqual(today) && (et == null || et.isAfter(now)));
+                                if (!isUpcoming) continue;
+
+                                String shiftName = (si.getShiftName() != null && !si.getShiftName().trim().isEmpty())
+                                        ? si.getShiftName().trim()
+                                        : "Ca làm việc";
+
+                                // 1. Ưu tiên id_work_shift từ server
+                                String realShiftId = (si.getShiftId() != null && !si.getShiftId().trim().isEmpty())
+                                        ? si.getShiftId().trim()
+                                        : null;
+
+                                // 2. Nếu server chưa trả id_work_shift, đối soát với danh sách ca công ty theo tên
+                                if (realShiftId == null || realShiftId.isEmpty()) {
+                                    if (companyShifts != null) {
+                                        for (ShiftOption opt : companyShifts) {
+                                            if (opt != null && opt.getTitle() != null && opt.getTitle().trim().equalsIgnoreCase(shiftName)) {
+                                                realShiftId = opt.getId() != null ? opt.getId().trim() : null;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // 3. Nếu vẫn chưa có, đối soát theo giờ bắt đầu
+                                if (realShiftId == null || realShiftId.isEmpty()) {
+                                    if (companyShifts != null) {
+                                        for (ShiftOption opt : companyShifts) {
+                                            if (opt != null && opt.getStartTime() != null && si.getStartTime() != null
+                                                    && opt.getStartTime().trim().startsWith(si.getStartTime().trim())) {
+                                                realShiftId = opt.getId() != null ? opt.getId().trim() : null;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // 4. Tra cứu trong bảng work_schedules (Room DB)
+                                if (realShiftId == null || realShiftId.isEmpty()) {
+                                    if (roomWorkSchedules != null) {
+                                        for (WorkScheduleEntity wse : roomWorkSchedules) {
+                                            if (wse != null && wse.getShiftName() != null &&
+                                                    wse.getShiftName().trim().equalsIgnoreCase(shiftName) &&
+                                                    wse.getShiftId() != null && !wse.getShiftId().trim().isEmpty()) {
+                                                realShiftId = wse.getShiftId().trim();
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // 5. Fallback cuối cùng là workScheduleId
+                                if (realShiftId == null || realShiftId.isEmpty()) {
+                                    realShiftId = si.getWorkScheduleId() != null ? si.getWorkScheduleId().trim() : "";
+                                }
+
+                                String location = resolveShiftLocation(shiftName);
+
+                                shifts.add(new Shift(
+                                        realShiftId,
+                                        "current_user",
+                                        date,
+                                        shiftName,
+                                        st,
+                                        et,
+                                        location,
+                                        ShiftStatus.PENDING
+                                ));
+                            }
+                        }
+                    }
+                    return shifts;
+                })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                        response -> {
+                        shifts -> {
                             if (binding == null) return;
                             binding.swipeRefreshLayout.setRefreshing(false);
                             binding.progressMyShifts.setVisibility(View.GONE);
 
                             myAllUpcomingShifts.clear();
-                            LocalDate today = LocalDate.now();
-                            LocalTime now = LocalTime.now();
-
-                            if (response != null && response.getData() != null) {
-                                for (StaffWorkScheduleResponse item : response.getData()) {
-                                    if (item == null || item.getShifts() == null) continue;
-
-                                    LocalDate date = parseDate(item.getWorkDay());
-                                    if (date == null) continue;
-
-                                    for (StaffWorkScheduleResponse.ShiftInfo si : item.getShifts()) {
-                                        if (si == null) continue;
-
-                                        LocalTime st = parseTime(si.getStartTime(), LocalTime.of(8, 0));
-                                        LocalTime et = parseTime(si.getEndTime(), LocalTime.of(17, 0));
-
-                                        // Chỉ lấy ca chưa kết thúc (ngày tương lai hoặc hôm nay nhưng chưa hết ca)
-                                        boolean isUpcoming = date.isAfter(today) || (date.isEqual(today) && (et == null || et.isAfter(now)));
-                                        if (!isUpcoming) continue;
-
-                                        String shiftName = (si.getShiftName() != null && !si.getShiftName().trim().isEmpty())
-                                                ? si.getShiftName().trim()
-                                                : "Ca làm việc";
-
-                                        // Ưu tiên id_shift từ server
-                                        String realShiftId = (si.getShiftId() != null && !si.getShiftId().trim().isEmpty())
-                                                ? si.getShiftId().trim()
-                                                : (si.getWorkScheduleId() != null ? si.getWorkScheduleId().trim() : "");
-
-                                        String location = resolveShiftLocation(shiftName);
-
-                                        myAllUpcomingShifts.add(new Shift(
-                                                realShiftId,
-                                                "current_user",
-                                                date,
-                                                shiftName,
-                                                st,
-                                                et,
-                                                location,
-                                                ShiftStatus.PENDING
-                                        ));
-                                    }
-                                }
-                            }
+                            myAllUpcomingShifts.addAll(shifts);
 
                             // Sắp xếp ca sắp tới theo thứ tự thời gian gần nhất lên đầu
                             myAllUpcomingShifts.sort(Comparator.comparing(
@@ -419,6 +489,7 @@ public class EmployeeShiftExchangeFragment extends Fragment {
             binding.btnSubmitExchange.setEnabled(false);
             binding.btnSubmitExchange.setText("Đang gửi yêu cầu...");
 
+            // ID ca hiện tại và ID ca đích
             String curShiftId = mySelectedShift.getId();
             String tgtShiftId = targetShift.getId();
             String dateStr = mySelectedShift.getDate() != null ? mySelectedShift.getDate().toString() : LocalDate.now().toString();
@@ -431,12 +502,32 @@ public class EmployeeShiftExchangeFragment extends Fragment {
                     .subscribe(
                             () -> {
                                 if (isAdded()) {
+                                    // Lưu lại lịch sử cục bộ để hiển thị ngay trong danh sách đơn từ
                                     if (sharedPreferenceApp != null) {
                                         sharedPreferenceApp.incrementMonthlyShiftExchangeCount(currentMonth.toString());
+                                        String uid = sharedPreferenceApp.getUserId() != null ? sharedPreferenceApp.getUserId() : "staff";
+                                        
+                                        // Tạo text hiển thị chi tiết cho đơn đổi ca
+                                        String shiftDetail = String.format("Đổi: %s -> %s", 
+                                                mySelectedShift.getShiftName(), targetShift.getShiftName());
+                                        
+                                        LeaveRequest submitted = new LeaveRequest(
+                                                UUID.randomUUID().toString(),
+                                                uid,
+                                                ApprovalRequestType.SWAP,
+                                                dateStr,
+                                                shiftDetail,
+                                                reason,
+                                                false,
+                                                ApprovalStatus.PENDING,
+                                                System.currentTimeMillis()
+                                        );
+                                        sharedPreferenceApp.saveSubmittedLeaveRequest(submitted);
                                     }
-                                    usedExchangeCount++;
-                                    setupQuotaDisplay();
-                                    Toast.makeText(requireContext(), "Gửi yêu cầu đổi sang " + targetShift.getShiftName() + " thành công!", Toast.LENGTH_SHORT).show();
+                                    
+                                    Toast.makeText(requireContext(), "Gửi yêu cầu đổi ca thành công!", Toast.LENGTH_SHORT).show();
+                                    
+                                    // Quay lại màn hình danh sách đơn từ
                                     Navigation.findNavController(requireView()).popBackStack();
                                 }
                             },
@@ -444,7 +535,11 @@ public class EmployeeShiftExchangeFragment extends Fragment {
                                 if (isAdded()) {
                                     binding.btnSubmitExchange.setEnabled(true);
                                     binding.btnSubmitExchange.setText("Gửi yêu cầu đổi ca");
-                                    Toast.makeText(requireContext(), "Lỗi gửi yêu cầu: " + throwable.getMessage(), Toast.LENGTH_LONG).show();
+                                    String errorMsg = throwable.getMessage();
+                                    if (errorMsg != null && errorMsg.contains("400")) {
+                                        errorMsg = "Dữ liệu không hợp lệ hoặc ca đã tồn tại.";
+                                    }
+                                    Toast.makeText(requireContext(), "Lỗi: " + errorMsg, Toast.LENGTH_LONG).show();
                                 }
                             }
                     )

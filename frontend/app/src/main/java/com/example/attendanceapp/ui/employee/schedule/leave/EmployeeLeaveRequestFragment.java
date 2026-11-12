@@ -38,6 +38,12 @@ import java.util.UUID;
 import javax.inject.Inject;
 
 import dagger.hilt.android.AndroidEntryPoint;
+import com.example.attendanceapp.data.dto.response.BaseListResponse;
+import com.example.attendanceapp.data.local.dao.ShiftDao;
+import com.example.attendanceapp.data.local.dao.WorkScheduleDao;
+import com.example.attendanceapp.data.local.entity.ShiftEntity;
+import com.example.attendanceapp.data.local.entity.WorkScheduleEntity;
+import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
@@ -52,6 +58,12 @@ public class EmployeeLeaveRequestFragment extends Fragment {
 
     @Inject
     ShiftRepository shiftRepository;
+
+    @Inject
+    ShiftDao shiftDao;
+
+    @Inject
+    WorkScheduleDao workScheduleDao;
 
     @Inject
     SharedPreferenceApp sharedPreferenceApp;
@@ -160,49 +172,129 @@ public class EmployeeLeaveRequestFragment extends Fragment {
         if (dateStr == null || dateStr.trim().isEmpty()) return;
 
         disposables.add(
-                staffRepository.getWorkSchedules()
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(
-                                response -> {
-                                    shiftItemList.clear();
-                                    boolean hasShiftsOnDay = false;
+                Single.zip(
+                        staffRepository.getWorkSchedules()
+                                .subscribeOn(Schedulers.io())
+                                .onErrorReturnItem(new BaseListResponse<>(new ArrayList<>())),
+                        shiftDao.observeAllShifts()
+                                .firstOrError()
+                                .subscribeOn(Schedulers.io())
+                                .onErrorReturnItem(new ArrayList<>()),
+                        workScheduleDao.observeAllSchedules()
+                                .firstOrError()
+                                .subscribeOn(Schedulers.io())
+                                .onErrorReturnItem(new ArrayList<>()),
+                        (scheduleResponse, roomShifts, roomWorkSchedules) -> {
+                            List<ShiftItem> items = new ArrayList<>();
+                            String firstRealShiftId = null;
 
-                                    if (response != null && response.getData() != null) {
-                                        for (StaffWorkScheduleResponse ws : response.getData()) {
-                                            if (ws != null && dateStr.equals(ws.getWorkDay()) && ws.getShifts() != null) {
-                                                for (StaffWorkScheduleResponse.ShiftInfo si : ws.getShifts()) {
-                                                    if (si != null) {
-                                                        String shiftId = (si.getShiftId() != null && !si.getShiftId().trim().isEmpty())
-                                                                ? si.getShiftId().trim()
-                                                                : (si.getWorkScheduleId() != null ? si.getWorkScheduleId().trim() : "shift_01");
-                                                        String shiftName = si.getShiftName() != null ? si.getShiftName().trim() : "Ca làm việc";
-                                                        String timeRange = "";
-                                                        if (si.getStartTime() != null && si.getEndTime() != null) {
-                                                            timeRange = " (" + si.getStartTime() + " - " + si.getEndTime() + ")";
+                            if (scheduleResponse != null && scheduleResponse.getData() != null) {
+                                for (StaffWorkScheduleResponse ws : scheduleResponse.getData()) {
+                                    String wsDate = ws != null && ws.getWorkDay() != null ? ws.getWorkDay().trim() : "";
+                                    if (wsDate.length() >= 10) {
+                                        wsDate = wsDate.substring(0, 10);
+                                    }
+
+                                    if (dateStr.equals(wsDate) && ws.getShifts() != null) {
+                                        for (StaffWorkScheduleResponse.ShiftInfo si : ws.getShifts()) {
+                                            if (si == null) continue;
+
+                                            String shiftName = si.getShiftName() != null ? si.getShiftName().trim() : "Ca làm việc";
+                                            String timeRange = "";
+                                            if (si.getStartTime() != null && si.getEndTime() != null) {
+                                                timeRange = " (" + formatTime(si.getStartTime()) + " - " + formatTime(si.getEndTime()) + ")";
+                                            }
+
+                                            // 1. Ưu tiên shiftId trực tiếp nếu server trả
+                                            String realShiftId = (si.getShiftId() != null && !si.getShiftId().trim().isEmpty())
+                                                    ? si.getShiftId().trim()
+                                                    : null;
+
+                                            // 2. Tra cứu trong bảng shifts (Room DB) theo tên ca
+                                            if (realShiftId == null || realShiftId.isEmpty()) {
+                                                if (roomShifts != null) {
+                                                    for (ShiftEntity entity : roomShifts) {
+                                                        if (entity != null && entity.getTitle() != null &&
+                                                                entity.getTitle().trim().equalsIgnoreCase(shiftName)) {
+                                                            realShiftId = entity.getId();
+                                                            break;
                                                         }
-                                                        shiftItemList.add(new ShiftItem(shiftId, shiftName, shiftName + timeRange));
-                                                        hasShiftsOnDay = true;
                                                     }
                                                 }
                                             }
+
+                                            // 3. Tra cứu trong bảng shifts (Room DB) theo giờ bắt đầu/kết thúc
+                                            if (realShiftId == null || realShiftId.isEmpty()) {
+                                                if (roomShifts != null && si.getStartTime() != null) {
+                                                    for (ShiftEntity entity : roomShifts) {
+                                                        if (entity != null && entity.getStartTime() != null &&
+                                                                entity.getStartTime().trim().startsWith(si.getStartTime().trim())) {
+                                                            realShiftId = entity.getId();
+                                                            break;
+                                                        }
+                                                    }
+                                                }
+                                            }
+
+                                            // 4. Tra cứu trong bảng work_schedules (Room DB)
+                                            if (realShiftId == null || realShiftId.isEmpty()) {
+                                                if (roomWorkSchedules != null) {
+                                                    for (WorkScheduleEntity wse : roomWorkSchedules) {
+                                                        if (wse != null && wse.getShiftName() != null &&
+                                                                wse.getShiftName().trim().equalsIgnoreCase(shiftName) &&
+                                                                wse.getShiftId() != null && !wse.getShiftId().trim().isEmpty()) {
+                                                            realShiftId = wse.getShiftId().trim();
+                                                            break;
+                                                        }
+                                                    }
+                                                }
+                                            }
+
+                                            // 5. Fallback cuối cùng là workScheduleId nếu không tìm thấy ID ca
+                                            if (realShiftId == null || realShiftId.isEmpty()) {
+                                                realShiftId = (si.getWorkScheduleId() != null && !si.getWorkScheduleId().trim().isEmpty())
+                                                        ? si.getWorkScheduleId().trim()
+                                                        : "";
+                                            }
+
+                                            if (!realShiftId.isEmpty()) {
+                                                if (firstRealShiftId == null) {
+                                                    firstRealShiftId = realShiftId;
+                                                }
+                                                items.add(new ShiftItem(realShiftId, shiftName, shiftName + timeRange));
+                                            }
                                         }
                                     }
+                                }
+                            }
 
-                                    if (hasShiftsOnDay) {
-                                        shiftItemList.add(new ShiftItem("shift_all", "Cả ngày", "Cả ngày (Tất cả ca làm việc)"));
+                            if (!items.isEmpty()) {
+                                String allDayId = firstRealShiftId != null ? firstRealShiftId : "all";
+                                items.add(new ShiftItem(allDayId, "Cả ngày", "Cả ngày (Tất cả ca làm việc)"));
+                            }
+                            return items;
+                        }
+                )
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                items -> {
+                                    shiftItemList.clear();
+                                    if (items != null && !items.isEmpty()) {
+                                        shiftItemList.addAll(items);
+                                        binding.tilShiftInfo.setHelperText(null);
+                                        binding.tilShiftInfo.setError(null);
+                                        binding.btnSubmit.setEnabled(true);
                                         updateShiftDropdown();
                                     } else {
-                                        // Nếu ngày này chưa được phân ca, nạp danh sách cấu hình ca chung của công ty
-                                        loadFallbackCompanyShifts();
+                                        loadCompanyShiftsOrEmpty();
                                     }
                                 },
-                                throwable -> loadFallbackCompanyShifts()
+                                throwable -> loadCompanyShiftsOrEmpty()
                         )
         );
     }
 
-    private void loadFallbackCompanyShifts() {
+    private void loadCompanyShiftsOrEmpty() {
         disposables.add(
                 shiftRepository.getShifts()
                         .subscribeOn(Schedulers.io())
@@ -210,36 +302,42 @@ public class EmployeeLeaveRequestFragment extends Fragment {
                         .subscribe(
                                 options -> {
                                     shiftItemList.clear();
+                                    String firstShiftId = null;
                                     if (options != null && !options.isEmpty()) {
                                         for (ShiftOption opt : options) {
-                                            String id = opt.getId() != null ? opt.getId().trim() : "shift_01";
+                                            String id = opt.getId() != null ? opt.getId().trim() : "";
+                                            if (id.isEmpty()) continue;
+
+                                            if (firstShiftId == null) {
+                                                firstShiftId = id;
+                                            }
                                             String title = opt.getTitle() != null ? opt.getTitle().trim() : "Ca làm";
                                             String timeRange = "";
                                             if (opt.getStartTime() != null && opt.getEndTime() != null) {
-                                                timeRange = " (" + opt.getStartTime() + " - " + opt.getEndTime() + ")";
+                                                timeRange = " (" + formatTime(opt.getStartTime()) + " - " + formatTime(opt.getEndTime()) + ")";
                                             }
                                             shiftItemList.add(new ShiftItem(id, title, title + timeRange));
                                         }
-                                        shiftItemList.add(new ShiftItem("shift_all", "Cả ngày", "Cả ngày (Tất cả ca làm việc)"));
+                                        String allDayId = firstShiftId != null ? firstShiftId : "all";
+                                        shiftItemList.add(new ShiftItem(allDayId, "Cả ngày", "Cả ngày (Tất cả ca làm việc)"));
+                                        binding.tilShiftInfo.setHelperText("Ngày này chưa có phân ca cá nhân, hiển thị ca theo cấu hình công ty");
+                                        binding.tilShiftInfo.setError(null);
+                                        binding.btnSubmit.setEnabled(true);
                                     } else {
-                                        populateDefaultShiftItems();
+                                        binding.tilShiftInfo.setError("Ngày này chưa có ca làm việc nào");
+                                        binding.tilShiftInfo.setHelperText(null);
+                                        binding.btnSubmit.setEnabled(false);
                                     }
                                     updateShiftDropdown();
                                 },
                                 throwable -> {
-                                    shiftItemList.clear();
-                                    populateDefaultShiftItems();
+                                    binding.tilShiftInfo.setError("Ngày này chưa có ca làm việc nào");
+                                    binding.tilShiftInfo.setHelperText(null);
+                                    binding.btnSubmit.setEnabled(false);
                                     updateShiftDropdown();
                                 }
                         )
         );
-    }
-
-    private void populateDefaultShiftItems() {
-        shiftItemList.add(new ShiftItem("shift_01", "Ca sáng", "Ca sáng (08:00 - 12:00)"));
-        shiftItemList.add(new ShiftItem("shift_02", "Ca chiều", "Ca chiều (13:30 - 17:30)"));
-        shiftItemList.add(new ShiftItem("shift_03", "Ca hành chính", "Ca hành chính (08:00 - 17:30)"));
-        shiftItemList.add(new ShiftItem("shift_all", "Cả ngày", "Cả ngày (Tất cả ca làm việc)"));
     }
 
     private void updateShiftDropdown() {
@@ -249,7 +347,16 @@ public class EmployeeLeaveRequestFragment extends Fragment {
 
         if (!shiftItemList.isEmpty()) {
             binding.actShiftInfo.setText(shiftItemList.get(0).label, false);
+        } else {
+            binding.actShiftInfo.setText("", false);
         }
+    }
+
+    private String formatTime(String time) {
+        if (time != null && time.length() >= 5) {
+            return time.substring(0, 5);
+        }
+        return time;
     }
 
     private void setupInputWatchers() {
@@ -285,8 +392,8 @@ public class EmployeeLeaveRequestFragment extends Fragment {
                 return;
             }
 
-            if (TextUtils.isEmpty(shiftLabel)) {
-                binding.tilShiftInfo.setError("Vui lòng chọn ca xin nghỉ");
+            if (TextUtils.isEmpty(shiftLabel) || shiftItemList.isEmpty()) {
+                binding.tilShiftInfo.setError("Vui lòng chọn ca xin nghỉ hợp lệ");
                 return;
             }
 
@@ -295,17 +402,25 @@ public class EmployeeLeaveRequestFragment extends Fragment {
                 return;
             }
 
-            String shiftId = "shift_01";
+            String shiftId = "";
             String shiftName = shiftLabel;
             for (ShiftItem item : shiftItemList) {
-                if (item.label.equalsIgnoreCase(shiftLabel)) {
+                if (item.label.equalsIgnoreCase(shiftLabel) || item.name.equalsIgnoreCase(shiftLabel)) {
                     shiftId = item.id;
                     shiftName = item.name;
                     break;
                 }
             }
 
-            sendLeaveRequest(date, shiftId, shiftName, reason, isEmergency);
+            if (shiftId.isEmpty() && !shiftItemList.isEmpty()) {
+                shiftId = shiftItemList.get(0).id;
+                shiftName = shiftItemList.get(0).name;
+            }
+
+            boolean isAllDay = "Cả ngày".equalsIgnoreCase(shiftName) || "all".equalsIgnoreCase(shiftId);
+            String finalReason = isAllDay ? "[Nghỉ cả ngày] " + reason : reason;
+
+            sendLeaveRequest(date, shiftId, shiftName, finalReason, isEmergency);
         });
     }
 
@@ -313,8 +428,7 @@ public class EmployeeLeaveRequestFragment extends Fragment {
         binding.btnSubmit.setEnabled(false);
 
         String finalReason = isEmergency ? "[ĐỘT XUẤT] " + reason : reason;
-        String actualShiftId = (shiftId == null || shiftId.equals("shift_all") || shiftId.startsWith("shift_")) ? null : shiftId;
-        CreateLeaveRequest request = new CreateLeaveRequest(date, actualShiftId, finalReason);
+        CreateLeaveRequest request = new CreateLeaveRequest(date, shiftId, finalReason);
 
         disposables.add(staffRepository.requestLeave(request)
                 .subscribeOn(Schedulers.io())
@@ -323,7 +437,6 @@ public class EmployeeLeaveRequestFragment extends Fragment {
                         () -> {
                             if (isAdded()) {
                                 if (sharedPreferenceApp != null) {
-                                    sharedPreferenceApp.saveLeaveDate(date);
                                     String uid = sharedPreferenceApp.getUserId() != null ? sharedPreferenceApp.getUserId() : "staff";
                                     LeaveRequest submitted = new LeaveRequest(
                                             UUID.randomUUID().toString(),

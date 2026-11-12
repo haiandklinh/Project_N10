@@ -68,7 +68,7 @@ public class ManagerScheduleEmployeeAdapter extends RecyclerView.Adapter<Manager
         }
 
         // 3. LOAD AVATAR ĐỒNG BỘ TỪ API
-        com.example.attendanceapp.core.utils.AvatarLoader.loadAvatar(context, item.getAvatarUrl(), holder.binding.ivAvatar);
+        com.example.attendanceapp.core.utils.AvatarLoader.loadAvatar(context, item.getAvatarUrl(), item.getFullName(), holder.binding.ivAvatar);
 
         // 4. Thông tin Ca làm việc (Chip bên phải)
         boolean hasShift = item.getAssignedShiftName() != null && !item.getAssignedShiftName().isEmpty();

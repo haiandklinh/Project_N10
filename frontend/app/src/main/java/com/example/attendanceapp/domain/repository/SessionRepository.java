@@ -30,6 +30,8 @@ public interface SessionRepository {
 
     Maybe<String> getCachedInvitationCode();
 
+    long getRemainingInvitationTimeMillis();
+
     Completable saveInvitationCode(String code);
 
     Completable savePendingJoinRequest(String invitationCode, String companyName);
@@ -39,9 +41,6 @@ public interface SessionRepository {
     Completable saveSelectedCompany(String companyId, String companyName, String position);
 
     Maybe<SavedAccountData> getSavedAccountData();
-
-    /** Hủy yêu cầu gia nhập (xóa mã mời và đưa trạng thái về ban đầu). */
-    Completable clearPendingRequest();
 
     /** Xóa toàn bộ dữ liệu người dùng trong Room. */
     Completable clear();

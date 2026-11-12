@@ -259,11 +259,11 @@
     <string name="history_status_leave">Nghỉ phép</string>
     <string name="history_status_not_checked">Chưa chấm</string>
     <string name="history_total_working_hours">Tổng giờ làm việc</string>
-    <string name="history_filter_all">Tất cả</string>
-    <string name="history_filter_present">Đúng giờ</string>
-    <string name="history_filter_late">Đi muộn</string>
-    <string name="history_filter_absent">Vắng mặt</string>
-    <string name="history_filter_early">Về sớm</string>
+    <string name="history_filter_all">Tất cả (%1$d)</string>
+    <string name="history_filter_present">Đúng giờ (%1$d)</string>
+    <string name="history_filter_late">Đi muộn (%1$d)</string>
+    <string name="history_filter_absent">Vắng mặt (%1$d)</string>
+    <string name="history_filter_early">Về sớm (%1$d)</string>
 
     <!-- Employee Leave Requests & Adjustments Fragment -->
     <string name="request_title">Quản lý đơn từ</string>
@@ -423,6 +423,22 @@
     <string name="human_action_undo">Hoàn tác</string>
     <string name="human_badge_limit">99+</string>
     <string name="human_desc_join_requests">Yêu cầu tham gia công ty</string>
+
+    <!-- Manager Business Settings -->
+    <string name="business_settings_title">Cài đặt doanh nghiệp</string>
+    <string name="business_settings_update_success">Cập nhật thành công</string>
+    <string name="business_settings_updating">Đang xử lý...</string>
+    <string name="business_settings_update_btn">Cập nhật thông tin</string>
+    <string name="business_settings_locating">Đang lấy tọa độ GPS...</string>
+    <string name="business_settings_geocoding">Đang xác định địa chỉ...</string>
+    <string name="business_settings_location_error">Không lấy được vị trí GPS.</string>
+    <string name="business_settings_location_permission_denied">Quyền truy cập vị trí bị từ chối</string>
+    <string name="business_settings_enable_gps">Vui lòng bật định vị (GPS) trên thiết bị</string>
+    <string name="business_settings_location_permission_error">Lỗi quyền truy cập vị trí</string>
+    <string name="business_settings_error_empty_name">Tên doanh nghiệp không được để trống</string>
+    <string name="business_settings_error_no_account">Không thể lấy thông tin tài khoản hiện tại</string>
+    <string name="business_settings_location_format">%1$.6f, %2$.6f</string>
+    <string name="business_settings_error_prefix">Lỗi: %1$s</string>
 
     <!-- ================================================================= -->
     <!-- 5. CẤU HÌNH BÊN THỨ 3 & SDK TOKENS (THIRD-PARTY TOKENS)            -->

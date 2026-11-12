@@ -65,12 +65,7 @@ public class ManagerAttendanceHistoryAdapter
         holder.binding.tvEmployeeName.setText(item.getStaffName());
 
         // 2. Avatar
-        Glide.with(holder.itemView.getContext())
-                .load(item.getAvatar())
-                .placeholder(R.drawable.ic_avatar)
-                .error(R.drawable.ic_avatar)
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .into(holder.binding.ivEmployeeAvatar);
+        com.example.attendanceapp.core.utils.AvatarLoader.loadAvatar(holder.itemView.getContext(), item.getAvatar(), item.getStaffName(), holder.binding.ivEmployeeAvatar);
 
         // 3. Ngày tháng kèm ca làm việc
         String dateText = formatDate(item.getDate());

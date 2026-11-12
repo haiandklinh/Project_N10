@@ -91,7 +91,7 @@ public class SelectEmployeeAdapter extends RecyclerView.Adapter<SelectEmployeeAd
         // THÔNG TIN NHÂN VIÊN
         holder.binding.tvName.setText(item.getFullName());
 
-        com.example.attendanceapp.core.utils.AvatarLoader.loadAvatar(context, item.getAvatarUrl(), holder.binding.ivAvatar);
+        com.example.attendanceapp.core.utils.AvatarLoader.loadAvatar(context, item.getAvatarUrl(), item.getFullName(), holder.binding.ivAvatar);
 
         String employeeCode = item.getEmployeeCode() != null
                 ? item.getEmployeeCode()
@@ -107,9 +107,29 @@ public class SelectEmployeeAdapter extends RecyclerView.Adapter<SelectEmployeeAd
 
         boolean hasShift = assignedShiftsMap.containsKey(item.getUserId());
         String shiftName = hasShift ? assignedShiftsMap.get(item.getUserId()) : null;
+        boolean isTerminated = item.getStatus() == EmployeeStatus.TERMINATED;
 
-        if (hasShift) {
-            // 1. NHÂN VIÊN ĐÃ CÓ CA TRONG NGÀY: Làm mờ và đánh dấu "Đã có ca"
+        if (isTerminated) {
+            // 1. NHÂN VIÊN ĐÃ NGHỈ VIỆC: Làm mờ và không cho chọn
+            holder.binding.cardRoot.setAlpha(0.45f);
+            updateCardStyle(holder.binding.cardRoot, false);
+
+            holder.binding.chipStatus.setText(EmployeeStatus.TERMINATED.getLabel());
+            holder.binding.chipStatus.setTextColor(
+                    ContextCompat.getColor(context, EmployeeStatus.TERMINATED.getTextColorRes())
+            );
+            holder.binding.chipStatus.setChipBackgroundColor(
+                    ColorStateList.valueOf(ContextCompat.getColor(context, EmployeeStatus.TERMINATED.getContainerColorRes()))
+            );
+
+            // Click vào nhân viên đã nghỉ việc: Hiển thị Toast thông báo
+            holder.binding.cardRoot.setOnClickListener(v -> {
+                Toast.makeText(context,
+                        "Nhân viên " + item.getFullName() + " đã nghỉ việc, không thể xếp ca.",
+                        Toast.LENGTH_SHORT).show();
+            });
+        } else if (hasShift) {
+            // 2. NHÂN VIÊN ĐÃ CÓ CA TRONG NGÀY: Làm mờ và đánh dấu "Đã có ca"
             holder.binding.cardRoot.setAlpha(0.45f);
             updateCardStyle(holder.binding.cardRoot, false);
 
@@ -131,20 +151,30 @@ public class SelectEmployeeAdapter extends RecyclerView.Adapter<SelectEmployeeAd
                         Toast.LENGTH_SHORT).show();
             });
         } else {
-            // 2. NHÂN VIÊN CHƯA CÓ CA: Hiển thị bình thường, cho phép tick chọn
+            // 3. NHÂN VIÊN CHƯA CÓ CA: Hiển thị bình thường, cho phép tick chọn
             holder.binding.cardRoot.setAlpha(1.0f);
 
             EmployeeStatus status = item.getStatus() != null
                     ? item.getStatus()
                     : EmployeeStatus.ACTIVE;
 
-            holder.binding.chipStatus.setText(status.getLabel());
-            holder.binding.chipStatus.setTextColor(
-                    ContextCompat.getColor(context, status.getTextColorRes())
-            );
-            holder.binding.chipStatus.setChipBackgroundColor(
-                    ColorStateList.valueOf(ContextCompat.getColor(context, status.getContainerColorRes()))
-            );
+            if (status == EmployeeStatus.ON_LEAVE) {
+                holder.binding.chipStatus.setText(EmployeeStatus.ON_LEAVE.getLabel());
+                holder.binding.chipStatus.setTextColor(
+                        ContextCompat.getColor(context, EmployeeStatus.ON_LEAVE.getTextColorRes())
+                );
+                holder.binding.chipStatus.setChipBackgroundColor(
+                        ColorStateList.valueOf(ContextCompat.getColor(context, EmployeeStatus.ON_LEAVE.getContainerColorRes()))
+                );
+            } else {
+                holder.binding.chipStatus.setText("Chưa có ca");
+                holder.binding.chipStatus.setTextColor(
+                        ContextCompat.getColor(context, EmployeeStatus.ACTIVE.getTextColorRes())
+                );
+                holder.binding.chipStatus.setChipBackgroundColor(
+                        ColorStateList.valueOf(ContextCompat.getColor(context, EmployeeStatus.ACTIVE.getContainerColorRes()))
+                );
+            }
 
             boolean isSelected = selectedEmployeeIds.contains(item.getUserId());
             updateCardStyle(holder.binding.cardRoot, isSelected);

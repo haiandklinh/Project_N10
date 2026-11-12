@@ -142,10 +142,10 @@ public class NotificationRepositoryImpl implements NotificationRepository {
                         if (res != null && res.getData() != null) {
                             List<NotificationEntity> entities = new ArrayList<>();
                             for (com.example.attendanceapp.data.dto.response.manager.NotificationItemResponse item : res.getData()) {
-                                if (item.getStaffId() != null && handledRequestManager.isHandled(item.getStaffId())) {
+                                String typeStr = item.getNotificationType();
+                                if ("JOIN_COMPANY_REQUEST".equalsIgnoreCase(typeStr) && item.getStaffId() != null && handledRequestManager.isHandled(item.getStaffId())) {
                                     continue;
                                 }
-                                String typeStr = item.getNotificationType();
                                 String senderName = item.getSendPerson() != null ? item.getSendPerson() : "Nhân viên";
                                 String title;
                                 String msg;

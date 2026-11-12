@@ -8,6 +8,7 @@ import com.example.attendanceapp.data.dto.request.staff.UpdateStaffProfileReques
 import com.example.attendanceapp.data.dto.response.BaseListResponse;
 import com.example.attendanceapp.data.dto.response.staff.NotificationItemResponse;
 import com.example.attendanceapp.data.dto.response.staff.StaffCompanyResponse;
+import com.example.attendanceapp.data.dto.response.staff.StaffPayrollResponse;
 import com.example.attendanceapp.data.dto.response.staff.StaffWorkScheduleResponse;
 import com.example.attendanceapp.domain.model.ManagerInfo;
 import com.example.attendanceapp.domain.model.UserAccount;
@@ -41,4 +42,10 @@ public interface StaffRepository {
     Completable requestLeave(CreateLeaveRequest request);
 
     Completable requestAttendanceAdjustment(String managerId, AttendanceAdjustmentRequest request);
+
+    /** Lấy lịch sử phiếu lương của nhân viên theo công ty đã chọn */
+    Single<BaseListResponse<StaffPayrollResponse>> getPayrollHistory();
+
+    /** Lấy lịch sử phiếu lương theo managerId chỉ định */
+    Single<BaseListResponse<StaffPayrollResponse>> getPayrollHistory(String managerId);
 }

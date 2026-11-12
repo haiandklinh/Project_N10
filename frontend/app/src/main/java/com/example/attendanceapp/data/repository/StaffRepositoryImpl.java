@@ -2,6 +2,7 @@ package com.example.attendanceapp.data.repository;
 
 import android.content.Context;
 
+import com.example.attendanceapp.core.utils.CloudImageUploader;
 import com.example.attendanceapp.core.notification.WebSocketNotificationManager;
 import com.example.attendanceapp.data.dto.request.staff.AttendanceAdjustmentRequest;
 import com.example.attendanceapp.data.dto.request.staff.ChangeShiftRequest;
@@ -12,6 +13,7 @@ import com.example.attendanceapp.data.dto.request.staff.UpdateStaffProfileReques
 import com.example.attendanceapp.data.dto.response.BaseListResponse;
 import com.example.attendanceapp.data.dto.response.staff.NotificationItemResponse;
 import com.example.attendanceapp.data.dto.response.staff.StaffCompanyResponse;
+import com.example.attendanceapp.data.dto.response.staff.StaffPayrollResponse;
 import com.example.attendanceapp.data.dto.response.staff.StaffProfileResponse;
 import com.example.attendanceapp.data.dto.response.staff.StaffWorkScheduleResponse;
 import com.example.attendanceapp.data.local.StaffAvatarCache;
@@ -82,6 +84,18 @@ public class StaffRepositoryImpl implements StaffRepository {
 
     @Override
     public Single<UserAccount> createProfile(CreateStaffProfileRequest request) {
+        String avatar = request.getAvatar();
+        if (avatar != null && !avatar.isEmpty() && context != null) {
+            String cloudUrl = CloudImageUploader.uploadAvatarSync(context, avatar);
+            if (cloudUrl != null && !cloudUrl.isEmpty()) {
+                request = new CreateStaffProfileRequest(
+                        request.getFullName(),
+                        request.getDate(),
+                        request.getGender(),
+                        cloudUrl
+                );
+            }
+        }
         return api.createStaffProfile(request)
                 .subscribeOn(Schedulers.io())
                 .flatMap(session::saveStaffProfile)
@@ -96,6 +110,16 @@ public class StaffRepositoryImpl implements StaffRepository {
 
     @Override
     public Single<UserAccount> updateProfile(UpdateStaffProfileRequest request) {
+        String avatar = request.getAvatar();
+        if (avatar != null && !avatar.isEmpty() && context != null) {
+            String cloudUrl = CloudImageUploader.uploadAvatarSync(context, avatar);
+            if (cloudUrl != null && !cloudUrl.isEmpty()) {
+                request.setAvatar(cloudUrl);
+            }
+        }
+        if (request.getAvatar() != null && !request.getAvatar().isEmpty()) {
+            StaffAvatarCache.saveAvatar(context, request.getFullName(), null, request.getAvatar());
+        }
         return api.updateStaffProfile(request)
                 .subscribeOn(Schedulers.io())
                 .flatMap(session::saveStaffProfile)
@@ -110,11 +134,14 @@ public class StaffRepositoryImpl implements StaffRepository {
         String safeAvatar = avatar != null ? avatar : "";
         String code = invitationCode != null ? invitationCode.trim() : "";
 
-        // Chuyển đổi avatar sang Base64 thumbnail để Quản lý trên các thiết bị khác hiển thị chuẩn ảnh của Nhân viên
-        String base64Avatar = StaffAvatarCache.encodeImageToBase64(context, safeAvatar);
-        if (base64Avatar != null && !base64Avatar.isEmpty()) {
-            safeAvatar = base64Avatar;
+        // Chuyển đổi avatar sang Cloud URL ngắn (< 50 ký tự) để Server lưu vào DB và Quản lý xem được ảnh
+        if (context != null && !safeAvatar.isEmpty()) {
+            String cloudUrl = CloudImageUploader.uploadAvatarSync(context, safeAvatar);
+            if (cloudUrl != null && !cloudUrl.isEmpty()) {
+                safeAvatar = cloudUrl;
+            }
         }
+        StaffAvatarCache.saveAvatar(context, safeName, null, safeAvatar);
 
         JoinCompanyRequest body = new JoinCompanyRequest(code, safeName, safeAvatar);
 
@@ -139,9 +166,8 @@ public class StaffRepositoryImpl implements StaffRepository {
 
     @Override
     public Single<Boolean> checkCompanyApprovalStatus(String invitationCode) {
-        // Nguồn dữ liệu chuẩn xác duy nhất: GET /staffs/my-company
-        // - Nếu có công ty trong danh sách -> Quản lý ĐÃ DUYỆT (APPROVED).
-        // - Nếu danh sách rỗng -> Vẫn ĐANG CHỜ DUYỆT (PENDING_APPROVAL).
+        // 1. Ưu tiên kiểm tra qua GET /staffs/my-company
+        // Đây là nguồn dữ liệu chuẩn xác nhất: Khi Quản lý duyệt đơn, nhân viên sẽ lập tức có trong danh sách my-company
         return api.getMyCompanies()
                 .subscribeOn(Schedulers.io())
                 .flatMap(response -> {
@@ -154,28 +180,53 @@ public class StaffRepositoryImpl implements StaffRepository {
                         return session.saveSelectedCompany(managerId, companyName, position)
                                 .doOnComplete(() -> appState.saveUserStatus(UserStatus.APPROVED))
                                 .toSingleDefault(true);
+                    }
+
+                    // 2. Nếu my-company chưa có, kiểm tra tiếp qua invitation code nếu có
+                    if (invitationCode != null && !invitationCode.trim().isEmpty()) {
+                        return checkStatusViaInvitationCode(invitationCode.trim());
+                    }
+
+                    appState.saveUserStatus(UserStatus.PENDING_APPROVAL);
+                    return Single.just(false);
+                })
+                .onErrorResumeNext(error -> {
+                    // Nếu getMyCompanies gặp lỗi, fallback kiểm tra qua invitation code
+                    if (invitationCode != null && !invitationCode.trim().isEmpty()) {
+                        return checkStatusViaInvitationCode(invitationCode.trim());
+                    }
+                    appState.saveUserStatus(UserStatus.PENDING_APPROVAL);
+                    return Single.just(false);
+                });
+    }
+
+    private Single<Boolean> checkStatusViaInvitationCode(String invitationCode) {
+        return api.getManagerIdByInvitationCode(invitationCode.trim())
+                .subscribeOn(Schedulers.io())
+                .map(StaffRepositoryImpl::extractManagerId)
+                .flatMap(managerId -> {
+                    if (managerId != null && !managerId.isEmpty()) {
+                        return session.saveApprovalSuccess(managerId)
+                                .doOnComplete(() -> appState.saveUserStatus(UserStatus.APPROVED))
+                                .toSingleDefault(true);
                     } else {
                         appState.saveUserStatus(UserStatus.PENDING_APPROVAL);
                         return Single.just(false);
                     }
                 })
-                .onErrorResumeNext(error -> {
+                .onErrorResumeNext(throwable -> {
                     appState.saveUserStatus(UserStatus.PENDING_APPROVAL);
                     return Single.just(false);
                 });
     }
 
     private static String extractManagerId(ResponseBody body) throws Exception {
-        String raw = body.string();
-        try {
-            JSONObject json = new JSONObject(raw);
-            String id = json.optString("request_id", json.optString("id", json.optString("id_manager", "")));
-            if (!id.isEmpty()) {
-                return id;
-            }
-        } catch (Exception ignored) {}
-
-        String content = raw.replace("\"", "").trim();
+        JSONObject json = readJson(body);
+        String id = json.optString("request_id", json.optString("id", json.optString("id_manager", "")));
+        if (!id.isEmpty()) {
+            return id;
+        }
+        String content = body.string().replace("\"", "").trim();
         if (!content.isEmpty()) {
             return content;
         }
@@ -183,8 +234,7 @@ public class StaffRepositoryImpl implements StaffRepository {
     }
 
     private static ManagerInfo toManagerInfo(ResponseBody body) throws Exception {
-        String raw = body.string();
-        JSONObject json = new JSONObject(raw);
+        JSONObject json = readJson(body);
         String companyName = json.optString("company", json.optString("company_name", ""));
         String managerId = json.optString("request_id", json.optString("id", json.optString("id_manager", "")));
         String managerName = json.optString("manager_name", json.optString("name", companyName));
@@ -260,37 +310,22 @@ public class StaffRepositoryImpl implements StaffRepository {
     @Override
     public Completable requestLeave(CreateLeaveRequest request) {
         return session.getCurrentUser()
-                .map(user -> user.getCompanyId() != null && !user.getCompanyId().trim().isEmpty() ? user.getCompanyId() : "")
+                .map(user -> user.getCompanyId() != null ? user.getCompanyId() : "")
                 .defaultIfEmpty("")
                 .flatMapCompletable(managerId -> {
-                    if (!managerId.isEmpty()) {
-                        return executeLeaveRequest(managerId.trim(), request);
+                    if (managerId.isEmpty()) {
+                        return Completable.error(new IllegalStateException("Chưa tham gia công ty"));
                     }
-                    return api.getMyCompanies()
-                            .flatMapCompletable(response -> {
-                                if (response != null && response.getData() != null && !response.getData().isEmpty()) {
-                                    StaffCompanyResponse first = response.getData().get(0);
-                                    String fetchedManagerId = first.getManagerId();
-                                    if (fetchedManagerId != null && !fetchedManagerId.trim().isEmpty()) {
-                                        return session.saveSelectedCompany(fetchedManagerId.trim(), first.getCompanyName(), first.getPositionStaff())
-                                                .andThen(executeLeaveRequest(fetchedManagerId.trim(), request));
-                                    }
-                                }
-                                return Completable.error(new IllegalStateException("Chưa tham gia công ty hoặc không tìm thấy thông tin quản lý"));
-                            });
+                    return api.requestLeave(managerId, request)
+                            .subscribeOn(Schedulers.io())
+                            .doOnSuccess(ignored -> {
+                                String reason = request != null ? request.getReason() : "";
+                                String workday = request != null ? request.getWorkDayOff() : "";
+                                webSocketManager.notifyLeaveRequest("Bạn", workday, reason);
+                            })
+                            .ignoreElement();
                 })
                 .compose(ApiErrorMapper.forCompletable("Gửi yêu cầu nghỉ phép thất bại"));
-    }
-
-    private Completable executeLeaveRequest(String managerId, CreateLeaveRequest request) {
-        return api.requestLeave(managerId, request)
-                .subscribeOn(Schedulers.io())
-                .doOnSuccess(ignored -> {
-                    String reason = request != null ? request.getReason() : "";
-                    String workday = request != null ? request.getWorkDayOff() : "";
-                    webSocketManager.notifyLeaveRequest("Bạn", workday, reason);
-                })
-                .ignoreElement();
     }
 
     @Override
@@ -304,6 +339,36 @@ public class StaffRepositoryImpl implements StaffRepository {
                 })
                 .ignoreElement()
                 .compose(ApiErrorMapper.forCompletable("Gửi yêu cầu điều chỉnh chấm công thất bại"));
+    }
+
+    @Override
+    public Single<BaseListResponse<StaffPayrollResponse>> getPayrollHistory() {
+        return session.getCurrentUser()
+                .map(user -> user.getCompanyId() != null ? user.getCompanyId() : "")
+                .defaultIfEmpty("")
+                .<BaseListResponse<StaffPayrollResponse>>flatMap(managerId -> {
+                    if (managerId.isEmpty()) {
+                        return api.getMyCompanies()
+                                .flatMap(compResponse -> {
+                                    if (compResponse != null && compResponse.getData() != null && !compResponse.getData().isEmpty()) {
+                                        String mId = compResponse.getData().get(0).getManagerId();
+                                        return api.getPayrollHistory(mId);
+                                    }
+                                    return Single.just(new BaseListResponse<StaffPayrollResponse>(new java.util.ArrayList<>()));
+                                })
+                                .onErrorReturnItem(new BaseListResponse<StaffPayrollResponse>(new java.util.ArrayList<>()));
+                    }
+                    return api.getPayrollHistory(managerId);
+                })
+                .subscribeOn(Schedulers.io())
+                .compose(ApiErrorMapper.forSingle("Lấy lịch sử phiếu lương thất bại"));
+    }
+
+    @Override
+    public Single<BaseListResponse<StaffPayrollResponse>> getPayrollHistory(String managerId) {
+        return api.getPayrollHistory(managerId)
+                .subscribeOn(Schedulers.io())
+                .compose(ApiErrorMapper.forSingle("Lấy lịch sử phiếu lương thất bại"));
     }
 
     private static JSONObject readJson(ResponseBody body) {

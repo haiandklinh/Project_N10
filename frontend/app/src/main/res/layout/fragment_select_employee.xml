@@ -60,7 +60,6 @@
                 android:layout_height="wrap_content"
                 android:checked="true"
                 android:text="Tất cả (12)"
-                app:chipCornerRadius="16dp"
                 app:chipStrokeWidth="0dp" />
 
             <com.google.android.material.chip.Chip
@@ -68,8 +67,7 @@
                 style="@style/ChipFilterStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Đang làm (10)"
-                app:chipCornerRadius="16dp"
+                android:text="Chưa có ca(10)"
                 app:chipStrokeWidth="0dp" />
 
             <com.google.android.material.chip.Chip
@@ -77,8 +75,7 @@
                 style="@style/ChipFilterStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Bỏ ca (0)"
-                app:chipCornerRadius="16dp"
+                android:text="Đã có ca (0)"
                 app:chipStrokeWidth="0dp" />
 
             <com.google.android.material.chip.Chip
@@ -87,7 +84,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Nghỉ phép (1)"
-                app:chipCornerRadius="16dp"
                 app:chipStrokeWidth="0dp" />
 
         </com.google.android.material.chip.ChipGroup>

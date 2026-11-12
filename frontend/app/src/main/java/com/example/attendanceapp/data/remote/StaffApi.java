@@ -9,6 +9,7 @@ import com.example.attendanceapp.data.dto.request.staff.UpdateStaffProfileReques
 import com.example.attendanceapp.data.dto.response.BaseListResponse;
 import com.example.attendanceapp.data.dto.response.staff.NotificationItemResponse;
 import com.example.attendanceapp.data.dto.response.staff.StaffCompanyResponse;
+import com.example.attendanceapp.data.dto.response.staff.StaffPayrollResponse;
 import com.example.attendanceapp.data.dto.response.staff.StaffProfileResponse;
 import com.example.attendanceapp.data.dto.response.staff.StaffWorkScheduleResponse;
 
@@ -63,5 +64,11 @@ public interface StaffApi {
     Single<ResponseBody> requestAttendanceAdjustment(
             @Query("id_manager") String managerId,
             @Body AttendanceAdjustmentRequest request
+    );
+
+    // GET /staffs/me/payrolls - Get Payroll History
+    @GET("staffs/me/payrolls")
+    Single<BaseListResponse<StaffPayrollResponse>> getPayrollHistory(
+            @Query("id_manager") String managerId
     );
 }

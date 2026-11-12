@@ -10,12 +10,13 @@ import java.util.Arrays;
 import java.util.Comparator;
 
 /**
- * Cache lưu trữ avatar của nhân viên theo Tên hoặc Số điện thoại
+ * Cache lưu trữ avatar của nhân viên theo ID, Tên hoặc Số điện thoại
  * để đồng bộ nhanh và làm fallback khi backend trả về avatar null trong thông báo
  */
 public final class StaffAvatarCache {
 
     private static final String PREF_NAME = "staff_avatar_cache";
+    private static final String KEY_PREFIX_ID = "avatar_by_id_";
     private static final String KEY_PREFIX_NAME = "avatar_by_name_";
     private static final String KEY_PREFIX_PHONE = "avatar_by_phone_";
     private static final String KEY_LATEST = "avatar_latest";
@@ -26,13 +27,17 @@ public final class StaffAvatarCache {
         return context.getApplicationContext().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
     }
 
-    public static void saveAvatar(Context context, @Nullable String name, @Nullable String phone, @Nullable String avatarUri) {
+    public static void saveAvatar(Context context, @Nullable String id, @Nullable String name, @Nullable String phone, @Nullable String avatarUri) {
         if (context == null || avatarUri == null || avatarUri.trim().isEmpty()) return;
         String cleanUri = avatarUri.trim();
+        if ("null".equalsIgnoreCase(cleanUri) || "none".equalsIgnoreCase(cleanUri)) return;
         SharedPreferences.Editor editor = getPrefs(context).edit();
 
         editor.putString(KEY_LATEST, cleanUri);
 
+        if (id != null && !id.trim().isEmpty()) {
+            editor.putString(KEY_PREFIX_ID + id.trim(), cleanUri);
+        }
         if (name != null && !name.trim().isEmpty()) {
             editor.putString(KEY_PREFIX_NAME + name.trim().toLowerCase(), cleanUri);
         }
@@ -42,9 +47,13 @@ public final class StaffAvatarCache {
         editor.apply();
     }
 
+    public static void saveAvatar(Context context, @Nullable String name, @Nullable String phone, @Nullable String avatarUri) {
+        saveAvatar(context, null, name, phone, avatarUri);
+    }
+
     /**
-     * Chuyển đổi Uri/File ảnh đại diện thành chuỗi Base64 thumbnail kích thước nhỏ (~4-6KB)
-     * để gửi lên Backend lưu vào Notification, giúp Quản lý trên thiết bị khác cũng xem được ảnh.
+     * Chuyển đổi Uri/File ảnh đại diện thành chuỗi Base64 thumbnail kích thước nhỏ (~6-12KB)
+     * để gửi lên Backend lưu vào Database, giúp đồng bộ đa thiết bị và giữ nguyên ảnh ngay cả khi xóa app cài lại.
      */
     @Nullable
     public static String encodeImageToBase64(@Nullable Context context, @Nullable String uriOrPath) {
@@ -56,10 +65,20 @@ public final class StaffAvatarCache {
 
         java.io.InputStream in = null;
         try {
+            int rotationDegrees = 0;
+            File file = null;
             if (trimmed.startsWith("content://") && context != null) {
                 in = context.getContentResolver().openInputStream(android.net.Uri.parse(trimmed));
+                try (java.io.InputStream exifIn = context.getContentResolver().openInputStream(android.net.Uri.parse(trimmed))) {
+                    if (exifIn != null) {
+                        android.media.ExifInterface exif = new android.media.ExifInterface(exifIn);
+                        int orientation = exif.getAttributeInt(android.media.ExifInterface.TAG_ORIENTATION, android.media.ExifInterface.ORIENTATION_NORMAL);
+                        if (orientation == android.media.ExifInterface.ORIENTATION_ROTATE_90) rotationDegrees = 90;
+                        else if (orientation == android.media.ExifInterface.ORIENTATION_ROTATE_180) rotationDegrees = 180;
+                        else if (orientation == android.media.ExifInterface.ORIENTATION_ROTATE_270) rotationDegrees = 270;
+                    }
+                } catch (Exception ignored) {}
             } else {
-                File file;
                 if (trimmed.startsWith("file://")) {
                     file = new File(android.net.Uri.parse(trimmed).getPath());
                 } else {
@@ -67,6 +86,13 @@ public final class StaffAvatarCache {
                 }
                 if (file.exists()) {
                     in = new java.io.FileInputStream(file);
+                    try {
+                        android.media.ExifInterface exif = new android.media.ExifInterface(file.getAbsolutePath());
+                        int orientation = exif.getAttributeInt(android.media.ExifInterface.TAG_ORIENTATION, android.media.ExifInterface.ORIENTATION_NORMAL);
+                        if (orientation == android.media.ExifInterface.ORIENTATION_ROTATE_90) rotationDegrees = 90;
+                        else if (orientation == android.media.ExifInterface.ORIENTATION_ROTATE_180) rotationDegrees = 180;
+                        else if (orientation == android.media.ExifInterface.ORIENTATION_ROTATE_270) rotationDegrees = 270;
+                    } catch (Exception ignored) {}
                 }
             }
 
@@ -78,7 +104,18 @@ public final class StaffAvatarCache {
 
             if (bitmap == null) return null;
 
-            int maxDim = 160;
+            // Xoay ảnh nếu có exif rotation từ camera
+            if (rotationDegrees != 0) {
+                android.graphics.Matrix matrix = new android.graphics.Matrix();
+                matrix.postRotate(rotationDegrees);
+                android.graphics.Bitmap rotated = android.graphics.Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+                if (rotated != bitmap) {
+                    bitmap.recycle();
+                    bitmap = rotated;
+                }
+            }
+
+            int maxDim = 200;
             int width = bitmap.getWidth();
             int height = bitmap.getHeight();
             if (width > maxDim || height > maxDim) {
@@ -98,7 +135,7 @@ public final class StaffAvatarCache {
             }
 
             java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-            bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 75, baos);
+            bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 80, baos);
             byte[] bytes = baos.toByteArray();
             bitmap.recycle();
 
@@ -110,6 +147,16 @@ public final class StaffAvatarCache {
                 try { in.close(); } catch (Exception ignored) {}
             }
         }
+    }
+
+    @Nullable
+    public static String getAvatarById(Context context, @Nullable String id) {
+        if (context == null || id == null || id.trim().isEmpty()) return null;
+        String uri = getPrefs(context).getString(KEY_PREFIX_ID + id.trim(), null);
+        if (uri != null && isValidFile(uri)) {
+            return uri;
+        }
+        return null;
     }
 
     @Nullable
@@ -130,6 +177,21 @@ public final class StaffAvatarCache {
             return uri;
         }
         return null;
+    }
+
+    @Nullable
+    public static String getEffectiveAvatar(Context context, @Nullable String id, @Nullable String name, @Nullable String phone) {
+        if (context == null) return null;
+        String byId = getAvatarById(context, id);
+        if (byId != null) return byId;
+
+        String byName = getAvatarByName(context, name);
+        if (byName != null) return byName;
+
+        String byPhone = getAvatarByPhone(context, phone);
+        if (byPhone != null) return byPhone;
+
+        return getLatestAvatar(context);
     }
 
     @Nullable
@@ -158,6 +220,7 @@ public final class StaffAvatarCache {
     private static boolean isValidFile(String pathOrUri) {
         if (pathOrUri == null || pathOrUri.isEmpty()) return false;
         if (pathOrUri.startsWith("http://") || pathOrUri.startsWith("https://")) return true;
+        if (pathOrUri.startsWith("data:image") || pathOrUri.startsWith("content://") || pathOrUri.length() > 200) return true;
         try {
             File file;
             if (pathOrUri.startsWith("file://")) {

@@ -120,7 +120,7 @@ public final class UserAccount {
     // ===== Builder =====
     public static final class Builder {
         private String phoneNumber, invitationCode, managerId;
-        private boolean firstLogin = false;
+        private boolean firstLogin = true;
         private boolean active = true;
         private Instant lastLoginTime;
         private UserProfile profile;

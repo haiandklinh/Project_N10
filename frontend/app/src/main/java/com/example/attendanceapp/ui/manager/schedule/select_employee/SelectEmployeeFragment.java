@@ -49,9 +49,9 @@ public class SelectEmployeeFragment extends Fragment {
     private int selectedFilterStatus = FILTER_ALL;
 
     private static final int FILTER_ALL = 0;
-    private static final int FILTER_WORKING = 1;
-    private static final int FILTER_ABSENT = 2;
-    private static final int FILTER_LEAVE = 3;
+    private static final int FILTER_NO_SHIFT = 1;  // Chưa có ca
+    private static final int FILTER_HAS_SHIFT = 2; // Đã có ca
+    private static final int FILTER_LEAVE = 3;     // Nghỉ phép
 
     @Nullable
     @Override
@@ -113,7 +113,7 @@ public class SelectEmployeeFragment extends Fragment {
             if (adapter != null) {
                 adapter.setAssignedShiftsMap(assignedMap);
             }
-            updateSelectionAllText();
+            updateFilteredList();
         });
 
         viewModel.getErrorMessageLiveData().observe(getViewLifecycleOwner(), error -> {
@@ -161,12 +161,12 @@ public class SelectEmployeeFragment extends Fragment {
         });
 
         binding.chipWorking.setOnClickListener(v -> {
-            selectedFilterStatus = FILTER_WORKING;
+            selectedFilterStatus = FILTER_NO_SHIFT;
             updateFilteredList();
         });
 
         binding.chipAbsent.setOnClickListener(v -> {
-            selectedFilterStatus = FILTER_ABSENT;
+            selectedFilterStatus = FILTER_HAS_SHIFT;
             updateFilteredList();
         });
 
@@ -176,7 +176,54 @@ public class SelectEmployeeFragment extends Fragment {
         });
     }
 
+    private void updateFilterChipCounts() {
+        if (binding == null) return;
+
+        Map<String, String> assignedMap = viewModel.getAssignedShiftsMapLiveData().getValue();
+        if (assignedMap == null) assignedMap = new HashMap<>();
+
+        int totalCount = 0;
+        int noShiftCount = 0;
+        int hasShiftCount = 0;
+        int leaveCount = 0;
+
+        for (ManagerEmployeeItem item : allEmployees) {
+            boolean matchesSearch = searchQuery.isEmpty()
+                    || (item.getFullName() != null
+                    && item.getFullName().toLowerCase(Locale.ROOT).contains(searchQuery))
+                    || (item.getEmployeeCode() != null
+                    && item.getEmployeeCode().toLowerCase(Locale.ROOT).contains(searchQuery));
+
+            if (!matchesSearch) {
+                continue;
+            }
+
+            totalCount++;
+
+            boolean hasShift = assignedMap.containsKey(item.getUserId());
+            if (hasShift) {
+                hasShiftCount++;
+            } else if (item.getStatus() != EmployeeStatus.TERMINATED) {
+                noShiftCount++;
+            }
+
+            if (item.getStatus() == EmployeeStatus.ON_LEAVE) {
+                leaveCount++;
+            }
+        }
+
+        binding.chipAll.setText(String.format(Locale.getDefault(), "Tất cả (%d)", totalCount));
+        binding.chipWorking.setText(String.format(Locale.getDefault(), "Chưa có ca (%d)", noShiftCount));
+        binding.chipAbsent.setText(String.format(Locale.getDefault(), "Đã có ca (%d)", hasShiftCount));
+        binding.chipLeave.setText(String.format(Locale.getDefault(), "Nghỉ phép (%d)", leaveCount));
+    }
+
     private void updateFilteredList() {
+        if (binding == null) return;
+
+        Map<String, String> assignedMap = viewModel.getAssignedShiftsMapLiveData().getValue();
+        if (assignedMap == null) assignedMap = new HashMap<>();
+
         List<ManagerEmployeeItem> filtered = new ArrayList<>();
 
         for (ManagerEmployeeItem item : allEmployees) {
@@ -186,17 +233,22 @@ public class SelectEmployeeFragment extends Fragment {
                     || (item.getEmployeeCode() != null
                     && item.getEmployeeCode().toLowerCase(Locale.ROOT).contains(searchQuery));
 
-            boolean matchesFilter = true;
-
-            if (selectedFilterStatus == FILTER_WORKING) {
-                matchesFilter = item.getStatus() == EmployeeStatus.ACTIVE;
-            } else if (selectedFilterStatus == FILTER_LEAVE) {
-                matchesFilter = item.getStatus() == EmployeeStatus.ON_LEAVE;
-            } else if (selectedFilterStatus == FILTER_ABSENT) {
-                matchesFilter = false;
+            if (!matchesSearch) {
+                continue;
             }
 
-            if (matchesSearch && matchesFilter) {
+            boolean matchesFilter = true;
+            boolean hasShift = assignedMap.containsKey(item.getUserId());
+
+            if (selectedFilterStatus == FILTER_NO_SHIFT) {
+                matchesFilter = !hasShift && item.getStatus() != EmployeeStatus.TERMINATED;
+            } else if (selectedFilterStatus == FILTER_HAS_SHIFT) {
+                matchesFilter = hasShift;
+            } else if (selectedFilterStatus == FILTER_LEAVE) {
+                matchesFilter = item.getStatus() == EmployeeStatus.ON_LEAVE;
+            }
+
+            if (matchesFilter) {
                 filtered.add(item);
             }
         }
@@ -204,6 +256,7 @@ public class SelectEmployeeFragment extends Fragment {
         filteredEmployees = filtered;
 
         adapter.updateData(filteredEmployees);
+        updateFilterChipCounts();
         updateSelectionAllText();
         updateBottomBarCount();
     }
@@ -217,16 +270,16 @@ public class SelectEmployeeFragment extends Fragment {
             Map<String, String> assignedMap = viewModel.getAssignedShiftsMapLiveData().getValue();
             if (assignedMap == null) assignedMap = new HashMap<>();
 
-            // Chỉ xét những nhân viên CHƯA CÓ CA trong ngày đang chọn
+            // Chỉ xét những nhân viên CHƯA CÓ CA trong ngày đang chọn VÀ CHƯA NGHỈ VIỆC
             List<ManagerEmployeeItem> selectableEmployees = new ArrayList<>();
             for (ManagerEmployeeItem emp : filteredEmployees) {
-                if (!assignedMap.containsKey(emp.getUserId())) {
+                if (!assignedMap.containsKey(emp.getUserId()) && emp.getStatus() != EmployeeStatus.TERMINATED) {
                     selectableEmployees.add(emp);
                 }
             }
 
             if (selectableEmployees.isEmpty()) {
-                Toast.makeText(getContext(), "Tất cả nhân viên trong danh sách đều đã có ca làm trong ngày này!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Không có nhân viên khả dụng để xếp ca trong danh sách này!", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -268,6 +321,7 @@ public class SelectEmployeeFragment extends Fragment {
     }
 
     private void updateSelectionAllText() {
+        if (binding == null) return;
         if (filteredEmployees.isEmpty()) {
             binding.tvSelectAll.setText("Chọn tất cả");
             return;
@@ -278,13 +332,13 @@ public class SelectEmployeeFragment extends Fragment {
 
         List<ManagerEmployeeItem> selectableEmployees = new ArrayList<>();
         for (ManagerEmployeeItem emp : filteredEmployees) {
-            if (!assignedMap.containsKey(emp.getUserId())) {
+            if (!assignedMap.containsKey(emp.getUserId()) && emp.getStatus() != EmployeeStatus.TERMINATED) {
                 selectableEmployees.add(emp);
             }
         }
 
         if (selectableEmployees.isEmpty()) {
-            binding.tvSelectAll.setText("Tất cả đã có ca");
+            binding.tvSelectAll.setText("Không có NV khả dụng");
             return;
         }
 
@@ -317,6 +371,7 @@ public class SelectEmployeeFragment extends Fragment {
     }
 
     private void updateBottomBarCount() {
+        if (binding == null) return;
         int count = selectedEmployeeIds.size();
         binding.tvSelectedCount.setText("Đã chọn " + count + " nhân viên");
         binding.btnContinue.setEnabled(count > 0);

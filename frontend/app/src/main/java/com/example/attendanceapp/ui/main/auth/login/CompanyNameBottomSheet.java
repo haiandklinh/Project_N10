@@ -1,9 +1,13 @@
 package com.example.attendanceapp.ui.main.auth.login;
 
 import android.Manifest;
+import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -23,6 +27,8 @@ import com.example.attendanceapp.data.local.pref.SharedPreferenceApp;
 import com.example.attendanceapp.databinding.BottomSheetAuthCompanyNameBinding;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
+import com.google.android.gms.tasks.CancellationTokenSource;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 import java.util.Locale;
@@ -46,6 +52,7 @@ public class CompanyNameBottomSheet extends BottomSheetDialogFragment {
 
     private BottomSheetAuthCompanyNameBinding binding;
     private FusedLocationProviderClient fusedLocationClient;
+    private CancellationTokenSource cancellationTokenSource;
     private Double latitude = null;
     private Double longitude = null;
 
@@ -53,9 +60,8 @@ public class CompanyNameBottomSheet extends BottomSheetDialogFragment {
             registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
                 Boolean fineLocationGranted = result.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false);
                 Boolean coarseLocationGranted = result.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false);
-                if (fineLocationGranted != null && fineLocationGranted) {
-                    getCurrentLocation();
-                } else if (coarseLocationGranted != null && coarseLocationGranted) {
+                if ((fineLocationGranted != null && fineLocationGranted) ||
+                        (coarseLocationGranted != null && coarseLocationGranted)) {
                     getCurrentLocation();
                 } else {
                     Toast.makeText(requireContext(), "Quyền truy cập vị trí bị từ chối", Toast.LENGTH_SHORT).show();
@@ -81,13 +87,6 @@ public class CompanyNameBottomSheet extends BottomSheetDialogFragment {
     }
 
     private void setupViews() {
-        // Pre-fill if exists
-        String savedAddress = sharedPreferenceApp.getCompanyAddress();
-        if (savedAddress != null) {
-            binding.edtLocation.setText(savedAddress);
-            latitude = sharedPreferenceApp.getCompanyLat();
-            longitude = sharedPreferenceApp.getCompanyLon();
-        }
 
         binding.btnSubmit.setOnClickListener(v -> {
             String companyName = binding.edtCompanyName.getText().toString().trim();
@@ -103,15 +102,15 @@ public class CompanyNameBottomSheet extends BottomSheetDialogFragment {
                 return;
             }
 
-            if (latitude == null || longitude == null) {
-                binding.tilLocation.setError("Vui lòng chọn vị trí trụ sở");
+            if (latitude == null || longitude == null || TextUtils.isEmpty(location) ) {
+                binding.tilLocation.setError("Vui lòng bấm biểu tượng GPS bên phải để lấy địa chỉ công ty");
                 return;
             }
 
             binding.tilCompanyName.setError(null);
             binding.tilLocation.setError(null);
 
-            // Lưu vào SharedPreferences
+            // Lưu tọa độ và địa chỉ chi tiết vào SharedPreferences
             sharedPreferenceApp.saveCompanyLocation(latitude, longitude, location);
 
             // Gửi kết quả về Fragment cha
@@ -144,12 +143,43 @@ public class CompanyNameBottomSheet extends BottomSheetDialogFragment {
             public void afterTextChanged(Editable s) {}
         });
 
-        // Location selection
+        binding.edtLocation.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                binding.tilLocation.setError(null);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
+        // Bấm vào icon bên phải để lấy địa chỉ hiện trực tiếp vào edt
         binding.tilLocation.setEndIconOnClickListener(v -> checkLocationPermissionAndGet());
     }
 
     private void checkLocationPermissionAndGet() {
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        if (getContext() == null) return;
+
+        // 1. Kiểm tra xem dịch vụ định vị (GPS) của thiết bị đã được bật hay chưa
+        LocationManager locationManager = (LocationManager) requireContext().getSystemService(Context.LOCATION_SERVICE);
+        boolean isGpsEnabled = locationManager != null &&
+                (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+                        locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER));
+
+        if (!isGpsEnabled) {
+            Toast.makeText(requireContext(), "Vui lòng bật định vị (GPS) trên thiết bị", Toast.LENGTH_LONG).show();
+            try {
+                startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+            } catch (Exception ignored) {}
+            return;
+        }
+
+        // 2. Kiểm tra quyền truy cập vị trí
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             getCurrentLocation();
         } else {
             locationPermissionLauncher.launch(new String[]{
@@ -160,44 +190,94 @@ public class CompanyNameBottomSheet extends BottomSheetDialogFragment {
     }
 
     private void getCurrentLocation() {
+        if (binding == null || getContext() == null) return;
+
+        binding.tilLocation.setError(null);
+        binding.tilLocation.setHelperText("Đang lấy tọa độ GPS chính xác...");
+
+        if (cancellationTokenSource != null) {
+            cancellationTokenSource.cancel();
+        }
+        cancellationTokenSource = new CancellationTokenSource();
+
         try {
-            fusedLocationClient.getLastLocation().addOnSuccessListener(requireActivity(), location -> {
-                if (location != null) {
-                    latitude = location.getLatitude();
-                    longitude = location.getLongitude();
-
-                    LocationUtils.getAddressFromLocation(requireContext(), latitude, longitude, new LocationUtils.AddressCallback() {
-                        @Override
-                        public void onAddressFound(String address) {
-                            if (binding != null) {
-                                binding.edtLocation.setText(address);
-                                binding.tilLocation.setError(null);
+            // Lấy tọa độ mới nhất và chính xác nhất thời điểm hiện tại
+            fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, cancellationTokenSource.getToken())
+                    .addOnSuccessListener(requireActivity(), location -> {
+                        if (location != null) {
+                            onLocationRetrieved(location);
+                        } else {
+                            // Fallback sang getLastLocation nếu thiết bị chưa kịp phản hồi
+                            fusedLocationClient.getLastLocation().addOnSuccessListener(requireActivity(), lastLoc -> {
+                                if (lastLoc != null) {
+                                    onLocationRetrieved(lastLoc);
+                                } else {
+                                    if (binding != null) {
+                                        binding.tilLocation.setHelperText(null);
+                                        binding.tilLocation.setError("Không lấy được vị trí GPS. Vui lòng thử lại.");
+                                    }
+                                    Toast.makeText(requireContext(), "Không thể lấy vị trí hiện tại. Hãy chắc chắn GPS đã bật.", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
+                    })
+                    .addOnFailureListener(requireActivity(), e -> {
+                        fusedLocationClient.getLastLocation().addOnSuccessListener(requireActivity(), lastLoc -> {
+                            if (lastLoc != null) {
+                                onLocationRetrieved(lastLoc);
+                            } else {
+                                if (binding != null) {
+                                    binding.tilLocation.setHelperText(null);
+                                    binding.tilLocation.setError("Lỗi lấy vị trí: " + e.getMessage());
+                                }
+                                Toast.makeText(requireContext(), "Lỗi lấy vị trí: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                             }
-                        }
-
-                        @Override
-                        public void onError(String error) {
-                            if (binding != null) updateLocationText();
-                        }
+                        });
                     });
-                } else {
-                    Toast.makeText(requireContext(), "Không thể lấy vị trí hiện tại. Hãy chắc chắn GPS đã bật.", Toast.LENGTH_SHORT).show();
-                }
-            });
         } catch (SecurityException e) {
+            if (binding != null) binding.tilLocation.setHelperText(null);
             Toast.makeText(requireContext(), "Lỗi quyền truy cập vị trí", Toast.LENGTH_SHORT).show();
         }
     }
 
-    private void updateLocationText() {
-        if (latitude != null && longitude != null) {
-            binding.edtLocation.setText(String.format(Locale.getDefault(), "%.6f, %.6f", latitude, longitude));
-        }
+    private void onLocationRetrieved(@NonNull Location location) {
+        if (binding == null || getContext() == null) return;
+
+        latitude = location.getLatitude();
+        longitude = location.getLongitude();
+
+        binding.tilLocation.setHelperText("Đang xác định địa chỉ...");
+
+        LocationUtils.getAddressFromLocation(requireContext(), latitude, longitude, new LocationUtils.AddressCallback() {
+            @Override
+            public void onAddressFound(String address) {
+                if (binding != null) {
+                    binding.tilLocation.setHelperText(null);
+                    binding.tilLocation.setError(null);
+                    // Địa chỉ hiện trực tiếp vào edtLocation
+                    binding.edtLocation.setText(address);
+                }
+            }
+
+            @Override
+            public void onError(String error) {
+                if (binding != null) {
+                    binding.tilLocation.setHelperText(null);
+                    binding.tilLocation.setError(null);
+                    String coords = String.format(Locale.getDefault(), "%.6f, %.6f", latitude, longitude);
+                    binding.edtLocation.setText(coords);
+                }
+            }
+        });
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        if (cancellationTokenSource != null) {
+            cancellationTokenSource.cancel();
+            cancellationTokenSource = null;
+        }
         binding = null;
     }
 }

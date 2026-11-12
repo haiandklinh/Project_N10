@@ -1,12 +1,13 @@
 package com.example.attendanceapp.ui.manager.human;
 
+import android.content.Context;
+import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
 import com.example.attendanceapp.R;
 import com.example.attendanceapp.databinding.ItemManagerJoinRequestBinding;
 import com.example.attendanceapp.domain.model.JoinRequestItem;
@@ -46,11 +47,19 @@ public class ManagerJoinRequestAdapter extends RecyclerView.Adapter<ManagerJoinR
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         JoinRequestItem item = list.get(position);
-        android.content.Context context = holder.itemView.getContext();
+        Context context = holder.itemView.getContext();
 
         holder.binding.tvName.setText(item.getFullName());
         holder.binding.tvPhone.setText(String.format("SĐT: %s", item.getPhoneNumber()));
-        holder.binding.tvMeta.setText(String.format("Mã mời: %s · %s", item.getInvitationCode(), item.getRequestedAtLabel()));
+        holder.binding.tvMeta.setText(String.format("Mã mời: %s", item.getInvitationCode()));
+
+        // Format và hiển thị thời gian tương đối
+        // Trường hợp 1: Nếu item trả về timestamp (milliseconds dạng long/Long)
+        long timestamp = item.getRequestedAtTimestamp(); // Lấy timestamp millis từ model
+        holder.binding.tvTime.setText(getRelativeTimeString(timestamp));
+
+        // Trường hợp 2: Nếu item.getRequestedAtLabel() đã là chuỗi hiển thị
+        // holder.binding.tvTime.setText(item.getRequestedAtLabel());
 
         loadAvatar(context, item.getAvatarUrl(), item.getFullName(), holder.binding.ivAvatar);
 
@@ -84,7 +93,40 @@ public class ManagerJoinRequestAdapter extends RecyclerView.Adapter<ManagerJoinR
         }
     }
 
-    private void loadAvatar(android.content.Context context, String avatarUrl, String fullName, com.google.android.material.imageview.ShapeableImageView imageView) {
+    private void loadAvatar(Context context, String avatarUrl, String fullName, com.google.android.material.imageview.ShapeableImageView imageView) {
         com.example.attendanceapp.core.utils.AvatarLoader.loadAvatar(context, avatarUrl, imageView);
+    }
+
+    /**
+     * Hàm trợ lý tính toán thời gian tương đối (ví dụ: Vừa xong, 5 phút trước, 2 giờ trước, 3 ngày trước)
+     */
+    private String getRelativeTimeString(long timeInMillis) {
+        long now = System.currentTimeMillis();
+        long diff = now - timeInMillis;
+
+        if (diff < 0) diff = 0;
+
+        long seconds = diff / 1000;
+        long minutes = seconds / 60;
+        long hours = minutes / 60;
+        long days = hours / 24;
+
+        if (seconds < 60) {
+            return "Vừa xong";
+        } else if (minutes < 60) {
+            return minutes + " phút trước";
+        } else if (hours < 24) {
+            return hours + " giờ trước";
+        } else if (days < 30) {
+            return days + " ngày trước";
+        } else {
+            // Hoặc sử dụng DateUtils mặc định của Android
+            return DateUtils.getRelativeTimeSpanString(
+                    timeInMillis,
+                    now,
+                    DateUtils.MINUTE_IN_MILLIS,
+                    DateUtils.FORMAT_ABBREV_RELATIVE
+            ).toString();
+        }
     }
 }

@@ -5,6 +5,7 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,9 +15,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.example.attendanceapp.R;
 import com.example.attendanceapp.databinding.BottomSheetCompanyInvitationBinding;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 public class CompanyInvitationBottomSheet extends BottomSheetDialogFragment {
 
@@ -24,6 +27,7 @@ public class CompanyInvitationBottomSheet extends BottomSheetDialogFragment {
 
     private BottomSheetCompanyInvitationBinding binding;
     private ManagerHumanViewModel viewModel;
+    private CountDownTimer countDownTimer;
 
     public static CompanyInvitationBottomSheet newInstance() {
         return new CompanyInvitationBottomSheet();
@@ -50,14 +54,14 @@ public class CompanyInvitationBottomSheet extends BottomSheetDialogFragment {
     private void setupListeners() {
         binding.btnCloseSheet.setOnClickListener(v -> dismiss());
 
-        // Bấm Tạo mã công ty
+        // Bấm Tạo mã công ty (24 giờ = 86400 giây)
         binding.btnGenerateCode.setOnClickListener(v -> {
-            viewModel.generateInvitationCode(86399); // 23h 59m 59s (~24 giờ)
+            viewModel.generateInvitationCode(86400);
         });
 
         // Bấm Tạo mã mới khác
         binding.btnRegenerateCode.setOnClickListener(v -> {
-            viewModel.generateInvitationCode(86399);
+            viewModel.generateInvitationCode(86400);
         });
 
         // Bấm Sao chép mã
@@ -109,6 +113,7 @@ public class CompanyInvitationBottomSheet extends BottomSheetDialogFragment {
     }
 
     private void showPromptState() {
+        stopCountdownTimer();
         binding.layoutPromptState.setVisibility(View.VISIBLE);
         binding.layoutCodeState.setVisibility(View.GONE);
         binding.tvSheetHeader.setText("Thêm nhân sự mới");
@@ -125,7 +130,43 @@ public class CompanyInvitationBottomSheet extends BottomSheetDialogFragment {
             formattedCode = rawCode.substring(0, 3) + " " + rawCode.substring(3);
         }
         binding.tvDisplayCode.setText(formattedCode != null ? formattedCode : "------");
-        binding.tvExpiryTime.setText("Mã có hiệu lực trong 24 giờ");
+
+        startCountdownTimer();
+    }
+
+    private void startCountdownTimer() {
+        stopCountdownTimer();
+
+        long remainingMillis = viewModel.getRemainingInvitationTimeMillis();
+        if (remainingMillis <= 0) {
+            binding.tvExpiryTime.setText("Mã có hiệu lực trong 24 giờ");
+            return;
+        }
+
+        countDownTimer = new CountDownTimer(remainingMillis, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                if (binding == null) return;
+                long hours = TimeUnit.MILLISECONDS.toHours(millisUntilFinished);
+                long minutes = TimeUnit.MILLISECONDS.toMinutes(millisUntilFinished) % 60;
+                long seconds = TimeUnit.MILLISECONDS.toSeconds(millisUntilFinished) % 60;
+                binding.tvExpiryTime.setText(String.format(Locale.getDefault(),
+                        "Mã còn hiệu lực trong: %02d:%02d:%02d (24h)", hours, minutes, seconds));
+            }
+
+            @Override
+            public void onFinish() {
+                if (binding == null) return;
+                binding.tvExpiryTime.setText("Mã đã hết hạn (sau 24 giờ). Vui lòng bấm Tạo mã mới.");
+            }
+        }.start();
+    }
+
+    private void stopCountdownTimer() {
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+            countDownTimer = null;
+        }
     }
 
     private void copyCodeToClipboard(String code) {
@@ -150,6 +191,7 @@ public class CompanyInvitationBottomSheet extends BottomSheetDialogFragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        stopCountdownTimer();
         binding = null;
     }
 }

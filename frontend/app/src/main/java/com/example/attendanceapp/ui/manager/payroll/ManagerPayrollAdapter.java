@@ -67,8 +67,11 @@ public class ManagerPayrollAdapter extends RecyclerView.Adapter<ManagerPayrollAd
             binding.btnCalculateSalary.setOnClickListener(v -> {
                 if (listener != null) listener.onCalculateSalary(employee);
             });
+
+            binding.getRoot().setOnClickListener(v -> {
+                if (listener != null) listener.onCalculateSalary(employee);
+            });
             
-            // Logic hiển thị trạng thái nếu đã tính lương (tạm thời để ẩn hoặc mock)
             binding.tvSalaryStatus.setVisibility(View.GONE);
         }
     }

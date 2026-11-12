@@ -238,6 +238,7 @@ public class WebSocketNotificationManager {
                 case "SHIFT_CHANGE_REQUEST":
                 case "CHANGE_WORK_SHIFT_REQUEST":
                 case "NEW_CHANGE_REQUEST":
+                case "WORK_SCHEDULE_REQUEST":
                     title = "Yêu cầu đổi ca làm việc";
                     message = data.optString("message", data.optString("Message", data.optString("reason", "Có yêu cầu đổi ca mới từ nhân viên")));
                     type = NotificationType.SCHEDULE;

@@ -72,12 +72,7 @@ public class ManagerHomeFragment extends Fragment {
                 state.hasUnreadNotifications() ? View.VISIBLE : View.GONE
         );
 
-        Glide.with(this)
-                .load(state.getAvatarUrl())
-                .placeholder(R.drawable.ic_avatar)
-                .error(R.drawable.ic_avatar)
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .into(binding.includeHeader.ivAvatar);
+        com.example.attendanceapp.core.utils.AvatarLoader.loadAvatar(requireContext(), state.getAvatarUrl(), state.getUserName(), binding.includeHeader.ivAvatar);
     }
 
     private void updateOverview(ManagerHomeViewModel.ManagerHomeUiState state) {
@@ -90,19 +85,35 @@ public class ManagerHomeFragment extends Fragment {
     }
 
     private void updateActionRequired(ManagerHomeViewModel.ManagerHomeUiState state) {
-        if (state.getPendingApprovalCount() > 0) {
+        int totalPending = state.getPendingApprovalCount() + state.getPendingJoinRequestCount();
+        
+        if (totalPending > 0) {
             binding.includeActionRequired.cardEmptyActionRequired.setVisibility(View.GONE);
             binding.includeActionRequired.rvActionRequired.setVisibility(View.VISIBLE);
 
             List<ManagerActionAlert> alerts = new ArrayList<>();
-            alerts.add(new ManagerActionAlert(
-                    state.getPendingApprovalCount() + " yêu cầu duyệt đơn",
-                    "Đơn xin nghỉ phép và đổi ca đang chờ",
-                    R.drawable.ic_approval,
-                    R.attr.colorPrimary,
-                    R.attr.colorAttendanceAbsentContainer,
-                    () -> navigateTo(R.id.action_managerHomeFragment_to_managerApprovalFragment)
-            ));
+            
+            if (state.getPendingJoinRequestCount() > 0) {
+                alerts.add(new ManagerActionAlert(
+                        state.getPendingJoinRequestCount() + " yêu cầu gia nhập",
+                        "Nhân sự mới đang chờ duyệt vào công ty",
+                        R.drawable.ic_add_user,
+                        R.attr.colorPrimary,
+                        R.attr.colorAttendancePresentContainer,
+                        () -> navigateTo(R.id.action_managerHomeFragment_to_managerJoinRequestFragment)
+                ));
+            }
+
+            if (state.getPendingApprovalCount() > 0) {
+                alerts.add(new ManagerActionAlert(
+                        state.getPendingApprovalCount() + " yêu cầu duyệt đơn",
+                        "Đơn xin nghỉ phép và đổi ca đang chờ",
+                        R.drawable.ic_approval,
+                        R.attr.colorPrimary,
+                        R.attr.colorAttendanceAbsentContainer,
+                        () -> navigateTo(R.id.action_managerHomeFragment_to_managerApprovalFragment)
+                ));
+            }
 
             binding.includeActionRequired.rvActionRequired.setLayoutManager(new LinearLayoutManager(getContext()));
             binding.includeActionRequired.rvActionRequired.setAdapter(new ManagerActionAlertAdapter(alerts));

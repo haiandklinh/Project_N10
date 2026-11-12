@@ -9,16 +9,15 @@ public class ManagerEmployeeItem {
     private final String userId;
     private final String employeeCode; // "NV001"
     private final String fullName;
-    private final String avatarUrl;
+    private String avatarUrl;
     private final String position;
     private final String department;
-    private final String phoneNumber;
-    private final String joinDateLabel;
-    private final EmployeeStatus status; // Refactor: String -> EmployeeStatus
-    private final int shiftCountThisMonth;
-    private final int leaveCountThisMonth;
+    private String phoneNumber;
+    private String joinDateLabel;
+    private EmployeeStatus status; // Refactor: String -> EmployeeStatus
+    private int shiftCountThisMonth;
+    private int leaveCountThisMonth;
     private final long estimatedSalaryThisMonth;
-
 
     // Trường hỗ trợ riêng cho màn "Xếp ca": ca đã được xếp cho ngày đang chọn (có thể null)
     private String assignedShiftName;
@@ -46,13 +45,19 @@ public class ManagerEmployeeItem {
     public String getEmployeeCode() { return employeeCode; }
     public String getFullName() { return fullName; }
     public String getAvatarUrl() { return avatarUrl; }
+    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
     public String getPosition() { return position; }
     public String getDepartment() { return department; }
     public String getPhoneNumber() { return phoneNumber; }
+    public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
     public String getJoinDateLabel() { return joinDateLabel; }
+    public void setJoinDateLabel(String joinDateLabel) { this.joinDateLabel = joinDateLabel; }
     public EmployeeStatus getStatus() { return status; }
+    public void setStatus(EmployeeStatus status) { this.status = status; }
     public int getShiftCountThisMonth() { return shiftCountThisMonth; }
+    public void setShiftCountThisMonth(int shiftCountThisMonth) { this.shiftCountThisMonth = shiftCountThisMonth; }
     public int getLeaveCountThisMonth() { return leaveCountThisMonth; }
+    public void setLeaveCountThisMonth(int leaveCountThisMonth) { this.leaveCountThisMonth = leaveCountThisMonth; }
     public long getEstimatedSalaryThisMonth() { return estimatedSalaryThisMonth; }
 
     public String getAssignedShiftName() { return assignedShiftName; }

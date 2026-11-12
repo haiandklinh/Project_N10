@@ -3,20 +3,17 @@ package com.example.attendanceapp.data.dto.request.staff;
 import com.google.gson.annotations.SerializedName;
 
 public class ChangeShiftRequest {
-    @SerializedName(value = "id_work_shift_cur", alternate = {"id_work_shift_current", "current_shift_id", "id_shift_current", "shift_id_current"})
+    @SerializedName(value = "id_work_shift_current", alternate = {"id_work_shift_cur", "current_shift_id", "id_shift_current", "shift_id_current"})
     private String currentShiftId;
 
-    @SerializedName("id_work_shift_current")
-    private String currentShiftIdAlias;
+    @SerializedName("id_work_shift_cur")
+    private String currentShiftIdCur;
 
     @SerializedName(value = "id_work_shift_change", alternate = {"id_work_shift_target", "target_shift_id", "id_shift_change", "shift_id_change"})
     private String targetShiftId;
 
     @SerializedName(value = "workday", alternate = {"work_day", "date"})
     private String workDay;
-
-    @SerializedName("work_day")
-    private String workDayAlias;
 
     @SerializedName("reason")
     private String reason;
@@ -26,10 +23,9 @@ public class ChangeShiftRequest {
 
     public ChangeShiftRequest(String currentShiftId, String targetShiftId, String workDay, String reason) {
         this.currentShiftId = currentShiftId;
-        this.currentShiftIdAlias = currentShiftId;
+        this.currentShiftIdCur = currentShiftId;
         this.targetShiftId = targetShiftId;
         this.workDay = workDay;
-        this.workDayAlias = workDay;
         this.reason = reason;
     }
 
@@ -39,7 +35,7 @@ public class ChangeShiftRequest {
 
     public void setCurrentShiftId(String currentShiftId) {
         this.currentShiftId = currentShiftId;
-        this.currentShiftIdAlias = currentShiftId;
+        this.currentShiftIdCur = currentShiftId;
     }
 
     public String getTargetShiftId() {
@@ -56,7 +52,6 @@ public class ChangeShiftRequest {
 
     public void setWorkDay(String workDay) {
         this.workDay = workDay;
-        this.workDayAlias = workDay;
     }
 
     public String getReason() {

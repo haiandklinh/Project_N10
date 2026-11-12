@@ -1,14 +1,21 @@
 package com.example.attendanceapp.domain.repository;
 
+import com.example.attendanceapp.data.dto.request.manager.CalculatePayrollRequest;
+import com.example.attendanceapp.data.dto.request.manager.CreateBonusRequest;
+import com.example.attendanceapp.data.dto.request.manager.CreateDeductionRequest;
 import com.example.attendanceapp.data.dto.request.manager.CreateManagerProfileRequest;
 import com.example.attendanceapp.data.dto.request.manager.HandleJoinRequest;
 import com.example.attendanceapp.data.dto.request.manager.HandleLeaveRequest;
 import com.example.attendanceapp.data.dto.request.manager.HandleShiftChangeRequest;
 import com.example.attendanceapp.data.dto.request.manager.UpdateManagerProfileRequest;
 import com.example.attendanceapp.data.dto.response.BaseListResponse;
+import com.example.attendanceapp.data.dto.response.manager.CalculatePayrollResponse;
 import com.example.attendanceapp.data.dto.response.manager.CompanyInvitationResponse;
+import com.example.attendanceapp.data.dto.response.manager.CreateBonusResponse;
+import com.example.attendanceapp.data.dto.response.manager.CreateDeductionResponse;
 import com.example.attendanceapp.data.dto.response.manager.NotificationItemResponse;
 import com.example.attendanceapp.data.dto.response.manager.StaffItemResponse;
+import com.example.attendanceapp.data.dto.response.manager.StaffPayrollSummaryResponse;
 import com.example.attendanceapp.domain.model.UserAccount;
 
 import io.reactivex.rxjava3.core.Completable;
@@ -41,7 +48,14 @@ public interface ManagerRepository {
 
     Single<okhttp3.ResponseBody> getApprovalRequests();
 
-    Single<okhttp3.ResponseBody> getEmployees();
+    /** Nghiệp vụ lương thưởng nhân sự */
+    Single<StaffPayrollSummaryResponse> getStaffPayrollSummary(String staffId);
 
-    Single<okhttp3.ResponseBody> getPayrollDetail();
+    Single<CalculatePayrollResponse> calculatePayroll(CalculatePayrollRequest request);
+
+    Single<BaseListResponse<CalculatePayrollResponse>> getPayrollHistory(String staffId);
+
+    Single<CreateBonusResponse> createBonus(CreateBonusRequest request);
+
+    Single<CreateDeductionResponse> createDeduction(CreateDeductionRequest request);
 }

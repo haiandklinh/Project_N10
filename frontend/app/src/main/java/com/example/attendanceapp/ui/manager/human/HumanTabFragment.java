@@ -114,8 +114,14 @@ public class HumanTabFragment extends Fragment {
     }
 
     private void setupEmployeeTab() {
-        employeeAdapter = new ManagerEmployeeAdapter(new ArrayList<>(), employee ->
-                EmployeeDetailBottomSheet.newInstance(employee).show(getChildFragmentManager(), "employee_detail"));
+        employeeAdapter = new ManagerEmployeeAdapter(new ArrayList<>(), employee -> {
+            EmployeeDetailBottomSheet sheet = EmployeeDetailBottomSheet.newInstance(employee);
+            sheet.setOnEmployeeStatusChangeListener((emp, newStatus) -> {
+                updateFilterChipCounts();
+                applyFilters();
+            });
+            sheet.show(getChildFragmentManager(), "employee_detail");
+        });
         binding.rvList.setAdapter(employeeAdapter);
 
         binding.chipGroupFilter.setOnCheckedStateChangeListener((group, checkedIds) -> {

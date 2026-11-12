@@ -23,8 +23,8 @@ android {
 
     buildTypes {
         debug {
-//            buildConfigField("String", "BASE_URL", "\"http://192.168.1.226:8000/\"")
-            buildConfigField("String", "BASE_URL", "\"https://attendance-api-wt4i.onrender.com/\"")
+          //  buildConfigField("String", "BASE_URL", "\"http://192.168.1.226:8000/\"")
+        buildConfigField("String", "BASE_URL", "\"https://attendance-api-wt4i.onrender.com/\"")
 
         }
         release {

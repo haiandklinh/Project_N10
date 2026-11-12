@@ -106,12 +106,6 @@
             app:destination="@id/loginFragment" />
 
         <action
-            android:id="@+id/action_loginSavedAccountFragment_to_pendingApprovalFragment"
-            app:destination="@id/pendingApprovalFragment"
-            app:popUpTo="@id/loginSavedAccountFragment"
-            app:popUpToInclusive="true" />
-
-        <action
             android:id="@+id/action_loginSavedAccountFragment_to_staffCompanySelectionFragment"
             app:destination="@id/staffCompanySelectionFragment"
             app:popUpTo="@id/loginSavedAccountFragment"

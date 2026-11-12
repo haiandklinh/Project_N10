@@ -364,6 +364,13 @@ public class SharedPreferenceApp {
         sharedPreferences.edit().putStringSet("employee_leave_dates", set).apply();
     }
 
+    public void removeLeaveDate(String date) {
+        if (date == null || date.trim().isEmpty()) return;
+        Set<String> set = getLeaveDates();
+        set.remove(date.trim());
+        sharedPreferences.edit().putStringSet("employee_leave_dates", set).apply();
+    }
+
     public Set<String> getLeaveDates() {
         Set<String> set = sharedPreferences.getStringSet("employee_leave_dates", null);
         return set != null ? new HashSet<>(set) : new HashSet<>();
@@ -442,6 +449,58 @@ public class SharedPreferenceApp {
      * Xóa sạch trạng thái phiên làm việc khi người dùng Đăng xuất
      * KHÔNG xóa KEY_IS_ACCOUNT_SAVED để giữ tài khoản đã lưu cho lần đăng nhập sau
      */
+    // ===== COMPANY INVITATION CODE (TTL 24H) =====
+    private static final String KEY_INVITATION_CODE = "company_invitation_code";
+    private static final String KEY_INVITATION_CREATED_AT = "company_invitation_created_at";
+    private static final String KEY_INVITATION_TTL_SECONDS = "company_invitation_ttl_seconds";
+
+    public void saveInvitationCode(String code, long ttlSeconds) {
+        if (code == null || code.trim().isEmpty()) return;
+        long ttl = (ttlSeconds > 0) ? ttlSeconds : 86400L;
+        sharedPreferences.edit()
+                .putString(KEY_INVITATION_CODE, code.trim())
+                .putLong(KEY_INVITATION_CREATED_AT, System.currentTimeMillis())
+                .putLong(KEY_INVITATION_TTL_SECONDS, ttl)
+                .apply();
+    }
+
+    public String getValidInvitationCode() {
+        String code = sharedPreferences.getString(KEY_INVITATION_CODE, null);
+        if (code == null || code.trim().isEmpty()) {
+            return null;
+        }
+        long createdAt = sharedPreferences.getLong(KEY_INVITATION_CREATED_AT, 0L);
+        long ttlSeconds = sharedPreferences.getLong(KEY_INVITATION_TTL_SECONDS, 86400L);
+        long elapsedMillis = System.currentTimeMillis() - createdAt;
+
+        // Nếu đã vượt quá thời hạn 24 giờ (86400 giây) -> Mã hết hạn!
+        if (elapsedMillis >= ttlSeconds * 1000L) {
+            clearInvitationCode();
+            return null;
+        }
+        return code;
+    }
+
+    public long getRemainingInvitationTimeMillis() {
+        String code = sharedPreferences.getString(KEY_INVITATION_CODE, null);
+        if (code == null || code.trim().isEmpty()) {
+            return 0L;
+        }
+        long createdAt = sharedPreferences.getLong(KEY_INVITATION_CREATED_AT, 0L);
+        long ttlSeconds = sharedPreferences.getLong(KEY_INVITATION_TTL_SECONDS, 86400L);
+        long expireAt = createdAt + (ttlSeconds * 1000L);
+        long remaining = expireAt - System.currentTimeMillis();
+        return Math.max(0L, remaining);
+    }
+
+    public void clearInvitationCode() {
+        sharedPreferences.edit()
+                .remove(KEY_INVITATION_CODE)
+                .remove(KEY_INVITATION_CREATED_AT)
+                .remove(KEY_INVITATION_TTL_SECONDS)
+                .apply();
+    }
+
     public void clearSession() {
         sharedPreferences.edit()
                 .putBoolean(KEY_IS_LOGGED_IN, false)

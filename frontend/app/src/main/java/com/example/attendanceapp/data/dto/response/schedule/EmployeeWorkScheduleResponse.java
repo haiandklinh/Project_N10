@@ -18,7 +18,7 @@ public class EmployeeWorkScheduleResponse {
     private String workDate;
 
     @Nullable
-    @SerializedName("avatar")
+    @SerializedName(value = "avatar", alternate = {"avatar_staff", "staff_avatar", "avatar_url", "avatarUrl", "image", "photo", "send_person_avatar"})
     private String avatar;
 
     @SerializedName("status")

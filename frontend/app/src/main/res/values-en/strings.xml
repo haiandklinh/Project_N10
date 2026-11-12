@@ -259,11 +259,11 @@
     <string name="history_status_leave">Leave</string>
     <string name="history_status_not_checked">Not checked in</string>
     <string name="history_total_working_hours">Total Working Hours</string>
-    <string name="history_filter_all">All</string>
-    <string name="history_filter_present">On time</string>
-    <string name="history_filter_late">Late</string>
-    <string name="history_filter_absent">Absent</string>
-    <string name="history_filter_early">Early leave</string>
+    <string name="history_filter_all">All (%1$d)</string>
+    <string name="history_filter_present">On time (%1$d)</string>
+    <string name="history_filter_late">Late (%1$d)</string>
+    <string name="history_filter_absent">Absent (%1$d)</string>
+    <string name="history_filter_early">Early leave (%1$d)</string>
 
     <!-- Employee Leave Requests & Adjustments Fragment -->
     <string name="request_title">Request Management</string>
@@ -363,6 +363,22 @@
     <string name="manager_profile_invite_title">Company Invitation Code</string>
     <string name="manager_profile_invite_description">Use this code for new employees to join</string>
     <string name="manager_profile_copy_success">Invitation code copied</string>
+
+    <!-- Manager Business Settings -->
+    <string name="business_settings_title">Business Settings</string>
+    <string name="business_settings_update_success">Update successful</string>
+    <string name="business_settings_updating">Processing...</string>
+    <string name="business_settings_update_btn">Update Information</string>
+    <string name="business_settings_locating">Getting GPS coordinates...</string>
+    <string name="business_settings_geocoding">Determining address...</string>
+    <string name="business_settings_location_error">Could not retrieve GPS location.</string>
+    <string name="business_settings_location_permission_denied">Location permission denied</string>
+    <string name="business_settings_enable_gps">Please enable GPS on your device</string>
+    <string name="business_settings_location_permission_error">Location permission error</string>
+    <string name="business_settings_error_empty_name">Company name cannot be empty</string>
+    <string name="business_settings_error_no_account">Could not retrieve current account info</string>
+    <string name="business_settings_location_format">%1$.6f, %2$.6f</string>
+    <string name="business_settings_error_prefix">Error: %1$s</string>
 
 
     <!-- ================================================================= -->

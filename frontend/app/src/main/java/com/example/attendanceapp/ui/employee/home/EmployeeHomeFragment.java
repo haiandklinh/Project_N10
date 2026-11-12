@@ -143,12 +143,7 @@ public class EmployeeHomeFragment extends Fragment {
         binding.includeHeader.tvGreeting.setText(state.getUserName());
         binding.includeHeader.tvCompanyName.setText(state.getCompanyName());
 
-        Glide.with(this)
-                .load(state.getAvatarUrl())
-                .placeholder(R.drawable.ic_avatar)
-                .error(R.drawable.ic_avatar)
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .into(binding.includeHeader.ivAvatar);
+        com.example.attendanceapp.core.utils.AvatarLoader.loadAvatar(requireContext(), state.getAvatarUrl(), state.getUserName(), binding.includeHeader.ivAvatar);
     }
 
     private void updateWeekDaysAdapter(List<WeekDay> weekDays) {

@@ -30,6 +30,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -64,6 +65,7 @@ public class ManagerHomeViewModel extends ViewModel {
     private int absentCount = 0;
     private int leaveCount = 0;
     private int pendingApprovalCount = 0;
+    private int pendingJoinRequestCount = 0;
     private boolean isLoading = false;
     private String errorMessage = null;
     private List<TodayShiftSummary> todayShifts = new ArrayList<>();
@@ -276,30 +278,60 @@ public class ManagerHomeViewModel extends ViewModel {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                         response -> {
-                            int count = 0;
+                            int approvalCount = 0;
+                            int joinCount = 0;
                             if (response != null && response.getData() != null) {
                                 for (NotificationItemResponse item : response.getData()) {
-                                    String staffId = item.getStaffId();
-                                    if (staffId != null && handledRequestManager != null && handledRequestManager.isHandled(staffId)) {
+                                    // 1. Kiểm tra trạng thái thông báo từ Server
+                                    String status = item.getStatus();
+                                    if (status != null && (
+                                            status.equalsIgnoreCase("approved") ||
+                                            status.equalsIgnoreCase("rejected") ||
+                                            status.equalsIgnoreCase("accept") ||
+                                            status.equalsIgnoreCase("refuse") ||
+                                            status.equalsIgnoreCase("deactive"))) {
                                         continue;
                                     }
 
                                     String type = item.getNotificationType();
-                                    if (type != null && !type.contains("JOIN") && (
-                                            type.contains("CHANGE") ||
+                                    if (type == null) continue;
+
+                                    String staffId = item.getStaffId();
+                                    
+                                    if (type.equalsIgnoreCase("JOIN_COMPANY_REQUEST")) {
+                                        if (staffId != null && handledRequestManager != null && !handledRequestManager.isHandled(staffId)) {
+                                            joinCount++;
+                                        }
+                                    } else if (type.contains("CHANGE") ||
                                             type.contains("LEAVE") ||
                                             type.contains("ADJUSTMENT") ||
                                             type.contains("SHIFT") ||
-                                            type.contains("REQUEST"))) {
-                                        count++;
+                                            type.contains("REQUEST")) {
+                                        
+                                        String workDay = "";
+                                        Map<String, Object> content = item.getContent();
+                                        if (content != null) {
+                                            if (content.containsKey("work_day")) workDay = String.valueOf(content.get("work_day"));
+                                            else if (content.containsKey("date")) workDay = String.valueOf(content.get("date"));
+                                        }
+                                        if (workDay.isEmpty() && item.getSendAt() != null && item.getSendAt().length() >= 10) {
+                                            workDay = item.getSendAt().substring(0, 10);
+                                        }
+                                        
+                                        String requestKey = type + "_" + (staffId != null ? staffId : "") + "_" + workDay;
+                                        if (handledRequestManager == null || handledRequestManager.getApprovalStatus(requestKey) == null) {
+                                            approvalCount++;
+                                        }
                                     }
                                 }
                             }
-                            this.pendingApprovalCount = count;
+                            this.pendingApprovalCount = approvalCount;
+                            this.pendingJoinRequestCount = joinCount;
                             emitCurrentState();
                         },
                         throwable -> {
                             this.pendingApprovalCount = 0;
+                            this.pendingJoinRequestCount = 0;
                             emitCurrentState();
                         }
                 ));
@@ -493,6 +525,7 @@ public class ManagerHomeViewModel extends ViewModel {
                 absentCount,
                 leaveCount,
                 pendingApprovalCount,
+                pendingJoinRequestCount,
                 todayShifts,
                 recentCheckIns
         ));
@@ -518,13 +551,14 @@ public class ManagerHomeViewModel extends ViewModel {
         private final int absentCount;
         private final int leaveCount;
         private final int pendingApprovalCount;
+        private final int pendingJoinRequestCount;
         private final List<TodayShiftSummary> todayShifts;
         private final List<RecentCheckInItem> recentCheckIns;
 
         public ManagerHomeUiState(String userName, String companyName, String avatarUrl,
                                   boolean hasUnreadNotifications, boolean isLoading, String errorMessage,
                                   String todayDate, int totalEmployees, int presentCount, int lateCount,
-                                  int absentCount, int leaveCount, int pendingApprovalCount,
+                                  int absentCount, int leaveCount, int pendingApprovalCount, int pendingJoinRequestCount,
                                   List<TodayShiftSummary> todayShifts,
                                   List<RecentCheckInItem> recentCheckIns) {
             this.userName = userName;
@@ -540,6 +574,7 @@ public class ManagerHomeViewModel extends ViewModel {
             this.absentCount = absentCount;
             this.leaveCount = leaveCount;
             this.pendingApprovalCount = pendingApprovalCount;
+            this.pendingJoinRequestCount = pendingJoinRequestCount;
             this.todayShifts = todayShifts != null ? todayShifts : Collections.emptyList();
             this.recentCheckIns = recentCheckIns != null ? recentCheckIns : Collections.emptyList();
         }
@@ -547,13 +582,13 @@ public class ManagerHomeViewModel extends ViewModel {
         public static ManagerHomeUiState loading() {
             String today = DateTimeFormatter.ofPattern("dd/MM/yyyy").format(LocalDate.now());
             return new ManagerHomeUiState(null, null, null, false, true, null,
-                    today, 0, 0, 0, 0, 0, 0, Collections.emptyList(), Collections.emptyList());
+                    today, 0, 0, 0, 0, 0, 0, 0, Collections.emptyList(), Collections.emptyList());
         }
 
         public static ManagerHomeUiState error(String errorMessage) {
             String today = DateTimeFormatter.ofPattern("dd/MM/yyyy").format(LocalDate.now());
             return new ManagerHomeUiState(null, null, null, false, false, errorMessage,
-                    today, 0, 0, 0, 0, 0, 0, Collections.emptyList(), Collections.emptyList());
+                    today, 0, 0, 0, 0, 0, 0, 0, Collections.emptyList(), Collections.emptyList());
         }
 
         public String getUserName() { return userName; }
@@ -569,6 +604,7 @@ public class ManagerHomeViewModel extends ViewModel {
         public int getAbsentCount() { return absentCount; }
         public int getLeaveCount() { return leaveCount; }
         public int getPendingApprovalCount() { return pendingApprovalCount; }
+        public int getPendingJoinRequestCount() { return pendingJoinRequestCount; }
         public List<TodayShiftSummary> getTodayShifts() { return todayShifts; }
         public List<RecentCheckInItem> getRecentCheckIns() { return recentCheckIns; }
     }

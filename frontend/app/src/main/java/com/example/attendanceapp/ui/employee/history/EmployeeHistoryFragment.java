@@ -344,7 +344,11 @@ public class EmployeeHistoryFragment extends Fragment {
                             shift.getWorkScheduleId(), schedule.getWorkDay(), shiftName
                     ) : CheckState.NOT_CHECKED_IN;
 
-                    if (checkIn != null) {
+                    if (matchedRecord != null && "LEAVE".equalsIgnoreCase(matchedRecord.getStatus())) {
+                        status = AttendanceStatus.LEAVE;
+                    } else if (sharedPreferenceApp != null && sharedPreferenceApp.isLeaveDate(scheduleDate)) {
+                        status = AttendanceStatus.LEAVE;
+                    } else if (checkIn != null) {
                         if (startTime != null && checkIn.isAfter(startTime)) {
                             status = AttendanceStatus.LATE; // Đi muộn
                         } else if (matchedRecord != null && "EARLY_LEAVE".equalsIgnoreCase(matchedRecord.getStatus())) {
@@ -620,7 +624,7 @@ public class EmployeeHistoryFragment extends Fragment {
         int lateCount = 0;
         int absentCount = 0;
         int earlyLeaveCount = 0;
-        long totalWorkingMinutes = 0;
+        double totalHours = 0.0;
 
         for (HistoryAttendance item : allAttendances) {
             if (item.getStatus() == AttendanceStatus.PRESENT) {
@@ -632,22 +636,19 @@ public class EmployeeHistoryFragment extends Fragment {
             } else if (item.getStatus() == AttendanceStatus.EARLY_LEAVE) {
                 earlyLeaveCount++;
             }
-
-            if (item.getCheckIn() != null && item.getCheckOut() != null) {
-                Duration duration = Duration.between(item.getCheckIn(), item.getCheckOut());
-                if (!duration.isNegative()) {
-                    totalWorkingMinutes += duration.toMinutes();
-                }
-            }
+            
+            totalHours += item.getTotalWorkedHours();
         }
 
-        binding.includeHeader.tvOnTimeCount.setText(String.valueOf(presentCount));
-        binding.includeHeader.tvLateCount.setText(String.valueOf(lateCount));
-        binding.includeHeader.tvAbsCount.setText(String.valueOf(absentCount));
-        binding.includeHeader.tvEarlyLeaveCount.setText(String.valueOf(earlyLeaveCount));
+        binding.includeLayoutRv.chipAll.setText(getString(R.string.history_filter_all, allAttendances.size()));
+        binding.includeLayoutRv.chipPresent.setText(getString(R.string.history_filter_present, presentCount));
+        binding.includeLayoutRv.chipLate.setText(getString(R.string.history_filter_late, lateCount));
+        binding.includeLayoutRv.chipAbsent.setText(getString(R.string.history_filter_absent, absentCount));
+        binding.includeLayoutRv.chipEarly.setText(getString(R.string.history_filter_early, earlyLeaveCount));
 
-        double totalHours = totalWorkingMinutes / 60.0;
-        binding.includeHeader.tvTotalWorkingHours.setText(String.format(Locale.US, "%.1f giờ", totalHours));
+        if (binding.includeHeader.tvTotalWorkingHours != null) {
+            binding.includeHeader.tvTotalWorkingHours.setText(String.format(Locale.US, "%.1f giờ", totalHours));
+        }
     }
 
     private void updateMonthTitle() {

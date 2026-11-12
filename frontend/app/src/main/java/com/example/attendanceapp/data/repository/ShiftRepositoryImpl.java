@@ -70,6 +70,15 @@ public class ShiftRepositoryImpl implements ShiftRepository {
                             .andThen(shiftDao.insertShifts(entities))
                             .andThen(Single.just(domainList));
                 })
+                .onErrorResumeNext(error -> {
+                    // Nếu gọi API mạng thất bại (ví dụ tài khoản Nhân viên bị chặn 404),
+                    // fallback tự động lấy danh sách ca làm đã lưu trong Room DB local
+                    return shiftDao.observeAllShifts()
+                            .firstOrError()
+                            .map(entities -> entities.stream()
+                                    .map(ShiftEntity::toDomain)
+                                    .collect(Collectors.toList()));
+                })
                 .subscribeOn(Schedulers.io())
                 .compose(ApiErrorMapper.forSingle("Lấy danh sách ca làm thất bại"));
     }

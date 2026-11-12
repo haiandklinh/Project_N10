@@ -89,12 +89,13 @@ public class HistoryAttendance {
 
         Duration duration = Duration.between(checkIn, checkOut);
 
-        // Xử lý trường hợp ca làm việc xuyên đêm (ví dụ 22:00 -> 06:00)
+        // Xử lý trường hợp ca làm việc xuyên đêm (ví dụ 22:00 -> 06:00 sáng hôm sau)
         if (duration.isNegative()) {
             duration = duration.plusDays(1);
         }
 
-        return duration.toMinutes() / 60.0;
+        // Tính theo giây để đạt độ chính xác cao nhất
+        return duration.getSeconds() / 3600.0;
     }
 
     /**

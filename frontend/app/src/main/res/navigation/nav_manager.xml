@@ -160,7 +160,7 @@
             app:destination="@id/managerRolePermissionFragment" />
         <action
             android:id="@+id/action_managerProfileFragment_to_managerBusinessSettingsFragment"
-            app:destination="@id/managerBusinessSettingsFragment" />
+            app:destination="@id/managerCompanySettingsFragment" />
     </fragment>
 
 
@@ -195,10 +195,10 @@
 
     <!-- Cài đặt doanh nghiệp -->
     <fragment
-        android:id="@+id/managerBusinessSettingsFragment"
-        android:name="com.example.attendanceapp.ui.manager.profile.ManagerBusinessSettingsFragment"
+        android:id="@+id/managerCompanySettingsFragment"
+        android:name="com.example.attendanceapp.ui.manager.profile.ManagerCompanySettingsFragment"
         android:label="@string/manager_profile_company_settings"
-        tools:layout="@layout/fragment_manager_business_settings" />
+        tools:layout="@layout/fragment_manager_company_setting" />
 
     <!-- Chi tiết tính lương nhân sự -->
     <fragment

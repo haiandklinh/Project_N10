@@ -40,7 +40,7 @@ public class UserEntity {
         this.phone = phone;
         this.role = role;
         this.status = status;
-        this.firstLogin = false; // Mặc định là false, chỉ true khi khởi tạo tài khoản mới đăng ký nếu cần
+        this.firstLogin = true; // Trả về mặc định true cho người dùng mới
         this.active = true;
     }
 

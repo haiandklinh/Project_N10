@@ -211,9 +211,9 @@ public class PersonalInfoBottomSheet extends BottomSheetDialogFragment {
             result.putString(BUNDLE_KEY_DOB, dob);
             result.putString(BUNDLE_KEY_GENDER, gender);
             if (imageUri != null) {
-                result.putString(BUNDLE_KEY_AVATAR_URI, imageUri.toString());
-                com.example.attendanceapp.data.local.StaffAvatarCache.saveAvatar(
-                        requireContext(), name, null, imageUri.toString());
+                String avatarToPass = imageUri.toString();
+                result.putString(BUNDLE_KEY_AVATAR_URI, avatarToPass);
+                com.example.attendanceapp.data.local.StaffAvatarCache.saveAvatar(requireContext(), name, null, avatarToPass);
             }
             getParentFragmentManager().setFragmentResult(REQUEST_KEY, result);
 

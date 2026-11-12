@@ -30,6 +30,10 @@ import java.util.List;
 import java.util.Map;
 import com.example.attendanceapp.data.dto.response.manager.StaffItemResponse;
 import com.example.attendanceapp.domain.repository.ManagerRepository;
+import android.content.Context;
+import dagger.hilt.android.qualifiers.ApplicationContext;
+import com.example.attendanceapp.data.local.HandledRequestManager;
+import com.example.attendanceapp.data.local.StaffAvatarCache;
 
 import javax.inject.Inject;
 
@@ -51,6 +55,8 @@ public class AssignShiftViewModel extends ViewModel {
     private final ExportScheduleUseCase exportScheduleUseCase;
     private final WebSocketNotificationManager webSocketManager;
     private final ManagerRepository managerRepository;
+    private final Context context;
+    private final HandledRequestManager handledRequestManager;
 
     private final CompositeDisposable disposables = new CompositeDisposable();
 
@@ -79,7 +85,9 @@ public class AssignShiftViewModel extends ViewModel {
             ObserveEmployeeWorkSchedulesUseCase observeSchedulesUseCase,
             ExportScheduleUseCase exportScheduleUseCase,
             WebSocketNotificationManager webSocketManager,
-            ManagerRepository managerRepository
+            ManagerRepository managerRepository,
+            @ApplicationContext Context context,
+            HandledRequestManager handledRequestManager
     ) {
         this.getShiftsUseCase = getShiftsUseCase;
         this.getEmployeeWorkSchedulesUseCase = getEmployeeWorkSchedulesUseCase;
@@ -90,6 +98,8 @@ public class AssignShiftViewModel extends ViewModel {
         this.exportScheduleUseCase = exportScheduleUseCase;
         this.webSocketManager = webSocketManager;
         this.managerRepository = managerRepository;
+        this.context = context;
+        this.handledRequestManager = handledRequestManager;
 
         assignedShiftsMapLiveData.addSource(rawSchedulesLiveData, schedules -> updateAssignedShiftsMap());
         assignedShiftsMapLiveData.addSource(selectedDatesLiveData, dates -> updateAssignedShiftsMap());
@@ -123,12 +133,40 @@ public class AssignShiftViewModel extends ViewModel {
         }
         assignedShiftsMapLiveData.setValue(map);
 
+        // Cập nhật trạng thái ON_LEAVE cho nhân viên có lịch nghỉ phép vào ngày dateStr
+        if (handledRequestManager != null) {
+            List<ManagerEmployeeItem> employees = allEmployeesLiveData.getValue();
+            if (employees != null && !employees.isEmpty()) {
+                boolean changed = false;
+                List<ManagerEmployeeItem> updatedList = new ArrayList<>();
+                for (ManagerEmployeeItem emp : employees) {
+                    if (emp.getUserId() != null && handledRequestManager.isStaffOnLeave(emp.getUserId(), dateStr)) {
+                        if (emp.getStatus() != EmployeeStatus.ON_LEAVE) {
+                            emp.setStatus(EmployeeStatus.ON_LEAVE);
+                            changed = true;
+                        }
+                    } else if (emp.getUserId() != null && emp.getStatus() == EmployeeStatus.ON_LEAVE) {
+                        EmployeeStatus orig = handledRequestManager.getEmployeeStatus(emp.getUserId());
+                        if (orig == null || orig != EmployeeStatus.ON_LEAVE) {
+                            emp.setStatus(orig != null ? orig : EmployeeStatus.ACTIVE);
+                            changed = true;
+                        }
+                    }
+                    updatedList.add(emp);
+                }
+                if (changed) {
+                    allEmployeesLiveData.setValue(updatedList);
+                }
+            }
+        }
+
         // Tự động bỏ chọn các nhân viên đã có ca trong ngày đang chọn
         List<ManagerEmployeeItem> currentSelected = selectedEmployeesLiveData.getValue();
         if (currentSelected != null && !currentSelected.isEmpty()) {
             List<ManagerEmployeeItem> validSelected = new ArrayList<>();
             for (ManagerEmployeeItem emp : currentSelected) {
-                if (!map.containsKey(emp.getUserId())) {
+                boolean onLeave = handledRequestManager != null && handledRequestManager.isStaffOnLeave(emp.getUserId(), dateStr);
+                if (!map.containsKey(emp.getUserId()) && !onLeave) {
                     validSelected.add(emp);
                 }
             }
@@ -248,12 +286,37 @@ public class AssignShiftViewModel extends ViewModel {
                                                 String empId = s.getStaffId();
                                                 String code = empId.length() >= 6 ? "NV" + empId.substring(0, 4).toUpperCase() : "NV001";
                                                 String pos = s.getPosition() != null && !s.getPosition().isEmpty() ? s.getPosition() : "Nhân viên";
-                                                String avatar = (s.getAvatar() != null && !s.getAvatar().isEmpty() && !"null".equalsIgnoreCase(s.getAvatar()) && !"none".equalsIgnoreCase(s.getAvatar())) ? s.getAvatar() : "";
+                                                String avatar = resolveAvatar(empId, s.getNameStaff(), s.getPhoneNumber(), s.getAvatar());
                                                 EmployeeStatus status = "deactive".equalsIgnoreCase(s.getStatus()) ? EmployeeStatus.TERMINATED : EmployeeStatus.ACTIVE;
+                                                if (handledRequestManager != null) {
+                                                    EmployeeStatus customStatus = handledRequestManager.getEmployeeStatus(empId);
+                                                    if (customStatus != null) status = customStatus;
+                                                }
+                                                String phone = s.getPhoneNumber() != null ? s.getPhoneNumber() : "";
+                                                if (phone.isEmpty() && handledRequestManager != null) {
+                                                    phone = handledRequestManager.getStaffPhone(empId);
+                                                }
+                                                String joinDate = s.getJoinDate() != null ? s.getJoinDate() : "";
+                                                if (joinDate.isEmpty() && handledRequestManager != null) {
+                                                    joinDate = handledRequestManager.getStaffJoinDate(empId);
+                                                }
                                                 map.put(empId, new ManagerEmployeeItem(
                                                         empId, code, s.getNameStaff() != null ? s.getNameStaff() : "Nhân viên",
-                                                        avatar, pos, "Cửa hàng Q1", "", "", status, 0, 0, 0
+                                                        avatar, pos, "Cửa hàng Q1", phone, joinDate, status, 0, 0, 0
                                                 ));
+                                            }
+                                        }
+                                        if (handledRequestManager != null) {
+                                            for (ManagerEmployeeItem item : handledRequestManager.getApprovedEmployees()) {
+                                                if (item.getUserId() != null && !map.containsKey(item.getUserId())) {
+                                                    map.put(item.getUserId(), item);
+                                                } else if (item.getUserId() != null) {
+                                                    ManagerEmployeeItem existing = map.get(item.getUserId());
+                                                    if (existing != null && (existing.getAvatarUrl() == null || existing.getAvatarUrl().trim().isEmpty())
+                                                            && item.getAvatarUrl() != null && !item.getAvatarUrl().trim().isEmpty()) {
+                                                        existing.setAvatarUrl(item.getAvatarUrl());
+                                                    }
+                                                }
                                             }
                                         }
                                         List<ManagerEmployeeItem> current = allEmployeesLiveData.getValue();
@@ -287,9 +350,7 @@ public class AssignShiftViewModel extends ViewModel {
     private ManagerEmployeeItem mapToManagerEmployeeItem(EmployeeWorkSchedule schedule) {
         String id = schedule.getEmployeeId();
         String code = id != null && id.length() >= 6 ? "NV" + id.substring(0, 4).toUpperCase() : "NV001";
-        String avatar = (schedule.getAvatar() != null && !schedule.getAvatar().isEmpty()
-                && !"null".equalsIgnoreCase(schedule.getAvatar()) && !"none".equalsIgnoreCase(schedule.getAvatar()))
-                ? schedule.getAvatar() : "";
+        String avatar = resolveAvatar(id, schedule.getName(), null, schedule.getAvatar());
         return new ManagerEmployeeItem(
                 id,
                 code,
@@ -533,6 +594,40 @@ public class AssignShiftViewModel extends ViewModel {
     public LiveData<Boolean> getAssignSuccessLiveData() { return assignSuccessLiveData; }
     public LiveData<String> getErrorMessageLiveData() { return errorMessageLiveData; }
     public LiveData<Uri> getExportSuccessUriLiveData() { return exportSuccessUriLiveData; }
+
+    private String resolveAvatar(String empId, String name, String phone, String rawAvatar) {
+        String avatar = rawAvatar;
+        if (avatar != null && (avatar.equalsIgnoreCase("null") || avatar.equalsIgnoreCase("none"))) {
+            avatar = null;
+        }
+        if (avatar != null && (avatar.startsWith("file://") || avatar.startsWith("/"))) {
+            try {
+                String path = avatar.startsWith("file://") ? android.net.Uri.parse(avatar).getPath() : avatar;
+                java.io.File f = new java.io.File(path);
+                if (!f.exists() || !f.canRead()) {
+                    avatar = null;
+                }
+            } catch (Exception ignored) {
+                avatar = null;
+            }
+        }
+        if ((avatar == null || avatar.trim().isEmpty()) && handledRequestManager != null && empId != null) {
+            avatar = handledRequestManager.getStaffAvatar(empId);
+        }
+        if ((avatar == null || avatar.trim().isEmpty()) && context != null) {
+            avatar = StaffAvatarCache.getEffectiveAvatar(context, empId, name, phone);
+        }
+        if (avatar != null && !avatar.trim().isEmpty()) {
+            if (handledRequestManager != null && empId != null) {
+                handledRequestManager.saveStaffAvatar(empId, avatar.trim());
+            }
+            if (context != null) {
+                StaffAvatarCache.saveAvatar(context, empId, name, phone, avatar.trim());
+            }
+            return avatar.trim();
+        }
+        return "";
+    }
 
     @Override
     protected void onCleared() {

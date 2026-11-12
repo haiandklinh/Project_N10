@@ -27,14 +27,27 @@ public class StaffItemResponse {
     private String status;
 
     @Nullable
-    @SerializedName("avatar")
+    @SerializedName(value = "avatar", alternate = {"avatar_staff", "staff_avatar", "avatar_url", "avatarUrl", "image", "photo", "send_person_avatar"})
     private String avatar;
+
+    @Nullable
+    @SerializedName(value = "phone", alternate = {"phone_number", "phoneNumber", "sdt", "phone_staff", "staff_phone", "contact_phone"})
+    private String phoneNumber;
+
+    @Nullable
+    @SerializedName(value = "join_date", alternate = {"joinDate", "start_date", "startDate", "created_at", "createdAt", "joined_at", "time_create", "time_created", "created_date", "createdDate"})
+    private String joinDate;
 
     public StaffItemResponse() {
     }
 
     public StaffItemResponse(String staffId, String nameStaff, String position, String dateOfBirth,
                              String gender, String status, String avatar) {
+        this(staffId, nameStaff, position, dateOfBirth, gender, status, avatar, null, null);
+    }
+
+    public StaffItemResponse(String staffId, String nameStaff, String position, String dateOfBirth,
+                             String gender, String status, String avatar, String phoneNumber, String joinDate) {
         this.staffId = staffId;
         this.nameStaff = nameStaff;
         this.position = position;
@@ -42,6 +55,8 @@ public class StaffItemResponse {
         this.gender = gender;
         this.status = status;
         this.avatar = avatar;
+        this.phoneNumber = phoneNumber;
+        this.joinDate = joinDate;
     }
 
     public String getStaffId() {
@@ -103,5 +118,23 @@ public class StaffItemResponse {
 
     public void setAvatar(@Nullable String avatar) {
         this.avatar = avatar;
+    }
+
+    @Nullable
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(@Nullable String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    @Nullable
+    public String getJoinDate() {
+        return joinDate;
+    }
+
+    public void setJoinDate(@Nullable String joinDate) {
+        this.joinDate = joinDate;
     }
 }

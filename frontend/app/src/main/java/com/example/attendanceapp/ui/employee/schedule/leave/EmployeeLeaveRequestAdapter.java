@@ -106,8 +106,22 @@ public class EmployeeLeaveRequestAdapter extends RecyclerView.Adapter<RecyclerVi
             // 2. Gán ngày áp dụng và ca làm việc
             String dateStr = item.getTargetDate() != null ? item.getTargetDate().trim() : "";
             String formattedDate = formatDateDisplay(dateStr);
-            if (item.getShiftId() != null && !item.getShiftId().trim().isEmpty() && !item.getShiftId().equalsIgnoreCase("null")) {
-                formattedDate += " • " + item.getShiftId();
+
+            String shiftLabel = item.getShiftId() != null ? item.getShiftId().trim() : "";
+            if ("shift_all".equalsIgnoreCase(shiftLabel)) {
+                shiftLabel = "Cả ngày";
+            } else if ("shift_01".equalsIgnoreCase(shiftLabel)) {
+                shiftLabel = "Ca sáng";
+            } else if ("shift_02".equalsIgnoreCase(shiftLabel)) {
+                shiftLabel = "Ca chiều";
+            } else if ("shift_03".equalsIgnoreCase(shiftLabel)) {
+                shiftLabel = "Ca hành chính";
+            } else if (shiftLabel.length() > 20 && shiftLabel.contains("-")) {
+                shiftLabel = "";
+            }
+
+            if (!shiftLabel.isEmpty() && !shiftLabel.equalsIgnoreCase("null")) {
+                formattedDate += " • " + shiftLabel;
             }
             binding.tvTargetDate.setText("Ngày áp dụng: " + formattedDate);
 
@@ -134,8 +148,12 @@ public class EmployeeLeaveRequestAdapter extends RecyclerView.Adapter<RecyclerVi
         private String formatDateDisplay(String rawDate) {
             if (rawDate == null || rawDate.isEmpty()) return "";
             try {
-                if (rawDate.matches("\\d{4}-\\d{2}-\\d{2}")) {
-                    LocalDate date = LocalDate.parse(rawDate);
+                String clean = rawDate.trim();
+                if (clean.length() >= 10) {
+                    clean = clean.substring(0, 10);
+                }
+                if (clean.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                    LocalDate date = LocalDate.parse(clean);
                     return date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
                 }
             } catch (Exception ignored) {}
@@ -220,8 +238,12 @@ public class EmployeeLeaveRequestAdapter extends RecyclerView.Adapter<RecyclerVi
         private String formatDateWithDayOfWeek(String rawDate) {
             if (rawDate == null || rawDate.isEmpty()) return "";
             try {
-                if (rawDate.matches("\\d{4}-\\d{2}-\\d{2}")) {
-                    LocalDate date = LocalDate.parse(rawDate);
+                String clean = rawDate.trim();
+                if (clean.length() >= 10) {
+                    clean = clean.substring(0, 10);
+                }
+                if (clean.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                    LocalDate date = LocalDate.parse(clean);
                     return date.format(DateTimeFormatter.ofPattern("EEEE, dd/MM/yyyy", new Locale("vi", "VN")));
                 }
             } catch (Exception ignored) {}

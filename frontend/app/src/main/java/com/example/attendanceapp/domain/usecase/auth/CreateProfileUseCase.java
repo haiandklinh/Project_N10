@@ -1,7 +1,11 @@
 package com.example.attendanceapp.domain.usecase.auth;
 
+import android.content.Context;
+
+import com.example.attendanceapp.core.utils.CloudImageUploader;
 import com.example.attendanceapp.data.dto.request.manager.CreateManagerProfileRequest;
 import com.example.attendanceapp.data.dto.request.staff.CreateStaffProfileRequest;
+import com.example.attendanceapp.data.local.StaffAvatarCache;
 import com.example.attendanceapp.domain.model.Gender;
 import com.example.attendanceapp.domain.repository.ManagerRepository;
 import com.example.attendanceapp.domain.repository.StaffRepository;
@@ -11,27 +15,43 @@ import java.time.format.DateTimeFormatter;
 
 import javax.inject.Inject;
 
+import dagger.hilt.android.qualifiers.ApplicationContext;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Single;
 
 public class CreateProfileUseCase {
 
+    private final Context context;
     private final StaffRepository staffRepository;
     private final ManagerRepository managerRepository;
 
     @Inject
-    public CreateProfileUseCase(StaffRepository staffRepository, ManagerRepository managerRepository) {
+    public CreateProfileUseCase(
+            @ApplicationContext Context context,
+            StaffRepository staffRepository,
+            ManagerRepository managerRepository
+    ) {
+        this.context = context;
         this.staffRepository = staffRepository;
         this.managerRepository = managerRepository;
     }
 
     /** Tạo hồ sơ Nhân viên. */
     public Completable createStaffProfile(String name, String dob, String gender, String avatar) {
-        return Single.fromCallable(() -> new CreateStaffProfileRequest(
-                        requireName(name),
-                        toApiDate(dob),
-                        toApiGender(gender),
-                        nullToEmpty(avatar)))
+        return Single.fromCallable(() -> {
+                    String cleanAvatar = avatar;
+                    if (context != null && cleanAvatar != null && !cleanAvatar.isEmpty()) {
+                        String cloudUrl = CloudImageUploader.uploadAvatarSync(context, cleanAvatar);
+                        if (cloudUrl != null && !cloudUrl.isEmpty()) {
+                            cleanAvatar = cloudUrl;
+                        }
+                    }
+                    return new CreateStaffProfileRequest(
+                            requireName(name),
+                            toApiDate(dob),
+                            toApiGender(gender),
+                            nullToEmpty(cleanAvatar));
+                })
                 .flatMap(staffRepository::createProfile)
                 .ignoreElement();
     }
@@ -42,15 +62,22 @@ public class CreateProfileUseCase {
                     if (companyName == null || companyName.trim().isEmpty()) {
                         throw new IllegalArgumentException("Tên công ty không được để trống");
                     }
+                    String cleanAvatar = avatar;
+                    if (context != null && cleanAvatar != null && !cleanAvatar.isEmpty()) {
+                        String cloudUrl = CloudImageUploader.uploadAvatarSync(context, cleanAvatar);
+                        if (cloudUrl != null && !cloudUrl.isEmpty()) {
+                            cleanAvatar = cloudUrl;
+                        }
+                    }
 
-                    // ĐÃ SỬA: Đúng thứ tự Constructor CreateManagerProfileRequest
+                    // Đúng thứ tự Constructor CreateManagerProfileRequest
                     // (fullName, company, date, gender, avatar)
                     return new CreateManagerProfileRequest(
                             requireName(name),
                             companyName.trim(),
                             toApiDate(dob),
                             toApiGender(gender),
-                            nullToEmpty(avatar));
+                            nullToEmpty(cleanAvatar));
                 })
                 .flatMap(managerRepository::createProfile)
                 .ignoreElement();
@@ -66,7 +93,14 @@ public class CreateProfileUseCase {
         if (invitationCode == null || invitationCode.trim().isEmpty()) {
             return Single.error(new IllegalArgumentException("Mã mời không được để trống"));
         }
-        return staffRepository.joinWithInvitationCode(invitationCode.trim(), name, avatar)
+        String cleanAvatar = avatar;
+        if (context != null && cleanAvatar != null && !cleanAvatar.isEmpty()) {
+            String cloudUrl = CloudImageUploader.uploadAvatarSync(context, cleanAvatar);
+            if (cloudUrl != null && !cloudUrl.isEmpty()) {
+                cleanAvatar = cloudUrl;
+            }
+        }
+        return staffRepository.joinWithInvitationCode(invitationCode.trim(), name, cleanAvatar)
                 .map(managerInfo -> managerInfo.getCompanyName());
     }
 

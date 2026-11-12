@@ -1,5 +1,6 @@
 package com.example.attendanceapp.ui.manager.profile;
 
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -109,7 +110,17 @@ public class ManagerEditBasicInfoFragment extends Fragment {
                 gender = Gender.valueOf(genderStr.toUpperCase());
             } catch (Exception ignored) {}
 
-            viewModel.updateProfile(fullName, dob, gender, null, companyName);
+            // Giữ nguyên avatar hiện tại của Quản lý, không truyền null để tránh bị xóa trên server
+            UserAccount currentUser = viewModel.getUserAccount().getValue();
+            Uri avatarUri = null;
+            if (currentUser != null && currentUser.getProfile() != null && currentUser.getProfile().getAvatarUrl() != null) {
+                String avt = currentUser.getProfile().getAvatarUrl().trim();
+                if (!avt.isEmpty()) {
+                    avatarUri = Uri.parse(avt);
+                }
+            }
+
+            viewModel.updateProfile(fullName, dob, gender, avatarUri, companyName);
         });
     }
 

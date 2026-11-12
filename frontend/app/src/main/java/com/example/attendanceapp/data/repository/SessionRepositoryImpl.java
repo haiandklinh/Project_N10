@@ -1,5 +1,6 @@
 package com.example.attendanceapp.data.repository;
 
+import com.example.attendanceapp.data.local.pref.SharedPreferenceApp;
 import com.example.attendanceapp.data.dto.response.manager.ManagerProfileResponse;
 import com.example.attendanceapp.data.dto.response.staff.StaffProfileResponse;
 import com.example.attendanceapp.data.local.HandledRequestManager;
@@ -29,16 +30,19 @@ public class SessionRepositoryImpl implements SessionRepository {
     private final UserDao userDao;
     private final HandledRequestManager handledRequestManager;
     private final NotificationDao notificationDao;
+    private final SharedPreferenceApp sharedPreferenceApp;
 
     @Inject
     public SessionRepositoryImpl(
             UserDao userDao,
             HandledRequestManager handledRequestManager,
-            NotificationDao notificationDao
+            NotificationDao notificationDao,
+            SharedPreferenceApp sharedPreferenceApp
     ) {
         this.userDao = userDao;
         this.handledRequestManager = handledRequestManager;
         this.notificationDao = notificationDao;
+        this.sharedPreferenceApp = sharedPreferenceApp;
     }
 
     @Override
@@ -48,13 +52,6 @@ public class SessionRepositoryImpl implements SessionRepository {
                 .onErrorReturnItem(Optional.empty())
                 .defaultIfEmpty(Optional.empty())
                 .flatMapCompletable(opt -> {
-                    UserEntity oldEntity = opt.orElse(null);
-                    if (oldEntity != null && oldEntity.getPhone() != null && !oldEntity.getPhone().equals(phoneNumber.trim())) {
-                        userDao.clearAllUsers();
-                        UserEntity newEntity = new UserEntity("", "", phoneNumber.trim(), "", "NEEDS_ROLE_SELECTION");
-                        return Completable.fromAction(() -> userDao.insertOrUpdateUser(newEntity));
-                    }
-
                     UserEntity entity = opt.orElseGet(() -> new UserEntity("", "", phoneNumber, "", "NEEDS_ROLE_SELECTION"));
                     entity.setPhone(phoneNumber);
                     return Completable.fromAction(() -> userDao.insertOrUpdateUser(entity));
@@ -78,7 +75,6 @@ public class SessionRepositoryImpl implements SessionRepository {
                     UserProfile userProfile = UserMapper.toUserProfile(profile);
                     UserAccount account = new UserAccount.Builder()
                             .phoneNumber(phone)
-                            .firstLogin(false)
                             .invitationCode(inviteCode)
                             .profile(userProfile)
                             .build();
@@ -113,7 +109,6 @@ public class SessionRepositoryImpl implements SessionRepository {
                     UserProfile userProfile = UserMapper.toUserProfile(profile);
                     UserAccount account = new UserAccount.Builder()
                             .phoneNumber(phone)
-                            .firstLogin(false)
                             .invitationCode(inviteCode)
                             .profile(userProfile)
                             .build();
@@ -146,13 +141,23 @@ public class SessionRepositoryImpl implements SessionRepository {
 
     @Override
     public Maybe<String> getCachedInvitationCode() {
-        return userDao.getCurrentUserSingle()
-                .map(UserEntity::getInvitationCode)
-                .filter(code -> code != null && !code.isEmpty());
+        String validPrefCode = sharedPreferenceApp.getValidInvitationCode();
+        if (validPrefCode != null && !validPrefCode.isEmpty()) {
+            return Maybe.just(validPrefCode);
+        }
+        return Maybe.empty();
+    }
+
+    @Override
+    public long getRemainingInvitationTimeMillis() {
+        return sharedPreferenceApp.getRemainingInvitationTimeMillis();
     }
 
     @Override
     public Completable saveInvitationCode(String code) {
+        if (code != null && !code.trim().isEmpty()) {
+            sharedPreferenceApp.saveInvitationCode(code.trim(), 86400L); // Có hiệu lực trong 24 giờ
+        }
         return userDao.getCurrentUserSingle()
                 .map(Optional::of)
                 .onErrorReturnItem(Optional.empty())
@@ -225,25 +230,6 @@ public class SessionRepositoryImpl implements SessionRepository {
     }
 
     @Override
-    public Completable clearPendingRequest() {
-        return userDao.getCurrentUserSingle()
-                .map(Optional::of)
-                .onErrorReturnItem(Optional.empty())
-                .defaultIfEmpty(Optional.empty())
-                .flatMapCompletable(opt -> {
-                    UserEntity entity = opt.orElse(null);
-                    if (entity != null) {
-                        entity.setInvitationCode("");
-                        entity.setCompanyName("");
-                        entity.setStatus("NEEDS_ROLE_SELECTION");
-                        return Completable.fromAction(() -> userDao.updateUser(entity));
-                    }
-                    return Completable.complete();
-                })
-                .subscribeOn(Schedulers.io());
-    }
-
-    @Override
     public Completable clear() {
         return userDao.getCurrentUserSingle()
                 .flatMapCompletable(entity -> {
@@ -251,16 +237,17 @@ public class SessionRepositoryImpl implements SessionRepository {
                     String name = entity.getName();
                     String companyName = entity.getCompanyName();
                     String companyId = entity.getCompanyId();
-                    String invitationCode = entity.getInvitationCode();
+//                    String invitationCode = entity.getInvitationCode();
+                    String invitationCode = null;
                     String avatarUrl = entity.getAvatarUrl();
                     String role = entity.getRole();
-                    String status = entity.getStatus();
                     String dob = entity.getDateOfBirth();
                     String gender = entity.getGender();
 
                     // Xóa toàn bộ dữ liệu người dùng và thông báo phiên làm việc
                     return Completable.fromAction(() -> {
                                 userDao.clearAllUsers();
+                                sharedPreferenceApp.clearInvitationCode();
                                 if (handledRequestManager != null) {
                                     handledRequestManager.clear();
                                 }
@@ -273,7 +260,7 @@ public class SessionRepositoryImpl implements SessionRepository {
                                         name != null ? name : "",
                                         phone != null ? phone : "",
                                         role != null ? role : "",
-                                        status != null ? status : "NEEDS_ROLE_SELECTION",
+                                        "NEEDS_ROLE_SELECTION",
                                         dob,
                                         gender,
                                         avatarUrl,

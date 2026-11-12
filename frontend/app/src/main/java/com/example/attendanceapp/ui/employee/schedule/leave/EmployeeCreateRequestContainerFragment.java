@@ -235,8 +235,10 @@ public class EmployeeCreateRequestContainerFragment extends Fragment {
         String notifType = item.getNotificationType() != null ? item.getNotificationType().toUpperCase() : "";
         Map<String, Object> content = item.getContent();
 
-        boolean isLeave = notifType.contains("LEAVE") || (content != null && (content.containsKey("work_day_off") || content.containsKey("id_work_shift_off")));
-        boolean isSwap = notifType.contains("SHIFT") || notifType.contains("SWAP") || notifType.contains("WORK_SCHEDULE") || (content != null && (content.containsKey("id_work_shift_change") || content.containsKey("id_work_shift_cur")));
+        boolean isLeave = notifType.contains("LEAVE") || notifType.contains("OFF")
+                || (content != null && (content.containsKey("work_day_off") || content.containsKey("workday_off") || content.containsKey("id_work_shift_off")));
+        boolean isSwap = notifType.contains("SHIFT") || notifType.contains("SWAP") || notifType.contains("WORK_SCHEDULE")
+                || (content != null && (content.containsKey("id_work_shift_change") || content.containsKey("id_work_shift_cur")));
         boolean isAdjustment = notifType.contains("ADJUSTMENT") || (content != null && content.containsKey("check_in_time"));
 
         if (!isLeave && !isSwap && !isAdjustment) {
@@ -296,14 +298,18 @@ public class EmployeeCreateRequestContainerFragment extends Fragment {
         String targetDate = "";
         if (content != null) {
             if (content.containsKey("work_day_off")) targetDate = String.valueOf(content.get("work_day_off"));
+            else if (content.containsKey("workday_off")) targetDate = String.valueOf(content.get("workday_off"));
             else if (content.containsKey("workday")) targetDate = String.valueOf(content.get("workday"));
             else if (content.containsKey("work_day")) targetDate = String.valueOf(content.get("work_day"));
             else if (content.containsKey("date")) targetDate = String.valueOf(content.get("date"));
+            else if (content.containsKey("day_off")) targetDate = String.valueOf(content.get("day_off"));
         }
         if (targetDate.isEmpty()) {
             targetDate = (item.getSendAt() != null && item.getSendAt().length() >= 10)
                     ? item.getSendAt().substring(0, 10)
                     : LocalDate.now().toString();
+        } else if (targetDate.length() >= 10) {
+            targetDate = targetDate.substring(0, 10);
         }
 
         // Lý do
@@ -322,8 +328,19 @@ public class EmployeeCreateRequestContainerFragment extends Fragment {
         if (content != null) {
             if (content.containsKey("shift_name")) shiftId = String.valueOf(content.get("shift_name"));
             else if (content.containsKey("name_shift")) shiftId = String.valueOf(content.get("name_shift"));
+            else if (content.containsKey("name_work_shift_off")) shiftId = String.valueOf(content.get("name_work_shift_off"));
             else if (content.containsKey("id_work_shift_off")) shiftId = String.valueOf(content.get("id_work_shift_off"));
             else if (content.containsKey("id_work_shift_cur")) shiftId = String.valueOf(content.get("id_work_shift_cur"));
+        }
+
+        if (shiftId.isEmpty() || "shift_all".equalsIgnoreCase(shiftId)) {
+            shiftId = "Cả ngày";
+        } else if ("shift_01".equalsIgnoreCase(shiftId)) {
+            shiftId = "Ca sáng";
+        } else if ("shift_02".equalsIgnoreCase(shiftId)) {
+            shiftId = "Ca chiều";
+        } else if ("shift_03".equalsIgnoreCase(shiftId)) {
+            shiftId = "Ca hành chính";
         }
 
         // Giờ Check-in / Check-out nếu có
@@ -351,6 +368,9 @@ public class EmployeeCreateRequestContainerFragment extends Fragment {
                 if ((local.getId() != null && local.getId().equals(remote.getId())) ||
                         (local.getTargetDate() != null && local.getTargetDate().equals(remote.getTargetDate()) && local.getType() == remote.getType())) {
                     matched = true;
+                    if ((remote.getShiftId() == null || remote.getShiftId().isEmpty() || remote.getShiftId().startsWith("shift_")) && local.getShiftId() != null) {
+                        remote.setShiftId(local.getShiftId());
+                    }
                     if (remote.getStatus() != local.getStatus() && sharedPreferenceApp != null) {
                         sharedPreferenceApp.updateSubmittedLeaveRequestStatus(local.getTargetDate(), local.getType() != null ? local.getType().name() : null, remote.getStatus());
                     }

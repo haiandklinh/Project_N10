@@ -201,16 +201,23 @@ public class EmployeeAdjustmentRequestFragment extends Fragment {
 
                                     if (response != null && response.getData() != null) {
                                         for (StaffWorkScheduleResponse ws : response.getData()) {
-                                            if (ws != null && dateStr.equals(ws.getWorkDay()) && ws.getShifts() != null) {
+                                            String wsDate = ws != null && ws.getWorkDay() != null ? ws.getWorkDay().trim() : "";
+                                            if (wsDate.length() >= 10) {
+                                                wsDate = wsDate.substring(0, 10);
+                                            }
+
+                                            if (ws != null && dateStr.equals(wsDate) && ws.getShifts() != null) {
                                                 for (StaffWorkScheduleResponse.ShiftInfo si : ws.getShifts()) {
                                                     if (si != null) {
-                                                        String shiftId = (si.getShiftId() != null && !si.getShiftId().trim().isEmpty())
-                                                                ? si.getShiftId().trim()
-                                                                : (si.getWorkScheduleId() != null ? si.getWorkScheduleId().trim() : "shift_01");
+                                                        // Ưu tiên workScheduleId (ID cụ thể của ca trong lịch làm việc)
+                                                        // Giúp backend xác định chính xác bản ghi cần điều chỉnh công.
+                                                        String shiftId = (si.getWorkScheduleId() != null && !si.getWorkScheduleId().trim().isEmpty())
+                                                                ? si.getWorkScheduleId().trim()
+                                                                : (si.getShiftId() != null ? si.getShiftId().trim() : "shift_01");
                                                         String shiftName = si.getShiftName() != null ? si.getShiftName().trim() : "Ca làm việc";
                                                         String timeRange = "";
                                                         if (si.getStartTime() != null && si.getEndTime() != null) {
-                                                            timeRange = " (" + si.getStartTime() + " - " + si.getEndTime() + ")";
+                                                            timeRange = " (" + formatTime(si.getStartTime()) + " - " + formatTime(si.getEndTime()) + ")";
                                                         }
                                                         shiftItemList.add(new ShiftItem(shiftId, shiftName, shiftName + timeRange));
                                                         hasShiftsOnDay = true;
@@ -245,7 +252,7 @@ public class EmployeeAdjustmentRequestFragment extends Fragment {
                                             String title = opt.getTitle() != null ? opt.getTitle().trim() : "Ca làm";
                                             String timeRange = "";
                                             if (opt.getStartTime() != null && opt.getEndTime() != null) {
-                                                timeRange = " (" + opt.getStartTime() + " - " + opt.getEndTime() + ")";
+                                                timeRange = " (" + formatTime(opt.getStartTime()) + " - " + formatTime(opt.getEndTime()) + ")";
                                             }
                                             shiftItemList.add(new ShiftItem(id, title, title + timeRange));
                                         }
@@ -277,6 +284,13 @@ public class EmployeeAdjustmentRequestFragment extends Fragment {
         if (!shiftItemList.isEmpty()) {
             binding.actShiftInfo.setText(shiftItemList.get(0).label, false);
         }
+    }
+
+    private String formatTime(String time) {
+        if (time != null && time.length() >= 5) {
+            return time.substring(0, 5);
+        }
+        return time;
     }
 
     private void setupInputWatchers() {

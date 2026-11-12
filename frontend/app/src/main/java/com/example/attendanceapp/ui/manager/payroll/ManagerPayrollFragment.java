@@ -1,5 +1,7 @@
 package com.example.attendanceapp.ui.manager.payroll;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,11 +15,13 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.attendanceapp.R;
+import com.example.attendanceapp.data.dto.request.manager.CalculatePayrollRequest;
 import com.example.attendanceapp.data.dto.response.manager.StaffItemResponse;
 import com.example.attendanceapp.databinding.FragmentManagerPayrollBinding;
 import com.example.attendanceapp.domain.model.EmployeeStatus;
 import com.example.attendanceapp.domain.model.ManagerEmployeeItem;
 import com.example.attendanceapp.domain.repository.ManagerRepository;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +38,7 @@ public class ManagerPayrollFragment extends Fragment {
 
     private FragmentManagerPayrollBinding binding;
     private ManagerPayrollAdapter adapter;
+    private final List<ManagerEmployeeItem> employeeList = new ArrayList<>();
     private final CompositeDisposable disposables = new CompositeDisposable();
 
     @Inject
@@ -66,7 +71,16 @@ public class ManagerPayrollFragment extends Fragment {
         binding.rvPayrollList.setLayoutManager(new LinearLayoutManager(getContext()));
 
         adapter = new ManagerPayrollAdapter(new ArrayList<>(), employee -> {
-            Navigation.findNavController(requireView()).navigate(R.id.action_managerPayrollFragment_to_managerPayrollDetailFragment);
+            Bundle bundle = new Bundle();
+            bundle.putString("staff_id", employee.getUserId());
+            bundle.putString("staff_name", employee.getFullName());
+            bundle.putString("staff_code", employee.getEmployeeCode());
+            bundle.putString("staff_avatar", employee.getAvatarUrl());
+            bundle.putString("staff_position", employee.getPosition());
+
+            Navigation.findNavController(requireView()).navigate(
+                    R.id.action_managerPayrollFragment_to_managerPayrollDetailFragment, bundle
+            );
         });
 
         binding.rvPayrollList.setAdapter(adapter);
@@ -82,7 +96,7 @@ public class ManagerPayrollFragment extends Fragment {
                         .subscribe(
                                 response -> {
                                     if (response != null && response.getData() != null && !response.getData().isEmpty()) {
-                                        List<ManagerEmployeeItem> list = new ArrayList<>();
+                                        employeeList.clear();
                                         for (StaffItemResponse staff : response.getData()) {
                                             String id = staff.getStaffId();
                                             String code = "NV-" + (id != null && id.length() >= 4 ? id.substring(id.length() - 4) : (id != null ? id : ""));
@@ -90,20 +104,20 @@ public class ManagerPayrollFragment extends Fragment {
                                                     ? EmployeeStatus.TERMINATED
                                                     : EmployeeStatus.ACTIVE;
                                             String pos = staff.getPosition() != null && !staff.getPosition().isEmpty() ? staff.getPosition() : "Nhân viên";
-                                            list.add(new ManagerEmployeeItem(
+                                            employeeList.add(new ManagerEmployeeItem(
                                                     id, code,
                                                     staff.getNameStaff() != null ? staff.getNameStaff() : "Nhân viên",
                                                     staff.getAvatar() != null ? staff.getAvatar() : "",
                                                     pos, "Phòng ban chung", "",
                                                     staff.getDateOfBirth() != null ? staff.getDateOfBirth() : "",
-                                                    status, 24, 0, 7500000
+                                                    status, 0, 0, 0
                                             ));
                                         }
-                                        adapter.updateData(list);
+                                        adapter.updateData(employeeList);
                                     }
                                 },
                                 error -> {
-                                    // Bỏ qua lỗi kết nối
+                                    Toast.makeText(getContext(), "Không thể tải danh sách nhân viên: " + error.getMessage(), Toast.LENGTH_SHORT).show();
                                 }
                         )
         );
@@ -111,12 +125,58 @@ public class ManagerPayrollFragment extends Fragment {
 
     private void setupListeners() {
         binding.tvMonthPicker.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Chọn tháng", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Kỳ lương hiện tại: Tháng 10/2026", Toast.LENGTH_SHORT).show();
         });
 
         binding.btnConfirmAll.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Đã xác nhận chốt lương toàn bộ nhân sự", Toast.LENGTH_SHORT).show();
+            if (employeeList.isEmpty()) {
+                Toast.makeText(getContext(), "Không có nhân viên để chốt lương", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            new MaterialAlertDialogBuilder(requireContext())
+                    .setTitle("Xác nhận chốt lương")
+                    .setMessage("Bạn có chắc chắn muốn chốt lương cho toàn bộ " + employeeList.size() + " nhân viên trong danh sách?")
+                    .setPositiveButton("Đồng ý", (dialog, which) -> confirmAllPayrolls())
+                    .setNegativeButton("Hủy", null)
+                    .show();
         });
+    }
+
+    private void confirmAllPayrolls() {
+        SharedPreferences prefs = requireContext().getSharedPreferences("SALARY_CONFIG_PREFS", Context.MODE_PRIVATE);
+        String defaultRateStr = prefs.getString("rate_fulltime", "400000").replaceAll("[.,]", "");
+        double defaultBaseSalary = 7500000.0;
+        try {
+            defaultBaseSalary = Double.parseDouble(defaultRateStr) * 22;
+        } catch (Exception ignored) {}
+
+        final double baseSalary = defaultBaseSalary;
+        int total = employeeList.size();
+        final int[] successCount = {0};
+
+        for (ManagerEmployeeItem emp : employeeList) {
+            if (emp.getUserId() == null || emp.getUserId().isEmpty()) continue;
+            CalculatePayrollRequest req = new CalculatePayrollRequest(emp.getUserId(), baseSalary);
+            disposables.add(
+                    managerRepository.calculatePayroll(req)
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(
+                                    res -> {
+                                        successCount[0]++;
+                                        if (successCount[0] == total) {
+                                            Toast.makeText(getContext(), "Đã chốt và tính lương thành công cho " + total + " nhân sự!", Toast.LENGTH_SHORT).show();
+                                        }
+                                    },
+                                    err -> {
+                                        // continue other requests
+                                    }
+                            )
+            );
+        }
+
+        Toast.makeText(getContext(), "Đang tiến hành chốt lương cho " + total + " nhân sự...", Toast.LENGTH_SHORT).show();
     }
 
     @Override

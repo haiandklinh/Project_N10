@@ -128,24 +128,16 @@ public class ManagerProfileFragment extends Fragment {
         binding.rowStatistics.getRoot().setOnClickListener(v -> 
             Navigation.findNavController(v).navigate(R.id.action_managerProfileFragment_to_managerStatisticFragment));
         
-        binding.rowSalaryConfig.getRoot().setOnClickListener(v -> {
-            Toast.makeText(requireContext(), "Chức năng Cấu hình lương ca làm", Toast.LENGTH_SHORT).show();
-        });
+        binding.rowSalaryConfig.getRoot().setOnClickListener(v -> Navigation.findNavController(v).navigate(R.id.action_managerProfileFragment_to_managerSalaryConfigFragment));
 
-        binding.rowEditProfile.getRoot().setOnClickListener(v -> 
-            Navigation.findNavController(v).navigate(R.id.action_managerProfileFragment_to_managerEditProfileFragment));
+        binding.rowEditProfile.getRoot().setOnClickListener(v -> Navigation.findNavController(v).navigate(R.id.action_managerProfileFragment_to_managerEditProfileFragment));
+        binding.ivAvatar.setOnClickListener(v -> Navigation.findNavController(v).navigate(R.id.action_managerProfileFragment_to_managerEditProfileFragment));
         
         binding.rowChangePassword.getRoot().setOnClickListener(v -> 
             Navigation.findNavController(v).navigate(R.id.action_managerProfileFragment_to_managerChangePasswordFragment));
 
         binding.rowLanguage.getRoot().setOnClickListener(v -> showLanguagePicker());
         binding.rowThemes.getRoot().setOnClickListener(v -> showThemePickerBottomSheet());
-        binding.rowHelpSupport.getRoot().setOnClickListener(v -> 
-            Navigation.findNavController(v).navigate(R.id.action_managerProfileFragment_to_managerHelpCenterFragment)
-        );
-        binding.rowAboutApp.getRoot().setOnClickListener(v -> 
-            Navigation.findNavController(v).navigate(R.id.action_managerProfileFragment_to_managerAboutFragment)
-        );
         binding.rowDarkMode.switchRow.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (buttonView.isPressed()) DarkModeAnimationHelper.startCloseCurtainAnimation(requireActivity(), isChecked);
         });
@@ -157,7 +149,16 @@ public class ManagerProfileFragment extends Fragment {
         viewModel.getUserAccount().observe(getViewLifecycleOwner(), user -> {
             if (user != null && user.getProfile() != null) {
                 updateUI(user);
+                viewModel.loadBusinessSummary(); // Tải lại summary khi có companyId
             }
+        });
+
+        viewModel.getTotalEmployees().observe(getViewLifecycleOwner(), count -> {
+            binding.tvTotalEmployees.setText(String.valueOf(count));
+        });
+
+        viewModel.getPresentEmployees().observe(getViewLifecycleOwner(), count -> {
+            binding.tvPresentStaff.setText(String.valueOf(count));
         });
 
         viewModel.getLogoutSuccess().observe(getViewLifecycleOwner(), success -> {
@@ -180,15 +181,7 @@ public class ManagerProfileFragment extends Fragment {
         binding.tvInviteCode.setText(user.getInvitationCode() != null ? user.getInvitationCode() : "------");
 
         // Cập nhật ảnh đại diện
-        if (profile.getAvatarUrl() != null && !profile.getAvatarUrl().isEmpty()) {
-            com.bumptech.glide.Glide.with(this)
-                    .load(profile.getAvatarUrl())
-                    .placeholder(R.drawable.ic_avatar)
-                    .error(R.drawable.ic_avatar)
-                    .into(binding.ivAvatar);
-        } else {
-            binding.ivAvatar.setImageResource(R.drawable.ic_avatar);
-        }
+        com.example.attendanceapp.core.utils.AvatarLoader.loadAvatar(requireContext(), profile.getAvatarUrl(), profile.getFullName(), binding.ivAvatar);
     }
 
     private void showThemePickerBottomSheet() {

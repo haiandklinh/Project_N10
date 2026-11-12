@@ -89,16 +89,11 @@ public class EmployeeProfileFragment extends Fragment {
     private void setupListeners() {
         //binding.rowShiftHistory.getRoot().setOnClickListener(v -> Navigation.findNavController(v).navigate(R.id.action_employeeProfileFragment_to_employeeHistoryFragment));
         binding.rowEditProfile.getRoot().setOnClickListener(v -> Navigation.findNavController(v).navigate(R.id.action_employeeProfileFragment_to_employeeEditProfileFragment));
+        binding.ivAvatar.setOnClickListener(v -> Navigation.findNavController(v).navigate(R.id.action_employeeProfileFragment_to_employeeEditProfileFragment));
         binding.rowChangePassword.getRoot().setOnClickListener(v -> Navigation.findNavController(v).navigate(R.id.action_employeeProfileFragment_to_employeeChangePasswordFragment));
 
         binding.rowLanguage.getRoot().setOnClickListener(v -> showLanguagePicker());
         binding.rowThemes.getRoot().setOnClickListener(v -> showThemePickerBottomSheet());
-        binding.rowHelpSupport.getRoot().setOnClickListener(v -> 
-            Navigation.findNavController(v).navigate(R.id.action_employeeProfileFragment_to_employeeHelpCenterFragment)
-        );
-        binding.rowAboutApp.getRoot().setOnClickListener(v -> 
-            Navigation.findNavController(v).navigate(R.id.action_employeeProfileFragment_to_employeeAboutFragment)
-        );
         binding.rowDarkMode.switchRow.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (buttonView.isPressed()) DarkModeAnimationHelper.startCloseCurtainAnimation(requireActivity(), isChecked);
         });
@@ -130,15 +125,7 @@ public class EmployeeProfileFragment extends Fragment {
         binding.tvUserPosition.setText(profile.getCompanyName() != null ? profile.getCompanyName() : getString(R.string.profile_user_position));
 
         // Cập nhật ảnh đại diện
-        if (profile.getAvatarUrl() != null && !profile.getAvatarUrl().isEmpty()) {
-            com.bumptech.glide.Glide.with(this)
-                    .load(profile.getAvatarUrl())
-                    .placeholder(R.drawable.ic_avatar)
-                    .error(R.drawable.ic_avatar)
-                    .into(binding.ivAvatar);
-        } else {
-            binding.ivAvatar.setImageResource(R.drawable.ic_avatar);
-        }
+        com.example.attendanceapp.core.utils.AvatarLoader.loadAvatar(requireContext(), profile.getAvatarUrl(), profile.getFullName(), binding.ivAvatar);
     }
 
     private void showThemePickerBottomSheet() {

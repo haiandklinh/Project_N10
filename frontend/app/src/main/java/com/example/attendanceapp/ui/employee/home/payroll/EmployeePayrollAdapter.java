@@ -12,9 +12,11 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.attendanceapp.R;
-import com.example.attendanceapp.databinding.ItemPayrollHistoryBinding;
 import com.example.attendanceapp.core.utils.ColorUtil;
+import com.example.attendanceapp.data.dto.response.staff.StaffPayrollResponse;
+import com.example.attendanceapp.databinding.ItemPayrollHistoryBinding;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class EmployeePayrollAdapter extends RecyclerView.Adapter<EmployeePayrollAdapter.ViewHolder> {
@@ -25,13 +27,19 @@ public class EmployeePayrollAdapter extends RecyclerView.Adapter<EmployeePayroll
         private String bonusText;
         private String amountText;
         private boolean isPaid;
+        private StaffPayrollResponse rawResponse;
 
-        public PayrollItem(String month, String workDays, String bonusText, String amountText, boolean isPaid) {
+        public PayrollItem(String month, String workDays, String bonusText, String amountText, boolean isPaid, StaffPayrollResponse rawResponse) {
             this.month = month;
             this.workDays = workDays;
             this.bonusText = bonusText;
             this.amountText = amountText;
             this.isPaid = isPaid;
+            this.rawResponse = rawResponse;
+        }
+
+        public PayrollItem(String month, String workDays, String bonusText, String amountText, boolean isPaid) {
+            this(month, workDays, bonusText, amountText, isPaid, null);
         }
 
         public String getMonth() { return month; }
@@ -39,12 +47,21 @@ public class EmployeePayrollAdapter extends RecyclerView.Adapter<EmployeePayroll
         public String getBonusText() { return bonusText; }
         public String getAmountText() { return amountText; }
         public boolean isPaid() { return isPaid; }
+        public StaffPayrollResponse getRawResponse() { return rawResponse; }
     }
 
     private final List<PayrollItem> items;
 
     public EmployeePayrollAdapter(List<PayrollItem> items) {
-        this.items = items;
+        this.items = items != null ? new ArrayList<>(items) : new ArrayList<>();
+    }
+
+    public void updateData(List<PayrollItem> newItems) {
+        this.items.clear();
+        if (newItems != null) {
+            this.items.addAll(newItems);
+        }
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -79,7 +96,6 @@ public class EmployeePayrollAdapter extends RecyclerView.Adapter<EmployeePayroll
             );
             holder.binding.chipStatus.setText("Đã thanh toán");
 
-            // Dùng setChipBackgroundColor + ColorStateList.valueOf
             holder.binding.chipStatus.setChipBackgroundColor(
                     ColorStateList.valueOf(ColorUtil.getThemeColor(holder.binding.chipStatus, R.attr.colorAttendancePresentContainer))
             );
@@ -92,7 +108,6 @@ public class EmployeePayrollAdapter extends RecyclerView.Adapter<EmployeePayroll
             );
             holder.binding.chipStatus.setText("Chờ xử lý");
 
-            // Dùng setChipBackgroundColor + ColorStateList.valueOf
             holder.binding.chipStatus.setChipBackgroundColor(
                     ColorStateList.valueOf(ColorUtil.getThemeColor(holder.binding.chipStatus, R.attr.colorAttendanceLateContainer))
             );
@@ -107,6 +122,9 @@ public class EmployeePayrollAdapter extends RecyclerView.Adapter<EmployeePayroll
                 Bundle bundle = new Bundle();
                 bundle.putBoolean("isPaid", item.isPaid());
                 bundle.putString("month", item.getMonth());
+                if (item.getRawResponse() != null) {
+                    bundle.putSerializable("payroll_data", item.getRawResponse());
+                }
 
                 Navigation.findNavController(v)
                         .navigate(R.id.action_employeePayrollFragment_to_employeePayrollDetailFragment, bundle);

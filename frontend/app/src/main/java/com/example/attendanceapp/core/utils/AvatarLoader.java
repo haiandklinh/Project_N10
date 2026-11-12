@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.attendanceapp.R;
+import com.example.attendanceapp.data.local.StaffAvatarCache;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -29,10 +30,18 @@ public final class AvatarLoader {
     private AvatarLoader() {}
 
     public static void loadAvatar(@Nullable Context context, @Nullable String avatarUrl, @Nullable ImageView imageView) {
-        loadAvatar(context, avatarUrl, imageView, R.drawable.ic_avatar);
+        loadAvatar(context, avatarUrl, null, imageView, R.drawable.ic_avatar);
     }
 
     public static void loadAvatar(@Nullable Context context, @Nullable String avatarUrl, @Nullable ImageView imageView, int placeholderResId) {
+        loadAvatar(context, avatarUrl, null, imageView, placeholderResId);
+    }
+
+    public static void loadAvatar(@Nullable Context context, @Nullable String avatarUrl, @Nullable String staffName, @Nullable ImageView imageView) {
+        loadAvatar(context, avatarUrl, staffName, imageView, R.drawable.ic_avatar);
+    }
+
+    public static void loadAvatar(@Nullable Context context, @Nullable String avatarUrl, @Nullable String staffName, @Nullable ImageView imageView, int placeholderResId) {
         if (imageView == null) return;
         if (context == null) {
             context = imageView.getContext();
@@ -45,11 +54,24 @@ public final class AvatarLoader {
         if (avatarUrl == null || avatarUrl.trim().isEmpty()
                 || "null".equalsIgnoreCase(avatarUrl.trim())
                 || "none".equalsIgnoreCase(avatarUrl.trim())) {
-            imageView.setImageResource(placeholderResId);
-            return;
+            // Tra cứu từ StaffAvatarCache theo Tên nhân viên hoặc avatar mới nhất
+            String cached = StaffAvatarCache.getEffectiveAvatar(context, null, staffName, null);
+            if (cached != null && !cached.trim().isEmpty()
+                    && !"null".equalsIgnoreCase(cached.trim())
+                    && !"none".equalsIgnoreCase(cached.trim())) {
+                avatarUrl = cached;
+            } else {
+                imageView.setImageResource(placeholderResId);
+                return;
+            }
         }
 
         String trimmed = avatarUrl.trim();
+
+        // Tự động lưu cache theo Tên nhân viên để các màn hình khác truy xuất
+        if (staffName != null && !staffName.trim().isEmpty()) {
+            StaffAvatarCache.saveAvatar(context, staffName, null, trimmed);
+        }
 
         // 1. Base64 Image (thường trả về trong notification content của API)
         if (trimmed.startsWith("data:image") || (!trimmed.startsWith("http") && !trimmed.startsWith("file") && !trimmed.startsWith("content") && trimmed.length() > 150)) {

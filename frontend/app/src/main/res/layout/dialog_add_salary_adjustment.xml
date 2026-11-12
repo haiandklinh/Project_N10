@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="@dimen/spacing_l">
+
+    <RadioGroup
+        android:id="@+id/rg_adjustment_type"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginBottom="@dimen/spacing_m">
+
+        <RadioButton
+            android:id="@+id/rb_bonus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/spacing_l"
+            android:checked="true"
+            android:text="Khen thưởng (+)" />
+
+        <RadioButton
+            android:id="@+id/rb_deduction"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Khấu trừ (-)" />
+    </RadioGroup>
+
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/AppTextInputLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/spacing_m"
+        android:hint="Số tiền (VNĐ)">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/et_adjustment_amount"
+            style="@style/AppTextInputEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/AppTextInputLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/spacing_m"
+        android:hint="Lý do">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/et_adjustment_reason"
+            style="@style/AppTextInputEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/AppTextInputLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Ghi chú thêm (tùy chọn)">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/et_adjustment_note"
+            style="@style/AppTextInputEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+</LinearLayout>

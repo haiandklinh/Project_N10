@@ -38,7 +38,7 @@ public class StaffWorkScheduleResponse {
         @SerializedName(value = "id_work_schedule", alternate = {"id", "workScheduleId", "schedule_id"})
         private String workScheduleId;
 
-        @SerializedName(value = "id_shift", alternate = {"idShift", "shift_id", "shiftId", "id_work_shift", "work_shift_id"})
+        @SerializedName(value = "id_work_shift", alternate = {"id_shift", "idShift", "shift_id", "shiftId", "work_shift_id"})
         private String shiftId;
 
         @SerializedName(value = "name_shift", alternate = {"name", "shiftName", "shift_name", "title"})
