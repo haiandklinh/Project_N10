@@ -801,11 +801,6 @@
           <theme>@style/Theme.AttendanceApp</theme>
         </config>
       </layout>
-      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/test_ui_calendar.xml">
-        <config>
-          <theme>@style/Theme.AttendanceApp</theme>
-        </config>
-      </layout>
       <layout url="file://$PROJECT_DIR$/app/src/main/res/menu/menu_bottom_manager.xml">
         <config>
           <theme>@style/Theme.AttendanceApp</theme>
@@ -842,15 +837,7 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f266c859-d2e1-495b-9007-94bd9ef85a91" name="Changes" comment="vt">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/data/repository/ManagerRepositoryImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/data/repository/ManagerRepositoryImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/data/repository/StaffRepositoryImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/data/repository/StaffRepositoryImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/domain/model/ManagerEmployeeItem.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/domain/model/ManagerEmployeeItem.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/employee/home/payroll/EmployeePayrollFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/employee/home/payroll/EmployeePayrollFragment.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/payroll/ManagerPayrollAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/payroll/ManagerPayrollAdapter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/payroll/ManagerPayrollFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/payroll/ManagerPayrollFragment.java" afterDir="false" />
-    </list>
+    <list default="true" id="f266c859-d2e1-495b-9007-94bd9ef85a91" name="Changes" comment="Merge remote-tracking branch 'origin/frontend-test' into frontend-test&#10;&#10;# Conflicts:&#10;#&#9;frontend/.idea/workspace.xml&#10;#&#9;frontend/app/src/main/java/com/example/attendanceapp/core/utils/CloudImageUploader.java&#10;#&#9;frontend/app/src/main/java/com/example/attendanceapp/data/local/StaffAvatarCache.java&#10;#&#9;frontend/app/src/main/java/com/example/attendanceapp/data/repository/ManagerRepositoryImpl.java&#10;#&#9;frontend/app/src/main/java/com/example/attendanceapp/data/repository/StaffRepositoryImpl.java" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
