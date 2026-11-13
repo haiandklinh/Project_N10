@@ -1,6 +1,7 @@
 from datetime import datetime
+from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.config import settings
@@ -11,6 +12,11 @@ from models.notification import Notification
 from models.staff import Staff
 from models.work_schedule import WorkSchedule
 from models.work_shift import WorkShift
+from schemas.staff import StaffAdjustmentAttendance
+
+
+class AttendanceAdjustmentScheduleConflictError(Exception):
+    pass
 
 
 class StaffRepository:
@@ -155,6 +161,58 @@ class StaffRepository:
         await self.db.refresh(notification)
         return notification
 
+    async def create_attendance_adjustment_request(
+            self,
+            staff: Staff,
+            id_manager: UUID,
+            request: StaffAdjustmentAttendance
+    ) -> Notification | None:
+        result = await self.db.execute(
+            select(WorkSchedule.id)
+            .join(WorkShift, WorkSchedule.id_work_shift == WorkShift.id)
+            .where(
+                WorkSchedule.id_work_shift == request.id_work_shift,
+                WorkSchedule.id_staff == staff.id,
+                WorkSchedule.work_day == request.work_day,
+                WorkShift.id_manager == id_manager
+            )
+            .limit(2)
+        )
+        schedule_ids = result.scalars().all()
+        if not schedule_ids:
+            return None
+        if len(schedule_ids) > 1:
+            raise AttendanceAdjustmentScheduleConflictError
+
+        content = {
+            **request.model_dump(mode="json"),
+            "id_work_schedule": str(schedule_ids[0]),
+            "name_staff": staff.full_name,
+        }
+        title = "Yêu cầu điều chỉnh chấm công"
+        created_at = datetime.now()
+        # Manager's notification list reads request types.
+        adjustment_request = Notification(
+            id_staff=staff.id,
+            id_manager=id_manager,
+            title=title,
+            content=content,
+            created_at=created_at,
+            notification_type=settings.ATTENDANCE_ADJUSTMENT_REQUEST
+        )
+        notification = Notification(
+            id_staff=staff.id,
+            id_manager=id_manager,
+            title=title,
+            content={**content, "recipient": "manager"},
+            created_at=created_at,
+            notification_type=settings.ATTENDANCE_ADJUSTMENT_RESPONSE
+        )
+        self.db.add_all([adjustment_request, notification])
+        await self.db.commit()
+        await self.db.refresh(notification)
+        return notification
+
     async def create_notification_request_join(self, id_staff, manager_id, fullname, avatar):
         content = {
             "name_staff": fullname,
@@ -182,7 +240,7 @@ class StaffRepository:
 
     async def get_notification(self, id_manager, id_staff):
         result = await self.db.execute(
-            select(Notification.notification_type)
+            select(Notification)
             .where(
                 Notification.id_manager == id_manager,
                 Notification.id_staff == id_staff,
@@ -191,7 +249,11 @@ class StaffRepository:
                     settings.CHANGE_LEAVE_RESPONSE,
                     settings.CHANGE_WORK_SHIFT_RESPONSE,
                     settings.ATTENDANCE_ADJUSTMENT_RESPONSE
-                ])
+                ]),
+                or_(
+                    Notification.notification_type != settings.ATTENDANCE_ADJUSTMENT_RESPONSE,
+                    Notification.content["recipient"].as_string().is_distinct_from("manager")
+                )
             )
         )
 

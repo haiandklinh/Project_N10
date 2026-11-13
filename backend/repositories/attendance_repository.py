@@ -54,14 +54,13 @@ class AttendanceRepository :
         if attendance_record.check_out_time is not None:
             raise HTTPException(status_code=400, detail="Bạn đã check-out cho ca làm việc này rồi.")
 
-        if attendance_record.check_in_time is None :
-            attendance_record.status = 'NOT CHECKED IN'
-
         attendance_record.check_out_time = check_out_time
         attendance_record.check_out_latitude = latitude_check_out
         attendance_record.check_out_longitude = longitude_check_out
         attendance_record.status = "OK"
 
+        if attendance_record.check_in_time is None :
+            attendance_record.status = 'NOT CHECKED IN'
         await self.db.commit()
 
         await self.db.refresh(attendance_record)

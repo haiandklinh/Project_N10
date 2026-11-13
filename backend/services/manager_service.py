@@ -1,14 +1,18 @@
 import secrets
 from datetime import datetime
 
-from fastapi import HTTPException
+from fastapi import HTTPException, WebSocketDisconnect
 
 from app.websocket.staff import websocket_staff
 from core.redis_custom import redis_client
-from repositories.manager_repository import ManagerRepository
+from repositories.manager_repository import (
+    AttendanceAdjustmentConflictError,
+    AttendanceAdjustmentNotFoundError,
+    ManagerRepository,
+)
 from schemas.manager import CreateProfileRequest, ProfileResponse, UpdateProfileRequest, NotificationResponse, \
     ListNotificationResponse, InvitationCodeResponse, ShiftChangeRequest, LeaveDayRequest, JoinRequest, \
-    ListStaffByCompany, StaffByCompany
+    ListStaffByCompany, StaffByCompany, AttendanceAdjustmentRequest
 
 
 class ManagerService:
@@ -210,7 +214,57 @@ class ManagerService:
             }
         )
 
-    async def handle_join_request(self,request :JoinRequest, id_account):
+    async def handle_attendance_adjustment_request(
+        self, request: AttendanceAdjustmentRequest, id_account
+    ) -> None:
+        approved = getattr(request, "status", None)
+        if not isinstance(approved, bool):
+            raise HTTPException(422, "Cần có status để đồng ý hoặc từ chối yêu cầu điều chỉnh chấm công.")
+
+        manager = await self.repository.get_profile_by_id_account(id_account)
+        if manager is None:
+            raise HTTPException(404, "Not found Manager")
+
+        try:
+            notification = await self.repository.resolve_attendance_adjustment_request(
+                id_manager=manager.id,
+                id_staff=request.id_staff,
+                id_work_shift=request.id_work_shift,
+                work_day=request.work_day,
+                approved=approved,
+                reason=getattr(request, "reason", None),
+            )
+        except AttendanceAdjustmentNotFoundError as exc:
+            raise HTTPException(404, str(exc)) from exc
+        except AttendanceAdjustmentConflictError as exc:
+            raise HTTPException(409, str(exc)) from exc
+
+        content = notification.content
+        try:
+            await websocket_staff.send_to_staff(
+                notification.id_staff,
+                {
+                    "Message": content["message"],
+                    "Type": notification.notification_type,
+                    "id_work_schedule": content["id_work_schedule"],
+                    "id_work_shift": content["id_work_shift"],
+                    "workday": content["work_day"],
+                    "status": content["status"],
+                    "reason": content["reason"],
+                    "created_at": notification.created_at.isoformat(),
+                },
+            )
+        except (WebSocketDisconnect, OSError):
+            # The response is already saved for the staff member to read later.
+            pass
+
+    async def handle_join_request(
+        self, request: JoinRequest | AttendanceAdjustmentRequest, id_account,
+        attendance_adjustment: AttendanceAdjustmentRequest | None = None,
+    ):
+        if attendance_adjustment is not None:
+            return await self.handle_attendance_adjustment_request(attendance_adjustment, id_account)
+
         manager = await self.repository.get_profile_by_id_account(id_account)
         if manager is None :
             raise HTTPException(404,"Not found Manager")

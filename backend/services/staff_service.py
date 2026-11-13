@@ -4,10 +4,10 @@ from fastapi import HTTPException
 
 from app.websocket.manager import websocket_manager
 from core.redis_custom import redis_client
-from repositories.staff_repository import StaffRepository
+from repositories.staff_repository import AttendanceAdjustmentScheduleConflictError, StaffRepository
 from schemas.staff import CreateProfileRequest, ProfileResponse, UpdateProfileRequest, StaffWorkScheduleResponse, \
     ListStaffWorkScheduleResponse, StaffWorkShiftResponse, StaffShiftChangeRequest, StaffLeaveRequest, JoinRequest, \
-    JoinResponse, ListNotificationResponse, NotificationResponse, CompanyResponse, ListCompany
+    JoinResponse, ListNotificationResponse, NotificationResponse, CompanyResponse, ListCompany, StaffAdjustmentAttendance
 
 
 class StaffService:
@@ -142,7 +142,7 @@ class StaffService:
         result = [
             NotificationResponse(
                 send_person=manager.full_name,
-                company_name=manager.company_name,
+                company_name=manager.company,
                 content=notification.content,
                 send_at=notification.created_at,
                 notification_type=notification.notification_type
@@ -303,6 +303,37 @@ class StaffService:
                 "id_work_shift_off": str(work_shift_off.id),
                 "work_day_off": str(request.work_day_off),
                 "reason": request.reason,
+                "type": notification.notification_type
+            }
+        )
+
+    async def request_adjustment_attendance(
+            self,
+            id_manager: str,
+            id_account: UUID,
+            request: StaffAdjustmentAttendance
+    ) -> None:
+        try:
+            manager_id = UUID(id_manager)
+        except ValueError as exc:
+            raise HTTPException(422, "Invalid manager ID") from exc
+
+        staff = await self.get_staff_in_company(id_account, manager_id)
+        try:
+            notification = await self.repository.create_attendance_adjustment_request(staff, manager_id, request)
+        except AttendanceAdjustmentScheduleConflictError as exc:
+            raise HTTPException(409, "Có nhiều lịch làm việc khớp với ca và ngày đã chọn.") from exc
+        if notification is None:
+            raise HTTPException(404, "Work schedule not found")
+
+        content = notification.content.copy()
+        content.pop("recipient")
+        await websocket_manager.send_to_manager(
+            manager_id,
+            {
+                **content,
+                "id_staff": str(staff.id),
+                "avatar_staff": staff.avatar,
                 "type": notification.notification_type
             }
         )

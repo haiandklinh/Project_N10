@@ -1,10 +1,12 @@
-from datetime import datetime
+from datetime import date, datetime
+from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.config import settings
 from models.account import Account
+from models.attendance_record import AttendanceRecord
 from models.manager import Manager
 from models.manager_staff import ManagerStaff
 from models.notification import Notification
@@ -12,6 +14,14 @@ from models.staff import Staff
 from models.work_schedule import WorkSchedule
 from models.work_shift import WorkShift
 import secrets
+
+
+class AttendanceAdjustmentNotFoundError(Exception):
+    pass
+
+
+class AttendanceAdjustmentConflictError(Exception):
+    pass
 
 
 class ManagerRepository:
@@ -205,6 +215,94 @@ class ManagerRepository:
         work_schedule.status = False
         await self.db.commit()
         return True
+
+    async def resolve_attendance_adjustment_request(
+        self,
+        id_manager: UUID,
+        id_staff: UUID,
+        id_work_shift: UUID,
+        work_day: date,
+        approved: bool,
+        reason: str | None,
+    ) -> Notification:
+        result = await self.db.execute(
+            select(WorkSchedule.id)
+            .join(WorkShift, WorkSchedule.id_work_shift == WorkShift.id)
+            .where(
+                WorkSchedule.id_staff == id_staff,
+                WorkSchedule.id_work_shift == id_work_shift,
+                WorkSchedule.work_day == work_day,
+                WorkShift.id_manager == id_manager,
+            )
+        )
+        schedule_ids = [str(schedule_id) for schedule_id in result.scalars()]
+        result = await self.db.execute(
+            select(Notification)
+            .where(
+                Notification.id_manager == id_manager,
+                Notification.id_staff == id_staff,
+                Notification.notification_type == settings.ATTENDANCE_ADJUSTMENT_REQUEST,
+                Notification.status == "active",
+                Notification.content["id_work_schedule"].as_string().in_(schedule_ids),
+                Notification.content["work_day"].as_string() == work_day.isoformat(),
+            )
+            .order_by(Notification.id)
+            .limit(2)
+            .with_for_update()
+        )
+        adjustments = result.scalars().all()
+        if not adjustments:
+            raise AttendanceAdjustmentNotFoundError("Không tìm thấy yêu cầu điều chỉnh chấm công đang chờ xử lý.")
+        if len(adjustments) > 1:
+            raise AttendanceAdjustmentConflictError("Có nhiều yêu cầu điều chỉnh đang chờ cho ca này.")
+
+        adjustment = adjustments[0]
+        id_work_schedule = UUID(adjustment.content["id_work_schedule"])
+        if approved:
+            result = await self.db.execute(
+                select(AttendanceRecord)
+                .join(WorkSchedule, AttendanceRecord.id_work_schedule == WorkSchedule.id)
+                .join(WorkShift, WorkSchedule.id_work_shift == WorkShift.id)
+                .where(
+                    WorkSchedule.id == id_work_schedule,
+                    WorkSchedule.id_staff == id_staff,
+                    WorkSchedule.id_work_shift == id_work_shift,
+                    WorkSchedule.work_day == work_day,
+                    WorkShift.id_manager == id_manager,
+                )
+                .limit(2)
+            )
+            records = result.scalars().all()
+            if not records:
+                raise AttendanceAdjustmentNotFoundError("Không tìm thấy bản ghi chấm công của yêu cầu.")
+            if len(records) > 1:
+                raise AttendanceAdjustmentConflictError("Lịch làm việc có nhiều bản ghi chấm công.")
+            records[0].status = "OK"
+
+        adjustment.status = "APPROVED" if approved else "REJECTED"
+        message = (
+            "Yêu cầu điều chỉnh chấm công đã được đồng ý."
+            if approved else "Yêu cầu điều chỉnh chấm công đã bị từ chối."
+        )
+        notification = Notification(
+            id_staff=adjustment.id_staff,
+            id_manager=id_manager,
+            title="Phản hồi yêu cầu điều chỉnh chấm công",
+            content={
+                "id_work_schedule": str(id_work_schedule),
+                "id_work_shift": str(id_work_shift),
+                "work_day": work_day.isoformat(),
+                "status": approved,
+                "message": message,
+                "reason": reason or "",
+            },
+            created_at=datetime.now(),
+            notification_type=settings.ATTENDANCE_ADJUSTMENT_RESPONSE,
+        )
+        self.db.add(notification)
+        await self.db.commit()
+        await self.db.refresh(notification)
+        return notification
 
     async def add_staff_in_company_by_manager(self, manager_id, id_staff, position):
         new_staff = ManagerStaff(

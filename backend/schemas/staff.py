@@ -73,3 +73,7 @@ class CompanyResponse(BaseSchema) :
 class ListCompany(BaseSchema) :
     data : list[CompanyResponse]
 
+class StaffAdjustmentAttendance(BaseSchema) :
+    id_work_shift : UUID
+    work_day :Date
+    reason : str

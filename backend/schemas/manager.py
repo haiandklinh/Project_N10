@@ -77,3 +77,9 @@ class StaffByCompany(BaseSchema) :
 
 class ListStaffByCompany(BaseSchema) :
     data : list[StaffByCompany]
+
+class AttendanceAdjustmentRequest(BaseSchema):
+    id_work_shift : UUID
+    id_staff :UUID
+    work_day :Date
+    status :bool

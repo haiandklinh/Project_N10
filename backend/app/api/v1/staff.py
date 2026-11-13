@@ -2,7 +2,8 @@ from fastapi import APIRouter, Depends
 
 from app.api.deps import get_current_account, get_staff_service
 from schemas.staff import ProfileResponse, UpdateProfileRequest, ListStaffWorkScheduleResponse, StaffShiftChangeRequest, \
-    StaffLeaveRequest, JoinRequest, JoinResponse, CreateProfileRequest, ListNotificationResponse, ListCompany
+    StaffLeaveRequest, JoinRequest, JoinResponse, CreateProfileRequest, ListNotificationResponse, ListCompany, \
+    StaffAdjustmentAttendance
 
 router = APIRouter(
     prefix="/staffs",
@@ -82,13 +83,18 @@ async def create_leave_request(
 ) :
     return await service.create_leave_request(request , id_account,id_manager)
 
+
+#Gửi yêu cầu điều chỉnh chấm công cho quản lý
+# Bắn realtime thông tin cho quản lý nếu online còn ko thì lưu vào thông báo để lúc cần thì manager đọc
+#Với cái type notification là ATTENDANCE_ADJUSTMENT_RESPONSE
 @router.post('/attendance-adjustment-requests')
 async def request_adjustment_attendance(
     id_manager :str ,
+    request : StaffAdjustmentAttendance ,
     service=Depends(get_staff_service),
     id_account=Depends(get_current_account)
 ) :
-    pass
+    return await service.request_adjustment_attendance(id_manager,id_account,request)
 
 # Lấy danh sách các công ty của nhân viên đang làm
 @router.get("/my-company",response_model=ListCompany)

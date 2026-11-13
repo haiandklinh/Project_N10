@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 
-from app.api.deps import get_account_service
+from app.api.deps import get_account_service, get_current_account
 from schemas.account import CheckPhoneResponse, CheckPhoneRequest, LoginRequest, LoginResponse, SendOTPResponse, \
     SendOTPRequest, VerifyOTPResponse, VerifyOTPRequest, MessageResponse, RegisterRequest, ResetPasswordRequest, \
     RefreshResponse, RefreshRequest
@@ -17,8 +17,6 @@ async def check_phone(request :CheckPhoneRequest ,service =Depends(get_account_s
 @router.post('/login',response_model=LoginResponse)
 async def login(request:LoginRequest, service =Depends(get_account_service)):
     return await service.login(request)
-
-
 @router.post('/register/send-otp',response_model=SendOTPResponse)
 async def send_otp(request: SendOTPRequest,service =Depends(get_account_service)):
     return await service.send_otp(request)
@@ -49,3 +47,5 @@ async def refresh_token(request : RefreshRequest,service = Depends(get_account_s
 @router.post('/logout',response_model=MessageResponse)
 async def logout(request:RefreshRequest , service =Depends(get_account_service)):
     return await service.logout(request)
+
+

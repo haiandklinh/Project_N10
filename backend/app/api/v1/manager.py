@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends
 from app.api.deps import get_manager_service, get_current_account
 from schemas.manager import ProfileResponse, CreateProfileRequest, UpdateProfileRequest, NotificationResponse, \
     ListNotificationResponse, InvitationCodeResponse, ShiftChangeRequest, LeaveDayRequest, JoinRequest, \
-    ListStaffByCompany
+    ListStaffByCompany, AttendanceAdjustmentRequest
 
 router = APIRouter(
     prefix="/managers",
@@ -79,6 +79,19 @@ async def handle_join_request(
     id_account=Depends(get_current_account)
 ):
     return await service.handle_join_request(request,id_account)
+
+
+# Quản lý xử lý yêu cầu điều chỉnh chấm công
+#Nếu từ chối thì gửi thông báo về realtime ( nếu đang online ) , ngoài ra thì cũng lưu vào notification để lúc nhân viên xem thông báo thì biết ( ATTENDANCE_ADJUSTMENT_RESPONSE=ATTENDANCE_ADJUSTMENT_RESPONSE)
+#Nếu đồng ý thì chỉ cần đưa cái status trong attendance_record  về OK và cũng bắn realtime thông báo cho nhân viên nếu đang onl , lưu vào notification để nhân viên xem lúc sau
+@router.patch("/attendance-adjustment-requests")
+async def handle_join_request(
+    request : AttendanceAdjustmentRequest ,
+    service=Depends(get_manager_service),
+    id_account=Depends(get_current_account)
+):
+    return await service.handle_join_request(request,id_account ,request)
+
 
 #Lấy danh sách nhân viên công ty
 @router.get("/staffs",response_model=ListStaffByCompany)

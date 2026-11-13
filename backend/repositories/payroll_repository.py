@@ -71,14 +71,15 @@ class PayrollRepository:
         return result.scalar_one_or_none()
 
     async def get_shifts_since(self, id_manager, id_staff, since, until):
-        """Ca đã check-in và check-out đầy đủ, check_out_time trong (since, until].
+        """Ca có trạng thái OK, đủ check-in và check-out, check_out_time trong (since, until].
         since = None nghĩa là tính từ đầu."""
         conditions = [
             WorkSchedule.id_staff == id_staff,
             WorkShift.id_manager == id_manager,
-            AttendanceRecord.check_in_time.is_not(None),
-            AttendanceRecord.check_out_time.is_not(None),
-            AttendanceRecord.check_out_time <= until
+            AttendanceRecord.status == "OK",
+            # AttendanceRecord.check_in_time.is_not(None),
+            # AttendanceRecord.check_out_time.is_not(None),
+            # AttendanceRecord.check_out_time <= until
         ]
         if since is not None:
             conditions.append(AttendanceRecord.check_out_time > since)
