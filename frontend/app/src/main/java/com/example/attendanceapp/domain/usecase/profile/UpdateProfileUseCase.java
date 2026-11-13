@@ -65,7 +65,7 @@ public class UpdateProfileUseCase {
                     if (avatarUri != null && !avatarUri.toString().trim().isEmpty()) {
                         // Người dùng có chọn ảnh mới -> upload lên Cloud lấy URL ngắn
                         String cloudUrl = CloudImageUploader.uploadAvatarSync(context, avatarUri.toString());
-                        avatarStr = (cloudUrl != null && !cloudUrl.isEmpty()) ? cloudUrl : avatarUri.toString();
+                        avatarStr = (cloudUrl != null) ? cloudUrl : "";
                     } else if (optUser.isPresent() && optUser.get().getProfile() != null) {
                         // Người dùng không đổi avatar -> giữ nguyên avatar đã có, không được ghi đè rỗng
                         avatarStr = optUser.get().getProfile().getAvatarUrl();
@@ -99,7 +99,7 @@ public class UpdateProfileUseCase {
 
             // Upload ảnh lên Cloud lấy URL ngắn (dưới 50 ký tự, phù hợp cột VARCHAR(255) trong CSDL)
             String cloudUrl = CloudImageUploader.uploadAvatarSync(context, avatarUri.toString());
-            String finalAvatar = (cloudUrl != null && !cloudUrl.isEmpty()) ? cloudUrl : avatarUri.toString();
+            String finalAvatar = (cloudUrl != null) ? cloudUrl : "";
 
             return sessionRepository.getCurrentUser()
                     .switchIfEmpty(Single.error(new IllegalStateException("Không tìm thấy thông tin tài khoản")))

@@ -12,18 +12,28 @@ import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 
 import com.example.attendanceapp.R;
-import com.example.attendanceapp.ui.main.auth.AuthActivity;
+import com.example.attendanceapp.core.notification.NotificationRolePolicy;
 import com.example.attendanceapp.domain.model.Notification;
 import com.example.attendanceapp.domain.model.NotificationType;
+import com.example.attendanceapp.domain.repository.NotificationRepository;
+import com.example.attendanceapp.ui.main.auth.AuthActivity;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import javax.inject.Inject;
+
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
     private static final String TAG = "FCM_Service";
     private static final String CHANNEL_ID = "otp_channel";
+
+    @Inject
+    NotificationRepository notificationRepository;
 
     @Override
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
@@ -61,7 +71,32 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         }
 
         if (title != null || message != null) {
-            showNotification(title != null ? title : "Thông báo mới", message != null ? message : "");
+            String otp = remoteMessage.getData().get("otp");
+            if (otp != null && !otp.trim().isEmpty()) {
+                showNotification(title != null ? title : "Mã xác thực OTP",
+                        message != null ? message : "");
+                return;
+            }
+
+            String rawType = remoteMessage.getData().get("type");
+            if (rawType == null) rawType = remoteMessage.getData().get("notification_type");
+            if (rawType == null) rawType = remoteMessage.getData().get("Type");
+
+            NotificationType type = NotificationRolePolicy.mapNotificationType(rawType);
+            Notification notification = new Notification(
+                    UUID.randomUUID().toString(),
+                    title != null ? title : "Thông báo mới",
+                    message != null ? message : "",
+                    LocalDateTime.now(),
+                    type,
+                    false
+            );
+
+            if (notificationRepository != null) {
+                notificationRepository.postNotification(notification);
+            } else {
+                showNotification(notification.getTitle(), notification.getMessage());
+            }
         }
     }
 

@@ -77,21 +77,22 @@ public final class AvatarLoader {
                     cleanBase64 = cleanBase64.substring(cleanBase64.indexOf(",") + 1);
                 }
                 byte[] decodedBytes = Base64.decode(cleanBase64, Base64.DEFAULT);
+                if (decodedBytes != null && decodedBytes.length > 0) {
+                    // Caching local file để các màn hình khác dùng filename có thể truy xuất nhanh
+                    saveDecodedBytesToCache(context, decodedBytes);
+                    if (staffName != null && !staffName.trim().isEmpty()) {
+                        StaffAvatarCache.saveAvatar(context, staffName, null, trimmed);
+                    }
 
-                // Caching local file để các màn hình khác dùng filename có thể truy xuất nhanh
-                saveDecodedBytesToCache(context, decodedBytes);
-                if (staffName != null && !staffName.trim().isEmpty()) {
-                    StaffAvatarCache.saveAvatar(context, staffName, null, trimmed);
+                    Glide.with(context)
+                            .asBitmap()
+                            .load(decodedBytes)
+                            .placeholder(placeholderResId)
+                            .error(placeholderResId)
+                            .diskCacheStrategy(DiskCacheStrategy.ALL)
+                            .into(imageView);
+                    return;
                 }
-
-                Glide.with(context)
-                        .asBitmap()
-                        .load(decodedBytes)
-                        .placeholder(placeholderResId)
-                        .error(placeholderResId)
-                        .diskCacheStrategy(DiskCacheStrategy.ALL)
-                        .into(imageView);
-                return;
             } catch (Exception ignored) {}
         }
 

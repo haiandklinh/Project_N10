@@ -18,6 +18,16 @@ public class ForgotPasswordUseCase {
     }
 
     /**
+     * Kiểm tra số điện thoại có tồn tại trên hệ thống trước khi gửi OTP
+     */
+    public Single<Boolean> checkPhoneExists(String phoneNumber) {
+        if (phoneNumber == null || !phoneNumber.matches("^0\\d{9}$")) {
+            return Single.error(new IllegalArgumentException("Số điện thoại không hợp lệ"));
+        }
+        return authRepository.checkPhoneExists(phoneNumber);
+    }
+
+    /**
      * Gửi mã OTP cho luồng Quên mật khẩu (luôn dùng OtpPurpose.FORGOT_PASSWORD)
      */
     public Single<String> sendOtp(String phoneNumber) {

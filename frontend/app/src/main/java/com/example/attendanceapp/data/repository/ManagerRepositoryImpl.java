@@ -68,6 +68,12 @@ public class ManagerRepositoryImpl implements ManagerRepository {
     public Single<UserAccount> getProfile() {
         return api.getManagerProfile()
                 .subscribeOn(Schedulers.io())
+                .map(response -> {
+                    if (!isPlaceholderAvatar(response.getAvatar()) && context != null) {
+                        StaffAvatarCache.saveAvatar(context, response.getFullName(), null, response.getAvatar());
+                    }
+                    return response;
+                })
                 .flatMap(response -> session.saveManagerProfile(response)
                         .doOnSuccess(account -> {
                             appState.saveUserRole(UserRole.MANAGER);
@@ -86,9 +92,8 @@ public class ManagerRepositoryImpl implements ManagerRepository {
         String avatar = request.getAvatar();
         if (avatar != null && !avatar.isEmpty() && context != null) {
             String cloudUrl = CloudImageUploader.uploadAvatarSync(context, avatar);
-            if (cloudUrl != null && !cloudUrl.isEmpty()) {
-                request.setAvatar(cloudUrl);
-            }
+            String finalAvatar = (cloudUrl != null) ? cloudUrl : "";
+            request.setAvatar(finalAvatar);
         }
         return api.createManagerProfile(request)
                 .subscribeOn(Schedulers.io())
@@ -120,12 +125,8 @@ public class ManagerRepositoryImpl implements ManagerRepository {
         String avatar = request.getAvatar();
         if (!isPlaceholderAvatar(avatar) && context != null) {
             String cloudUrl = CloudImageUploader.uploadAvatarSync(context, avatar);
-            if (!isPlaceholderAvatar(cloudUrl)) {
-                request.setAvatar(cloudUrl);
-            }
-        }
-        if (!isPlaceholderAvatar(request.getAvatar()) && context != null) {
-            StaffAvatarCache.saveAvatar(context, request.getFullName(), null, request.getAvatar());
+            String finalAvatar = (cloudUrl != null) ? cloudUrl : "";
+            request.setAvatar(finalAvatar);
         }
         return api.updateManagerProfile(request)
                 .subscribeOn(Schedulers.io())

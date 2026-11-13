@@ -36,11 +36,15 @@ import com.example.attendanceapp.core.utils.IntervalTicker;
 import com.example.attendanceapp.core.utils.LocationUtils;
 import com.example.attendanceapp.data.dto.request.attendance.CheckInRequest;
 import com.example.attendanceapp.data.dto.request.attendance.CheckOutRequest;
+import com.example.attendanceapp.data.dto.response.attendance.AttendanceRecordItemResponse;
+import com.example.attendanceapp.data.dto.response.attendance.AttendanceRecordPageResponse;
 import com.example.attendanceapp.data.dto.response.staff.StaffWorkScheduleResponse;
 import com.example.attendanceapp.data.local.pref.SharedPreferenceApp;
 import com.example.attendanceapp.databinding.FragmentEmployeeCheckInBinding;
 import com.example.attendanceapp.domain.model.CheckState;
+import com.example.attendanceapp.domain.model.ShiftOption;
 import com.example.attendanceapp.domain.repository.AttendanceRepository;
+import com.example.attendanceapp.domain.repository.SessionRepository;
 import com.example.attendanceapp.domain.repository.ShiftRepository;
 import com.example.attendanceapp.domain.usecase.schedule.GetScheduleByDateUseCase;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -71,6 +75,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -79,6 +84,7 @@ import javax.inject.Inject;
 
 import dagger.hilt.android.AndroidEntryPoint;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
@@ -118,6 +124,9 @@ public class EmployeeCheckInFragment extends Fragment {
 
     @Inject
     ShiftRepository shiftRepository;
+
+    @Inject
+    SessionRepository sessionRepository;
 
     private final CompositeDisposable disposables = new CompositeDisposable();
 
@@ -643,22 +652,69 @@ public class EmployeeCheckInFragment extends Fragment {
     // 4. LẤY DỮ LIỆU CA LÀM VIỆC HÔM NAY
     // =====================================================================
 
+    private static class CheckInCombinedData {
+        final List<StaffWorkScheduleResponse> schedules;
+        final List<ShiftOption> shiftOptions;
+        final AttendanceRecordPageResponse attendancePage;
+
+        CheckInCombinedData(
+                List<StaffWorkScheduleResponse> schedules,
+                List<ShiftOption> shiftOptions,
+                AttendanceRecordPageResponse attendancePage
+        ) {
+            this.schedules = schedules;
+            this.shiftOptions = shiftOptions;
+            this.attendancePage = attendancePage;
+        }
+    }
+
     private void loadTodaySchedule() {
         if (getScheduleByDateUseCase == null) return;
 
         LocalDate today = LocalDate.now();
         String todayStr = today.toString();
 
-        disposables.add(getScheduleByDateUseCase.execute(todayStr)
+        Single<List<StaffWorkScheduleResponse>> scheduleSingle = getScheduleByDateUseCase.execute(todayStr)
+                .onErrorReturnItem(Collections.emptyList());
+
+        Single<List<ShiftOption>> shiftsSingle = (shiftRepository != null)
+                ? shiftRepository.getShifts().onErrorReturnItem(Collections.emptyList())
+                : Single.just(Collections.emptyList());
+
+        Single<AttendanceRecordPageResponse> attendanceSingle = (sessionRepository != null && attendanceRepository != null)
+                ? sessionRepository.getCurrentUser()
+                        .map(user -> {
+                            String mId = (user.getCompanyId() != null && !user.getCompanyId().isEmpty())
+                                    ? user.getCompanyId()
+                                    : (user.getManagerId() != null ? user.getManagerId() : "");
+                            return mId;
+                        })
+                        .defaultIfEmpty("")
+                        .flatMap(managerId -> {
+                            if (managerId.isEmpty()) {
+                                return Single.just(new AttendanceRecordPageResponse());
+                            }
+                            return attendanceRepository.getAttendanceRecords(managerId, todayStr, todayStr, 1, 50)
+                                    .onErrorReturnItem(new AttendanceRecordPageResponse());
+                        })
+                        .onErrorReturnItem(new AttendanceRecordPageResponse())
+                : Single.just(new AttendanceRecordPageResponse());
+
+        disposables.add(Single.zip(scheduleSingle, shiftsSingle, attendanceSingle, CheckInCombinedData::new)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                        schedules -> onScheduleLoaded(schedules, today),
+                        data -> onScheduleLoaded(data.schedules, data.shiftOptions, data.attendancePage, today),
                         throwable -> onScheduleLoadError(throwable.getMessage())
                 ));
     }
 
-    private void onScheduleLoaded(List<StaffWorkScheduleResponse> schedules, LocalDate today) {
+    private void onScheduleLoaded(
+            List<StaffWorkScheduleResponse> schedules,
+            List<ShiftOption> shiftOptions,
+            AttendanceRecordPageResponse attendancePage,
+            LocalDate today
+    ) {
         StaffWorkScheduleResponse.ShiftInfo matchedShift = null;
 
         if (schedules != null) {
@@ -702,9 +758,39 @@ public class EmployeeCheckInFragment extends Fragment {
             currentWorkScheduleId = matchedShift.getWorkScheduleId();
             currentShiftName = matchedShift.getShiftName();
 
+            // Khớp với danh sách ca làm việc thật (ShiftOption) từ API / Room
+            ShiftOption matchedOpt = null;
+            if (shiftOptions != null) {
+                for (ShiftOption opt : shiftOptions) {
+                    if (opt == null) continue;
+                    if (matchedShift.getShiftId() != null && !matchedShift.getShiftId().trim().isEmpty()
+                            && matchedShift.getShiftId().trim().equalsIgnoreCase(opt.getId())) {
+                        matchedOpt = opt;
+                        break;
+                    }
+                    if (matchedShift.getShiftName() != null && !matchedShift.getShiftName().trim().isEmpty()
+                            && opt.getTitle() != null && matchedShift.getShiftName().trim().equalsIgnoreCase(opt.getTitle().trim())) {
+                        matchedOpt = opt;
+                        break;
+                    }
+                }
+            }
+
+            if (matchedOpt != null && (matchedShift.getShiftId() == null || matchedShift.getShiftId().trim().isEmpty())) {
+                matchedShift.setShiftId(matchedOpt.getId());
+            }
+
             // Xác định tọa độ ca
             Double lat = matchedShift.getLatitude();
             Double lng = matchedShift.getLongitude();
+
+            if ((lat == null || lat == 0.0 || lng == null || lng == 0.0) && matchedOpt != null) {
+                if (matchedOpt.getLatitude() != null && matchedOpt.getLongitude() != null
+                        && (matchedOpt.getLatitude() != 0.0 || matchedOpt.getLongitude() != 0.0)) {
+                    lat = matchedOpt.getLatitude();
+                    lng = matchedOpt.getLongitude();
+                }
+            }
 
             if (lat == null || lat == 0.0 || lng == null || lng == 0.0) {
                 if (sharedPreferenceApp != null && currentShiftName != null) {
@@ -733,12 +819,19 @@ public class EmployeeCheckInFragment extends Fragment {
                 currentShiftLng = null;
             }
 
-            // Xác định bán kính
+            // Xác định bán kính từ ca thật (Backend API)
             Double radius = matchedShift.getCheckInRadius();
+            if ((radius == null || radius <= 0) && matchedOpt != null) {
+                if (matchedOpt.getCheckInRadius() != null && matchedOpt.getCheckInRadius() > 0) {
+                    radius = matchedOpt.getCheckInRadius();
+                }
+            }
+
             if (radius != null && radius > 0) {
                 currentShiftRadius = radius.floatValue();
                 if (sharedPreferenceApp != null && currentShiftName != null) {
                     sharedPreferenceApp.saveShiftLocation(currentShiftName, lat != null ? lat : 0.0, lng != null ? lng : 0.0, currentShiftRadius);
+                    sharedPreferenceApp.saveLatestShiftLocation(lat != null ? lat : 0.0, lng != null ? lng : 0.0, currentShiftRadius, "");
                 }
             } else {
                 currentShiftRadius = getTargetRadiusMeters();
@@ -751,6 +844,7 @@ public class EmployeeCheckInFragment extends Fragment {
                                     currentShiftRadius = detail.getCheckInRadius().floatValue();
                                     if (sharedPreferenceApp != null && currentShiftName != null) {
                                         sharedPreferenceApp.saveShiftLocation(currentShiftName, currentShiftLat != null ? currentShiftLat : 0.0, currentShiftLng != null ? currentShiftLng : 0.0, currentShiftRadius);
+                                        sharedPreferenceApp.saveLatestShiftLocation(currentShiftLat != null ? currentShiftLat : 0.0, currentShiftLng != null ? currentShiftLng : 0.0, currentShiftRadius, "");
                                     }
                                     renderShiftRadiusOnMap();
                                     checkAndRenderConditions();
@@ -759,10 +853,11 @@ public class EmployeeCheckInFragment extends Fragment {
                 }
             }
 
-            // Khôi phục trạng thái điểm danh trước đó từ SharedPreferences
+            // Khôi phục trạng thái điểm danh hôm nay từ SharedPreferences
+            String todayStr = today.toString();
+            CheckState savedState = null;
             if (sharedPreferenceApp != null) {
-                String todayStr = today.toString();
-                CheckState savedState = sharedPreferenceApp.getShiftAttendanceState(currentWorkScheduleId, todayStr, currentShiftName);
+                savedState = sharedPreferenceApp.getShiftAttendanceState(currentWorkScheduleId, todayStr, currentShiftName);
                 if (savedState != null) {
                     currentState = savedState;
                 }
@@ -773,6 +868,43 @@ public class EmployeeCheckInFragment extends Fragment {
                 String checkOutTimeStr = sharedPreferenceApp.getShiftCheckOutTime(currentWorkScheduleId, todayStr, currentShiftName);
                 if (binding != null && checkOutTimeStr != null && !checkOutTimeStr.isEmpty()) {
                     binding.tvSummaryCheckOutTime.setText(checkOutTimeStr);
+                }
+            }
+
+            // Nếu SharedPreferences chưa có (ví dụ vừa xóa app tải lại), khôi phục từ backend API attendance
+            if (savedState == null && attendancePage != null && attendancePage.getData() != null) {
+                for (AttendanceRecordItemResponse rec : attendancePage.getData()) {
+                    if (rec == null) continue;
+                    boolean matchShift = (currentShiftName != null && currentShiftName.equalsIgnoreCase(rec.getShiftName()));
+                    if (matchShift || attendancePage.getData().size() == 1) {
+                        String inTime = rec.getCheckInTimeString();
+                        String outTime = rec.getCheckOutTimeString();
+
+                        LocalTime parsedIn = parseTimeObject(rec.getCheckInTime());
+                        LocalTime parsedOut = parseTimeObject(rec.getCheckOutTime());
+
+                        if (parsedOut != null || (outTime != null && !outTime.isEmpty() && !"null".equalsIgnoreCase(outTime))) {
+                            currentState = CheckState.CHECKED_OUT;
+                        } else if (parsedIn != null || (inTime != null && !inTime.isEmpty() && !"null".equalsIgnoreCase(inTime))) {
+                            currentState = CheckState.CHECKED_IN;
+                        }
+
+                        if (parsedIn != null) {
+                            String formattedIn = parsedIn.format(clockFormatter);
+                            if (binding != null) binding.tvSummaryCheckInTime.setText(formattedIn);
+                            if (sharedPreferenceApp != null && currentShiftName != null) {
+                                sharedPreferenceApp.saveShiftAttendance(currentWorkScheduleId, todayStr, currentShiftName, currentState, formattedIn);
+                            }
+                        }
+                        if (parsedOut != null) {
+                            String formattedOut = parsedOut.format(clockFormatter);
+                            if (binding != null) binding.tvSummaryCheckOutTime.setText(formattedOut);
+                            if (sharedPreferenceApp != null && currentShiftName != null) {
+                                sharedPreferenceApp.saveShiftAttendance(currentWorkScheduleId, todayStr, currentShiftName, currentState, formattedOut);
+                            }
+                        }
+                        break;
+                    }
                 }
             }
 
@@ -860,6 +992,36 @@ public class EmployeeCheckInFragment extends Fragment {
             try {
                 if (timeStr.length() >= 5) {
                     return LocalTime.parse(timeStr.substring(0, 5));
+                }
+            } catch (Exception ignored) {}
+            return null;
+        }
+    }
+
+    private LocalTime parseTimeObject(Object timeObj) {
+        if (timeObj == null) return null;
+        if (timeObj instanceof Number) {
+            long ts = ((Number) timeObj).longValue();
+            if (ts > 0) {
+                try {
+                    java.time.Instant instant = (ts < 100_000_000_000L)
+                            ? java.time.Instant.ofEpochSecond(ts)
+                            : java.time.Instant.ofEpochMilli(ts);
+                    return instant.atZone(java.time.ZoneId.systemDefault()).toLocalTime();
+                } catch (Exception ignored) {}
+            }
+        }
+        String s = timeObj.toString().trim();
+        if (s.isEmpty() || "null".equalsIgnoreCase(s)) return null;
+        try {
+            if (s.contains("T")) {
+                return LocalDateTime.parse(s).toLocalTime();
+            }
+            return LocalTime.parse(s);
+        } catch (Exception e) {
+            try {
+                if (s.length() >= 5) {
+                    return LocalTime.parse(s.substring(0, 5));
                 }
             } catch (Exception ignored) {}
             return null;

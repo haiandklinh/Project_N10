@@ -69,6 +69,12 @@ public class StaffRepositoryImpl implements StaffRepository {
     public Single<UserAccount> getProfile() {
         return api.getStaffProfile()
                 .subscribeOn(Schedulers.io())
+                .map(response -> {
+                    if (!isPlaceholderAvatar(response.getAvatar()) && context != null) {
+                        StaffAvatarCache.saveAvatar(context, response.getFullName(), null, response.getAvatar());
+                    }
+                    return response;
+                })
                 .flatMap(response -> session.saveStaffProfile(response)
                         .doOnSuccess(account -> {
                             appState.saveUserRole(UserRole.EMPLOYEE);
@@ -87,19 +93,15 @@ public class StaffRepositoryImpl implements StaffRepository {
         String avatar = request.getAvatar();
         if (avatar != null && !avatar.isEmpty() && context != null) {
             String cloudUrl = CloudImageUploader.uploadAvatarSync(context, avatar);
-            if (cloudUrl != null && !cloudUrl.isEmpty()) {
-                request = new CreateStaffProfileRequest(
-                        request.getFullName(),
-                        request.getDate(),
-                        request.getGender(),
-                        cloudUrl
-                );
-            }
+            String finalAvatar = (cloudUrl != null) ? cloudUrl : "";
+            request = new CreateStaffProfileRequest(
+                    request.getFullName(),
+                    request.getDate(),
+                    request.getGender(),
+                    finalAvatar
+            );
         }
         final CreateStaffProfileRequest finalRequest = request;
-        if (finalRequest.getAvatar() != null && !finalRequest.getAvatar().isEmpty() && context != null) {
-            StaffAvatarCache.saveAvatar(context, finalRequest.getFullName(), null, finalRequest.getAvatar());
-        }
         return api.createStaffProfile(finalRequest)
                 .subscribeOn(Schedulers.io())
                 .map(response -> {
@@ -114,6 +116,9 @@ public class StaffRepositoryImpl implements StaffRepository {
                     }
                     if (isPlaceholderAvatar(response.getAvatar())) {
                         response.setAvatar(finalRequest.getAvatar());
+                    }
+                    if (!isPlaceholderAvatar(response.getAvatar()) && context != null) {
+                        StaffAvatarCache.saveAvatar(context, response.getFullName(), null, response.getAvatar());
                     }
                     return response;
                 })
@@ -132,12 +137,8 @@ public class StaffRepositoryImpl implements StaffRepository {
         String avatar = request.getAvatar();
         if (avatar != null && !avatar.isEmpty() && context != null) {
             String cloudUrl = CloudImageUploader.uploadAvatarSync(context, avatar);
-            if (cloudUrl != null && !cloudUrl.isEmpty()) {
-                request.setAvatar(cloudUrl);
-            }
-        }
-        if (request.getAvatar() != null && !request.getAvatar().isEmpty() && context != null) {
-            StaffAvatarCache.saveAvatar(context, request.getFullName(), null, request.getAvatar());
+            String finalAvatar = (cloudUrl != null) ? cloudUrl : "";
+            request.setAvatar(finalAvatar);
         }
         return api.updateStaffProfile(request)
                 .subscribeOn(Schedulers.io())
@@ -147,6 +148,9 @@ public class StaffRepositoryImpl implements StaffRepository {
                     }
                     if (isPlaceholderAvatar(response.getAvatar())) {
                         response.setAvatar(request.getAvatar());
+                    }
+                    if (!isPlaceholderAvatar(response.getAvatar()) && context != null) {
+                        StaffAvatarCache.saveAvatar(context, response.getFullName(), null, response.getAvatar());
                     }
                     return response;
                 })
@@ -174,11 +178,11 @@ public class StaffRepositoryImpl implements StaffRepository {
         // Chuyển đổi avatar sang Cloud URL ngắn (< 50 ký tự) để Server lưu vào DB và Quản lý xem được ảnh
         if (context != null && !safeAvatar.isEmpty()) {
             String cloudUrl = CloudImageUploader.uploadAvatarSync(context, safeAvatar);
-            if (cloudUrl != null && !cloudUrl.isEmpty()) {
-                safeAvatar = cloudUrl;
-            }
+            safeAvatar = (cloudUrl != null) ? cloudUrl : "";
         }
-        StaffAvatarCache.saveAvatar(context, safeName, null, safeAvatar);
+        if (!isPlaceholderAvatar(safeAvatar) && context != null) {
+            StaffAvatarCache.saveAvatar(context, safeName, null, safeAvatar);
+        }
 
         JoinCompanyRequest body = new JoinCompanyRequest(code, safeName, safeAvatar);
 
@@ -258,16 +262,20 @@ public class StaffRepositoryImpl implements StaffRepository {
     }
 
     private static String extractManagerId(ResponseBody body) throws Exception {
-        JSONObject json = readJson(body);
-        String id = json.optString("request_id", json.optString("id", json.optString("id_manager", "")));
-        if (!id.isEmpty()) {
-            return id;
+        if (body == null) return "";
+        try {
+            String content = body.string().trim();
+            try {
+                JSONObject json = new JSONObject(content);
+                String id = json.optString("request_id", json.optString("id", json.optString("id_manager", "")));
+                if (!id.isEmpty()) {
+                    return id;
+                }
+            } catch (Exception ignored) {}
+            return content.replace("\"", "").trim();
+        } catch (Exception e) {
+            return "";
         }
-        String content = body.string().replace("\"", "").trim();
-        if (!content.isEmpty()) {
-            return content;
-        }
-        throw new IllegalStateException("Không tìm thấy id quản lý trong phản hồi");
     }
 
     private static ManagerInfo toManagerInfo(ResponseBody body) throws Exception {

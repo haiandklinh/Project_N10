@@ -17,12 +17,18 @@ import com.example.attendanceapp.domain.repository.AppStateRepository;
 import com.example.attendanceapp.domain.repository.NotificationRepository;
 import com.example.attendanceapp.domain.repository.SessionRepository;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -209,9 +215,7 @@ public class NotificationRepositoryImpl implements NotificationRepository {
                                                                     msg = extractContentMessage(item.getContent(), "Bạn có thông báo mới từ hệ thống.");
                                                                 }
 
-                                                                String time = item.getSendAt() != null
-                                                                        ? item.getSendAt()
-                                                                        : LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+                                                                String time = normalizeServerTimestamp(item.getSendAt());
                                                                 String entityId = (item.getNotificationId() != null && !item.getNotificationId().trim().isEmpty())
                                                                         ? item.getNotificationId().trim()
                                                                         : (item.getStaffId() != null ? item.getStaffId() : "") + "_" + (typeStr != null ? typeStr : "") + "_" + time;
@@ -276,13 +280,15 @@ public class NotificationRepositoryImpl implements NotificationRepository {
                                                                         for (com.example.attendanceapp.data.dto.response.staff.NotificationItemResponse item : res.getData()) {
                                                                             if (item == null) continue;
                                                                             String typeStr = item.getNotificationType();
-                                                                            if (!NotificationRolePolicy.isAllowedForRole(typeStr, UserRole.EMPLOYEE)) {
+                                                                            if (!isVisibleToEmployee(typeStr, item.getContent())) {
                                                                                 continue;
                                                                             }
 
                                                                             String title;
                                                                             String msg;
                                                                             NotificationType type = NotificationRolePolicy.mapNotificationType(typeStr);
+                                                                            boolean approvalResponse = isApprovalResponseType(typeStr, item.getContent());
+                                                                            String upperType = typeStr != null ? typeStr.toUpperCase(Locale.US) : "";
 
                                                                             if ("ASSIGN_WORK_SCHEDULE".equalsIgnoreCase(typeStr)
                                                                                     || "SCHEDULE_ASSIGNED".equalsIgnoreCase(typeStr)
@@ -292,21 +298,18 @@ public class NotificationRepositoryImpl implements NotificationRepository {
                                                                             } else if ("SCHEDULE_UPDATED".equalsIgnoreCase(typeStr)) {
                                                                                 title = "Cập nhật lịch làm việc";
                                                                                 msg = extractContentMessage(item.getContent(), "Lịch làm việc của bạn đã được cập nhật.");
+                                                                            } else if (approvalResponse && (upperType.contains("SHIFT") || upperType.contains("WORK_SCHEDULE") || upperType.contains("CHANGE_WORK"))) {
+                                                                                title = "Kết quả yêu cầu đổi ca";
+                                                                                msg = extractContentMessage(item.getContent(), "Quản lý đã phản hồi yêu cầu đổi ca làm việc.");
+                                                                            } else if (approvalResponse && (upperType.contains("LEAVE") || upperType.contains("OFF"))) {
+                                                                                title = "Kết quả đơn xin nghỉ phép";
+                                                                                msg = extractContentMessage(item.getContent(), "Quản lý đã phản hồi đơn xin nghỉ phép của bạn.");
+                                                                            } else if (approvalResponse && upperType.contains("ADJUSTMENT")) {
+                                                                                title = "Kết quả điều chỉnh chấm công";
+                                                                                msg = extractContentMessage(item.getContent(), "Quản lý đã phản hồi yêu cầu điều chỉnh chấm công.");
                                                                             } else if ("JOIN_COMPANY_REQUEST_RESPONSE".equalsIgnoreCase(typeStr)) {
                                                                                 title = "Kết quả yêu cầu gia nhập";
                                                                                 msg = extractContentMessage(item.getContent(), "Quản lý đã phản hồi yêu cầu gia nhập công ty của bạn.");
-                                                                            } else if ("CHANGE_WORK_SHIFT_RESPONSE".equalsIgnoreCase(typeStr)
-                                                                                    || "SHIFT_CHANGE_APPROVED".equalsIgnoreCase(typeStr)) {
-                                                                                title = "Kết quả yêu cầu đổi ca";
-                                                                                msg = extractContentMessage(item.getContent(), "Quản lý đã phản hồi yêu cầu đổi ca làm việc.");
-                                                                            } else if ("CHANGE_LEAVE_REQUEST_RESPONSE".equalsIgnoreCase(typeStr)
-                                                                                    || "LEAVE_APPROVED".equalsIgnoreCase(typeStr)) {
-                                                                                title = "Kết quả đơn xin nghỉ phép";
-                                                                                msg = extractContentMessage(item.getContent(), "Quản lý đã phản hồi đơn xin nghỉ phép của bạn.");
-                                                                            } else if ("ATTENDANCE_ADJUSTMENT_RESPONSE".equalsIgnoreCase(typeStr)
-                                                                                    || "ATTENDANCE_ADJUSTMENT_APPROVED".equalsIgnoreCase(typeStr)) {
-                                                                                title = "Kết quả điều chỉnh chấm công";
-                                                                                msg = extractContentMessage(item.getContent(), "Quản lý đã phản hồi yêu cầu điều chỉnh chấm công.");
                                                                             } else if ("PAYROLL".equalsIgnoreCase(typeStr)) {
                                                                                 title = "Thông báo bảng lương";
                                                                                 msg = extractContentMessage(item.getContent(), "Bảng lương của bạn đã được cập nhật.");
@@ -315,9 +318,7 @@ public class NotificationRepositoryImpl implements NotificationRepository {
                                                                                 msg = extractContentMessage(item.getContent(), "Bạn có thông báo mới từ hệ thống.");
                                                                             }
 
-                                                                            String time = item.getSendAt() != null
-                                                                                    ? item.getSendAt()
-                                                                                    : LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+                                                                            String time = normalizeServerTimestamp(item.getSendAt());
                                                                             String entityId = (item.getId() != null && !item.getId().trim().isEmpty())
                                                                                     ? "emp_" + item.getId().trim()
                                                                                     : "emp_" + (typeStr != null ? typeStr : "") + "_" + time + "_" + (title + "|" + msg).hashCode();
@@ -359,6 +360,24 @@ public class NotificationRepositoryImpl implements NotificationRepository {
         }
     }
 
+    private boolean isApprovalResponseType(String typeStr, Map<String, Object> content) {
+        if (typeStr == null) return false;
+        String upper = typeStr.trim().toUpperCase(Locale.US);
+        if (upper.endsWith("_RESPONSE") || upper.endsWith("_APPROVED") || upper.endsWith("_REJECTED")
+                || upper.contains("RESPONSE") || upper.contains("APPROVED") || upper.contains("REJECTED")) {
+            return true;
+        }
+        return content != null && content.containsKey("status");
+    }
+
+    private boolean isVisibleToEmployee(String typeStr, Map<String, Object> content) {
+        if (NotificationRolePolicy.isAllowedForRole(typeStr, UserRole.EMPLOYEE)) {
+            return true;
+        }
+        // Một số backend dùng chung notification_type cho request/response và chỉ phân biệt bằng content.status.
+        return isApprovalResponseType(typeStr, content);
+    }
+
     private String extractContentMessage(Map<String, Object> content, String defaultMessage) {
         if (content != null) {
             Object val = content.containsKey("message") ? content.get("message") : content.get("Message");
@@ -367,6 +386,75 @@ public class NotificationRepositoryImpl implements NotificationRepository {
             }
         }
         return defaultMessage;
+    }
+
+    /**
+     * Chuẩn hóa thời gian gửi từ server về giờ địa phương của thiết bị.
+     * Server thường trả UTC (ISO có Z/+00:00 hoặc chuỗi naive yyyy-MM-dd HH:mm:ss),
+     * nếu lưu nguyên sẽ bị hiển thị lệch đúng bằng múi giờ (VD: UTC+7 -> "7 giờ trước").
+     */
+    private String normalizeServerTimestamp(String sendAt) {
+        if (sendAt == null || sendAt.trim().isEmpty()) {
+            return LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME);
+        }
+        String time = sendAt.trim();
+
+        if (time.matches("\\d{10,13}")) {
+            try {
+                long millis = Long.parseLong(time);
+                if (time.length() == 10) {
+                    millis *= 1000L;
+                }
+                return Instant.ofEpochMilli(millis)
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDateTime()
+                        .format(DateTimeFormatter.ISO_DATE_TIME);
+            } catch (Exception ignored) {
+            }
+        }
+
+        try {
+            return OffsetDateTime.parse(time, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                    .toInstant()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDateTime()
+                    .format(DateTimeFormatter.ISO_DATE_TIME);
+        } catch (DateTimeParseException ignored) {
+        }
+
+        try {
+            LocalDateTime utc = LocalDateTime.parse(time, DateTimeFormatter.ISO_DATE_TIME);
+            return utc.atZone(ZoneOffset.UTC)
+                    .toInstant()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDateTime()
+                    .format(DateTimeFormatter.ISO_DATE_TIME);
+        } catch (DateTimeParseException ignored) {
+        }
+
+        String[] utcPatterns = {"yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd HH:mm"};
+        for (String pattern : utcPatterns) {
+            try {
+                LocalDateTime utc = LocalDateTime.parse(time, DateTimeFormatter.ofPattern(pattern));
+                return utc.atZone(ZoneOffset.UTC)
+                        .toInstant()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDateTime()
+                        .format(DateTimeFormatter.ISO_DATE_TIME);
+            } catch (DateTimeParseException ignored) {
+            }
+        }
+
+        String[] localPatterns = {"dd/MM/yyyy HH:mm:ss", "dd/MM/yyyy HH:mm"};
+        for (String pattern : localPatterns) {
+            try {
+                return LocalDateTime.parse(time, DateTimeFormatter.ofPattern(pattern))
+                        .format(DateTimeFormatter.ISO_DATE_TIME);
+            } catch (DateTimeParseException ignored) {
+            }
+        }
+
+        return LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME);
     }
 
     private String buildScheduleAssignedMessage(Map<String, Object> content) {

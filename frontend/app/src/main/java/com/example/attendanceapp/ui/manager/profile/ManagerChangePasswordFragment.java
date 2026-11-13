@@ -11,9 +11,11 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 
 import com.example.attendanceapp.databinding.FragmentChangePasswordBinding;
+import com.example.attendanceapp.ui.common.password.ChangePasswordViewModel;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -21,6 +23,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 public class ManagerChangePasswordFragment extends Fragment {
 
     private FragmentChangePasswordBinding binding;
+    private ChangePasswordViewModel viewModel;
 
     public ManagerChangePasswordFragment() {
         // Required empty public constructor
@@ -36,10 +39,12 @@ public class ManagerChangePasswordFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        viewModel = new ViewModelProvider(this).get(ChangePasswordViewModel.class);
 
         setupToolbar();
         setupInputWatchers();
         setupListeners();
+        observeViewModel();
     }
 
     private void setupToolbar() {
@@ -71,10 +76,46 @@ public class ManagerChangePasswordFragment extends Fragment {
     }
 
     private void setupListeners() {
-        binding.btnChangePassword.setOnClickListener(v -> handleChangePassword(v));
+        binding.btnChangePassword.setOnClickListener(v -> handleChangePassword());
     }
 
-    private void handleChangePassword(View view) {
+    private void observeViewModel() {
+        viewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
+            binding.progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+            binding.btnChangePassword.setEnabled(!isLoading);
+            binding.btnChangePassword.setText(isLoading ? "Đang cập nhật..." : "Cập nhật mật khẩu");
+        });
+
+        viewModel.getState().observe(getViewLifecycleOwner(), state -> {
+            if (state instanceof ChangePasswordViewModel.ChangePasswordState.Success) {
+                Toast.makeText(requireContext(), "Đổi mật khẩu Quản lý thành công!", Toast.LENGTH_SHORT).show();
+                Navigation.findNavController(requireView()).navigateUp();
+            } else if (state instanceof ChangePasswordViewModel.ChangePasswordState.Error) {
+                ChangePasswordViewModel.ChangePasswordState.Error err =
+                        (ChangePasswordViewModel.ChangePasswordState.Error) state;
+                switch (err.field) {
+                    case CURRENT_PASSWORD:
+                        binding.tilCurrentPassword.setError(err.message);
+                        binding.etCurrentPassword.requestFocus();
+                        break;
+                    case NEW_PASSWORD:
+                        binding.tilNewPassword.setError(err.message);
+                        binding.etNewPassword.requestFocus();
+                        break;
+                    case CONFIRM_PASSWORD:
+                        binding.tilConfirmPassword.setError(err.message);
+                        binding.etConfirmPassword.requestFocus();
+                        break;
+                    case GENERAL:
+                    default:
+                        Toast.makeText(requireContext(), err.message, Toast.LENGTH_LONG).show();
+                        break;
+                }
+            }
+        });
+    }
+
+    private void handleChangePassword() {
         String currentPassword = binding.etCurrentPassword.getText() != null
                 ? binding.etCurrentPassword.getText().toString().trim() : "";
         String newPassword = binding.etNewPassword.getText() != null
@@ -82,33 +123,7 @@ public class ManagerChangePasswordFragment extends Fragment {
         String confirmPassword = binding.etConfirmPassword.getText() != null
                 ? binding.etConfirmPassword.getText().toString().trim() : "";
 
-        if (currentPassword.isEmpty()) {
-            binding.tilCurrentPassword.setError("Vui lòng nhập mật khẩu hiện tại");
-            return;
-        }
-
-        if (newPassword.isEmpty()) {
-            binding.tilNewPassword.setError("Vui lòng nhập mật khẩu mới");
-            return;
-        }
-
-        if (newPassword.length() < 6) {
-            binding.tilNewPassword.setError("Mật khẩu mới phải có ít nhất 6 ký tự");
-            return;
-        }
-
-        if (newPassword.equals(currentPassword)) {
-            binding.tilNewPassword.setError("Mật khẩu mới không được trùng với mật khẩu hiện tại");
-            return;
-        }
-
-        if (!confirmPassword.equals(newPassword)) {
-            binding.tilConfirmPassword.setError("Mật khẩu xác nhận không khớp");
-            return;
-        }
-
-        Toast.makeText(requireContext(), "Đổi mật khẩu Quản lý thành công!", Toast.LENGTH_SHORT).show();
-        Navigation.findNavController(view).navigateUp();
+        viewModel.changePassword(currentPassword, newPassword, confirmPassword);
     }
 
     @Override

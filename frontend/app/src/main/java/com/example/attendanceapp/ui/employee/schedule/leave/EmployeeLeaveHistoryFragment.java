@@ -286,7 +286,11 @@ public class EmployeeLeaveHistoryFragment extends Fragment {
                         remote.setShiftId(local.getShiftId());
                     }
                     if (remote.getStatus() != local.getStatus() && sharedPreferenceApp != null) {
-                        sharedPreferenceApp.updateSubmittedLeaveRequestStatus(local.getTargetDate(), local.getType() != null ? local.getType().name() : null, remote.getStatus());
+                        if (local.getId() != null && !local.getId().isEmpty()) {
+                            sharedPreferenceApp.updateSubmittedLeaveRequestStatusById(local.getId(), remote.getStatus());
+                        } else {
+                            sharedPreferenceApp.updateSubmittedLeaveRequestStatus(local.getTargetDate(), local.getType() != null ? local.getType().name() : null, remote.getStatus());
+                        }
                     }
                     break;
                 }

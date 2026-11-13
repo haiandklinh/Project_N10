@@ -10,6 +10,8 @@ import com.example.attendanceapp.data.dto.response.attendance.AttendanceRecordIt
 import com.example.attendanceapp.data.dto.response.manager.NotificationItemResponse;
 import com.example.attendanceapp.data.local.HandledRequestManager;
 import com.example.attendanceapp.data.local.pref.SharedPreferenceApp;
+import com.example.attendanceapp.domain.model.ApprovalRequestType;
+import com.example.attendanceapp.domain.model.ApprovalStatus;
 import com.example.attendanceapp.domain.model.AttendanceStatus;
 import com.example.attendanceapp.domain.model.CheckState;
 import com.example.attendanceapp.domain.model.EmployeeWorkSchedule;
@@ -30,6 +32,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -302,25 +305,54 @@ public class ManagerHomeViewModel extends ViewModel {
                                         if (staffId != null && handledRequestManager != null && !handledRequestManager.isHandled(staffId)) {
                                             joinCount++;
                                         }
-                                    } else if (type.contains("CHANGE") ||
-                                            type.contains("LEAVE") ||
-                                            type.contains("ADJUSTMENT") ||
-                                            type.contains("SHIFT") ||
-                                            type.contains("REQUEST")) {
-                                        
-                                        String workDay = "";
-                                        Map<String, Object> content = item.getContent();
-                                        if (content != null) {
-                                            if (content.containsKey("work_day")) workDay = String.valueOf(content.get("work_day"));
-                                            else if (content.containsKey("date")) workDay = String.valueOf(content.get("date"));
-                                        }
-                                        if (workDay.isEmpty() && item.getSendAt() != null && item.getSendAt().length() >= 10) {
-                                            workDay = item.getSendAt().substring(0, 10);
-                                        }
-                                        
-                                        String requestKey = type + "_" + (staffId != null ? staffId : "") + "_" + workDay;
-                                        if (handledRequestManager == null || handledRequestManager.getApprovalStatus(requestKey) == null) {
-                                            approvalCount++;
+                                    } else {
+                                        String upperType = type.toUpperCase(Locale.US);
+                                        if (upperType.contains("CHANGE") ||
+                                                upperType.contains("LEAVE") ||
+                                                upperType.contains("ADJUSTMENT") ||
+                                                upperType.contains("SHIFT") ||
+                                                upperType.contains("REQUEST")) {
+
+                                            String workDay = "";
+                                            String curShift = "";
+                                            Map<String, Object> content = item.getContent();
+                                            if (content != null) {
+                                                if (content.containsKey("work_day_off")) workDay = String.valueOf(content.get("work_day_off"));
+                                                else if (content.containsKey("workday_off")) workDay = String.valueOf(content.get("workday_off"));
+                                                else if (content.containsKey("workday")) workDay = String.valueOf(content.get("workday"));
+                                                else if (content.containsKey("work_day")) workDay = String.valueOf(content.get("work_day"));
+                                                else if (content.containsKey("date")) workDay = String.valueOf(content.get("date"));
+                                                else if (content.containsKey("day_off")) workDay = String.valueOf(content.get("day_off"));
+
+                                                if (content.containsKey("id_work_shift_cur")) curShift = String.valueOf(content.get("id_work_shift_cur"));
+                                                else if (content.containsKey("id_work_shift_current")) curShift = String.valueOf(content.get("id_work_shift_current"));
+                                                else if (content.containsKey("current_shift_id")) curShift = String.valueOf(content.get("current_shift_id"));
+                                                else if (content.containsKey("id_work_shift_off")) curShift = String.valueOf(content.get("id_work_shift_off"));
+                                                else if (content.containsKey("id_work_shift")) curShift = String.valueOf(content.get("id_work_shift"));
+                                                else if (content.containsKey("id_shift")) curShift = String.valueOf(content.get("id_shift"));
+                                            }
+                                            if (workDay.isEmpty() && item.getSendAt() != null && item.getSendAt().length() >= 10) {
+                                                workDay = item.getSendAt().substring(0, 10);
+                                            } else if (workDay.length() >= 10) {
+                                                workDay = workDay.substring(0, 10);
+                                            }
+
+                                            ApprovalRequestType approvalType = null;
+                                            if (upperType.contains("SHIFT") || upperType.contains("SWAP") || upperType.contains("WORK_SCHEDULE")) {
+                                                approvalType = ApprovalRequestType.SWAP;
+                                            } else if (upperType.contains("LEAVE") || upperType.contains("OFF")) {
+                                                approvalType = ApprovalRequestType.LEAVE;
+                                            } else if (upperType.contains("ADJUSTMENT")) {
+                                                approvalType = ApprovalRequestType.ADJUSTMENT;
+                                            }
+
+                                            String typeName = approvalType != null ? approvalType.name() : type;
+                                            ApprovalStatus savedStatus = handledRequestManager != null
+                                                    ? handledRequestManager.getApprovalStatusFlexible(typeName, staffId, workDay, curShift)
+                                                    : null;
+                                            if (savedStatus == null) {
+                                                approvalCount++;
+                                            }
                                         }
                                     }
                                 }

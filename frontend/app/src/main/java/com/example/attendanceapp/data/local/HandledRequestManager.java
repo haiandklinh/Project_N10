@@ -95,6 +95,30 @@ public class HandledRequestManager {
     }
 
     /**
+     * Tra cứu trạng thái duyệt theo nhiều biến thể key để tương thích giữa
+     * màn Home (raw notification type) và màn Duyệt đơn (ApprovalRequestType).
+     */
+    @androidx.annotation.Nullable
+    public ApprovalStatus getApprovalStatusFlexible(String typeName, String staffId, String workDay, String shiftId) {
+        if (typeName == null || typeName.trim().isEmpty()) return null;
+        String staff = staffId != null ? staffId : "";
+        String day = workDay != null ? workDay : "";
+        String shift = shiftId != null ? shiftId : "";
+        String[] keys = {
+                typeName + "_" + staff + "_" + day + "_" + shift,
+                typeName + "_" + staff + "_" + day,
+                typeName + "_" + staff + "_" + day + "_",
+                staff + "_" + day + "_" + shift,
+                staff + "_" + day
+        };
+        for (String key : keys) {
+            ApprovalStatus status = getApprovalStatus(key);
+            if (status != null) return status;
+        }
+        return null;
+    }
+
+    /**
      * Lưu ảnh đại diện của nhân viên vào bộ nhớ
      */
     public void saveStaffAvatar(String staffId, String avatar) {

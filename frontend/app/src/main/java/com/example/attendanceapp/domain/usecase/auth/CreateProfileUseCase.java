@@ -39,20 +39,37 @@ public class CreateProfileUseCase {
     /** Tạo hồ sơ Nhân viên. */
     public Completable createStaffProfile(String name, String dob, String gender, String avatar) {
         return Single.fromCallable(() -> {
-                    String cleanAvatar = avatar;
-                    if (context != null && cleanAvatar != null && !cleanAvatar.isEmpty()) {
-                        String cloudUrl = CloudImageUploader.uploadAvatarSync(context, cleanAvatar);
-                        if (cloudUrl != null && !cloudUrl.isEmpty()) {
-                            cleanAvatar = cloudUrl;
-                        }
+                    String cleanAvatar = "";
+                    if (context != null && avatar != null && !avatar.trim().isEmpty()) {
+                        String cloudUrl = CloudImageUploader.uploadAvatarSync(context, avatar);
+                        cleanAvatar = (cloudUrl != null) ? cloudUrl : "";
                     }
                     return new CreateStaffProfileRequest(
                             requireName(name),
                             toApiDate(dob),
                             toApiGender(gender),
-                            nullToEmpty(cleanAvatar));
+                            cleanAvatar);
                 })
                 .flatMap(staffRepository::createProfile)
+                .ignoreElement();
+    }
+
+    /** Cập nhật hồ sơ Nhân viên (fallback khi gặp 409 Conflict). */
+    public Completable updateStaffProfile(String name, String dob, String gender, String avatar) {
+        return Single.fromCallable(() -> {
+                    String cleanAvatar = "";
+                    if (context != null && avatar != null && !avatar.trim().isEmpty()) {
+                        String cloudUrl = CloudImageUploader.uploadAvatarSync(context, avatar);
+                        cleanAvatar = (cloudUrl != null) ? cloudUrl : "";
+                    }
+                    return new com.example.attendanceapp.data.dto.request.staff.UpdateStaffProfileRequest(
+                            requireName(name),
+                            toApiGender(gender),
+                            cleanAvatar,
+                            toApiDate(dob)
+                    );
+                })
+                .flatMap(staffRepository::updateProfile)
                 .ignoreElement();
     }
 
@@ -62,12 +79,10 @@ public class CreateProfileUseCase {
                     if (companyName == null || companyName.trim().isEmpty()) {
                         throw new IllegalArgumentException("Tên công ty không được để trống");
                     }
-                    String cleanAvatar = avatar;
-                    if (context != null && cleanAvatar != null && !cleanAvatar.isEmpty()) {
-                        String cloudUrl = CloudImageUploader.uploadAvatarSync(context, cleanAvatar);
-                        if (cloudUrl != null && !cloudUrl.isEmpty()) {
-                            cleanAvatar = cloudUrl;
-                        }
+                    String cleanAvatar = "";
+                    if (context != null && avatar != null && !avatar.trim().isEmpty()) {
+                        String cloudUrl = CloudImageUploader.uploadAvatarSync(context, avatar);
+                        cleanAvatar = (cloudUrl != null) ? cloudUrl : "";
                     }
 
                     // Đúng thứ tự Constructor CreateManagerProfileRequest
@@ -77,7 +92,7 @@ public class CreateProfileUseCase {
                             companyName.trim(),
                             toApiDate(dob),
                             toApiGender(gender),
-                            nullToEmpty(cleanAvatar));
+                            cleanAvatar);
                 })
                 .flatMap(managerRepository::createProfile)
                 .ignoreElement();
@@ -93,12 +108,10 @@ public class CreateProfileUseCase {
         if (invitationCode == null || invitationCode.trim().isEmpty()) {
             return Single.error(new IllegalArgumentException("Mã mời không được để trống"));
         }
-        String cleanAvatar = avatar;
-        if (context != null && cleanAvatar != null && !cleanAvatar.isEmpty()) {
-            String cloudUrl = CloudImageUploader.uploadAvatarSync(context, cleanAvatar);
-            if (cloudUrl != null && !cloudUrl.isEmpty()) {
-                cleanAvatar = cloudUrl;
-            }
+        String cleanAvatar = "";
+        if (context != null && avatar != null && !avatar.trim().isEmpty()) {
+            String cloudUrl = CloudImageUploader.uploadAvatarSync(context, avatar);
+            cleanAvatar = (cloudUrl != null) ? cloudUrl : "";
         }
         return staffRepository.joinWithInvitationCode(invitationCode.trim(), name, cleanAvatar)
                 .map(managerInfo -> managerInfo.getCompanyName());

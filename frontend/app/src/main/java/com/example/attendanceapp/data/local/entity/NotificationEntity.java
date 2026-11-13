@@ -11,6 +11,7 @@ import com.example.attendanceapp.domain.model.NotificationType;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
@@ -196,27 +197,39 @@ public class NotificationEntity {
 
         String time = value.trim();
 
-        // ISO 8601: 2026-11-13T10:30:00
+        // ISO 8601 có timezone (Z hoặc +07:00): quy đổi về múi giờ thiết bị
+        // để tránh hiển thị lệch 7 tiếng so với giờ thực tế.
+        try {
+            return OffsetDateTime.parse(time, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                    .toInstant()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDateTime();
+        } catch (DateTimeParseException ignored) {
+        }
+
+        // ISO 8601 không timezone: 2026-11-13T10:30:00
         try {
             return LocalDateTime.parse(time, DateTimeFormatter.ISO_DATE_TIME);
         } catch (DateTimeParseException ignored) {
         }
 
-        // ISO 8601 có timezone: 2026-11-13T10:30:00+07:00
+        // dd/MM/yyyy HH:mm[:ss]
         try {
-            return OffsetDateTime.parse(time, DateTimeFormatter.ISO_DATE_TIME).toLocalDateTime();
+            return LocalDateTime.parse(time, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
         } catch (DateTimeParseException ignored) {
         }
-
-        // dd/MM/yyyy HH:mm
         try {
             return LocalDateTime.parse(time, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
         } catch (DateTimeParseException ignored) {
         }
 
-        // yyyy-MM-dd HH:mm:ss
+        // yyyy-MM-dd HH:mm[:ss]
         try {
             return LocalDateTime.parse(time, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        } catch (DateTimeParseException ignored) {
+        }
+        try {
+            return LocalDateTime.parse(time, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
         } catch (DateTimeParseException ignored) {
         }
 

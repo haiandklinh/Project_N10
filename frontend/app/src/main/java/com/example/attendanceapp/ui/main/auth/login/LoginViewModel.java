@@ -227,12 +227,12 @@ public class LoginViewModel extends ViewModel {
                         pendingProfile.getAvatarUri())
                 .onErrorResumeNext(throwable -> {
                     if (isConflictError(throwable)) {
-                        return staffRepository.updateProfile(new com.example.attendanceapp.data.dto.request.staff.UpdateStaffProfileRequest(
+                        return createProfileUseCase.updateStaffProfile(
                                 pendingProfile.getFullName(),
+                                pendingProfile.getDob(),
                                 pendingProfile.getGender(),
-                                pendingProfile.getAvatarUri(),
-                                pendingProfile.getDob()
-                        )).ignoreElement();
+                                pendingProfile.getAvatarUri()
+                        );
                     }
                     return io.reactivex.rxjava3.core.Completable.error(throwable);
                 })
@@ -271,7 +271,11 @@ public class LoginViewModel extends ViewModel {
     private boolean isConflictError(Throwable throwable) {
         if (throwable instanceof AppException) {
             AppException ex = (AppException) throwable;
-            return ex.getHttpCode() == 409 || (ex.getMessage() != null && ex.getMessage().contains("Hồ sơ đã được tạo"));
+            return ex.getHttpCode() == 409
+                    || (ex.getMessage() != null && (ex.getMessage().contains("Hồ sơ đã được tạo") || ex.getMessage().contains("409")));
+        }
+        if (throwable instanceof retrofit2.HttpException) {
+            return ((retrofit2.HttpException) throwable).code() == 409;
         }
         return false;
     }

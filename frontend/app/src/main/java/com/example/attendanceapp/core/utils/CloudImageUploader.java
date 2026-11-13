@@ -12,7 +12,8 @@ import androidx.annotation.Nullable;
 
 import com.example.attendanceapp.data.local.StaffAvatarCache;
 
-import java.io.ByteArrayOutputStream;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -28,25 +29,25 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 /**
- * Tiện ích tải ảnh đại diện lên Cloud Storage (Catbox / Cloud CDN)
- * nhằm thu được URL công khai trực tiếp dạng HTTP/HTTPS ngắn (< 50 ký tự),
+ * Tiện ích tải ảnh đại diện lên Cloud Storage để nhận URL công khai ngắn (< 50 ký tự),
  * hoàn toàn vừa vặn với cột VARCHAR(255) trong CSDL Backend.
  */
 public final class CloudImageUploader {
 
     private static final String TAG = "CloudImageUploader";
     private static final String CATBOX_API_URL = "https://catbox.moe/user/api.php";
+    private static final String TMPFILES_API_URL = "https://tmpfiles.org/api/v1/upload";
 
     private static final OkHttpClient HTTP_CLIENT = new OkHttpClient.Builder()
-            .connectTimeout(15, TimeUnit.SECONDS)
-            .writeTimeout(20, TimeUnit.SECONDS)
-            .readTimeout(20, TimeUnit.SECONDS)
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .writeTimeout(15, TimeUnit.SECONDS)
+            .readTimeout(15, TimeUnit.SECONDS)
             .build();
 
     private CloudImageUploader() {}
 
     /**
-     * Tải ảnh đại diện lên đám mây (Bất đồng bộ RxJava Single)
+     * Bất đồng bộ RxJava Single
      */
     public static Single<String> uploadAvatarSingle(Context context, @Nullable String uriOrPath) {
         return Single.fromCallable(() -> uploadAvatarSync(context, uriOrPath))
@@ -54,65 +55,57 @@ public final class CloudImageUploader {
     }
 
     /**
-     * Tải ảnh đại diện lên đám mây (Đồng bộ - chạy trên background thread)
-     * Trả về URL trực tiếp dạng "https://files.catbox.moe/xxxxxx.jpg" (~35 ký tự)
-     * Nếu không có mạng hoặc ảnh đã là URL, tự động xử lý an toàn.
+     * Chuẩn hóa đường dẫn ảnh đại diện (Đồng bộ).
+     * Đảm bảo chuỗi trả về luôn <= 255 ký tự để không làm sập Database Backend (VARCHAR(255)).
      */
     @Nullable
     public static String uploadAvatarSync(Context context, @Nullable String uriOrPath) {
-        if (uriOrPath == null || uriOrPath.trim().isEmpty()) {
-            return null;
+        if (uriOrPath == null) {
+            return "";
         }
         String clean = uriOrPath.trim();
-
-        // 1. Nếu đã là link HTTP/HTTPS online thì không cần upload lại
-        if (clean.startsWith("http://") || clean.startsWith("https://")) {
-            return clean;
+        if (clean.isEmpty()
+                || "null".equalsIgnoreCase(clean)
+                || "none".equalsIgnoreCase(clean)
+                || "string".equalsIgnoreCase(clean)) {
+            return "";
         }
 
-        // 2. Nén ảnh và chuẩn bị file tạm để upload
+        // 1. Nếu đã là URL online (Cloudinary / Catbox / CDN) và <= 255 ký tự thì giữ nguyên
+        if (clean.startsWith("http://") || clean.startsWith("https://")) {
+            return clean.length() <= 255 ? clean : "";
+        }
+
+        // 2. Nén ảnh thành tệp tạm thời
         File compressedFile = compressImageToTempFile(context, clean);
         if (compressedFile == null || !compressedFile.exists()) {
-            Log.w(TAG, "Không thể nén ảnh để tải lên đám mây, fallback đường dẫn gốc");
-            return clean;
+            Log.w(TAG, "Không thể đọc và nén ảnh, trả về rỗng để tránh vượt 255 ký tự");
+            return "";
         }
 
         try {
-            // 3. Upload lên Catbox API (Dịch vụ hosting ảnh trực tiếp, không cần API Key, lưu vĩnh viễn)
-            RequestBody fileBody = RequestBody.create(
-                    compressedFile,
-                    MediaType.parse("image/jpeg")
-            );
-
-            RequestBody requestBody = new MultipartBody.Builder()
-                    .setType(MultipartBody.FORM)
-                    .addFormDataPart("reqtype", "fileupload")
-                    .addFormDataPart("fileToUpload", compressedFile.getName(), fileBody)
-                    .build();
-
-            Request request = new Request.Builder()
-                    .url(CATBOX_API_URL)
-                    .post(requestBody)
-                    .build();
-
-            try (Response response = HTTP_CLIENT.newCall(request).execute()) {
-                if (response.isSuccessful() && response.body() != null) {
-                    String publicUrl = response.body().string().trim();
-                    if ((publicUrl.startsWith("http://") || publicUrl.startsWith("https://"))
-                            && isUrlReachable(publicUrl)) {
-                        Log.i(TAG, "Upload avatar thành công lên Cloud URL: " + publicUrl);
-                        // Cập nhật vào Cache cục bộ để hiển thị ngay lập tức
-                        StaffAvatarCache.saveAvatar(context, null, null, publicUrl);
-                        return publicUrl;
-                    } else {
-                        Log.w(TAG, "URL ảnh cloud trả về không tải được: " + publicUrl);
-                    }
+            // 3. Ưu tiên Upload lên Catbox (trả về https://files.catbox.moe/xxxxxx.jpg ~35 ký tự)
+            String catboxUrl = uploadToCatbox(compressedFile);
+            if (catboxUrl != null && !catboxUrl.isEmpty() && catboxUrl.length() <= 255) {
+                Log.i(TAG, "Upload avatar thành công lên Catbox: " + catboxUrl);
+                if (context != null) {
+                    StaffAvatarCache.saveAvatar(context, null, null, catboxUrl);
                 }
+                return catboxUrl;
+            }
+
+            // 4. Fallback: Upload lên TmpFiles (trả về direct link https://tmpfiles.org/dl/...)
+            String tmpUrl = uploadToTmpFiles(compressedFile);
+            if (tmpUrl != null && !tmpUrl.isEmpty() && tmpUrl.length() <= 255) {
+                Log.i(TAG, "Upload avatar thành công lên TmpFiles: " + tmpUrl);
+                if (context != null) {
+                    StaffAvatarCache.saveAvatar(context, null, null, tmpUrl);
+                }
+                return tmpUrl;
             }
         } catch (Exception e) {
-            Log.w(TAG, "Lỗi khi upload avatar lên Catbox: " + e.getMessage());
+            Log.w(TAG, "Lỗi upload ảnh lên cloud: " + e.getMessage());
         } finally {
-            // Xóa file tạm nén sau khi upload xong
             try {
                 if (compressedFile.exists()) {
                     compressedFile.delete();
@@ -120,47 +113,92 @@ public final class CloudImageUploader {
             } catch (Exception ignored) {}
         }
 
-        // 4. Fallback: Nếu không có kết nối Internet hoặc cloud trả link lỗi (404),
-        // giữ nguyên đường dẫn file cục bộ để máy hiện tại luôn hiển thị được ảnh.
-        return clean;
+        // 5. Nếu không có kết nối mạng ra ngoài, trả về rỗng để Backend không bị lỗi VARCHAR(255)
+        Log.w(TAG, "Upload cloud không thành công, trả về rỗng cho server để bảo vệ DB");
+        return "";
     }
 
-    private static boolean isUrlReachable(String url) {
+    @Nullable
+    private static String uploadToCatbox(File file) {
         try {
-            Request checkReq = new Request.Builder()
-                    .url(url)
-                    .head()
+            RequestBody fileBody = RequestBody.create(file, MediaType.parse("image/jpeg"));
+            RequestBody requestBody = new MultipartBody.Builder()
+                    .setType(MultipartBody.FORM)
+                    .addFormDataPart("reqtype", "fileupload")
+                    .addFormDataPart("fileToUpload", file.getName(), fileBody)
                     .build();
-            try (Response resp = HTTP_CLIENT.newCall(checkReq).execute()) {
-                if (resp.isSuccessful()) {
-                    return true;
+
+            Request request = new Request.Builder()
+                    .url(CATBOX_API_URL)
+                    .header("User-Agent", "Mozilla/5.0 (Linux; Android 10; Mobile)")
+                    .post(requestBody)
+                    .build();
+
+            try (Response response = HTTP_CLIENT.newCall(request).execute()) {
+                if (response.isSuccessful() && response.body() != null) {
+                    String publicUrl = response.body().string().trim();
+                    if (publicUrl.startsWith("http://") || publicUrl.startsWith("https://")) {
+                        return publicUrl;
+                    }
                 }
             }
-            Request getReq = new Request.Builder()
-                    .url(url)
-                    .get()
-                    .header("Range", "bytes=0-0")
+        } catch (Exception e) {
+            Log.w(TAG, "Lỗi Catbox upload: " + e.getMessage());
+        }
+        return null;
+    }
+
+    @Nullable
+    private static String uploadToTmpFiles(File file) {
+        try {
+            RequestBody fileBody = RequestBody.create(file, MediaType.parse("image/jpeg"));
+            RequestBody requestBody = new MultipartBody.Builder()
+                    .setType(MultipartBody.FORM)
+                    .addFormDataPart("file", file.getName(), fileBody)
                     .build();
-            try (Response resp = HTTP_CLIENT.newCall(getReq).execute()) {
-                return resp.isSuccessful();
+
+            Request request = new Request.Builder()
+                    .url(TMPFILES_API_URL)
+                    .header("User-Agent", "Mozilla/5.0 (Linux; Android 10; Mobile)")
+                    .post(requestBody)
+                    .build();
+
+            try (Response response = HTTP_CLIENT.newCall(request).execute()) {
+                if (response.isSuccessful() && response.body() != null) {
+                    String bodyStr = response.body().string().trim();
+                    JSONObject json = new JSONObject(bodyStr);
+                    if ("success".equalsIgnoreCase(json.optString("status"))) {
+                        JSONObject data = json.optJSONObject("data");
+                        if (data != null) {
+                            String url = data.optString("url");
+                            if (url.contains("tmpfiles.org/")) {
+                                return url.replace("tmpfiles.org/", "tmpfiles.org/dl/");
+                            }
+                            return url;
+                        }
+                    }
+                }
             }
         } catch (Exception e) {
-            Log.w(TAG, "Kiểm tra URL ảnh thất bại: " + e.getMessage());
-            return false;
+            Log.w(TAG, "Lỗi TmpFiles upload: " + e.getMessage());
         }
+        return null;
     }
 
     /**
-     * Đọc và nén ảnh đại diện từ URI/File path về kích thước chuẩn (tối đa 500x500, JPEG 85%)
+     * Đọc và nén ảnh đại diện về kích thước chuẩn (tối đa 400x400, JPEG 85%)
      */
     @Nullable
     private static File compressImageToTempFile(Context context, String uriOrPath) {
-        InputStream in = null;
+        if (context == null || uriOrPath == null) return null;
+
         try {
             int rotationDegrees = 0;
-            if (uriOrPath.startsWith("content://") && context != null) {
-                Uri uri = Uri.parse(uriOrPath);
-                in = context.getContentResolver().openInputStream(uri);
+            Uri uri = null;
+            File localFile = null;
+
+            if (uriOrPath.startsWith("content://")) {
+                uri = Uri.parse(uriOrPath);
                 try (InputStream exifIn = context.getContentResolver().openInputStream(uri)) {
                     if (exifIn != null) {
                         ExifInterface exif = new ExifInterface(exifIn);
@@ -171,16 +209,14 @@ public final class CloudImageUploader {
                     }
                 } catch (Exception ignored) {}
             } else {
-                File file;
                 if (uriOrPath.startsWith("file://")) {
-                    file = new File(Uri.parse(uriOrPath).getPath());
+                    localFile = new File(Uri.parse(uriOrPath).getPath());
                 } else {
-                    file = new File(uriOrPath);
+                    localFile = new File(uriOrPath);
                 }
-                if (file.exists()) {
-                    in = new java.io.FileInputStream(file);
+                if (localFile.exists()) {
                     try {
-                        ExifInterface exif = new ExifInterface(file.getAbsolutePath());
+                        ExifInterface exif = new ExifInterface(localFile.getAbsolutePath());
                         int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
                         if (orientation == ExifInterface.ORIENTATION_ROTATE_90) rotationDegrees = 90;
                         else if (orientation == ExifInterface.ORIENTATION_ROTATE_180) rotationDegrees = 180;
@@ -189,11 +225,47 @@ public final class CloudImageUploader {
                 }
             }
 
-            if (in == null) return null;
+            // Downsampling
+            int reqDim = 400;
+            BitmapFactory.Options boundsOptions = new BitmapFactory.Options();
+            boundsOptions.inJustDecodeBounds = true;
 
-            Bitmap bitmap = BitmapFactory.decodeStream(in);
-            in.close();
-            in = null;
+            if (uri != null) {
+                try (InputStream inBounds = context.getContentResolver().openInputStream(uri)) {
+                    if (inBounds != null) {
+                        BitmapFactory.decodeStream(inBounds, null, boundsOptions);
+                    }
+                }
+            } else if (localFile != null && localFile.exists()) {
+                try (InputStream inBounds = new java.io.FileInputStream(localFile)) {
+                    BitmapFactory.decodeStream(inBounds, null, boundsOptions);
+                }
+            }
+
+            int sampleSize = 1;
+            if (boundsOptions.outWidth > reqDim || boundsOptions.outHeight > reqDim) {
+                final int halfHeight = boundsOptions.outHeight / 2;
+                final int halfWidth = boundsOptions.outWidth / 2;
+                while ((halfHeight / sampleSize) >= reqDim && (halfWidth / sampleSize) >= reqDim) {
+                    sampleSize *= 2;
+                }
+            }
+
+            BitmapFactory.Options decodeOptions = new BitmapFactory.Options();
+            decodeOptions.inSampleSize = Math.max(1, sampleSize);
+
+            Bitmap bitmap = null;
+            if (uri != null) {
+                try (InputStream in = context.getContentResolver().openInputStream(uri)) {
+                    if (in != null) {
+                        bitmap = BitmapFactory.decodeStream(in, null, decodeOptions);
+                    }
+                }
+            } else if (localFile != null && localFile.exists()) {
+                try (InputStream in = new java.io.FileInputStream(localFile)) {
+                    bitmap = BitmapFactory.decodeStream(in, null, decodeOptions);
+                }
+            }
 
             if (bitmap == null) return null;
 
@@ -207,19 +279,19 @@ public final class CloudImageUploader {
                 }
             }
 
-            int maxDim = 500;
             int width = bitmap.getWidth();
             int height = bitmap.getHeight();
-            if (width > maxDim || height > maxDim) {
+            if (width > reqDim || height > reqDim) {
                 float ratio = (float) width / (float) height;
+                int targetW, targetH;
                 if (ratio > 1) {
-                    width = maxDim;
-                    height = Math.max(1, (int) (maxDim / ratio));
+                    targetW = reqDim;
+                    targetH = Math.max(1, (int) (reqDim / ratio));
                 } else {
-                    height = maxDim;
-                    width = Math.max(1, (int) (maxDim * ratio));
+                    targetH = reqDim;
+                    targetW = Math.max(1, (int) (reqDim * ratio));
                 }
-                Bitmap scaled = Bitmap.createScaledBitmap(bitmap, width, height, true);
+                Bitmap scaled = Bitmap.createScaledBitmap(bitmap, targetW, targetH, true);
                 if (scaled != bitmap) {
                     bitmap.recycle();
                     bitmap = scaled;
@@ -237,10 +309,6 @@ public final class CloudImageUploader {
         } catch (Exception e) {
             Log.e(TAG, "Lỗi nén ảnh avatar: " + e.getMessage());
             return null;
-        } finally {
-            if (in != null) {
-                try { in.close(); } catch (Exception ignored) {}
-            }
         }
     }
 }

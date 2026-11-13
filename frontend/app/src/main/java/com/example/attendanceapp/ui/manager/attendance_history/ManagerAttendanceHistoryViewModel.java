@@ -201,17 +201,14 @@ public class ManagerAttendanceHistoryViewModel extends ViewModel {
                 .subscribe(items -> {
                     _isLoading.setValue(false);
                     allItems.clear();
-                    if (items != null && !items.isEmpty()) {
+                    if (items != null) {
                         allItems.addAll(items);
-                    } else {
-                        allItems.addAll(generateSampleData(startDate, endDate));
                     }
                     applyFilterAndUpdate();
                     updateStats();
                 }, throwable -> {
                     _isLoading.setValue(false);
                     allItems.clear();
-                    allItems.addAll(generateSampleData(startDate, endDate));
                     applyFilterAndUpdate();
                     updateStats();
                 })
@@ -396,74 +393,6 @@ public class ManagerAttendanceHistoryViewModel extends ViewModel {
         ).thenComparing(ManagerAttendanceHistoryItem::getStaffName));
 
         return result;
-    }
-
-    private List<ManagerAttendanceHistoryItem> generateSampleData(LocalDate startDate, LocalDate endDate) {
-        List<ManagerAttendanceHistoryItem> samples = new ArrayList<>();
-        LocalDate today = LocalDate.now();
-
-        String[] sampleNames = {"Nguyễn Văn An", "Trần Thị Mai", "Lê Hoàng Long", "Phạm Minh Tuấn", "Đỗ Thu Hà"};
-        String[] sampleAvatars = {null, null, null, null, null};
-
-        LocalDate cursor = endDate.isAfter(today) ? today : endDate;
-        while (!cursor.isBefore(startDate)) {
-            // Mỗi ngày tạo dữ liệu chấm công cho các nhân viên
-            for (int i = 0; i < sampleNames.length; i++) {
-                String name = sampleNames[i];
-                String avatar = sampleAvatars[i];
-                String shiftName = (i % 2 == 0) ? "Ca Sáng" : "Ca Chiều";
-                LocalTime start = (i % 2 == 0) ? LocalTime.of(8, 0) : LocalTime.of(13, 30);
-                LocalTime end = (i % 2 == 0) ? LocalTime.of(17, 0) : LocalTime.of(21, 30);
-
-                LocalTime in = null;
-                LocalTime out = null;
-                AttendanceStatus status;
-
-                if (i == 0) {
-                    in = start.minusMinutes(10);
-                    out = end;
-                    status = AttendanceStatus.PRESENT;
-                } else if (i == 1) {
-                    in = start.plusMinutes(20);
-                    out = end.plusMinutes(15);
-                    status = AttendanceStatus.LATE;
-                } else if (i == 2) {
-                    in = start;
-                    out = end.minusMinutes(45);
-                    status = AttendanceStatus.EARLY_LEAVE;
-                } else if (i == 3) {
-                    if (cursor.equals(today)) {
-                        status = AttendanceStatus.PRESENT;
-                        in = start.minusMinutes(5);
-                    } else {
-                        status = AttendanceStatus.ABSENT;
-                    }
-                } else {
-                    in = start.minusMinutes(2);
-                    out = end;
-                    status = AttendanceStatus.PRESENT;
-                }
-
-                samples.add(new ManagerAttendanceHistoryItem(
-                        UUID.randomUUID().toString(),
-                        "staff_" + i,
-                        name,
-                        avatar,
-                        cursor,
-                        shiftName,
-                        in,
-                        out,
-                        status,
-                        start,
-                        end,
-                        ""
-                ));
-            }
-
-            cursor = cursor.minusDays(1);
-        }
-
-        return samples;
     }
 
     private void applyFilterAndUpdate() {

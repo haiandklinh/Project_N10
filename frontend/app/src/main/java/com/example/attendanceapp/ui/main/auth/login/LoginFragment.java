@@ -56,6 +56,16 @@ public class LoginFragment extends Fragment {
     }
 
     private void observeRegisteredPhone() {
+        if (getArguments() != null && getArguments().containsKey("registered_phone")) {
+            String phone = getArguments().getString("registered_phone");
+            if (!TextUtils.isEmpty(phone)) {
+                binding.edtPhone.setText(phone);
+                binding.tilPhone.setError(null);
+                binding.edtPassword.requestFocus();
+                getArguments().remove("registered_phone");
+            }
+        }
+
         NavBackStackEntry currentEntry = NavHostFragment.findNavController(this).getCurrentBackStackEntry();
         if (currentEntry != null) {
             // 1. Tự động đăng nhập ngầm khi nhận được thông tin từ RegisterFragment (Auto-login)

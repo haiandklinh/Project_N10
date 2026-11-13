@@ -251,7 +251,7 @@ public class ManagerApprovalFragment extends Fragment {
                                                 itemStatus = ApprovalStatus.PENDING;
                                             }
 
-                                            allRequests.add(new ManagerApprovalItem(
+                                            ManagerApprovalItem approvalItem = new ManagerApprovalItem(
                                                     item.getStaffId() != null ? item.getStaffId() : "",
                                                     senderName,
                                                     item.getSendPersonAvatar(),
@@ -265,7 +265,9 @@ public class ManagerApprovalFragment extends Fragment {
                                                     curShift,
                                                     tgtShift,
                                                     workDay
-                                            ));
+                                            );
+                                            approvalItem.setRequestId(item.getNotificationId());
+                                            allRequests.add(approvalItem);
                                         }
                                     }
 
@@ -297,8 +299,11 @@ public class ManagerApprovalFragment extends Fragment {
 
             boolean exists = false;
             for (ManagerApprovalItem existing : allRequests) {
-                if (existing != null && existing.getType() == reqType
-                        && existing.getWorkDay() != null && existing.getWorkDay().trim().equals(reqDate)) {
+                if (existing == null || existing.getType() != reqType) continue;
+                boolean sameDay = existing.getWorkDay() != null && existing.getWorkDay().trim().equals(reqDate);
+                String existingReason = existing.getReason() != null ? existing.getReason().trim() : "";
+                String localReason = req.getReason() != null ? req.getReason().trim() : "";
+                if (sameDay && existingReason.equals(localReason)) {
                     exists = true;
                     break;
                 }
@@ -325,7 +330,7 @@ public class ManagerApprovalFragment extends Fragment {
                 }
             }
 
-            allRequests.add(new ManagerApprovalItem(
+            ManagerApprovalItem localItem = new ManagerApprovalItem(
                     req.getUserId() != null ? req.getUserId() : (req.getId() != null ? req.getId() : ""),
                     "Nhân viên",
                     null,
@@ -339,7 +344,9 @@ public class ManagerApprovalFragment extends Fragment {
                     shiftId,
                     null,
                     reqDate
-            ));
+            );
+            localItem.setRequestId(req.getId());
+            allRequests.add(localItem);
         }
     }
 
@@ -367,7 +374,11 @@ public class ManagerApprovalFragment extends Fragment {
                 String workDay = item.getWorkDay() != null ? item.getWorkDay() : LocalDate.now().toString();
 
                 if (sharedPreferenceApp != null) {
-                    sharedPreferenceApp.updateSubmittedLeaveRequestStatus(workDay, item.getType().name(), ApprovalStatus.APPROVED);
+                    if (item.getRequestId() != null && !item.getRequestId().isEmpty()) {
+                        sharedPreferenceApp.updateSubmittedLeaveRequestStatusById(item.getRequestId(), ApprovalStatus.APPROVED);
+                    } else {
+                        sharedPreferenceApp.updateSubmittedLeaveRequestStatus(workDay, item.getType().name(), ApprovalStatus.APPROVED);
+                    }
                 }
 
                 if (item.getType() == ApprovalRequestType.SWAP) {
@@ -403,7 +414,11 @@ public class ManagerApprovalFragment extends Fragment {
                 String workDay = item.getWorkDay() != null ? item.getWorkDay() : LocalDate.now().toString();
 
                 if (sharedPreferenceApp != null) {
-                    sharedPreferenceApp.updateSubmittedLeaveRequestStatus(workDay, item.getType().name(), ApprovalStatus.REJECTED);
+                    if (item.getRequestId() != null && !item.getRequestId().isEmpty()) {
+                        sharedPreferenceApp.updateSubmittedLeaveRequestStatusById(item.getRequestId(), ApprovalStatus.REJECTED);
+                    } else {
+                        sharedPreferenceApp.updateSubmittedLeaveRequestStatus(workDay, item.getType().name(), ApprovalStatus.REJECTED);
+                    }
                 }
 
                 if (item.getType() == ApprovalRequestType.SWAP) {

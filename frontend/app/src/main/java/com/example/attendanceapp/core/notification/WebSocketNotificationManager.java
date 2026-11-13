@@ -20,6 +20,7 @@ import com.example.attendanceapp.domain.repository.AppStateRepository;
 import org.json.JSONObject;
 
 import java.time.LocalDateTime;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -217,14 +218,17 @@ public class WebSocketNotificationManager {
             String event = obj.optString("event", "");
             String typeStr = obj.optString("type", obj.optString("Type", event));
             UserRole currentRole = appStateRepository.getUserRole();
-            if (!NotificationRolePolicy.isAllowedForRole(typeStr, currentRole)) {
-                Log.d(TAG, "Ignored WebSocket notification type " + typeStr + " for role " + currentRole);
-                return;
-            }
 
             JSONObject data = obj.optJSONObject("data");
             if (data == null) {
                 data = obj;
+            }
+
+            boolean employeeApprovalResponse = currentRole == UserRole.EMPLOYEE
+                    && isApprovalResponseType(typeStr, data);
+            if (!NotificationRolePolicy.isAllowedForRole(typeStr, currentRole) && !employeeApprovalResponse) {
+                Log.d(TAG, "Ignored WebSocket notification type " + typeStr + " for role " + currentRole);
+                return;
             }
 
             String title;
@@ -268,10 +272,15 @@ public class WebSocketNotificationManager {
                     break;
 
                 case "CHANGE_WORK_SHIFT_RESPONSE":
+                case "SHIFT_CHANGE_RESPONSE":
                 case "SHIFT_CHANGE_APPROVED":
-                case "SCHEDULE_UPDATED":
-                    title = "Yêu cầu đổi ca đã duyệt";
-                    message = data.optString("message", data.optString("Message", "Yêu cầu đổi ca của bạn đã được phê duyệt."));
+                case "CHANGE_WORK_SHIFT_REJECTED":
+                case "SHIFT_CHANGE_REJECTED":
+                    boolean shiftApproved = isApprovalAccepted(typeStr, data, true);
+                    title = shiftApproved ? "Yêu cầu đổi ca đã duyệt" : "Yêu cầu đổi ca bị từ chối";
+                    message = approvalMessage(data, shiftApproved,
+                            "Yêu cầu đổi ca của bạn đã được phê duyệt.",
+                            "Yêu cầu đổi ca của bạn đã bị từ chối.");
                     type = NotificationType.SCHEDULE;
                     break;
 
@@ -283,9 +292,14 @@ public class WebSocketNotificationManager {
                     break;
 
                 case "CHANGE_LEAVE_REQUEST_RESPONSE":
+                case "LEAVE_RESPONSE":
                 case "LEAVE_APPROVED":
-                    title = "Đơn xin nghỉ phép đã duyệt";
-                    message = data.optString("message", data.optString("Message", "Đơn xin nghỉ phép của bạn đã được quản lý phê duyệt."));
+                case "LEAVE_REJECTED":
+                    boolean leaveApproved = isApprovalAccepted(typeStr, data, true);
+                    title = leaveApproved ? "Đơn xin nghỉ phép đã duyệt" : "Đơn xin nghỉ phép bị từ chối";
+                    message = approvalMessage(data, leaveApproved,
+                            "Đơn xin nghỉ phép của bạn đã được quản lý phê duyệt.",
+                            "Đơn xin nghỉ phép của bạn đã bị từ chối.");
                     type = NotificationType.LEAVE;
                     break;
 
@@ -297,15 +311,40 @@ public class WebSocketNotificationManager {
 
                 case "ATTENDANCE_ADJUSTMENT_RESPONSE":
                 case "ATTENDANCE_ADJUSTMENT_APPROVED":
-                    title = "Điều chỉnh chấm công đã duyệt";
-                    message = data.optString("message", data.optString("Message", "Yêu cầu điều chỉnh chấm công của bạn đã được phê duyệt."));
+                case "ATTENDANCE_ADJUSTMENT_REJECTED":
+                    boolean adjustmentApproved = isApprovalAccepted(typeStr, data, true);
+                    title = adjustmentApproved ? "Điều chỉnh chấm công đã duyệt" : "Điều chỉnh chấm công bị từ chối";
+                    message = approvalMessage(data, adjustmentApproved,
+                            "Yêu cầu điều chỉnh chấm công của bạn đã được phê duyệt.",
+                            "Yêu cầu điều chỉnh chấm công của bạn đã bị từ chối.");
                     type = NotificationType.ATTENDANCE;
                     break;
 
                 default:
-                    title = data.optString("title", data.optString("Title", "Thông báo mới"));
-                    message = data.optString("message", data.optString("Message", "Bạn có thông báo mới từ hệ thống"));
-                    type = NotificationRolePolicy.mapNotificationType(typeStr);
+                    if (isApprovalResponseType(typeStr, data)) {
+                        boolean approved = isApprovalAccepted(typeStr, data, true);
+                        String upper = typeStr != null ? typeStr.toUpperCase(Locale.US) : "";
+                        if (upper.contains("SHIFT") || upper.contains("WORK_SCHEDULE") || upper.contains("CHANGE_WORK")) {
+                            title = approved ? "Yêu cầu đổi ca đã duyệt" : "Yêu cầu đổi ca bị từ chối";
+                            type = NotificationType.SCHEDULE;
+                        } else if (upper.contains("LEAVE") || upper.contains("OFF")) {
+                            title = approved ? "Đơn xin nghỉ phép đã duyệt" : "Đơn xin nghỉ phép bị từ chối";
+                            type = NotificationType.LEAVE;
+                        } else if (upper.contains("ADJUSTMENT")) {
+                            title = approved ? "Điều chỉnh chấm công đã duyệt" : "Điều chỉnh chấm công bị từ chối";
+                            type = NotificationType.ATTENDANCE;
+                        } else {
+                            title = approved ? "Yêu cầu đã được duyệt" : "Yêu cầu bị từ chối";
+                            type = NotificationType.SYSTEM;
+                        }
+                        message = approvalMessage(data, approved,
+                                "Yêu cầu của bạn đã được phê duyệt.",
+                                "Yêu cầu của bạn đã bị từ chối.");
+                    } else {
+                        title = data.optString("title", data.optString("Title", "Thông báo mới"));
+                        message = data.optString("message", data.optString("Message", "Bạn có thông báo mới từ hệ thống"));
+                        type = NotificationRolePolicy.mapNotificationType(typeStr);
+                    }
                     break;
             }
 
@@ -314,6 +353,62 @@ public class WebSocketNotificationManager {
         } catch (Exception e) {
             Log.e(TAG, "Error parsing WebSocket message", e);
         }
+    }
+
+    private boolean isApprovalResponseType(String typeStr, JSONObject data) {
+        if (typeStr != null) {
+            String upper = typeStr.trim().toUpperCase(Locale.US);
+            if (upper.contains("RESPONSE") || upper.contains("APPROVED") || upper.contains("REJECTED")) {
+                return true;
+            }
+        }
+        if (data == null) return false;
+        return data.has("status") || data.has("Status");
+    }
+
+    private boolean isApprovalAccepted(String typeStr, JSONObject data, boolean defaultApproved) {
+        String type = typeStr != null ? typeStr.toUpperCase(Locale.US) : "";
+        if (type.contains("REJECT") || type.contains("REFUSE") || type.contains("DENY")) {
+            return false;
+        }
+        if (type.contains("APPROV") || type.contains("ACCEPT")) {
+            return true;
+        }
+        if (data != null) {
+            String status = data.optString("status", data.optString("Status", "")).trim().toLowerCase(Locale.US);
+            if (!status.isEmpty()) {
+                if (status.equals("false") || status.contains("reject") || status.contains("refuse")
+                        || status.contains("tu_choi") || status.contains("deny")) {
+                    return false;
+                }
+                if (status.equals("true") || status.contains("approv") || status.contains("accept")
+                        || status.contains("dong_y")) {
+                    return true;
+                }
+            }
+            String message = data.optString("message", data.optString("Message", "")).toLowerCase(Locale.US);
+            if (message.contains("từ chối") || message.contains("không chấp thuận")
+                    || message.contains("reject") || message.contains("refuse")) {
+                return false;
+            }
+            if (message.contains("đã duyệt") || message.contains("phê duyệt")
+                    || message.contains("approved") || message.contains("accept")) {
+                return true;
+            }
+        }
+        return defaultApproved;
+    }
+
+    private String approvalMessage(JSONObject data, boolean approved, String approvedMessage, String rejectedMessage) {
+        String message = "";
+        if (data != null) {
+            message = data.optString("message", data.optString("Message",
+                    data.optString("reason", data.optString("Reason", "")))).trim();
+        }
+        if (message.isEmpty()) {
+            return approved ? approvedMessage : rejectedMessage;
+        }
+        return message;
     }
 
     /**
