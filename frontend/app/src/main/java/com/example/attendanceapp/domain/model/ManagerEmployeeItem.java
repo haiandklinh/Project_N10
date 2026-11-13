@@ -64,4 +64,8 @@ public class ManagerEmployeeItem {
     public void setAssignedShiftName(String assignedShiftName) { this.assignedShiftName = assignedShiftName; }
     public String getAssignedShiftTime() { return assignedShiftTime; }
     public void setAssignedShiftTime(String assignedShiftTime) { this.assignedShiftTime = assignedShiftTime; }
+
+    private String payrollStatus;
+    public String getPayrollStatus() { return payrollStatus; }
+    public void setPayrollStatus(String payrollStatus) { this.payrollStatus = payrollStatus; }
 }

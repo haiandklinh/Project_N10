@@ -389,7 +389,10 @@ public class StaffRepositoryImpl implements StaffRepository {
     @Override
     public Single<BaseListResponse<StaffPayrollResponse>> getPayrollHistory() {
         return session.getCurrentUser()
-                .map(user -> user.getCompanyId() != null ? user.getCompanyId() : "")
+                .map(user -> {
+                    String cid = user.getCompanyId();
+                    return (cid != null && !cid.trim().isEmpty()) ? cid.trim() : "";
+                })
                 .defaultIfEmpty("")
                 .<BaseListResponse<StaffPayrollResponse>>flatMap(managerId -> {
                     if (managerId.isEmpty()) {
@@ -397,11 +400,13 @@ public class StaffRepositoryImpl implements StaffRepository {
                                 .flatMap(compResponse -> {
                                     if (compResponse != null && compResponse.getData() != null && !compResponse.getData().isEmpty()) {
                                         String mId = compResponse.getData().get(0).getManagerId();
-                                        return api.getPayrollHistory(mId);
+                                        if (mId != null && !mId.trim().isEmpty()) {
+                                            return api.getPayrollHistory(mId.trim());
+                                        }
                                     }
-                                    return Single.just(new BaseListResponse<StaffPayrollResponse>(new java.util.ArrayList<>()));
+                                    return api.getPayrollHistory(null);
                                 })
-                                .onErrorReturnItem(new BaseListResponse<StaffPayrollResponse>(new java.util.ArrayList<>()));
+                                .onErrorResumeNext(err -> api.getPayrollHistory(null));
                     }
                     return api.getPayrollHistory(managerId);
                 })
@@ -411,7 +416,8 @@ public class StaffRepositoryImpl implements StaffRepository {
 
     @Override
     public Single<BaseListResponse<StaffPayrollResponse>> getPayrollHistory(String managerId) {
-        return api.getPayrollHistory(managerId)
+        String cleanManagerId = (managerId != null && !managerId.trim().isEmpty()) ? managerId.trim() : null;
+        return api.getPayrollHistory(cleanManagerId)
                 .subscribeOn(Schedulers.io())
                 .compose(ApiErrorMapper.forSingle("Lấy lịch sử phiếu lương thất bại"));
     }

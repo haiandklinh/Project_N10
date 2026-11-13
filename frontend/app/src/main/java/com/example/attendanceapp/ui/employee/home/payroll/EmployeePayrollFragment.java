@@ -146,6 +146,9 @@ public class EmployeePayrollFragment extends Fragment {
     }
 
     private void showEmptyState() {
+        if (adapter != null) {
+            adapter.updateData(new ArrayList<>());
+        }
         binding.includeHeader.tvStatBasic.setText("0đ");
         binding.includeHeader.tvStatMax.setText("0đ");
         binding.includeHeader.tvStatAvg.setText("0đ");

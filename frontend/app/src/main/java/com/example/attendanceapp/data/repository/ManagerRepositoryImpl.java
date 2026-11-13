@@ -287,7 +287,8 @@ public class ManagerRepositoryImpl implements ManagerRepository {
 
     @Override
     public Single<BaseListResponse<CalculatePayrollResponse>> getPayrollHistory(String staffId) {
-        return api.getPayrollHistory(staffId)
+        String cleanStaffId = (staffId != null && !staffId.trim().isEmpty()) ? staffId.trim() : null;
+        return api.getPayrollHistory(cleanStaffId)
                 .subscribeOn(Schedulers.io())
                 .compose(ApiErrorMapper.forSingle("Lấy lịch sử tính lương thất bại"));
     }

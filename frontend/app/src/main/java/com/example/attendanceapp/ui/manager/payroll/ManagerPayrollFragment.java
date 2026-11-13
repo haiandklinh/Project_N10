@@ -16,6 +16,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.attendanceapp.R;
 import com.example.attendanceapp.data.dto.request.manager.CalculatePayrollRequest;
+import com.example.attendanceapp.data.dto.response.BaseListResponse;
+import com.example.attendanceapp.data.dto.response.manager.CalculatePayrollResponse;
 import com.example.attendanceapp.data.dto.response.manager.StaffItemResponse;
 import com.example.attendanceapp.databinding.FragmentManagerPayrollBinding;
 import com.example.attendanceapp.domain.model.EmployeeStatus;
@@ -23,13 +25,18 @@ import com.example.attendanceapp.domain.model.ManagerEmployeeItem;
 import com.example.attendanceapp.domain.repository.ManagerRepository;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 import javax.inject.Inject;
 
 import dagger.hilt.android.AndroidEntryPoint;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
@@ -58,6 +65,14 @@ public class ManagerPayrollFragment extends Fragment {
         setupToolbar();
         setupList();
         setupListeners();
+        setupMonthHeader();
+        loadPayrollFromApi();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        loadPayrollFromApi();
     }
 
     private void setupToolbar() {
@@ -65,6 +80,13 @@ public class ManagerPayrollFragment extends Fragment {
             requireActivity().getOnBackPressedDispatcher().onBackPressed();
         });
         binding.toolbarApp.setTitle("Quản lý tiền lương");
+    }
+
+    private void setupMonthHeader() {
+        try {
+            LocalDate now = LocalDate.now();
+            binding.tvMonthPicker.setText(String.format(Locale.getDefault(), "Tháng %02d/%d", now.getMonthValue(), now.getYear()));
+        } catch (Exception ignored) {}
     }
 
     private void setupList() {
@@ -84,48 +106,99 @@ public class ManagerPayrollFragment extends Fragment {
         });
 
         binding.rvPayrollList.setAdapter(adapter);
-        loadEmployeesFromApi();
     }
 
-    private void loadEmployeesFromApi() {
+    private void loadPayrollFromApi() {
         if (managerRepository == null) return;
         disposables.add(
-                managerRepository.getStaffs()
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(
-                                response -> {
-                                    if (response != null && response.getData() != null && !response.getData().isEmpty()) {
-                                        employeeList.clear();
-                                        for (StaffItemResponse staff : response.getData()) {
-                                            String id = staff.getStaffId();
-                                            String code = "NV-" + (id != null && id.length() >= 4 ? id.substring(id.length() - 4) : (id != null ? id : ""));
-                                            EmployeeStatus status = "deactive".equalsIgnoreCase(staff.getStatus())
-                                                    ? EmployeeStatus.TERMINATED
-                                                    : EmployeeStatus.ACTIVE;
-                                            String pos = staff.getPosition() != null && !staff.getPosition().isEmpty() ? staff.getPosition() : "Nhân viên";
-                                            employeeList.add(new ManagerEmployeeItem(
-                                                    id, code,
-                                                    staff.getNameStaff() != null ? staff.getNameStaff() : "Nhân viên",
-                                                    staff.getAvatar() != null ? staff.getAvatar() : "",
-                                                    pos, "Phòng ban chung", "",
-                                                    staff.getDateOfBirth() != null ? staff.getDateOfBirth() : "",
-                                                    status, 0, 0, 0
-                                            ));
+                Single.zip(
+                        managerRepository.getStaffs().onErrorReturnItem(new BaseListResponse<>(new ArrayList<>())),
+                        managerRepository.getPayrollHistory(null).onErrorReturnItem(new BaseListResponse<>(new ArrayList<>())),
+                        (staffResponse, payrollResponse) -> {
+                            Map<String, CalculatePayrollResponse> latestPayrollByStaff = new HashMap<>();
+                            if (payrollResponse != null && payrollResponse.getData() != null) {
+                                for (CalculatePayrollResponse p : payrollResponse.getData()) {
+                                    if (p != null && p.getStaffId() != null) {
+                                        CalculatePayrollResponse current = latestPayrollByStaff.get(p.getStaffId());
+                                        if (current == null || isMoreRecent(p.getTimeCreate(), current.getTimeCreate())) {
+                                            latestPayrollByStaff.put(p.getStaffId(), p);
                                         }
-                                        adapter.updateData(employeeList);
                                     }
-                                },
-                                error -> {
-                                    Toast.makeText(getContext(), "Không thể tải danh sách nhân viên: " + error.getMessage(), Toast.LENGTH_SHORT).show();
                                 }
-                        )
+                            }
+
+                            List<ManagerEmployeeItem> items = new ArrayList<>();
+                            if (staffResponse != null && staffResponse.getData() != null) {
+                                for (StaffItemResponse staff : staffResponse.getData()) {
+                                    String id = staff.getStaffId();
+                                    String code = "NV-" + (id != null && id.length() >= 4 ? id.substring(id.length() - 4) : (id != null ? id : ""));
+                                    EmployeeStatus status = "deactive".equalsIgnoreCase(staff.getStatus())
+                                            ? EmployeeStatus.TERMINATED
+                                            : EmployeeStatus.ACTIVE;
+                                    String pos = staff.getPosition() != null && !staff.getPosition().isEmpty() ? staff.getPosition() : "Nhân viên";
+
+                                    CalculatePayrollResponse payroll = id != null ? latestPayrollByStaff.get(id) : null;
+                                    int shifts = payroll != null ? payroll.getNumberOfWorkShifts() : 0;
+                                    long salary = payroll != null ? (long) payroll.getTotalSalary() : 0L;
+                                    String payrollStatus = payroll != null ? payroll.getStatus() : null;
+
+                                    ManagerEmployeeItem item = new ManagerEmployeeItem(
+                                            id, code,
+                                            staff.getNameStaff() != null ? staff.getNameStaff() : "Nhân viên",
+                                            staff.getAvatar() != null ? staff.getAvatar() : "",
+                                            pos, "Phòng ban chung", "",
+                                            staff.getDateOfBirth() != null ? staff.getDateOfBirth() : "",
+                                            status, shifts, 0, salary
+                                    );
+                                    item.setPayrollStatus(payrollStatus);
+                                    items.add(item);
+                                }
+                            }
+
+                            // Fallback nếu danh sách staffs rỗng nhưng đã có dữ liệu payroll từ backend
+                            if (items.isEmpty() && !latestPayrollByStaff.isEmpty()) {
+                                for (Map.Entry<String, CalculatePayrollResponse> entry : latestPayrollByStaff.entrySet()) {
+                                    String id = entry.getKey();
+                                    CalculatePayrollResponse payroll = entry.getValue();
+                                    String code = "NV-" + (id != null && id.length() >= 4 ? id.substring(id.length() - 4) : (id != null ? id : ""));
+                                    String name = payroll.getStaffName() != null && !payroll.getStaffName().isEmpty() ? payroll.getStaffName() : "Nhân viên";
+                                    ManagerEmployeeItem item = new ManagerEmployeeItem(
+                                            id, code, name, "", "Nhân viên", "Phòng ban chung", "", "",
+                                            EmployeeStatus.ACTIVE, payroll.getNumberOfWorkShifts(), 0, (long) payroll.getTotalSalary()
+                                    );
+                                    item.setPayrollStatus(payroll.getStatus());
+                                    items.add(item);
+                                }
+                            }
+
+                            return items;
+                        }
+                )
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        items -> {
+                            employeeList.clear();
+                            employeeList.addAll(items);
+                            adapter.updateData(employeeList);
+                        },
+                        error -> {
+                            Toast.makeText(getContext(), "Không thể tải danh sách lương: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                )
         );
+    }
+
+    private static boolean isMoreRecent(String time1, String time2) {
+        if (time1 == null) return false;
+        if (time2 == null) return true;
+        return time1.compareTo(time2) >= 0;
     }
 
     private void setupListeners() {
         binding.tvMonthPicker.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Kỳ lương hiện tại: Tháng 10/2026", Toast.LENGTH_SHORT).show();
+            CharSequence currentMonth = binding.tvMonthPicker.getText();
+            Toast.makeText(getContext(), "Kỳ lương hiện tại: " + (currentMonth != null ? currentMonth : ""), Toast.LENGTH_SHORT).show();
         });
 
         binding.btnConfirmAll.setOnClickListener(v -> {
@@ -202,10 +275,18 @@ public class ManagerPayrollFragment extends Fragment {
 
     private void executeBulkPayrollCalculation(double baseSalary) {
         int total = employeeList.size();
-        final int[] successCount = {0};
+        final int[] finishedCount = {0};
+
+        Toast.makeText(getContext(), "Đang tiến hành chốt lương cho " + total + " nhân sự...", Toast.LENGTH_SHORT).show();
 
         for (ManagerEmployeeItem emp : employeeList) {
-            if (emp.getUserId() == null || emp.getUserId().isEmpty()) continue;
+            if (emp.getUserId() == null || emp.getUserId().isEmpty()) {
+                finishedCount[0]++;
+                if (finishedCount[0] == total) {
+                    loadPayrollFromApi();
+                }
+                continue;
+            }
             CalculatePayrollRequest req = new CalculatePayrollRequest(emp.getUserId(), baseSalary);
             disposables.add(
                     managerRepository.calculatePayroll(req)
@@ -213,19 +294,22 @@ public class ManagerPayrollFragment extends Fragment {
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(
                                     res -> {
-                                        successCount[0]++;
-                                        if (successCount[0] == total) {
+                                        finishedCount[0]++;
+                                        if (finishedCount[0] == total) {
                                             Toast.makeText(getContext(), "Đã chốt và tính lương thành công cho " + total + " nhân sự!", Toast.LENGTH_SHORT).show();
+                                            loadPayrollFromApi();
                                         }
                                     },
                                     err -> {
-                                        // continue other requests
+                                        finishedCount[0]++;
+                                        if (finishedCount[0] == total) {
+                                            Toast.makeText(getContext(), "Đã hoàn thành chốt lương đợt này!", Toast.LENGTH_SHORT).show();
+                                            loadPayrollFromApi();
+                                        }
                                     }
                             )
             );
         }
-
-        Toast.makeText(getContext(), "Đang tiến hành chốt lương cho " + total + " nhân sự...", Toast.LENGTH_SHORT).show();
     }
 
     @Override
