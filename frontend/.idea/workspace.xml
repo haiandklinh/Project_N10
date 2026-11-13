@@ -844,15 +844,39 @@
   <component name="ChangeListManager">
     <list default="true" id="f266c859-d2e1-495b-9007-94bd9ef85a91" name="Changes" comment="update notification (Websocket)">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/core/notification/MyFirebaseMessagingService.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/core/notification/MyFirebaseMessagingService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/core/notification/NotificationRolePolicy.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/core/notification/NotificationRolePolicy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/core/notification/WebSocketNotificationManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/core/notification/WebSocketNotificationManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/core/utils/CloudImageUploader.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/core/utils/CloudImageUploader.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/data/local/HandledRequestManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/data/local/HandledRequestManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/data/local/StaffAvatarCache.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/data/local/StaffAvatarCache.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/data/local/entity/NotificationEntity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/data/local/entity/NotificationEntity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/data/local/pref/SharedPreferenceApp.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/data/local/pref/SharedPreferenceApp.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/data/remote/AuthApi.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/data/remote/AuthApi.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/data/repository/AuthRepositoryImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/data/repository/AuthRepositoryImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/data/repository/ManagerRepositoryImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/data/repository/ManagerRepositoryImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/data/repository/NotificationRepositoryImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/data/repository/NotificationRepositoryImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/main/auth/company/StaffCompanySelectionFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/main/auth/company/StaffCompanySelectionFragment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/data/repository/StaffRepositoryImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/data/repository/StaffRepositoryImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/domain/model/ManagerApprovalItem.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/domain/model/ManagerApprovalItem.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/domain/usecase/auth/ForgotPasswordUseCase.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/domain/usecase/auth/ForgotPasswordUseCase.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/employee/profile/EmployeeChangePasswordFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/employee/profile/EmployeeChangePasswordFragment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/employee/profile/EmployeeEditBasicInfoFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/employee/profile/EmployeeEditBasicInfoFragment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/employee/profile/EmployeeEditProfileFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/employee/profile/EmployeeEditProfileFragment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/employee/schedule/leave/EmployeeCreateRequestContainerFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/employee/schedule/leave/EmployeeCreateRequestContainerFragment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/employee/schedule/leave/EmployeeLeaveHistoryFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/employee/schedule/leave/EmployeeLeaveHistoryFragment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/main/auth/forgotpassword/ForgotPasswordViewModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/main/auth/forgotpassword/ForgotPasswordViewModel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/main/auth/login/LoginFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/main/auth/login/LoginFragment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/main/auth/login/LoginSavedAccountFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/main/auth/login/LoginSavedAccountFragment.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/ManagerMainViewModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/ManagerMainViewModel.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/payroll/ManagerPayrollDetailFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/payroll/ManagerPayrollDetailFragment.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/payroll/ManagerPayrollFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/payroll/ManagerPayrollFragment.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/fragment_manager_payroll_detail.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/fragment_manager_payroll_detail.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/fragment_staff_company_selection.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/fragment_staff_company_selection.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/test_ui_calendar.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/approval/ManagerApprovalFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/approval/ManagerApprovalFragment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/attendance_history/ManagerAttendanceHistoryViewModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/attendance_history/ManagerAttendanceHistoryViewModel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/home/ManagerHomeViewModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/home/ManagerHomeViewModel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/profile/ManagerChangePasswordFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/profile/ManagerChangePasswordFragment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/profile/ManagerEditBasicInfoFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/profile/ManagerEditBasicInfoFragment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/profile/ManagerEditProfileFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/attendanceapp/ui/manager/profile/ManagerEditProfileFragment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/fragment_change_password.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/fragment_change_password.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/fragment_edit_basic_info.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/fragment_edit_basic_info.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/fragment_edit_profile.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/fragment_edit_profile.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1055,7 +1079,15 @@
       <option name="project" value="LOCAL" />
       <updated>1794552129901</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="update notification (Websocket)">
+      <option name="closed" value="true" />
+      <created>1794557256451</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1794557256451</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">

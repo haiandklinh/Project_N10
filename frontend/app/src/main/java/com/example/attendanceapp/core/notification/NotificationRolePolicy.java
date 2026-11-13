@@ -50,11 +50,17 @@ public final class NotificationRolePolicy {
             case "SCHEDULE":
             case "JOIN_COMPANY_REQUEST_RESPONSE":
             case "CHANGE_WORK_SHIFT_RESPONSE":
+            case "SHIFT_CHANGE_RESPONSE":
             case "SHIFT_CHANGE_APPROVED":
+            case "CHANGE_WORK_SHIFT_REJECTED":
+            case "SHIFT_CHANGE_REJECTED":
             case "CHANGE_LEAVE_REQUEST_RESPONSE":
+            case "LEAVE_RESPONSE":
             case "LEAVE_APPROVED":
+            case "LEAVE_REJECTED":
             case "ATTENDANCE_ADJUSTMENT_RESPONSE":
             case "ATTENDANCE_ADJUSTMENT_APPROVED":
+            case "ATTENDANCE_ADJUSTMENT_REJECTED":
             case "PAYROLL":
             case "REMINDER":
                 return Audience.EMPLOYEE_ONLY;
@@ -62,6 +68,7 @@ public final class NotificationRolePolicy {
             default:
                 if (normalized.endsWith("_RESPONSE")
                         || normalized.endsWith("_APPROVED")
+                        || normalized.endsWith("_REJECTED")
                         || normalized.endsWith("_ASSIGNED")) {
                     return Audience.EMPLOYEE_ONLY;
                 }
@@ -112,7 +119,9 @@ public final class NotificationRolePolicy {
             case "CHANGE_LEAVE_REQUEST":
             case "CHANGE_LEAVE_REQUEST_RESPONSE":
             case "LEAVE_REQUEST":
+            case "LEAVE_RESPONSE":
             case "LEAVE_APPROVED":
+            case "LEAVE_REJECTED":
             case "LEAVE":
                 return NotificationType.LEAVE;
 
@@ -123,9 +132,12 @@ public final class NotificationRolePolicy {
             case "CHANGE_WORK_SHIFT_REQUEST":
             case "CHANGE_WORK_SHIFT_RESPONSE":
             case "SHIFT_CHANGE_REQUEST":
+            case "SHIFT_CHANGE_RESPONSE":
             case "NEW_CHANGE_REQUEST":
             case "WORK_SCHEDULE_REQUEST":
             case "SHIFT_CHANGE_APPROVED":
+            case "CHANGE_WORK_SHIFT_REJECTED":
+            case "SHIFT_CHANGE_REJECTED":
             case "SCHEDULE_UPDATED":
             case "SCHEDULE":
                 return NotificationType.SCHEDULE;
@@ -133,6 +145,7 @@ public final class NotificationRolePolicy {
             case "ATTENDANCE_ADJUSTMENT_REQUEST":
             case "ATTENDANCE_ADJUSTMENT_RESPONSE":
             case "ATTENDANCE_ADJUSTMENT_APPROVED":
+            case "ATTENDANCE_ADJUSTMENT_REJECTED":
             case "ATTENDANCE":
             case "REMINDER":
                 return NotificationType.ATTENDANCE;

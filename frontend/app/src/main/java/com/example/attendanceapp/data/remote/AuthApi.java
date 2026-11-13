@@ -48,7 +48,7 @@ public interface AuthApi {
     Single<VerifyOtpResponse> verifyForgotPasswordOtp(@Body VerifyOtpRequest request);
 
     @PATCH("auth/forgot-password/reset")
-    Completable resetPassword(@Body ResetPasswordRequest request);
+    Single<com.example.attendanceapp.data.dto.response.auth.MessageResponse> resetPassword(@Body ResetPasswordRequest request);
 
     // Chỉ dùng trong Authenticator, giữ Call để gọi đồng bộ
     @POST("auth/refresh_token")

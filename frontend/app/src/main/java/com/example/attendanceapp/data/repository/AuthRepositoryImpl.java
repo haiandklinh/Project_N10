@@ -141,6 +141,16 @@ public class AuthRepositoryImpl implements AuthRepository {
         }
 
         return authApi.resetPassword(new ResetPasswordRequest(phoneNumber, newPassword))
+                .flatMapCompletable(response -> {
+                    if (response != null && "Reset Success".equalsIgnoreCase(response.getMessage())) {
+                        return Completable.complete();
+                    } else {
+                        String msg = (response != null && response.getMessage() != null)
+                                ? response.getMessage()
+                                : "Đặt lại mật khẩu thất bại";
+                        return Completable.error(new AppException(msg, 400, "RESET_FAILED"));
+                    }
+                })
                 .compose(ApiErrorMapper.forCompletable("Đặt lại mật khẩu thất bại"));
     }
 

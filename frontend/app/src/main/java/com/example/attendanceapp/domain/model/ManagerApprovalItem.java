@@ -23,6 +23,7 @@ public class ManagerApprovalItem {
     @Nullable private final String currentShiftId;
     @Nullable private final String targetShiftId;
     @Nullable private final String workDay;
+    @Nullable private String requestId;
 
     public ManagerApprovalItem(String id, String employeeName, String employeeAvatarUrl, String position,
                                ApprovalRequestType type, String targetDateLabel, String detailLabel,
@@ -64,4 +65,6 @@ public class ManagerApprovalItem {
     @Nullable public String getCurrentShiftId() { return currentShiftId; }
     @Nullable public String getTargetShiftId() { return targetShiftId; }
     @Nullable public String getWorkDay() { return workDay; }
+    @Nullable public String getRequestId() { return requestId; }
+    public void setRequestId(@Nullable String requestId) { this.requestId = requestId; }
 }

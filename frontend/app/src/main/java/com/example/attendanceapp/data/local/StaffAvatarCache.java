@@ -30,10 +30,8 @@ public final class StaffAvatarCache {
     public static void saveAvatar(Context context, @Nullable String id, @Nullable String name, @Nullable String phone, @Nullable String avatarUri) {
         if (context == null || avatarUri == null || avatarUri.trim().isEmpty()) return;
         String cleanUri = avatarUri.trim();
-        if ("null".equalsIgnoreCase(cleanUri) || "none".equalsIgnoreCase(cleanUri)) return;
+        if ("null".equalsIgnoreCase(cleanUri) || "none".equalsIgnoreCase(cleanUri) || "string".equalsIgnoreCase(cleanUri)) return;
         SharedPreferences.Editor editor = getPrefs(context).edit();
-
-        editor.putString(KEY_LATEST, cleanUri);
 
         if (id != null && !id.trim().isEmpty()) {
             editor.putString(KEY_PREFIX_ID + id.trim(), cleanUri);
@@ -53,7 +51,7 @@ public final class StaffAvatarCache {
 
     /**
      * Chuyển đổi Uri/File ảnh đại diện thành chuỗi Base64 thumbnail kích thước nhỏ (~6-12KB)
-     * để gửi lên Backend lưu vào Database, giúp đồng bộ đa thiết bị và giữ nguyên ảnh ngay cả khi xóa app cài lại.
+     * để gửi lên Backend lưu vào Database nếu cần.
      */
     @Nullable
     public static String encodeImageToBase64(@Nullable Context context, @Nullable String uriOrPath) {
@@ -61,7 +59,7 @@ public final class StaffAvatarCache {
         String trimmed = uriOrPath.trim();
         if (trimmed.startsWith("data:image")) return trimmed;
         if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) return trimmed;
-        if (trimmed.equalsIgnoreCase("null") || trimmed.equalsIgnoreCase("none")) return null;
+        if (trimmed.equalsIgnoreCase("null") || trimmed.equalsIgnoreCase("none") || trimmed.equalsIgnoreCase("string")) return null;
 
         java.io.InputStream in = null;
         try {
@@ -179,6 +177,10 @@ public final class StaffAvatarCache {
         return null;
     }
 
+    /**
+     * Lấy avatar theo ID, Tên hoặc Số điện thoại.
+     * Trả về null nếu không tìm thấy bản ghi tương ứng (không fallback sang avatar của người dùng khác).
+     */
     @Nullable
     public static String getEffectiveAvatar(Context context, @Nullable String id, @Nullable String name, @Nullable String phone) {
         if (context == null) return null;
@@ -191,7 +193,7 @@ public final class StaffAvatarCache {
         String byPhone = getAvatarByPhone(context, phone);
         if (byPhone != null) return byPhone;
 
-        return getLatestAvatar(context);
+        return null;
     }
 
     @Nullable
@@ -201,24 +203,12 @@ public final class StaffAvatarCache {
         if (latest != null && !latest.trim().isEmpty() && isValidFile(latest)) {
             return latest;
         }
-
-        // Fallback: Quét tìm file ảnh mới nhất trong thư mục files/avatars
-        try {
-            File avatarDir = new File(context.getFilesDir(), "avatars");
-            if (avatarDir.exists() && avatarDir.isDirectory()) {
-                File[] files = avatarDir.listFiles((dir, fName) -> fName.endsWith(".jpg") || fName.endsWith(".png") || fName.endsWith(".jpeg"));
-                if (files != null && files.length > 0) {
-                    Arrays.sort(files, Comparator.comparingLong(File::lastModified).reversed());
-                    return files[0].getAbsolutePath();
-                }
-            }
-        } catch (Exception ignored) {
-        }
         return null;
     }
 
     private static boolean isValidFile(String pathOrUri) {
         if (pathOrUri == null || pathOrUri.isEmpty()) return false;
+        if ("null".equalsIgnoreCase(pathOrUri) || "none".equalsIgnoreCase(pathOrUri) || "string".equalsIgnoreCase(pathOrUri)) return false;
         if (pathOrUri.startsWith("http://") || pathOrUri.startsWith("https://")) return true;
         if (pathOrUri.startsWith("data:image") || pathOrUri.startsWith("content://") || pathOrUri.length() > 200) return true;
         try {

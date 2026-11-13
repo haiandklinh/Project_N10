@@ -69,6 +69,12 @@ public class StaffRepositoryImpl implements StaffRepository {
     public Single<UserAccount> getProfile() {
         return api.getStaffProfile()
                 .subscribeOn(Schedulers.io())
+                .map(response -> {
+                    if (!isPlaceholderAvatar(response.getAvatar()) && context != null) {
+                        StaffAvatarCache.saveAvatar(context, response.getFullName(), null, response.getAvatar());
+                    }
+                    return response;
+                })
                 .flatMap(response -> session.saveStaffProfile(response)
                         .doOnSuccess(account -> {
                             appState.saveUserRole(UserRole.EMPLOYEE);
@@ -97,9 +103,6 @@ public class StaffRepositoryImpl implements StaffRepository {
             }
         }
         final CreateStaffProfileRequest finalRequest = request;
-        if (finalRequest.getAvatar() != null && !finalRequest.getAvatar().isEmpty() && context != null) {
-            StaffAvatarCache.saveAvatar(context, finalRequest.getFullName(), null, finalRequest.getAvatar());
-        }
         return api.createStaffProfile(finalRequest)
                 .subscribeOn(Schedulers.io())
                 .map(response -> {
@@ -114,6 +117,9 @@ public class StaffRepositoryImpl implements StaffRepository {
                     }
                     if (isPlaceholderAvatar(response.getAvatar())) {
                         response.setAvatar(finalRequest.getAvatar());
+                    }
+                    if (!isPlaceholderAvatar(response.getAvatar()) && context != null) {
+                        StaffAvatarCache.saveAvatar(context, response.getFullName(), null, response.getAvatar());
                     }
                     return response;
                 })
@@ -136,9 +142,6 @@ public class StaffRepositoryImpl implements StaffRepository {
                 request.setAvatar(cloudUrl);
             }
         }
-        if (request.getAvatar() != null && !request.getAvatar().isEmpty() && context != null) {
-            StaffAvatarCache.saveAvatar(context, request.getFullName(), null, request.getAvatar());
-        }
         return api.updateStaffProfile(request)
                 .subscribeOn(Schedulers.io())
                 .map(response -> {
@@ -147,6 +150,9 @@ public class StaffRepositoryImpl implements StaffRepository {
                     }
                     if (isPlaceholderAvatar(response.getAvatar())) {
                         response.setAvatar(request.getAvatar());
+                    }
+                    if (!isPlaceholderAvatar(response.getAvatar()) && context != null) {
+                        StaffAvatarCache.saveAvatar(context, response.getFullName(), null, response.getAvatar());
                     }
                     return response;
                 })
@@ -178,7 +184,9 @@ public class StaffRepositoryImpl implements StaffRepository {
                 safeAvatar = cloudUrl;
             }
         }
-        StaffAvatarCache.saveAvatar(context, safeName, null, safeAvatar);
+        if (!isPlaceholderAvatar(safeAvatar) && context != null) {
+            StaffAvatarCache.saveAvatar(context, safeName, null, safeAvatar);
+        }
 
         JoinCompanyRequest body = new JoinCompanyRequest(code, safeName, safeAvatar);
 

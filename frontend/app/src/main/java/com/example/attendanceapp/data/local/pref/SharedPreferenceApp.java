@@ -453,6 +453,31 @@ public class SharedPreferenceApp {
     }
 
     /**
+     * Cập nhật trạng thái theo id đơn cụ thể. Nếu có id thì chỉ cập nhật đúng đơn đó,
+     * tránh đánh dấu nhầm các đơn khác cùng ngày/loại.
+     */
+    public void updateSubmittedLeaveRequestStatusById(String id, ApprovalStatus newStatus) {
+        if (id == null || id.trim().isEmpty() || newStatus == null) return;
+        List<LeaveRequest> list = getSubmittedLeaveRequests();
+        boolean changed = false;
+        for (LeaveRequest req : list) {
+            if (id.equals(req.getId())) {
+                req.setStatus(newStatus);
+                changed = true;
+                break;
+            }
+        }
+        if (changed) {
+            try {
+                String json = new com.google.gson.Gson().toJson(list);
+                sharedPreferences.edit().putString("employee_submitted_leave_requests", json).apply();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
      * Xóa sạch trạng thái phiên làm việc khi người dùng Đăng xuất
      * KHÔNG xóa KEY_IS_ACCOUNT_SAVED để giữ tài khoản đã lưu cho lần đăng nhập sau
      */

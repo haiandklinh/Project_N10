@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -276,13 +277,15 @@ public class NotificationRepositoryImpl implements NotificationRepository {
                                                                         for (com.example.attendanceapp.data.dto.response.staff.NotificationItemResponse item : res.getData()) {
                                                                             if (item == null) continue;
                                                                             String typeStr = item.getNotificationType();
-                                                                            if (!NotificationRolePolicy.isAllowedForRole(typeStr, UserRole.EMPLOYEE)) {
+                                                                            if (!isVisibleToEmployee(typeStr, item.getContent())) {
                                                                                 continue;
                                                                             }
 
                                                                             String title;
                                                                             String msg;
                                                                             NotificationType type = NotificationRolePolicy.mapNotificationType(typeStr);
+                                                                            boolean approvalResponse = isApprovalResponseType(typeStr, item.getContent());
+                                                                            String upperType = typeStr != null ? typeStr.toUpperCase(Locale.US) : "";
 
                                                                             if ("ASSIGN_WORK_SCHEDULE".equalsIgnoreCase(typeStr)
                                                                                     || "SCHEDULE_ASSIGNED".equalsIgnoreCase(typeStr)
@@ -292,21 +295,18 @@ public class NotificationRepositoryImpl implements NotificationRepository {
                                                                             } else if ("SCHEDULE_UPDATED".equalsIgnoreCase(typeStr)) {
                                                                                 title = "Cập nhật lịch làm việc";
                                                                                 msg = extractContentMessage(item.getContent(), "Lịch làm việc của bạn đã được cập nhật.");
+                                                                            } else if (approvalResponse && (upperType.contains("SHIFT") || upperType.contains("WORK_SCHEDULE") || upperType.contains("CHANGE_WORK"))) {
+                                                                                title = "Kết quả yêu cầu đổi ca";
+                                                                                msg = extractContentMessage(item.getContent(), "Quản lý đã phản hồi yêu cầu đổi ca làm việc.");
+                                                                            } else if (approvalResponse && (upperType.contains("LEAVE") || upperType.contains("OFF"))) {
+                                                                                title = "Kết quả đơn xin nghỉ phép";
+                                                                                msg = extractContentMessage(item.getContent(), "Quản lý đã phản hồi đơn xin nghỉ phép của bạn.");
+                                                                            } else if (approvalResponse && upperType.contains("ADJUSTMENT")) {
+                                                                                title = "Kết quả điều chỉnh chấm công";
+                                                                                msg = extractContentMessage(item.getContent(), "Quản lý đã phản hồi yêu cầu điều chỉnh chấm công.");
                                                                             } else if ("JOIN_COMPANY_REQUEST_RESPONSE".equalsIgnoreCase(typeStr)) {
                                                                                 title = "Kết quả yêu cầu gia nhập";
                                                                                 msg = extractContentMessage(item.getContent(), "Quản lý đã phản hồi yêu cầu gia nhập công ty của bạn.");
-                                                                            } else if ("CHANGE_WORK_SHIFT_RESPONSE".equalsIgnoreCase(typeStr)
-                                                                                    || "SHIFT_CHANGE_APPROVED".equalsIgnoreCase(typeStr)) {
-                                                                                title = "Kết quả yêu cầu đổi ca";
-                                                                                msg = extractContentMessage(item.getContent(), "Quản lý đã phản hồi yêu cầu đổi ca làm việc.");
-                                                                            } else if ("CHANGE_LEAVE_REQUEST_RESPONSE".equalsIgnoreCase(typeStr)
-                                                                                    || "LEAVE_APPROVED".equalsIgnoreCase(typeStr)) {
-                                                                                title = "Kết quả đơn xin nghỉ phép";
-                                                                                msg = extractContentMessage(item.getContent(), "Quản lý đã phản hồi đơn xin nghỉ phép của bạn.");
-                                                                            } else if ("ATTENDANCE_ADJUSTMENT_RESPONSE".equalsIgnoreCase(typeStr)
-                                                                                    || "ATTENDANCE_ADJUSTMENT_APPROVED".equalsIgnoreCase(typeStr)) {
-                                                                                title = "Kết quả điều chỉnh chấm công";
-                                                                                msg = extractContentMessage(item.getContent(), "Quản lý đã phản hồi yêu cầu điều chỉnh chấm công.");
                                                                             } else if ("PAYROLL".equalsIgnoreCase(typeStr)) {
                                                                                 title = "Thông báo bảng lương";
                                                                                 msg = extractContentMessage(item.getContent(), "Bảng lương của bạn đã được cập nhật.");
@@ -357,6 +357,24 @@ public class NotificationRepositoryImpl implements NotificationRepository {
         } else {
             return Completable.complete();
         }
+    }
+
+    private boolean isApprovalResponseType(String typeStr, Map<String, Object> content) {
+        if (typeStr == null) return false;
+        String upper = typeStr.trim().toUpperCase(Locale.US);
+        if (upper.endsWith("_RESPONSE") || upper.endsWith("_APPROVED") || upper.endsWith("_REJECTED")
+                || upper.contains("RESPONSE") || upper.contains("APPROVED") || upper.contains("REJECTED")) {
+            return true;
+        }
+        return content != null && content.containsKey("status");
+    }
+
+    private boolean isVisibleToEmployee(String typeStr, Map<String, Object> content) {
+        if (NotificationRolePolicy.isAllowedForRole(typeStr, UserRole.EMPLOYEE)) {
+            return true;
+        }
+        // Một số backend dùng chung notification_type cho request/response và chỉ phân biệt bằng content.status.
+        return isApprovalResponseType(typeStr, content);
     }
 
     private String extractContentMessage(Map<String, Object> content, String defaultMessage) {

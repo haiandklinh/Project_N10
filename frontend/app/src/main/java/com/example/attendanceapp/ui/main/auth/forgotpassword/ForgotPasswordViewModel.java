@@ -33,7 +33,7 @@ public class ForgotPasswordViewModel extends ViewModel {
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
 
     private String currentAccount = "";
-    private String resetToken = "";
+    private String verifiedPhoneNumber = "";
 
     @Inject
     public ForgotPasswordViewModel(ForgotPasswordUseCase forgotPasswordUseCase, @ApplicationContext Context context) {
@@ -51,15 +51,23 @@ public class ForgotPasswordViewModel extends ViewModel {
 
     public void sendOtp(String account) {
         if (account == null || account.trim().isEmpty()) {
-            forgotPasswordState.setValue(new ForgotPasswordState.Error("Vui lòng nhập số điện thoại hoặc email"));
+            forgotPasswordState.setValue(new ForgotPasswordState.Error("Vui lòng nhập số điện thoại"));
             return;
         }
 
         currentAccount = account.trim();
         isLoading.setValue(true);
 
-        disposables.add(forgotPasswordUseCase.sendOtp(currentAccount)
+        disposables.add(forgotPasswordUseCase.checkPhoneExists(currentAccount)
                 .subscribeOn(Schedulers.io())
+                .flatMap(exists -> {
+                    if (!exists) {
+                        return io.reactivex.rxjava3.core.Single.error(
+                                new com.example.attendanceapp.domain.exception.AppException(
+                                        "Số điện thoại chưa được đăng ký trong hệ thống", 404, "USER_NOT_FOUND"));
+                    }
+                    return forgotPasswordUseCase.sendOtp(currentAccount);
+                })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                         otpCode -> {
@@ -116,7 +124,7 @@ public class ForgotPasswordViewModel extends ViewModel {
                 .subscribe(
                         result -> {
                             isLoading.setValue(false);
-                            resetToken = result; // Lưu resetToken từ server
+                            verifiedPhoneNumber = currentAccount;
                             forgotPasswordState.setValue(new ForgotPasswordState.OtpVerified());
                         },
                         throwable -> {
@@ -142,20 +150,20 @@ public class ForgotPasswordViewModel extends ViewModel {
             return;
         }
 
-        if (resetToken == null || resetToken.isEmpty()) {
+        if (verifiedPhoneNumber == null || verifiedPhoneNumber.isEmpty()) {
             forgotPasswordState.setValue(new ForgotPasswordState.Error("Phiên xác thực đã hết hạn. Vui lòng gửi lại OTP"));
             return;
         }
 
         isLoading.setValue(true);
 
-        disposables.add(forgotPasswordUseCase.resetPassword(resetToken, newPassword)
+        disposables.add(forgotPasswordUseCase.resetPassword(verifiedPhoneNumber, newPassword)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                         () -> {
                             isLoading.setValue(false);
-                            resetToken = ""; // Clear resetToken sau khi dùng
+                            verifiedPhoneNumber = ""; // Clear sau khi dùng
                             forgotPasswordState.setValue(new ForgotPasswordState.Success());
                         },
                         throwable -> {

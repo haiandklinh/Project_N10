@@ -68,6 +68,12 @@ public class ManagerRepositoryImpl implements ManagerRepository {
     public Single<UserAccount> getProfile() {
         return api.getManagerProfile()
                 .subscribeOn(Schedulers.io())
+                .map(response -> {
+                    if (!isPlaceholderAvatar(response.getAvatar()) && context != null) {
+                        StaffAvatarCache.saveAvatar(context, response.getFullName(), null, response.getAvatar());
+                    }
+                    return response;
+                })
                 .flatMap(response -> session.saveManagerProfile(response)
                         .doOnSuccess(account -> {
                             appState.saveUserRole(UserRole.MANAGER);
@@ -123,9 +129,6 @@ public class ManagerRepositoryImpl implements ManagerRepository {
             if (!isPlaceholderAvatar(cloudUrl)) {
                 request.setAvatar(cloudUrl);
             }
-        }
-        if (!isPlaceholderAvatar(request.getAvatar()) && context != null) {
-            StaffAvatarCache.saveAvatar(context, request.getFullName(), null, request.getAvatar());
         }
         return api.updateManagerProfile(request)
                 .subscribeOn(Schedulers.io())
