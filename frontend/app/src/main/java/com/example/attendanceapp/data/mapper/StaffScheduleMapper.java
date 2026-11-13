@@ -1,10 +1,16 @@
 package com.example.attendanceapp.data.mapper;
 
+import android.content.Context;
+
+import androidx.annotation.Nullable;
+
+import com.example.attendanceapp.core.utils.LocationUtils;
 import com.example.attendanceapp.data.dto.response.staff.StaffWorkScheduleResponse;
 import com.example.attendanceapp.data.local.pref.SharedPreferenceApp;
 import com.example.attendanceapp.domain.model.AttendanceStatus;
 import com.example.attendanceapp.domain.model.CheckState;
 import com.example.attendanceapp.domain.model.Shift;
+import com.example.attendanceapp.domain.model.ShiftOption;
 import com.example.attendanceapp.domain.model.ShiftStatus;
 import com.example.attendanceapp.domain.model.WeekDay;
 
@@ -14,8 +20,12 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -28,16 +38,28 @@ public final class StaffScheduleMapper {
 
     /**
      * Tách mỗi (ngày, ca) thành một Shift, sắp theo ngày rồi giờ bắt đầu.
-     * Server chưa trả địa điểm và chưa có API chấm công nên location để rỗng, status là PENDING.
-     * Lịch này là của chính người đăng nhập nên userId để null.
      */
     public static List<Shift> toShifts(List<StaffWorkScheduleResponse> schedules) {
-        return toShifts(schedules, null);
+        return toShifts(schedules, null, null, null, null);
     }
 
     public static List<Shift> toShifts(List<StaffWorkScheduleResponse> schedules, SharedPreferenceApp pref) {
+        return toShifts(schedules, null, pref, null, null);
+    }
+
+    public static List<Shift> toShifts(
+            @Nullable List<StaffWorkScheduleResponse> schedules,
+            @Nullable List<ShiftOption> shiftOptions,
+            @Nullable SharedPreferenceApp pref,
+            @Nullable String employeeId,
+            @Nullable String companyName
+    ) {
         List<Shift> result = new ArrayList<>();
         if (schedules == null) return result;
+
+        Map<String, ShiftOption> optionById = new HashMap<>();
+        Map<String, ShiftOption> optionByTitle = new HashMap<>();
+        indexShiftOptions(shiftOptions, optionById, optionByTitle);
 
         for (StaffWorkScheduleResponse item : schedules) {
             if (item == null || item.getShifts() == null) continue;
@@ -47,25 +69,24 @@ public final class StaffScheduleMapper {
 
             for (StaffWorkScheduleResponse.ShiftInfo s : item.getShifts()) {
                 if (s == null) continue;
-                String location = "";
-                if (pref != null) {
-                    location = pref.getShiftAddress(s.getShiftName());
-                }
-                if (location == null || location.trim().isEmpty()) {
-                    if (pref != null) {
-                        location = pref.getLatestShiftAddress();
-                        if (location == null || location.trim().isEmpty()) {
-                            location = pref.getCompanyAddress();
-                        }
+                ShiftOption matchedOpt = findMatchingShiftOption(s, optionById, optionByTitle);
+                if (matchedOpt != null && pref != null
+                        && isValidCoords(matchedOpt.getLatitude(), matchedOpt.getLongitude())) {
+                    double radius = matchedOpt.getCheckInRadius() != null && matchedOpt.getCheckInRadius() > 0
+                            ? matchedOpt.getCheckInRadius() : 100.0;
+                    if (s.getShiftName() != null && !s.getShiftName().trim().isEmpty()) {
+                        pref.saveShiftLocation(s.getShiftName(), matchedOpt.getLatitude(), matchedOpt.getLongitude(), radius);
                     }
                 }
-                if (location == null || location.trim().isEmpty()) {
-                    location = "Vị trí ca làm việc";
-                }
+
+                String location = resolveShiftLocation(s, matchedOpt, pref, companyName);
 
                 LocalTime startTime = parseTime(s.getStartTime());
                 LocalTime endTime = parseTime(s.getEndTime());
                 LocalTime allowedCheckIn = parseTime(s.getAllowedCheckInTime());
+                if (allowedCheckIn == null && matchedOpt != null) {
+                    allowedCheckIn = parseTime(matchedOpt.getAllowedCheckInTime());
+                }
                 if (allowedCheckIn == null && pref != null) {
                     allowedCheckIn = parseTime(pref.getShiftAllowedCheckInTime(s.getShiftName()));
                 }
@@ -82,7 +103,7 @@ public final class StaffScheduleMapper {
 
                 result.add(new Shift(
                         s.getWorkScheduleId(),
-                        null,
+                        employeeId,
                         date,
                         s.getShiftName(),
                         startTime,
@@ -97,6 +118,185 @@ public final class StaffScheduleMapper {
         result.sort(Comparator.comparing(Shift::getDate)
                 .thenComparing(Shift::getStartTime, Comparator.nullsLast(Comparator.naturalOrder())));
         return result;
+    }
+
+    /**
+     * Reverse-geocode tọa độ của các ca làm chưa có địa chỉ văn bản vào SharedPreferenceApp.
+     * Chỉ gọi trên luồng nền (Schedulers.io). Trả về true nếu có ít nhất 1 địa chỉ mới được cập nhật.
+     */
+    public static boolean resolveMissingShiftAddressesSync(
+            @Nullable Context context,
+            @Nullable List<StaffWorkScheduleResponse> schedules,
+            @Nullable List<ShiftOption> shiftOptions,
+            @Nullable SharedPreferenceApp pref
+    ) {
+        if (context == null || pref == null || schedules == null) return false;
+
+        Map<String, ShiftOption> optionById = new HashMap<>();
+        Map<String, ShiftOption> optionByTitle = new HashMap<>();
+        indexShiftOptions(shiftOptions, optionById, optionByTitle);
+
+        Map<String, StaffWorkScheduleResponse.ShiftInfo> uniqueShifts = new LinkedHashMap<>();
+        for (StaffWorkScheduleResponse item : schedules) {
+            if (item == null || item.getShifts() == null) continue;
+            for (StaffWorkScheduleResponse.ShiftInfo s : item.getShifts()) {
+                if (s == null || s.getShiftName() == null || s.getShiftName().trim().isEmpty()) continue;
+                String key = s.getShiftName().trim().toLowerCase(Locale.ROOT);
+                uniqueShifts.putIfAbsent(key, s);
+            }
+        }
+
+        boolean updated = false;
+        for (StaffWorkScheduleResponse.ShiftInfo s : uniqueShifts.values()) {
+            String shiftName = s.getShiftName().trim();
+            if (!isBlank(s.getAddress())) continue;
+            if (!isBlank(pref.getExactShiftAddress(shiftName))) continue;
+
+            ShiftOption matchedOpt = findMatchingShiftOption(s, optionById, optionByTitle);
+            if (matchedOpt != null && !isBlank(matchedOpt.getTitle())
+                    && !isBlank(pref.getExactShiftAddress(matchedOpt.getTitle()))) {
+                continue;
+            }
+
+            double[] coords = findShiftCoordinates(s, matchedOpt, pref, true);
+            if (coords == null) continue;
+
+            String resolvedAddress = LocationUtils.resolveAddressFromLocationSync(context, coords[0], coords[1]);
+            if (!isBlank(resolvedAddress)) {
+                pref.saveShiftAddress(shiftName, resolvedAddress);
+                if (matchedOpt != null && !isBlank(matchedOpt.getTitle())) {
+                    pref.saveShiftAddress(matchedOpt.getTitle(), resolvedAddress);
+                }
+                if (isBlank(pref.getLatestShiftAddress())) {
+                    double radius = matchedOpt != null && matchedOpt.getCheckInRadius() != null && matchedOpt.getCheckInRadius() > 0
+                            ? matchedOpt.getCheckInRadius() : pref.getLatestShiftRadius();
+                    pref.saveLatestShiftLocation(coords[0], coords[1], radius, resolvedAddress);
+                }
+                updated = true;
+            }
+        }
+        return updated;
+    }
+
+    private static void indexShiftOptions(
+            @Nullable List<ShiftOption> shiftOptions,
+            Map<String, ShiftOption> optionById,
+            Map<String, ShiftOption> optionByTitle
+    ) {
+        if (shiftOptions == null) return;
+        for (ShiftOption opt : shiftOptions) {
+            if (opt == null) continue;
+            if (!isBlank(opt.getId())) {
+                optionById.put(opt.getId().trim(), opt);
+            }
+            if (!isBlank(opt.getTitle())) {
+                optionByTitle.put(opt.getTitle().trim().toLowerCase(Locale.ROOT), opt);
+            }
+        }
+    }
+
+    @Nullable
+    private static ShiftOption findMatchingShiftOption(
+            StaffWorkScheduleResponse.ShiftInfo s,
+            Map<String, ShiftOption> optionById,
+            Map<String, ShiftOption> optionByTitle
+    ) {
+        if (!isBlank(s.getShiftId()) && optionById.containsKey(s.getShiftId().trim())) {
+            return optionById.get(s.getShiftId().trim());
+        }
+        if (!isBlank(s.getShiftName())) {
+            return optionByTitle.get(s.getShiftName().trim().toLowerCase(Locale.ROOT));
+        }
+        return null;
+    }
+
+    private static String resolveShiftLocation(
+            StaffWorkScheduleResponse.ShiftInfo s,
+            @Nullable ShiftOption matchedOpt,
+            @Nullable SharedPreferenceApp pref,
+            @Nullable String companyName
+    ) {
+        if (!isBlank(s.getAddress())) {
+            return LocationUtils.stripCountryOrLastSegment(s.getAddress().trim());
+        }
+        if (pref != null) {
+            String exact = pref.getExactShiftAddress(s.getShiftName());
+            if (!isBlank(exact)) return exact;
+            if (matchedOpt != null && !isBlank(matchedOpt.getTitle())) {
+                exact = pref.getExactShiftAddress(matchedOpt.getTitle());
+                if (!isBlank(exact)) return exact;
+            }
+        }
+
+        double[] exactCoords = findShiftCoordinates(s, matchedOpt, pref, false);
+        if (exactCoords != null) {
+            return LocationUtils.formatCoordinates(exactCoords[0], exactCoords[1]);
+        }
+
+        if (pref != null) {
+            String latestAddr = pref.getLatestShiftAddress();
+            if (!isBlank(latestAddr)) return latestAddr;
+
+            String compAddr = pref.getCompanyAddress();
+            if (!isBlank(compAddr)) return compAddr;
+
+            double[] fallbackCoords = findShiftCoordinates(s, matchedOpt, pref, true);
+            if (fallbackCoords != null) {
+                return LocationUtils.formatCoordinates(fallbackCoords[0], fallbackCoords[1]);
+            }
+        }
+
+        if (!isBlank(companyName)) {
+            return companyName.trim();
+        }
+        return "Vị trí ca làm việc";
+    }
+
+    @Nullable
+    private static double[] findShiftCoordinates(
+            StaffWorkScheduleResponse.ShiftInfo s,
+            @Nullable ShiftOption matchedOpt,
+            @Nullable SharedPreferenceApp pref,
+            boolean includeGlobalFallback
+    ) {
+        if (isValidCoords(s.getLatitude(), s.getLongitude())) {
+            return new double[]{s.getLatitude(), s.getLongitude()};
+        }
+        if (matchedOpt != null && isValidCoords(matchedOpt.getLatitude(), matchedOpt.getLongitude())) {
+            return new double[]{matchedOpt.getLatitude(), matchedOpt.getLongitude()};
+        }
+        if (pref != null && !isBlank(s.getShiftName())) {
+            double lat = pref.getShiftLat(s.getShiftName());
+            double lon = pref.getShiftLon(s.getShiftName());
+            if (isValidCoords(lat, lon)) {
+                return new double[]{lat, lon};
+            }
+        }
+        if (includeGlobalFallback && pref != null) {
+            double latestLat = pref.getLatestShiftLat();
+            double latestLon = pref.getLatestShiftLon();
+            if (isValidCoords(latestLat, latestLon)) {
+                return new double[]{latestLat, latestLon};
+            }
+            double compLat = pref.getCompanyLat();
+            double compLon = pref.getCompanyLon();
+            if (isValidCoords(compLat, compLon)) {
+                return new double[]{compLat, compLon};
+            }
+        }
+        return null;
+    }
+
+    private static boolean isValidCoords(@Nullable Double lat, @Nullable Double lon) {
+        return lat != null && lon != null
+                && !Double.isNaN(lat) && !Double.isNaN(lon)
+                && lat >= -90.0 && lat <= 90.0
+                && lon >= -180.0 && lon <= 180.0
+                && (lat != 0.0 || lon != 0.0);
+    }
+
+    private static boolean isBlank(@Nullable String value) {
+        return value == null || value.trim().isEmpty();
     }
 
     /**

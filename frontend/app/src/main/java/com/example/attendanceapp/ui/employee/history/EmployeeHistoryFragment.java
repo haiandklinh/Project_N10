@@ -587,15 +587,15 @@ public class EmployeeHistoryFragment extends Fragment {
         if (sharedPreferenceApp != null) {
             String addr = sharedPreferenceApp.getShiftAddress(shiftName);
             if (addr != null && !addr.trim().isEmpty()) {
-                return LocationUtils.stripCountryOrLastSegment(addr.trim());
+                return addr.trim();
             }
             String latestAddr = sharedPreferenceApp.getLatestShiftAddress();
             if (latestAddr != null && !latestAddr.trim().isEmpty()) {
-                return LocationUtils.stripCountryOrLastSegment(latestAddr.trim());
+                return latestAddr.trim();
             }
             String compAddr = sharedPreferenceApp.getCompanyAddress();
             if (compAddr != null && !compAddr.trim().isEmpty()) {
-                return LocationUtils.stripCountryOrLastSegment(compAddr.trim());
+                return compAddr.trim();
             }
         }
         return "Vị trí ca làm việc thực tế";

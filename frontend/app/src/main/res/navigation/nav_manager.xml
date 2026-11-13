@@ -214,13 +214,6 @@
         android:label="Quyết định thưởng phạt"
         tools:layout="@layout/fragment_manager_reward_punish" />
 
-    <!-- Danh sách phê duyệt yêu cầu tham gia công ty -->
-    <fragment
-        android:id="@+id/managerJoinRequestFragment"
-        android:name="com.example.attendanceapp.ui.manager.human.ManagerJoinRequestFragment"
-        android:label="Yêu cầu tham gia"
-        tools:layout="@layout/fragment_manager_join_request" />
-
     <!-- Báo cáo Thống kê đồ thị -->
     <fragment
         android:id="@+id/managerStatisticFragment"

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/card_notification"
@@ -15,20 +16,19 @@
         android:padding="@dimen/spacing_m">
 
         <!-- ICON THEO LOẠI THÔNG BÁO -->
-
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_notification_icon"
             style="@style/CircleIconCard"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            app:cardCornerRadius="20dp"
+            android:layout_width="@dimen/icon_container_s"
+            android:layout_height="@dimen/icon_container_s"
+            app:cardCornerRadius="@dimen/radius_m"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
             <ImageView
                 android:id="@+id/iv_notification_icon"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
+                android:layout_width="@dimen/icon_size_s"
+                android:layout_height="@dimen/icon_size_s"
                 android:layout_gravity="center"
                 android:contentDescription="@null"
                 android:src="@drawable/ic_notifications"
@@ -36,8 +36,7 @@
 
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- CHẤM ĐỎ BÁO CHƯA ĐỌC -->
-
+        <!-- CHẤM ĐỎ CHƯA ĐỌC -->
         <View
             android:id="@+id/dot_unread"
             android:layout_width="9dp"
@@ -47,54 +46,54 @@
             app:layout_constraintTop_toTopOf="@id/card_notification_icon"
             tools:visibility="visible" />
 
-        <!-- TIÊU ĐỀ -->
 
+
+        <!-- TIÊU ĐỀ -->
         <TextView
             android:id="@+id/tv_notification_title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/spacing_m"
+            android:layout_marginEnd="@dimen/spacing_xs"
             android:ellipsize="end"
-            android:maxLines="1"
+            android:maxLines="2"
             android:text="Bảng lương tháng 8 đã được duyệt"
             android:textColor="?attr/colorOnSurface"
             android:textSize="@dimen/text_size_body_medium"
             android:textStyle="bold"
-            app:layout_constraintEnd_toStartOf="@id/tv_notification_time"
             app:layout_constraintStart_toEndOf="@id/card_notification_icon"
-            app:layout_constraintTop_toTopOf="@id/card_notification_icon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             tools:text="Bảng lương tháng 8 đã được duyệt" />
 
-        <!-- THỜI GIAN (VD: "5 phút trước", "Hôm qua") -->
-
+        <!-- THỜI GIAN -->
         <TextView
             android:id="@+id/tv_notification_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/spacing_2xs"
+            android:layout_marginStart="@dimen/spacing_m"
+
             android:text="5 phút trước"
             android:textColor="?attr/colorOnSurfaceVariant"
             android:textSize="@dimen/text_size_label_small"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/tv_notification_title"
+            app:layout_constraintStart_toEndOf="@id/card_notification_icon"
+            app:layout_constraintTop_toBottomOf="@id/tv_notification_title"
             tools:text="5 phút trước" />
 
-        <!-- NỘI DUNG -->
-
+        <!-- NỘI DUNG TRÀN TOÀN CHIỀU NGANG -->
         <TextView
             android:id="@+id/tv_notification_message"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/spacing_m"
-            android:layout_marginTop="2dp"
+            android:layout_marginTop="@dimen/spacing_s"
             android:ellipsize="end"
             android:maxLines="2"
             android:text="Lương tháng 8/2026 của bạn đã được duyệt và sẽ chuyển khoản vào ngày 05/09."
             android:textColor="?attr/colorOnSurfaceVariant"
             android:textSize="@dimen/text_size_body_small"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/card_notification_icon"
-            app:layout_constraintTop_toBottomOf="@id/tv_notification_title"
+            app:layout_constraintTop_toBottomOf="@id/tv_notification_time"
             tools:text="Lương tháng 8/2026 của bạn đã được duyệt và sẽ chuyển khoản vào ngày 05/09." />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

@@ -31,6 +31,9 @@ public interface NotificationDao {
     @Query("SELECT id FROM notifications WHERE role = :role AND is_read = 1")
     Single<List<String>> getReadNotificationIdsByRole(String role);
 
+    @Query("SELECT id FROM notifications WHERE role = :role")
+    Single<List<String>> getAllNotificationIdsByRole(String role);
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     Completable insert(NotificationEntity notification);
 

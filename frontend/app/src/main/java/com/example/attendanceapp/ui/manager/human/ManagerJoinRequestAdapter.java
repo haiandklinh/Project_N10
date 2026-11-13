@@ -69,13 +69,19 @@ public class ManagerJoinRequestAdapter extends RecyclerView.Adapter<ManagerJoinR
         holder.binding.btnApprove.setOnClickListener(v -> {
             v.setEnabled(false);
             v.postDelayed(() -> v.setEnabled(true), 800);
-            if (listener != null) listener.onApprove(item, holder.getBindingAdapterPosition());
+            int pos = holder.getBindingAdapterPosition();
+            if (pos != RecyclerView.NO_POSITION && listener != null) {
+                listener.onApprove(item, pos);
+            }
         });
 
         holder.binding.btnReject.setOnClickListener(v -> {
             v.setEnabled(false);
             v.postDelayed(() -> v.setEnabled(true), 800);
-            if (listener != null) listener.onReject(item, holder.getBindingAdapterPosition());
+            int pos = holder.getBindingAdapterPosition();
+            if (pos != RecyclerView.NO_POSITION && listener != null) {
+                listener.onReject(item, pos);
+            }
         });
     }
 

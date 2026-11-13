@@ -1,5 +1,7 @@
 package com.example.attendanceapp.ui.employee.home;
 
+import android.content.Context;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -11,10 +13,12 @@ import com.example.attendanceapp.domain.model.CheckState;
 import com.example.attendanceapp.domain.model.AttendanceStatus;
 import com.example.attendanceapp.domain.model.RecentAttendance;
 import com.example.attendanceapp.domain.model.Shift;
+import com.example.attendanceapp.domain.model.ShiftOption;
 import com.example.attendanceapp.domain.model.ShiftStatus;
 import com.example.attendanceapp.domain.model.UserAccount;
 import com.example.attendanceapp.domain.model.WeekDay;
 import com.example.attendanceapp.domain.repository.NotificationRepository;
+import com.example.attendanceapp.domain.repository.ShiftRepository;
 import com.example.attendanceapp.domain.usecase.profile.GetCurrentUserUseCase;
 import com.example.attendanceapp.domain.usecase.profile.GetProfileUseCase;
 import com.example.attendanceapp.domain.usecase.profile.ObserveCurrentUserUseCase;
@@ -29,7 +33,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -39,14 +43,17 @@ import java.util.Set;
 import javax.inject.Inject;
 
 import dagger.hilt.android.lifecycle.HiltViewModel;
+import dagger.hilt.android.qualifiers.ApplicationContext;
 
 @HiltViewModel
 public class EmployeeHomeViewModel extends ViewModel {
 
+    private final Context appContext;
     private final GetCurrentUserUseCase getCurrentUserUseCase;
     private final ObserveCurrentUserUseCase observeCurrentUserUseCase;
     private final GetProfileUseCase getProfileUseCase;
     private final GetScheduleByDateUseCase getScheduleByDateUseCase;
+    private final ShiftRepository shiftRepository;
     private final NotificationRepository notificationRepository;
     private final SharedPreferenceApp sharedPreferenceApp;
     private final CompositeDisposable disposables = new CompositeDisposable();
@@ -63,17 +70,21 @@ public class EmployeeHomeViewModel extends ViewModel {
 
     @Inject
     public EmployeeHomeViewModel(
+            @ApplicationContext Context context,
             GetCurrentUserUseCase getCurrentUserUseCase,
             ObserveCurrentUserUseCase observeCurrentUserUseCase,
             GetProfileUseCase getProfileUseCase,
             GetScheduleByDateUseCase getScheduleByDateUseCase,
+            ShiftRepository shiftRepository,
             NotificationRepository notificationRepository,
             SharedPreferenceApp sharedPreferenceApp
     ) {
+        this.appContext = context.getApplicationContext();
         this.getCurrentUserUseCase = getCurrentUserUseCase;
         this.observeCurrentUserUseCase = observeCurrentUserUseCase;
         this.getProfileUseCase = getProfileUseCase;
         this.getScheduleByDateUseCase = getScheduleByDateUseCase;
+        this.shiftRepository = shiftRepository;
         this.notificationRepository = notificationRepository;
         this.sharedPreferenceApp = sharedPreferenceApp;
 
@@ -98,6 +109,7 @@ public class EmployeeHomeViewModel extends ViewModel {
                                 user.getCompanyName(),
                                 user.getAvatarUrl(),
                                 current.getTodayShift(),
+                                current.getTodayShifts(),
                                 current.getCheckInTime(),
                                 current.getCheckOutTime(),
                                 current.getWeekDays(),
@@ -122,6 +134,7 @@ public class EmployeeHomeViewModel extends ViewModel {
                                 current.getCompanyName(),
                                 current.getAvatarUrl(),
                                 current.getTodayShift(),
+                                current.getTodayShifts(),
                                 current.getCheckInTime(),
                                 current.getCheckOutTime(),
                                 current.getWeekDays(),
@@ -169,21 +182,66 @@ public class EmployeeHomeViewModel extends ViewModel {
 
         // execute(null): lấy toàn bộ lịch của tôi, tự tính ca hôm nay và lịch tuần từ đó (1 lần gọi mạng).
         Single<List<StaffWorkScheduleResponse>> scheduleSingle = getScheduleByDateUseCase.execute(null);
+        Single<List<ShiftOption>> shiftsSingle = shiftRepository.getShifts()
+                .onErrorReturnItem(Collections.emptyList());
 
-        disposables.add(Single.zip(userSingle, scheduleSingle, this::buildState)
+        disposables.add(Single.zip(userSingle, scheduleSingle, shiftsSingle,
+                        (user, schedules, shiftOptions) ->
+                                new LoadedHomeData(user, schedules, shiftOptions, buildState(user, schedules, shiftOptions)))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                        _uiState::setValue,
+                        loaded -> {
+                            _uiState.setValue(loaded.uiState);
+                            resolveMissingAddressesInBackground(loaded.user, loaded.schedules, loaded.shiftOptions);
+                        },
                         throwable -> _uiState.setValue(
                                 EmployeeHomeUiState.error(throwable.getLocalizedMessage(), existingWeekDays))
                 ));
     }
 
-    private EmployeeHomeUiState buildState(UserAccount user, List<StaffWorkScheduleResponse> schedules) {
+    private void resolveMissingAddressesInBackground(
+            UserAccount user,
+            List<StaffWorkScheduleResponse> schedules,
+            List<ShiftOption> shiftOptions
+    ) {
+        disposables.add(Single.fromCallable(() ->
+                        StaffScheduleMapper.resolveMissingShiftAddressesSync(appContext, schedules, shiftOptions, sharedPreferenceApp))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(updated -> {
+                    if (Boolean.TRUE.equals(updated)) {
+                        _uiState.setValue(buildState(user, schedules, shiftOptions));
+                    }
+                }, throwable -> { }));
+    }
+
+    private static class LoadedHomeData {
+        final UserAccount user;
+        final List<StaffWorkScheduleResponse> schedules;
+        final List<ShiftOption> shiftOptions;
+        final EmployeeHomeUiState uiState;
+
+        LoadedHomeData(UserAccount user, List<StaffWorkScheduleResponse> schedules,
+                       List<ShiftOption> shiftOptions, EmployeeHomeUiState uiState) {
+            this.user = user;
+            this.schedules = schedules;
+            this.shiftOptions = shiftOptions;
+            this.uiState = uiState;
+        }
+    }
+
+    private EmployeeHomeUiState buildState(
+            UserAccount user,
+            List<StaffWorkScheduleResponse> schedules,
+            List<ShiftOption> shiftOptions
+    ) {
         LocalDate today = LocalDate.now();
-        List<Shift> todayShifts = findTodayShifts(schedules, today, user.getUserId());
-        Shift todayShift = findTodayShift(todayShifts);
+        List<Shift> allShifts = StaffScheduleMapper.toShifts(
+                schedules, shiftOptions, sharedPreferenceApp, user.getUserId(), user.getCompanyName()
+        );
+        List<Shift> todayShifts = StaffScheduleMapper.pickTodayShifts(allShifts, today);
+        Shift todayShift = StaffScheduleMapper.pickTodayShift(allShifts, today);
         LocalTime checkInTime = null;
         LocalTime checkOutTime = null;
         if (todayShift != null && sharedPreferenceApp != null) {
@@ -205,88 +263,6 @@ public class EmployeeHomeViewModel extends ViewModel {
                 false,                 // isLoading
                 null                   // errorMessage
         );
-    }
-
-    // =====================================================================
-    // 3. MAP LỊCH TỪ SERVER SANG DOMAIN
-    // =====================================================================
-
-    /** Danh sách tất cả các ca hôm nay của nhân viên, sắp xếp theo giờ bắt đầu */
-    private List<Shift> findTodayShifts(List<StaffWorkScheduleResponse> schedules, LocalDate today, String employeeId) {
-        List<Shift> candidates = new ArrayList<>();
-
-        if (schedules == null) return candidates;
-
-        for (StaffWorkScheduleResponse item : schedules) {
-            if (item == null || item.getShifts() == null) continue;
-            if (!today.equals(parseDate(item.getWorkDay()))) continue;
-
-            for (StaffWorkScheduleResponse.ShiftInfo s : item.getShifts()) {
-                if (s == null) continue;
-                String location = "";
-                if (sharedPreferenceApp != null) {
-                    location = sharedPreferenceApp.getShiftAddress(s.getShiftName());
-                }
-                if (location == null || location.trim().isEmpty()) {
-                    if (sharedPreferenceApp != null) {
-                        location = sharedPreferenceApp.getLatestShiftAddress();
-                        if (location == null || location.trim().isEmpty()) {
-                            location = sharedPreferenceApp.getCompanyAddress();
-                        }
-                    }
-                }
-                if (location == null || location.trim().isEmpty()) {
-                    location = "Vị trí ca làm việc";
-                }
-
-                LocalTime startTime = parseTime(s.getStartTime());
-                LocalTime endTime = parseTime(s.getEndTime());
-                LocalTime allowedCheckIn = parseTime(s.getAllowedCheckInTime());
-                if (allowedCheckIn == null && sharedPreferenceApp != null) {
-                    allowedCheckIn = parseTime(sharedPreferenceApp.getShiftAllowedCheckInTime(s.getShiftName()));
-                }
-                if (allowedCheckIn == null) {
-                    allowedCheckIn = startTime;
-                }
-
-                CheckState checkState = CheckState.NOT_CHECKED_IN;
-                if (sharedPreferenceApp != null) {
-                    checkState = sharedPreferenceApp.getShiftAttendanceState(s.getWorkScheduleId(), item.getWorkDay(), s.getShiftName());
-                }
-
-                ShiftStatus status = StaffScheduleMapper.calculateShiftStatus(today, startTime, endTime, checkState);
-
-                candidates.add(new Shift(
-                        s.getWorkScheduleId(),
-                        employeeId,
-                        today,
-                        s.getShiftName(),
-                        startTime,
-                        endTime,
-                        location,
-                        status,
-                        allowedCheckIn
-                ));
-            }
-        }
-
-        candidates.sort(Comparator.comparing(Shift::getStartTime,
-                Comparator.nullsLast(Comparator.naturalOrder())));
-
-        return candidates;
-    }
-
-    /** Ca hôm nay: ca đầu tiên chưa kết thúc (theo giờ bắt đầu), nếu đã hết thì lấy ca cuối. Không có ca thì null. */
-    private Shift findTodayShift(List<Shift> candidates) {
-        if (candidates == null || candidates.isEmpty()) return null;
-
-        LocalTime now = LocalTime.now();
-        for (Shift shift : candidates) {
-            if (shift.getEndTime() == null || shift.getEndTime().isAfter(now)) {
-                return shift;
-            }
-        }
-        return candidates.get(candidates.size() - 1);
     }
 
     /**
@@ -484,5 +460,11 @@ public class EmployeeHomeViewModel extends ViewModel {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        disposables.clear();
     }
 }

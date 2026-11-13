@@ -62,6 +62,9 @@ public class StaffWorkScheduleResponse {
         @SerializedName(value = "allowed_check_in_time", alternate = {"allowedCheckInTime", "allowed_time"})
         private String allowedCheckInTime;
 
+        @SerializedName(value = "address", alternate = {"location", "work_location", "shift_location"})
+        private String address;
+
         public ShiftInfo() {
         }
 
@@ -142,6 +145,14 @@ public class StaffWorkScheduleResponse {
 
         public void setAllowedCheckInTime(String allowedCheckInTime) {
             this.allowedCheckInTime = allowedCheckInTime;
+        }
+
+        public String getAddress() {
+            return address;
+        }
+
+        public void setAddress(String address) {
+            this.address = address;
         }
     }
 }

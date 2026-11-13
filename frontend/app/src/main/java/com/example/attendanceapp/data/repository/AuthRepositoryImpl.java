@@ -1,5 +1,10 @@
 package com.example.attendanceapp.data.repository;
 
+import android.content.Context;
+
+import com.example.attendanceapp.core.notification.NotificationSyncReceiver;
+import com.example.attendanceapp.core.notification.ShiftAlarmScheduler;
+import com.example.attendanceapp.core.notification.WebSocketNotificationManager;
 import com.example.attendanceapp.data.dto.request.auth.*;
 import com.example.attendanceapp.data.dto.response.auth.*;
 import com.example.attendanceapp.data.local.TokenManager;
@@ -14,26 +19,35 @@ import com.example.attendanceapp.domain.repository.SessionRepository;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import dagger.hilt.android.qualifiers.ApplicationContext;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Single;
 
 @Singleton
 public class AuthRepositoryImpl implements AuthRepository {
 
+    private final Context context;
     private final AuthApi authApi;
     private final TokenManager tokenManager;
     private final SessionRepository sessionRepository;
     private final AppStateRepository appStateRepository;
+    private final WebSocketNotificationManager webSocketManager;
 
     @Inject
-    public AuthRepositoryImpl(AuthApi authApi,
-                              TokenManager tokenManager,
-                              SessionRepository sessionRepository,
-                              AppStateRepository appStateRepository) {
+    public AuthRepositoryImpl(
+            @ApplicationContext Context context,
+            AuthApi authApi,
+            TokenManager tokenManager,
+            SessionRepository sessionRepository,
+            AppStateRepository appStateRepository,
+            WebSocketNotificationManager webSocketManager
+    ) {
+        this.context = context;
         this.authApi = authApi;
         this.tokenManager = tokenManager;
         this.sessionRepository = sessionRepository;
         this.appStateRepository = appStateRepository;
+        this.webSocketManager = webSocketManager;
     }
 
     @Override
@@ -67,6 +81,7 @@ public class AuthRepositoryImpl implements AuthRepository {
                 .flatMapCompletable(auth -> {
                     tokenManager.saveTokens(auth.getAccessToken(), auth.getRefreshToken());
                     appStateRepository.setLoggedIn(true);
+                    NotificationSyncReceiver.schedulePeriodicSync(context);
                     // Lưu số điện thoại vào Room để giữ lại khi save profile
                     return sessionRepository.savePhoneNumber(normalizedPhone);
                 })
@@ -132,6 +147,11 @@ public class AuthRepositoryImpl implements AuthRepository {
     // --- Private helpers ---
 
     private void clearLocalTokensAndState() {
+        NotificationSyncReceiver.cancelPeriodicSync(context);
+        ShiftAlarmScheduler.cancelAllAlarms(context);
+        if (webSocketManager != null) {
+            webSocketManager.disconnect();
+        }
         tokenManager.clearTokens();
         appStateRepository.clearSession(); // đã set logged-in = false và phát lại observeLoggedIn()
     }

@@ -234,7 +234,7 @@
 
     <!-- Employee Schedule Fragment -->
     <string name="schedule_title">Lịch làm việc</string>
-    <string name="schedule_month_format">Tháng %d, %d</string>
+    <string name="schedule_month_format">Tháng %1$d, %2$d</string>
     <string name="schedule_day_mon">T2</string>
     <string name="schedule_day_tue">T3</string>
     <string name="schedule_day_wed">T4</string>

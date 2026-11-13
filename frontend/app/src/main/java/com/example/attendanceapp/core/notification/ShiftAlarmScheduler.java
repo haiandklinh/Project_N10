@@ -146,6 +146,14 @@ public final class ShiftAlarmScheduler {
         cancelAlarm(context, alarmManager, scheduleId, shiftName, ShiftNotificationReceiver.TRIGGER_REMINDER_30);
     }
 
+    /**
+     * Hủy bỏ toàn bộ chu kỳ đồng bộ và báo thức ca khi đăng xuất
+     */
+    public static void cancelAllAlarms(Context context) {
+        if (context == null) return;
+        NotificationSyncReceiver.cancelPeriodicSync(context);
+    }
+
     private static void cancelAlarm(Context context, AlarmManager alarmManager, String scheduleId,
                                     String shiftName, int triggerType) {
         Intent intent = new Intent(context, ShiftNotificationReceiver.class);

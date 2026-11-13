@@ -11,6 +11,12 @@ import androidx.navigation.NavOptions;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.attendanceapp.R;
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Build;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import com.example.attendanceapp.core.notification.NotificationSyncReceiver;
 import com.example.attendanceapp.databinding.ActivityManagerMainBinding;
 import com.example.attendanceapp.core.notification.WebSocketNotificationManager;
 import com.example.attendanceapp.ui.manager.approval.ManagerApprovalViewModel;
@@ -64,11 +70,17 @@ public class ManagerMainActivity extends AppCompatActivity {
 
         setupNavigation();
         setupCustomBottomNavListeners();
+        setupBackNavigation();
         observeBadgeCounts();
         handleNotificationIntent(getIntent());
         if (webSocketManager != null) {
             webSocketManager.connect();
         }
+
+        // Khởi động chu kỳ đồng bộ thông báo nền (AlarmManager)
+        NotificationSyncReceiver.schedulePeriodicSync(this);
+
+        requestNotificationPermission();
     }
 
     @Override
@@ -76,6 +88,14 @@ public class ManagerMainActivity extends AppCompatActivity {
         super.onNewIntent(intent);
         setIntent(intent);
         handleNotificationIntent(intent);
+    }
+
+    private void requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, 103);
+            }
+        }
     }
 
     private void handleNotificationIntent(android.content.Intent intent) {
@@ -267,31 +287,34 @@ public class ManagerMainActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    public void onBackPressed() {
-        if (navController != null) {
-            // 1. Nếu có thể quay lại trong backstack của fragment hiện tại (ví dụ từ sub-fragment về Home)
-            if (navController.popBackStack()) {
-                return;
-            }
-            // 2. Nếu đang ở gốc của tab khác, nhấn Back sẽ quay về tab Home trước khi thoát
-            if (navController.getCurrentDestination() != null) {
-                int currentId = navController.getCurrentDestination().getId();
-                if (currentId != R.id.managerHomeFragment) {
-                    navigateToTab(R.id.managerHomeFragment);
-                    return;
+    private void setupBackNavigation() {
+        getOnBackPressedDispatcher().addCallback(this, new androidx.activity.OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (navController != null) {
+                    // 1. Nếu có thể quay lại trong backstack của fragment hiện tại (ví dụ từ sub-fragment về Home)
+                    if (navController.popBackStack()) {
+                        return;
+                    }
+                    // 2. Nếu đang ở gốc của tab khác, nhấn Back sẽ quay về tab Home trước khi thoát
+                    if (navController.getCurrentDestination() != null) {
+                        int currentId = navController.getCurrentDestination().getId();
+                        if (currentId != R.id.managerHomeFragment) {
+                            navigateToTab(R.id.managerHomeFragment);
+                            return;
+                        }
+                    }
                 }
+                setEnabled(false);
+                getOnBackPressedDispatcher().onBackPressed();
+                setEnabled(true);
             }
-        }
-        super.onBackPressed();
+        });
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (webSocketManager != null) {
-            webSocketManager.disconnect();
-        }
         binding = null;
     }
 }

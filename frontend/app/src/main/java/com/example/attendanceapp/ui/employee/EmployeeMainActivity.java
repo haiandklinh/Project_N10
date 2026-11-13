@@ -85,10 +85,14 @@ public class EmployeeMainActivity extends AppCompatActivity {
         setupWindowInsets();
         setupNavigation();
         setupFab();
+        setupBackNavigation();
         handleNotificationIntent(getIntent());
         if (webSocketManager != null) {
             webSocketManager.connect();
         }
+
+        // Khởi động chu kỳ đồng bộ thông báo nền và lịch ca (chạy ngầm âm thầm bằng AlarmManager)
+        com.example.attendanceapp.core.notification.NotificationSyncReceiver.schedulePeriodicSync(this);
 
         requestNotificationPermission();
         startShiftMonitor();
@@ -237,25 +241,28 @@ public class EmployeeMainActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    public void onBackPressed() {
-        // Tối ưu hóa phím bấm back điều hướng mượt mà cho trải nghiệm dummy UI
-        if (navController != null && navController.getCurrentDestination() != null) {
-            int currentId = navController.getCurrentDestination().getId();
-            if (currentId == R.id.employeeCheckInFragment) {
-                navController.popBackStack(R.id.employeeHomeFragment, false);
-                return;
+    private void setupBackNavigation() {
+        getOnBackPressedDispatcher().addCallback(this, new androidx.activity.OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (navController != null && navController.getCurrentDestination() != null) {
+                    int currentId = navController.getCurrentDestination().getId();
+                    if (currentId == R.id.employeeCheckInFragment) {
+                        navController.popBackStack(R.id.employeeHomeFragment, false);
+                        return;
+                    }
+                }
+                setEnabled(false);
+                getOnBackPressedDispatcher().onBackPressed();
+                setEnabled(true);
             }
-        }
-        super.onBackPressed();
+        });
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (webSocketManager != null) {
-            webSocketManager.disconnect();
-        }
+        disposables.clear();
         binding = null;
     }
 }

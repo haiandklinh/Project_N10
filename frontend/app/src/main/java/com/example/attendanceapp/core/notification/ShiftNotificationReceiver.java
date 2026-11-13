@@ -45,7 +45,8 @@ public class ShiftNotificationReceiver extends BroadcastReceiver {
 
         String action = intent.getAction();
         if (Intent.ACTION_BOOT_COMPLETED.equals(action)) {
-            Log.d(TAG, "BOOT_COMPLETED received");
+            Log.d(TAG, "BOOT_COMPLETED received - re-enabling background sync");
+            NotificationSyncReceiver.schedulePeriodicSync(context);
             return;
         }
 

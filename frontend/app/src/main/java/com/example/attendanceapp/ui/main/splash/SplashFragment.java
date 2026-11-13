@@ -92,6 +92,9 @@ public class SplashFragment extends Fragment {
     private void navigateToRoleHome(UserRole role) {
         if (role == UserRole.MANAGER) {
             Intent intent = new Intent(requireContext(), ManagerMainActivity.class);
+            if (getActivity() != null && getActivity().getIntent() != null && getActivity().getIntent().getExtras() != null) {
+                intent.putExtras(getActivity().getIntent().getExtras());
+            }
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
             requireActivity().finish();

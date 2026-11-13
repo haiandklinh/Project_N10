@@ -17,8 +17,8 @@
         <!-- 1. ICON CA LÀM (Khung vuông bo góc chuẩn dimen) -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_shift_icon_bg"
-            android:layout_width="@dimen/icon_container_xs"
-            android:layout_height="@dimen/icon_container_xs"
+            android:layout_width="@dimen/icon_container_2xs"
+            android:layout_height="@dimen/icon_container_2xs"
             app:cardBackgroundColor="?attr/colorPrimaryContainer"
             app:cardCornerRadius="@dimen/radius_s"
             app:cardElevation="0dp"

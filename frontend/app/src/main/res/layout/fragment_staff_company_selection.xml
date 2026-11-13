@@ -6,32 +6,64 @@
     android:layout_height="match_parent"
     android:background="?android:attr/colorBackground">
 
+
     <!-- Header Section -->
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/layoutHeader"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:paddingHorizontal="@dimen/spacing_l"
-        android:paddingTop="@dimen/spacing_m"
-        android:paddingBottom="@dimen/spacing_s"
+        android:paddingTop="@dimen/spacing_xl"
+        android:paddingBottom="@dimen/spacing_l"
         app:layout_constraintTop_toTopOf="parent">
 
+        <!-- EYEBROW -->
+        <TextView
+            android:id="@+id/tvHeaderLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ATTENDANCE APP  /  WORKSPACE"
+            android:textColor="?attr/colorPrimary"
+            android:textSize="@dimen/text_size_label_small"
+            android:textStyle="bold"
+            android:letterSpacing="0.08"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- TITLE -->
         <TextView
             android:id="@+id/tvWelcomeTitle"
             style="@style/TitleTextLargeStyle"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Công ty của bạn" />
+            android:layout_marginTop="@dimen/spacing_s"
+            android:text="Không gian làm việc"
+            android:textColor="?attr/colorOnSurface"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvHeaderLabel" />
 
+        <!-- SUBTITLE -->
         <TextView
             android:id="@+id/tvWelcomeSubtitle"
             style="@style/BodyTextMediumStyle"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Chọn không gian làm việc bạn muốn truy cập" />
-    </LinearLayout>
+            android:layout_marginTop="@dimen/spacing_2xs"
+            android:text="Chọn công ty bạn muốn truy cập để tiếp tục công việc."
+            android:textColor="?attr/colorOnSurfaceVariant"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvWelcomeTitle" />
+
+        <!-- DIVIDER -->
+        <View
+            android:id="@+id/viewHeaderDivider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="@dimen/spacing_l"
+            android:background="?attr/colorOutlineVariant"
+            app:layout_constraintTop_toBottomOf="@id/tvWelcomeSubtitle" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- Swipe Refresh & List Section -->
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout

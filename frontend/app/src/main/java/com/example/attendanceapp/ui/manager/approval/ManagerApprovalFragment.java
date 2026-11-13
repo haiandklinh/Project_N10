@@ -370,10 +370,6 @@ public class ManagerApprovalFragment extends Fragment {
                     sharedPreferenceApp.updateSubmittedLeaveRequestStatus(workDay, item.getType().name(), ApprovalStatus.APPROVED);
                 }
 
-                if (sharedPreferenceApp != null) {
-                    sharedPreferenceApp.updateSubmittedLeaveRequestStatus(workDay, item.getType().name(), ApprovalStatus.REJECTED);
-                }
-
                 if (item.getType() == ApprovalRequestType.SWAP) {
                     disposables.add(managerRepository.handleShiftChange(
                             new HandleShiftChangeRequest(item.getId(), curShift, tgtShift, workDay, true, "Đồng ý đổi ca")
@@ -405,6 +401,10 @@ public class ManagerApprovalFragment extends Fragment {
                 String curShift = item.getCurrentShiftId() != null ? item.getCurrentShiftId() : "shift_01";
                 String tgtShift = item.getTargetShiftId() != null ? item.getTargetShiftId() : "shift_02";
                 String workDay = item.getWorkDay() != null ? item.getWorkDay() : LocalDate.now().toString();
+
+                if (sharedPreferenceApp != null) {
+                    sharedPreferenceApp.updateSubmittedLeaveRequestStatus(workDay, item.getType().name(), ApprovalStatus.REJECTED);
+                }
 
                 if (item.getType() == ApprovalRequestType.SWAP) {
                     disposables.add(managerRepository.handleShiftChange(

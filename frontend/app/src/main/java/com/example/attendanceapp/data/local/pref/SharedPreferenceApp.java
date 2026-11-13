@@ -187,7 +187,7 @@ public class SharedPreferenceApp {
     }
 
     public String getLatestShiftAddress() {
-        return LocationUtils.stripCountryOrLastSegment(sharedPreferences.getString(KEY_LATEST_SHIFT_ADDRESS, null));
+        return sharedPreferences.getString(KEY_LATEST_SHIFT_ADDRESS, null);
     }
 
     public void saveShiftAddress(String shiftKey, String address) {
@@ -195,26 +195,33 @@ public class SharedPreferenceApp {
         sharedPreferences.edit().putString("shift_addr_" + shiftKey.toLowerCase().trim(), LocationUtils.stripCountryOrLastSegment(address)).apply();
     }
 
+    public String getExactShiftAddress(String shiftKey) {
+        if (shiftKey == null || shiftKey.trim().isEmpty()) return null;
+        String addr = sharedPreferences.getString("shift_addr_" + shiftKey.toLowerCase().trim(), null);
+        if (addr != null && !addr.trim().isEmpty()) {
+            return addr;
+        }
+        return null;
+    }
+
     public String getShiftAddress(String shiftKey) {
-        if (shiftKey != null) {
-            String addr = sharedPreferences.getString("shift_addr_" + shiftKey.toLowerCase().trim(), null);
-            if (addr != null && !addr.trim().isEmpty()) {
-                return LocationUtils.stripCountryOrLastSegment(addr);
-            }
+        String exactAddr = getExactShiftAddress(shiftKey);
+        if (exactAddr != null) {
+            return exactAddr;
         }
         String latestAddr = getLatestShiftAddress();
         if (latestAddr != null && !latestAddr.trim().isEmpty()) {
-            return LocationUtils.stripCountryOrLastSegment(latestAddr);
+            return latestAddr;
         }
         String compAddr = getCompanyAddress();
         if (compAddr != null && !compAddr.trim().isEmpty()) {
-            return LocationUtils.stripCountryOrLastSegment(compAddr);
+            return compAddr;
         }
         return null;
     }
 
     public String getCompanyAddress() {
-        return LocationUtils.stripCountryOrLastSegment(sharedPreferences.getString(KEY_COMPANY_ADDRESS, null));
+        return sharedPreferences.getString(KEY_COMPANY_ADDRESS, null);
     }
 
     public void saveCompanyRadius(int radius) {

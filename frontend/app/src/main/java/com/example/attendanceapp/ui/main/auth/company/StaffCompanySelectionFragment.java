@@ -162,7 +162,7 @@ public class StaffCompanySelectionFragment extends Fragment {
 
         viewModel.userName.observe(getViewLifecycleOwner(), name -> {
             if (name != null && !name.isEmpty()) {
-                binding.tvWelcomeTitle.setText("Chào mừng, " + name);
+                binding.tvWelcomeTitle.setText("Không gian làm việc");
             }
         });
 
@@ -187,6 +187,9 @@ public class StaffCompanySelectionFragment extends Fragment {
             if (company != null) {
                 viewModel.consumeCompanySelectedEvent();
                 Intent intent = new Intent(requireContext(), EmployeeMainActivity.class);
+                if (getActivity() != null && getActivity().getIntent() != null && getActivity().getIntent().getExtras() != null) {
+                    intent.putExtras(getActivity().getIntent().getExtras());
+                }
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
                 requireActivity().finish();

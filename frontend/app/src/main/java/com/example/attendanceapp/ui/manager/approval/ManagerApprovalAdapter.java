@@ -76,12 +76,18 @@ public class ManagerApprovalAdapter extends RecyclerView.Adapter<ManagerApproval
         boolean isPending = status == ApprovalStatus.PENDING;
         holder.binding.layoutActions.setVisibility(isPending ? View.VISIBLE : View.GONE);
 
-        // 4. Bắt sự kiện click
+        // 4. Bắt sự kiện click an toàn
         holder.binding.btnApprove.setOnClickListener(v -> {
-            if (listener != null) listener.onApprove(item, holder.getBindingAdapterPosition());
+            int pos = holder.getBindingAdapterPosition();
+            if (pos != RecyclerView.NO_POSITION && listener != null) {
+                listener.onApprove(item, pos);
+            }
         });
         holder.binding.btnReject.setOnClickListener(v -> {
-            if (listener != null) listener.onReject(item, holder.getBindingAdapterPosition());
+            int pos = holder.getBindingAdapterPosition();
+            if (pos != RecyclerView.NO_POSITION && listener != null) {
+                listener.onReject(item, pos);
+            }
         });
     }
 

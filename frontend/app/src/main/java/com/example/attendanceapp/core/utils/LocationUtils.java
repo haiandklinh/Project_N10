@@ -66,47 +66,68 @@ public class LocationUtils {
     }
 
     /**
+     * Chuyển đổi tọa độ GPS (lat, lon) sang địa chỉ văn bản tiếng Việt đồng bộ (chỉ gọi trên luồng nền).
+     * Trả về null nếu tọa độ không hợp lệ hoặc không thể reverse-geocode.
+     */
+    public static String resolveAddressFromLocationSync(Context context, double lat, double lon) {
+        if (Double.isNaN(lat) || Double.isNaN(lon)
+                || lat < -90.0 || lat > 90.0
+                || lon < -180.0 || lon > 180.0
+                || (lat == 0.0 && lon == 0.0)) {
+            return null;
+        }
+
+        // 1. Thử Android Geocoder
+        if (context != null) {
+            try {
+                Geocoder geocoder = new Geocoder(context, new Locale("vi", "VN"));
+                List<Address> addresses = geocoder.getFromLocation(lat, lon, 1);
+                if (addresses != null && !addresses.isEmpty()) {
+                    Address address = addresses.get(0);
+                    StringBuilder sb = new StringBuilder();
+                    for (int i = 0; i <= address.getMaxAddressLineIndex(); i++) {
+                        String line = address.getAddressLine(i);
+                        if (!TextUtils.isEmpty(line)) {
+                            if (sb.length() > 0) sb.append(", ");
+                            sb.append(line);
+                        }
+                    }
+                    String result = sb.toString().trim();
+                    if (!result.isEmpty()) {
+                        return result;
+                    }
+                }
+            } catch (Exception e) {
+                Log.w(TAG, "Android Geocoder reverse failed: " + e.getMessage());
+            }
+        }
+
+        // 2. Fallback sang Mapbox Reverse Geocoding API
+        String mapboxAddress = fetchMapboxReverseGeocode(context, lat, lon);
+        if (!TextUtils.isEmpty(mapboxAddress)) {
+            return mapboxAddress;
+        }
+
+        return null;
+    }
+
+    public static String formatCoordinates(double lat, double lon) {
+        return String.format(Locale.getDefault(), "%.5f, %.5f", lat, lon);
+    }
+
+    /**
      * Chuyển đổi tọa độ GPS (lat, lon) sang địa chỉ văn bản tiếng Việt.
      * Thử Android Geocoder trước, nếu thất bại tự động dùng Mapbox Geocoding API làm fallback.
      */
     public static void getAddressFromLocation(Context context, double lat, double lon, AddressCallback callback) {
         executor.execute(() -> {
-            // 1. Thử Android Geocoder
-            if (context != null) {
-                try {
-                    Geocoder geocoder = new Geocoder(context, new Locale("vi", "VN"));
-                    List<Address> addresses = geocoder.getFromLocation(lat, lon, 1);
-                    if (addresses != null && !addresses.isEmpty()) {
-                        Address address = addresses.get(0);
-                        StringBuilder sb = new StringBuilder();
-                        for (int i = 0; i <= address.getMaxAddressLineIndex(); i++) {
-                            String line = address.getAddressLine(i);
-                            if (!TextUtils.isEmpty(line)) {
-                                if (sb.length() > 0) sb.append(", ");
-                                sb.append(line);
-                            }
-                        }
-                        String result = sb.toString().trim();
-                        if (!result.isEmpty()) {
-                            String cleanResult = stripCountryOrLastSegment(result);
-                            getMainHandler().post(() -> callback.onAddressFound(cleanResult));
-                            return;
-                        }
-                    }
-                } catch (Exception e) {
-                    Log.w(TAG, "Android Geocoder reverse failed: " + e.getMessage());
-                }
-            }
-
-            // 2. Fallback sang Mapbox Reverse Geocoding API
-            String mapboxAddress = fetchMapboxReverseGeocode(context, lat, lon);
-            if (!TextUtils.isEmpty(mapboxAddress)) {
-                String cleanMapboxAddress = stripCountryOrLastSegment(mapboxAddress);
-                getMainHandler().post(() -> callback.onAddressFound(cleanMapboxAddress));
+            String resolvedAddress = resolveAddressFromLocationSync(context, lat, lon);
+            if (!TextUtils.isEmpty(resolvedAddress)) {
+                getMainHandler().post(() -> callback.onAddressFound(resolvedAddress));
                 return;
             }
 
-            // 3. Nếu cả 2 đều không được, trả về tọa độ dạng text
+            // Nếu cả 2 đều không được, trả về tọa độ dạng text
             String fallbackCoords = String.format(Locale.getDefault(), "%.6f, %.6f", lat, lon);
             getMainHandler().post(() -> callback.onAddressFound(fallbackCoords));
         });
@@ -191,6 +212,7 @@ public class LocationUtils {
     }
 
     private static String fetchMapboxReverseGeocode(Context context, double lat, double lon) {
+        HttpURLConnection conn = null;
         try {
             String token = getMapboxToken(context);
             String urlStr = String.format(Locale.US,
@@ -198,34 +220,38 @@ public class LocationUtils {
                     lon, lat, token);
 
             URL url = new URL(urlStr);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             conn.setConnectTimeout(6000);
             conn.setReadTimeout(6000);
 
             if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
-                StringBuilder response = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    response.append(line);
-                }
-                reader.close();
-
-                JSONObject json = new JSONObject(response.toString());
-                JSONArray features = json.optJSONArray("features");
-                if (features != null && features.length() > 0) {
-                    JSONObject first = features.getJSONObject(0);
-                    return first.optString("place_name", "");
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
+                    StringBuilder response = new StringBuilder();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        response.append(line);
+                    }
+                    JSONObject json = new JSONObject(response.toString());
+                    JSONArray features = json.optJSONArray("features");
+                    if (features != null && features.length() > 0) {
+                        JSONObject first = features.getJSONObject(0);
+                        return first.optString("place_name", "");
+                    }
                 }
             }
         } catch (Exception e) {
             Log.e(TAG, "fetchMapboxReverseGeocode error: " + e.getMessage());
+        } finally {
+            if (conn != null) {
+                conn.disconnect();
+            }
         }
         return null;
     }
 
     private static double[] fetchMapboxForwardGeocode(Context context, String address) {
+        HttpURLConnection conn = null;
         try {
             String token = getMapboxToken(context);
             String encodedAddress = URLEncoder.encode(address, "UTF-8");
@@ -234,34 +260,37 @@ public class LocationUtils {
                     encodedAddress, token);
 
             URL url = new URL(urlStr);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             conn.setConnectTimeout(6000);
             conn.setReadTimeout(6000);
 
             if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
-                StringBuilder response = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    response.append(line);
-                }
-                reader.close();
-
-                JSONObject json = new JSONObject(response.toString());
-                JSONArray features = json.optJSONArray("features");
-                if (features != null && features.length() > 0) {
-                    JSONObject first = features.getJSONObject(0);
-                    JSONArray center = first.optJSONArray("center");
-                    if (center != null && center.length() >= 2) {
-                        double lon = center.getDouble(0);
-                        double lat = center.getDouble(1);
-                        return new double[]{lat, lon};
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
+                    StringBuilder response = new StringBuilder();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        response.append(line);
+                    }
+                    JSONObject json = new JSONObject(response.toString());
+                    JSONArray features = json.optJSONArray("features");
+                    if (features != null && features.length() > 0) {
+                        JSONObject first = features.getJSONObject(0);
+                        JSONArray center = first.optJSONArray("center");
+                        if (center != null && center.length() >= 2) {
+                            double lon = center.getDouble(0);
+                            double lat = center.getDouble(1);
+                            return new double[]{lat, lon};
+                        }
                     }
                 }
             }
         } catch (Exception e) {
             Log.e(TAG, "fetchMapboxForwardGeocode error: " + e.getMessage());
+        } finally {
+            if (conn != null) {
+                conn.disconnect();
+            }
         }
         return null;
     }

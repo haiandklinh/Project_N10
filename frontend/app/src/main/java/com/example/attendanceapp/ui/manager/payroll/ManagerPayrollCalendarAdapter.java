@@ -45,17 +45,22 @@ public class ManagerPayrollCalendarAdapter extends RecyclerView.Adapter<ManagerP
         holder.bind(day, position == selectedPosition);
         
         holder.itemView.setOnClickListener(v -> {
-            int oldPos = selectedPosition;
-            selectedPosition = holder.getBindingAdapterPosition();
-            notifyItemChanged(oldPos);
-            notifyItemChanged(selectedPosition);
-            if (listener != null) listener.onDayClick(day);
+            int newPos = holder.getBindingAdapterPosition();
+            if (newPos != RecyclerView.NO_POSITION) {
+                int oldPos = selectedPosition;
+                selectedPosition = newPos;
+                if (oldPos != RecyclerView.NO_POSITION && oldPos < days.size()) {
+                    notifyItemChanged(oldPos);
+                }
+                notifyItemChanged(selectedPosition);
+                if (listener != null) listener.onDayClick(day);
+            }
         });
     }
 
     @Override
     public int getItemCount() {
-        return days.size();
+        return days != null ? days.size() : 0;
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {

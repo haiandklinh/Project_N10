@@ -156,6 +156,7 @@ public class EmployeeCheckInFragment extends Fragment {
 
     // -- Trạng thái chấm công --
     private CheckState currentState = CheckState.NOT_CHECKED_IN;
+    private long lastActionClickTime = 0L;
 
     public EmployeeCheckInFragment() {
     }

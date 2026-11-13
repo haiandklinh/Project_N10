@@ -1,14 +1,20 @@
 package com.example.attendanceapp.ui.employee.schedule;
 
+import android.content.Context;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 
+import com.example.attendanceapp.data.dto.response.staff.StaffWorkScheduleResponse;
 import com.example.attendanceapp.data.local.pref.SharedPreferenceApp;
 import com.example.attendanceapp.data.mapper.StaffScheduleMapper;
 import com.example.attendanceapp.domain.model.Shift;
+import com.example.attendanceapp.domain.model.ShiftOption;
 import com.example.attendanceapp.domain.model.WeekDay;
+import com.example.attendanceapp.domain.repository.ShiftRepository;
+import com.example.attendanceapp.domain.usecase.profile.GetCurrentUserUseCase;
 import com.example.attendanceapp.domain.usecase.schedule.GetScheduleByDateUseCase;
 
 import java.time.DayOfWeek;
@@ -21,7 +27,9 @@ import java.util.List;
 import javax.inject.Inject;
 
 import dagger.hilt.android.lifecycle.HiltViewModel;
+import dagger.hilt.android.qualifiers.ApplicationContext;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
@@ -34,7 +42,10 @@ public class EmployeeScheduleViewModel extends ViewModel {
 
     private static final int UPCOMING_LIMIT = 10;
 
+    private final Context appContext;
     private final GetScheduleByDateUseCase getScheduleByDateUseCase;
+    private final ShiftRepository shiftRepository;
+    private final GetCurrentUserUseCase getCurrentUserUseCase;
     private final SharedPreferenceApp sharedPreferenceApp;
     private final CompositeDisposable disposables = new CompositeDisposable();
 
@@ -47,10 +58,16 @@ public class EmployeeScheduleViewModel extends ViewModel {
 
     @Inject
     public EmployeeScheduleViewModel(
+            @ApplicationContext Context context,
             GetScheduleByDateUseCase getScheduleByDateUseCase,
+            ShiftRepository shiftRepository,
+            GetCurrentUserUseCase getCurrentUserUseCase,
             SharedPreferenceApp sharedPreferenceApp
     ) {
+        this.appContext = context.getApplicationContext();
         this.getScheduleByDateUseCase = getScheduleByDateUseCase;
+        this.shiftRepository = shiftRepository;
+        this.getCurrentUserUseCase = getCurrentUserUseCase;
         this.sharedPreferenceApp = sharedPreferenceApp;
         load();
     }
@@ -73,16 +90,11 @@ public class EmployeeScheduleViewModel extends ViewModel {
     /** Tải lại ngầm không hiển thị trạng thái loading giật màn hình */
     public void refreshSilently() {
         disposables.add(
-                getScheduleByDateUseCase.execute(null)
-                        .map(schedules -> StaffScheduleMapper.toShifts(schedules, sharedPreferenceApp))
+                fetchScheduleSingle()
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                shifts -> {
-                                    allShifts = shifts;
-                                    loaded = true;
-                                    publish();
-                                },
+                                data -> applyLoadedSchedule(data),
                                 error -> {}
                         )
         );
@@ -107,19 +119,66 @@ public class EmployeeScheduleViewModel extends ViewModel {
     private void load() {
         scheduleUiState.setValue(ScheduleUiState.loading());
         disposables.add(
-                getScheduleByDateUseCase.execute(null) // null: lấy toàn bộ lịch
-                        .map(schedules -> StaffScheduleMapper.toShifts(schedules, sharedPreferenceApp))
+                fetchScheduleSingle()
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                shifts -> {
-                                    allShifts = shifts;
-                                    loaded = true;
-                                    publish();
-                                },
+                                data -> applyLoadedSchedule(data),
                                 error -> scheduleUiState.setValue(ScheduleUiState.error(error.getMessage()))
                         )
         );
+    }
+
+    private Single<LoadedScheduleData> fetchScheduleSingle() {
+        Single<List<StaffWorkScheduleResponse>> scheduleSingle = getScheduleByDateUseCase.execute(null);
+        Single<List<ShiftOption>> shiftsSingle = shiftRepository.getShifts()
+                .onErrorReturnItem(Collections.emptyList());
+        Single<String> companyNameSingle = getCurrentUserUseCase.execute()
+                .map(u -> u.getCompanyName() != null ? u.getCompanyName() : "")
+                .onErrorReturnItem("")
+                .defaultIfEmpty("");
+
+        return Single.zip(scheduleSingle, shiftsSingle, companyNameSingle, (schedules, shiftOptions, companyName) -> {
+            List<Shift> mapped = StaffScheduleMapper.toShifts(
+                    schedules, shiftOptions, sharedPreferenceApp, null, companyName
+            );
+            return new LoadedScheduleData(schedules, shiftOptions, companyName, mapped);
+        });
+    }
+
+    private void applyLoadedSchedule(LoadedScheduleData data) {
+        allShifts = data.shifts;
+        loaded = true;
+        publish();
+
+        disposables.add(Single.fromCallable(() ->
+                        StaffScheduleMapper.resolveMissingShiftAddressesSync(
+                                appContext, data.schedules, data.shiftOptions, sharedPreferenceApp))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(updated -> {
+                    if (Boolean.TRUE.equals(updated)) {
+                        allShifts = StaffScheduleMapper.toShifts(
+                                data.schedules, data.shiftOptions, sharedPreferenceApp, null, data.companyName
+                        );
+                        publish();
+                    }
+                }, throwable -> {}));
+    }
+
+    private static class LoadedScheduleData {
+        final List<StaffWorkScheduleResponse> schedules;
+        final List<ShiftOption> shiftOptions;
+        final String companyName;
+        final List<Shift> shifts;
+
+        LoadedScheduleData(List<StaffWorkScheduleResponse> schedules, List<ShiftOption> shiftOptions,
+                           String companyName, List<Shift> shifts) {
+            this.schedules = schedules;
+            this.shiftOptions = shiftOptions;
+            this.companyName = companyName;
+            this.shifts = shifts;
+        }
     }
 
     private void publish() {

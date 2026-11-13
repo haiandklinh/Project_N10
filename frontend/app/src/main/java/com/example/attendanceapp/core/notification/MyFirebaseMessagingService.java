@@ -30,21 +30,38 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         super.onMessageReceived(remoteMessage);
         Log.d(TAG, "From: " + remoteMessage.getFrom());
 
-        // Kiểm tra nếu tin nhắn chứa data payload (backend gửi OTP dạng JSON trong data)
+        String title = null;
+        String message = null;
+
+        // 1. Kiểm tra data payload
         if (remoteMessage.getData().size() > 0) {
             Log.d(TAG, "Message data payload: " + remoteMessage.getData());
-            
-            // Giả sử backend gửi key là "otp"
             String otp = remoteMessage.getData().get("otp");
-            if (otp != null) {
-                showNotification("Mã xác thực OTP", "Mã của bạn là: " + otp);
+            if (otp != null && !otp.trim().isEmpty()) {
+                title = "Mã xác thực OTP";
+                message = "Mã của bạn là: " + otp;
+            } else {
+                title = remoteMessage.getData().get("title");
+                message = remoteMessage.getData().get("message");
+                if (message == null) {
+                    message = remoteMessage.getData().get("body");
+                }
             }
         }
 
-        // Kiểm tra nếu tin nhắn chứa notification payload
+        // 2. Kiểm tra notification payload
         if (remoteMessage.getNotification() != null) {
             Log.d(TAG, "Message Notification Body: " + remoteMessage.getNotification().getBody());
-            showNotification(remoteMessage.getNotification().getTitle(), remoteMessage.getNotification().getBody());
+            if (remoteMessage.getNotification().getTitle() != null) {
+                title = remoteMessage.getNotification().getTitle();
+            }
+            if (remoteMessage.getNotification().getBody() != null) {
+                message = remoteMessage.getNotification().getBody();
+            }
+        }
+
+        if (title != null || message != null) {
+            showNotification(title != null ? title : "Thông báo mới", message != null ? message : "");
         }
     }
 
@@ -55,39 +72,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     }
 
     public static void showStaticNotification(Context context, Notification notification) {
-        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(
-                    CHANNEL_ID,
-                    "Thông báo hệ thống",
-                    NotificationManager.IMPORTANCE_HIGH
-            );
-            notificationManager.createNotificationChannel(channel);
-        }
-
-        Intent intent = new Intent(context, AuthActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pendingIntent = PendingIntent.getActivity(
-                context, 0, intent,
-                PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE
-        );
-
-        int iconRes = R.drawable.ic_notifications;
-        if (notification.getType() == NotificationType.AUTH) {
-            iconRes = R.drawable.ic_lock; // Hoặc ic_key tùy bạn có
-        }
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(iconRes)
-                .setContentTitle(notification.getTitle())
-                .setContentText(notification.getMessage())
-                .setAutoCancel(true)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setDefaults(NotificationCompat.DEFAULT_ALL)
-                .setContentIntent(pendingIntent);
-
-        notificationManager.notify((int) System.currentTimeMillis(), builder.build());
+        if (context == null || notification == null) return;
+        SystemNotificationHelper.showNotification(context, notification);
     }
 
     private void showNotification(String title, String message) {
@@ -99,6 +85,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 NotificationType.SYSTEM,
                 false
         );
-        showStaticNotification(this, notification);
+        SystemNotificationHelper.showNotification(this, notification);
     }
 }

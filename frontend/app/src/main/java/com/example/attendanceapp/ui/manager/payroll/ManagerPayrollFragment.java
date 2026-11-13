@@ -145,13 +145,62 @@ public class ManagerPayrollFragment extends Fragment {
 
     private void confirmAllPayrolls() {
         SharedPreferences prefs = requireContext().getSharedPreferences("SALARY_CONFIG_PREFS", Context.MODE_PRIVATE);
-        String defaultRateStr = prefs.getString("rate_fulltime", "400000").replaceAll("[.,]", "");
-        double defaultBaseSalary = 7500000.0;
-        try {
-            defaultBaseSalary = Double.parseDouble(defaultRateStr) * 22;
-        } catch (Exception ignored) {}
+        String defaultRateStr = prefs.getString("rate_fulltime", null);
+        double defaultBaseSalary = 0.0;
+        if (defaultRateStr != null && !defaultRateStr.trim().isEmpty()) {
+            try {
+                defaultBaseSalary = Double.parseDouble(defaultRateStr.replaceAll("[.,]", ""));
+            } catch (Exception ignored) {}
+        }
 
-        final double baseSalary = defaultBaseSalary;
+        if (defaultBaseSalary <= 0) {
+            promptBaseSalaryForBulkCalculation();
+            return;
+        }
+
+        executeBulkPayrollCalculation(defaultBaseSalary);
+    }
+
+    private void promptBaseSalaryForBulkCalculation() {
+        android.widget.FrameLayout container = new android.widget.FrameLayout(requireContext());
+        int paddingHorizontal = getResources().getDimensionPixelSize(R.dimen.spacing_l);
+        int paddingTop = getResources().getDimensionPixelSize(R.dimen.spacing_m);
+        container.setPadding(paddingHorizontal, paddingTop, paddingHorizontal, 0);
+
+        com.google.android.material.textfield.TextInputLayout inputLayout = new com.google.android.material.textfield.TextInputLayout(requireContext());
+        inputLayout.setHint("Lương cơ bản mặc định (VNĐ)");
+
+        com.google.android.material.textfield.TextInputEditText editText = new com.google.android.material.textfield.TextInputEditText(inputLayout.getContext());
+        editText.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+        inputLayout.addView(editText);
+        container.addView(inputLayout);
+
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Thiết lập lương cơ bản để chốt hàng loạt")
+                .setMessage("Chưa tìm thấy cấu hình lương cơ bản. Vui lòng nhập mức lương cơ bản áp dụng cho danh sách nhân viên:")
+                .setView(container)
+                .setPositiveButton("Tiếp tục", (dialog, which) -> {
+                    String input = editText.getText() != null ? editText.getText().toString().trim().replaceAll("[.,]", "") : "";
+                    if (input.isEmpty()) {
+                        Toast.makeText(getContext(), "Vui lòng nhập mức lương hợp lệ", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    try {
+                        double enteredSalary = Double.parseDouble(input);
+                        if (enteredSalary <= 0) {
+                            Toast.makeText(getContext(), "Mức lương phải lớn hơn 0", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        executeBulkPayrollCalculation(enteredSalary);
+                    } catch (NumberFormatException e) {
+                        Toast.makeText(getContext(), "Số tiền không hợp lệ", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .setNegativeButton("Hủy", null)
+                .show();
+    }
+
+    private void executeBulkPayrollCalculation(double baseSalary) {
         int total = employeeList.size();
         final int[] successCount = {0};
 

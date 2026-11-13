@@ -1,6 +1,9 @@
 package com.example.attendanceapp.data.repository;
 
+import android.content.Context;
+
 import com.example.attendanceapp.core.notification.NotificationRolePolicy;
+import com.example.attendanceapp.core.notification.SystemNotificationHelper;
 import com.example.attendanceapp.core.notification.WebSocketNotificationManager;
 import com.example.attendanceapp.data.local.HandledRequestManager;
 import com.example.attendanceapp.data.local.dao.NotificationDao;
@@ -27,6 +30,8 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import dagger.hilt.android.qualifiers.ApplicationContext;
+
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Observable;
@@ -35,6 +40,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 @Singleton
 public class NotificationRepositoryImpl implements NotificationRepository {
 
+    private final Context context;
     private final NotificationDao notificationDao;
     private final ManagerApi managerApi;
     private final StaffApi staffApi;
@@ -45,6 +51,7 @@ public class NotificationRepositoryImpl implements NotificationRepository {
 
     @Inject
     public NotificationRepositoryImpl(
+            @ApplicationContext Context context,
             NotificationDao notificationDao,
             ManagerApi managerApi,
             StaffApi staffApi,
@@ -53,6 +60,7 @@ public class NotificationRepositoryImpl implements NotificationRepository {
             HandledRequestManager handledRequestManager,
             SessionRepository sessionRepository
     ) {
+        this.context = context;
         this.notificationDao = notificationDao;
         this.managerApi = managerApi;
         this.staffApi = staffApi;
@@ -93,7 +101,7 @@ public class NotificationRepositoryImpl implements NotificationRepository {
                             if (entity.getId() != null && entity.getId().startsWith("welcome_notification_init_")) {
                                 if (entity.getTitle() == null || entity.getTitle().contains("\uFFFD") || entity.getTitle().contains("?")) {
                                     entity.setTitle("Chào mừng đến với Attendance App");
-                                    entity.setMessage("Chào mừng và chúc user trải nghiệm trên Attendance App tốt!");
+                                    entity.setMessage("Rất vui khi có bạn đồng hành! Attendance App sẽ giúp bạn theo dõi lịch làm việc và quản lý thời gian hiệu quả hơn!");
                                     notificationDao.insert(entity).subscribeOn(Schedulers.io()).subscribe();
                                 }
                                 hasValidWelcome = true;
@@ -105,7 +113,7 @@ public class NotificationRepositoryImpl implements NotificationRepository {
                         NotificationEntity welcome = new NotificationEntity(
                                 "welcome_notification_init_" + roleStr.toLowerCase(),
                                 "Chào mừng đến với Attendance App",
-                                "Chào mừng và chúc user trải nghiệm trên Attendance App tốt!",
+                                "Rất vui khi có bạn đồng hành! Attendance App sẽ giúp bạn theo dõi lịch làm việc và quản lý thời gian hiệu quả hơn!",
                                 LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")),
                                 NotificationType.SYSTEM.name(),
                                 false,
@@ -149,73 +157,95 @@ public class NotificationRepositoryImpl implements NotificationRepository {
         if (role == UserRole.MANAGER) {
             ensureWelcomeNotification(UserRole.MANAGER);
             return notificationDao.deleteCrossRoleNotificationsForManager()
-                    .andThen(notificationDao.getReadNotificationIdsByRole("MANAGER")
+                    .andThen(notificationDao.getAllNotificationIdsByRole("MANAGER")
                             .onErrorReturnItem(Collections.emptyList())
-                            .flatMapCompletable(readIdList -> {
-                                Set<String> readIds = new HashSet<>(readIdList);
-                                return managerApi.getNotifications()
-                                        .subscribeOn(Schedulers.io())
-                                        .flatMapCompletable(res -> {
-                                            if (res != null && res.getData() != null) {
-                                                List<NotificationEntity> entities = new ArrayList<>();
-                                                for (com.example.attendanceapp.data.dto.response.manager.NotificationItemResponse item : res.getData()) {
-                                                    if (item == null) continue;
-                                                    String typeStr = item.getNotificationType();
-                                                    if (!NotificationRolePolicy.isAllowedForRole(typeStr, UserRole.MANAGER)) {
-                                                        continue;
-                                                    }
-                                                    if ("JOIN_COMPANY_REQUEST".equalsIgnoreCase(typeStr)
-                                                            && item.getStaffId() != null
-                                                            && handledRequestManager.isHandled(item.getStaffId())) {
-                                                        continue;
-                                                    }
-                                                    String senderName = item.getSendPerson() != null ? item.getSendPerson() : "Nhân viên";
-                                                    String title;
-                                                    String msg;
-                                                    NotificationType type = NotificationRolePolicy.mapNotificationType(typeStr);
+                            .flatMapCompletable(existingIdsList -> {
+                                Set<String> existingIds = new HashSet<>(existingIdsList);
+                                return notificationDao.getReadNotificationIdsByRole("MANAGER")
+                                        .onErrorReturnItem(Collections.emptyList())
+                                        .flatMapCompletable(readIdList -> {
+                                            Set<String> readIds = new HashSet<>(readIdList);
+                                            return managerApi.getNotifications()
+                                                    .subscribeOn(Schedulers.io())
+                                                    .flatMapCompletable(res -> {
+                                                        if (res != null && res.getData() != null) {
+                                                            List<NotificationEntity> entities = new ArrayList<>();
+                                                            List<Notification> newNotificationsToNotify = new ArrayList<>();
+                                                            for (com.example.attendanceapp.data.dto.response.manager.NotificationItemResponse item : res.getData()) {
+                                                                if (item == null) continue;
+                                                                String typeStr = item.getNotificationType();
+                                                                if (!NotificationRolePolicy.isAllowedForRole(typeStr, UserRole.MANAGER)) {
+                                                                    continue;
+                                                                }
+                                                                if ("JOIN_COMPANY_REQUEST".equalsIgnoreCase(typeStr)
+                                                                        && item.getStaffId() != null
+                                                                        && handledRequestManager.isHandled(item.getStaffId())) {
+                                                                    continue;
+                                                                }
+                                                                String senderName = item.getSendPerson() != null ? item.getSendPerson() : "Nhân viên";
+                                                                String title;
+                                                                String msg;
+                                                                NotificationType type = NotificationRolePolicy.mapNotificationType(typeStr);
 
-                                                    if ("JOIN_COMPANY_REQUEST".equalsIgnoreCase(typeStr)) {
-                                                        title = "Yêu cầu tham gia công ty";
-                                                        msg = senderName + " đã gửi yêu cầu xin gia nhập doanh nghiệp của bạn.";
-                                                    } else if ("CHANGE_WORK_SHIFT".equalsIgnoreCase(typeStr)
-                                                            || "SHIFT_CHANGE_REQUEST".equalsIgnoreCase(typeStr)
-                                                            || "CHANGE_WORK_SHIFT_REQUEST".equalsIgnoreCase(typeStr)
-                                                            || "NEW_CHANGE_REQUEST".equalsIgnoreCase(typeStr)
-                                                            || "WORK_SCHEDULE_REQUEST".equalsIgnoreCase(typeStr)) {
-                                                        title = "Yêu cầu đổi ca làm việc";
-                                                        msg = senderName + " gửi yêu cầu đổi ca làm việc mới.";
-                                                    } else if ("CHANGE_LEAVE_REQUEST".equalsIgnoreCase(typeStr)
-                                                            || "LEAVE_REQUEST".equalsIgnoreCase(typeStr)) {
-                                                        title = "Đơn xin nghỉ phép mới";
-                                                        msg = senderName + " gửi đơn xin nghỉ phép.";
-                                                    } else if ("ATTENDANCE_ADJUSTMENT_REQUEST".equalsIgnoreCase(typeStr)) {
-                                                        title = "Yêu cầu điều chỉnh chấm công";
-                                                        msg = senderName + " gửi yêu cầu điều chỉnh thời gian chấm công.";
-                                                    } else {
-                                                        title = item.getSendPerson() != null ? item.getSendPerson() : "Thông báo";
-                                                        msg = extractContentMessage(item.getContent(), "Bạn có thông báo mới từ hệ thống.");
-                                                    }
+                                                                if ("JOIN_COMPANY_REQUEST".equalsIgnoreCase(typeStr)) {
+                                                                    title = "Yêu cầu tham gia công ty";
+                                                                    msg = senderName + " đã gửi yêu cầu xin gia nhập doanh nghiệp của bạn.";
+                                                                } else if ("CHANGE_WORK_SHIFT".equalsIgnoreCase(typeStr)
+                                                                        || "SHIFT_CHANGE_REQUEST".equalsIgnoreCase(typeStr)
+                                                                        || "CHANGE_WORK_SHIFT_REQUEST".equalsIgnoreCase(typeStr)
+                                                                        || "NEW_CHANGE_REQUEST".equalsIgnoreCase(typeStr)
+                                                                        || "WORK_SCHEDULE_REQUEST".equalsIgnoreCase(typeStr)) {
+                                                                    title = "Yêu cầu đổi ca làm việc";
+                                                                    msg = senderName + " gửi yêu cầu đổi ca làm việc mới.";
+                                                                } else if ("CHANGE_LEAVE_REQUEST".equalsIgnoreCase(typeStr)
+                                                                        || "LEAVE_REQUEST".equalsIgnoreCase(typeStr)) {
+                                                                    title = "Đơn xin nghỉ phép mới";
+                                                                    msg = senderName + " gửi đơn xin nghỉ phép.";
+                                                                } else if ("ATTENDANCE_ADJUSTMENT_REQUEST".equalsIgnoreCase(typeStr)) {
+                                                                    title = "Yêu cầu điều chỉnh chấm công";
+                                                                    msg = senderName + " gửi yêu cầu điều chỉnh thời gian chấm công.";
+                                                                } else {
+                                                                    title = item.getSendPerson() != null ? item.getSendPerson() : "Thông báo";
+                                                                    msg = extractContentMessage(item.getContent(), "Bạn có thông báo mới từ hệ thống.");
+                                                                }
 
-                                                    String time = item.getSendAt() != null
-                                                            ? item.getSendAt()
-                                                            : LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
-                                                    String entityId = (item.getNotificationId() != null && !item.getNotificationId().trim().isEmpty())
-                                                            ? item.getNotificationId().trim()
-                                                            : (item.getStaffId() != null ? item.getStaffId() : "") + "_" + (typeStr != null ? typeStr : "") + "_" + time;
+                                                                String time = item.getSendAt() != null
+                                                                        ? item.getSendAt()
+                                                                        : LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+                                                                String entityId = (item.getNotificationId() != null && !item.getNotificationId().trim().isEmpty())
+                                                                        ? item.getNotificationId().trim()
+                                                                        : (item.getStaffId() != null ? item.getStaffId() : "") + "_" + (typeStr != null ? typeStr : "") + "_" + time;
 
-                                                    entities.add(new NotificationEntity(
-                                                            entityId,
-                                                            title,
-                                                            msg,
-                                                            time,
-                                                            type.name(),
-                                                            readIds.contains(entityId),
-                                                            "MANAGER"
-                                                    ));
-                                                }
-                                                return notificationDao.insertAll(entities);
-                                            }
-                                            return Completable.complete();
+                                                                NotificationEntity entity = new NotificationEntity(
+                                                                        entityId,
+                                                                        title,
+                                                                        msg,
+                                                                        time,
+                                                                        type.name(),
+                                                                        readIds.contains(entityId),
+                                                                        "MANAGER"
+                                                                );
+                                                                entities.add(entity);
+
+                                                                // Kiểm tra nếu thông báo này chưa từng có trong DB và chưa đọc
+                                                                if (!existingIds.contains(entityId) && !readIds.contains(entityId)) {
+                                                                    newNotificationsToNotify.add(entity.toDomain());
+                                                                }
+                                                            }
+
+                                                            // Bắn thông báo hệ thống cho các thông báo mới nhận được (tối đa 3 thông báo mới nhất)
+                                                            if (!existingIds.isEmpty()) {
+                                                                int count = 0;
+                                                                for (Notification notif : newNotificationsToNotify) {
+                                                                    if (count++ >= 3) break;
+                                                                    SystemNotificationHelper.showNotification(context, notif);
+                                                                }
+                                                            }
+
+                                                            return notificationDao.insertAll(entities);
+                                                        }
+                                                        return Completable.complete();
+                                                    });
                                         });
                             }))
                     .onErrorComplete();
@@ -229,77 +259,97 @@ public class NotificationRepositoryImpl implements NotificationRepository {
                                 if (managerId.isEmpty()) {
                                     return Completable.complete();
                                 }
-                                return notificationDao.getReadNotificationIdsByRole("EMPLOYEE")
+                                return notificationDao.getAllNotificationIdsByRole("EMPLOYEE")
                                         .onErrorReturnItem(Collections.emptyList())
-                                        .flatMapCompletable(readIdList -> {
-                                            Set<String> readIds = new HashSet<>(readIdList);
-                                            return staffApi.getNotifications(managerId)
-                                                    .subscribeOn(Schedulers.io())
-                                                    .flatMapCompletable(res -> {
-                                                        if (res != null && res.getData() != null) {
-                                                            List<NotificationEntity> entities = new ArrayList<>();
-                                                            for (com.example.attendanceapp.data.dto.response.staff.NotificationItemResponse item : res.getData()) {
-                                                                if (item == null) continue;
-                                                                String typeStr = item.getNotificationType();
-                                                                if (!NotificationRolePolicy.isAllowedForRole(typeStr, UserRole.EMPLOYEE)) {
-                                                                    continue;
-                                                                }
+                                        .flatMapCompletable(existingIdsList -> {
+                                            Set<String> existingIds = new HashSet<>(existingIdsList);
+                                            return notificationDao.getReadNotificationIdsByRole("EMPLOYEE")
+                                                    .onErrorReturnItem(Collections.emptyList())
+                                                    .flatMapCompletable(readIdList -> {
+                                                        Set<String> readIds = new HashSet<>(readIdList);
+                                                        return staffApi.getNotifications(managerId)
+                                                                .subscribeOn(Schedulers.io())
+                                                                .flatMapCompletable(res -> {
+                                                                    if (res != null && res.getData() != null) {
+                                                                        List<NotificationEntity> entities = new ArrayList<>();
+                                                                        List<Notification> newNotificationsToNotify = new ArrayList<>();
+                                                                        for (com.example.attendanceapp.data.dto.response.staff.NotificationItemResponse item : res.getData()) {
+                                                                            if (item == null) continue;
+                                                                            String typeStr = item.getNotificationType();
+                                                                            if (!NotificationRolePolicy.isAllowedForRole(typeStr, UserRole.EMPLOYEE)) {
+                                                                                continue;
+                                                                            }
 
-                                                                String title;
-                                                                String msg;
-                                                                NotificationType type = NotificationRolePolicy.mapNotificationType(typeStr);
+                                                                            String title;
+                                                                            String msg;
+                                                                            NotificationType type = NotificationRolePolicy.mapNotificationType(typeStr);
 
-                                                                if ("ASSIGN_WORK_SCHEDULE".equalsIgnoreCase(typeStr)
-                                                                        || "SCHEDULE_ASSIGNED".equalsIgnoreCase(typeStr)
-                                                                        || "WORK_SCHEDULE_ASSIGNED".equalsIgnoreCase(typeStr)) {
-                                                                    title = "Lịch làm việc mới";
-                                                                    msg = buildScheduleAssignedMessage(item.getContent());
-                                                                } else if ("SCHEDULE_UPDATED".equalsIgnoreCase(typeStr)) {
-                                                                    title = "Cập nhật lịch làm việc";
-                                                                    msg = extractContentMessage(item.getContent(), "Lịch làm việc của bạn đã được cập nhật.");
-                                                                } else if ("JOIN_COMPANY_REQUEST_RESPONSE".equalsIgnoreCase(typeStr)) {
-                                                                    title = "Kết quả yêu cầu gia nhập";
-                                                                    msg = extractContentMessage(item.getContent(), "Quản lý đã phản hồi yêu cầu gia nhập công ty của bạn.");
-                                                                } else if ("CHANGE_WORK_SHIFT_RESPONSE".equalsIgnoreCase(typeStr)
-                                                                        || "SHIFT_CHANGE_APPROVED".equalsIgnoreCase(typeStr)) {
-                                                                    title = "Kết quả yêu cầu đổi ca";
-                                                                    msg = extractContentMessage(item.getContent(), "Quản lý đã phản hồi yêu cầu đổi ca làm việc.");
-                                                                } else if ("CHANGE_LEAVE_REQUEST_RESPONSE".equalsIgnoreCase(typeStr)
-                                                                        || "LEAVE_APPROVED".equalsIgnoreCase(typeStr)) {
-                                                                    title = "Kết quả đơn xin nghỉ phép";
-                                                                    msg = extractContentMessage(item.getContent(), "Quản lý đã phản hồi đơn xin nghỉ phép của bạn.");
-                                                                } else if ("ATTENDANCE_ADJUSTMENT_RESPONSE".equalsIgnoreCase(typeStr)
-                                                                        || "ATTENDANCE_ADJUSTMENT_APPROVED".equalsIgnoreCase(typeStr)) {
-                                                                    title = "Kết quả điều chỉnh chấm công";
-                                                                    msg = extractContentMessage(item.getContent(), "Quản lý đã phản hồi yêu cầu điều chỉnh chấm công.");
-                                                                } else if ("PAYROLL".equalsIgnoreCase(typeStr)) {
-                                                                    title = "Thông báo bảng lương";
-                                                                    msg = extractContentMessage(item.getContent(), "Bảng lương của bạn đã được cập nhật.");
-                                                                } else {
-                                                                    title = item.getSendPerson() != null ? item.getSendPerson() : "Thông báo";
-                                                                    msg = extractContentMessage(item.getContent(), "Bạn có thông báo mới từ hệ thống.");
-                                                                }
+                                                                            if ("ASSIGN_WORK_SCHEDULE".equalsIgnoreCase(typeStr)
+                                                                                    || "SCHEDULE_ASSIGNED".equalsIgnoreCase(typeStr)
+                                                                                    || "WORK_SCHEDULE_ASSIGNED".equalsIgnoreCase(typeStr)) {
+                                                                                title = "Lịch làm việc mới";
+                                                                                msg = buildScheduleAssignedMessage(item.getContent());
+                                                                            } else if ("SCHEDULE_UPDATED".equalsIgnoreCase(typeStr)) {
+                                                                                title = "Cập nhật lịch làm việc";
+                                                                                msg = extractContentMessage(item.getContent(), "Lịch làm việc của bạn đã được cập nhật.");
+                                                                            } else if ("JOIN_COMPANY_REQUEST_RESPONSE".equalsIgnoreCase(typeStr)) {
+                                                                                title = "Kết quả yêu cầu gia nhập";
+                                                                                msg = extractContentMessage(item.getContent(), "Quản lý đã phản hồi yêu cầu gia nhập công ty của bạn.");
+                                                                            } else if ("CHANGE_WORK_SHIFT_RESPONSE".equalsIgnoreCase(typeStr)
+                                                                                    || "SHIFT_CHANGE_APPROVED".equalsIgnoreCase(typeStr)) {
+                                                                                title = "Kết quả yêu cầu đổi ca";
+                                                                                msg = extractContentMessage(item.getContent(), "Quản lý đã phản hồi yêu cầu đổi ca làm việc.");
+                                                                            } else if ("CHANGE_LEAVE_REQUEST_RESPONSE".equalsIgnoreCase(typeStr)
+                                                                                    || "LEAVE_APPROVED".equalsIgnoreCase(typeStr)) {
+                                                                                title = "Kết quả đơn xin nghỉ phép";
+                                                                                msg = extractContentMessage(item.getContent(), "Quản lý đã phản hồi đơn xin nghỉ phép của bạn.");
+                                                                            } else if ("ATTENDANCE_ADJUSTMENT_RESPONSE".equalsIgnoreCase(typeStr)
+                                                                                    || "ATTENDANCE_ADJUSTMENT_APPROVED".equalsIgnoreCase(typeStr)) {
+                                                                                title = "Kết quả điều chỉnh chấm công";
+                                                                                msg = extractContentMessage(item.getContent(), "Quản lý đã phản hồi yêu cầu điều chỉnh chấm công.");
+                                                                            } else if ("PAYROLL".equalsIgnoreCase(typeStr)) {
+                                                                                title = "Thông báo bảng lương";
+                                                                                msg = extractContentMessage(item.getContent(), "Bảng lương của bạn đã được cập nhật.");
+                                                                            } else {
+                                                                                title = item.getSendPerson() != null ? item.getSendPerson() : "Thông báo";
+                                                                                msg = extractContentMessage(item.getContent(), "Bạn có thông báo mới từ hệ thống.");
+                                                                            }
 
-                                                                String time = item.getSendAt() != null
-                                                                        ? item.getSendAt()
-                                                                        : LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
-                                                                String entityId = (item.getId() != null && !item.getId().trim().isEmpty())
-                                                                        ? "emp_" + item.getId().trim()
-                                                                        : "emp_" + (typeStr != null ? typeStr : "") + "_" + time + "_" + (title + "|" + msg).hashCode();
+                                                                            String time = item.getSendAt() != null
+                                                                                    ? item.getSendAt()
+                                                                                    : LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+                                                                            String entityId = (item.getId() != null && !item.getId().trim().isEmpty())
+                                                                                    ? "emp_" + item.getId().trim()
+                                                                                    : "emp_" + (typeStr != null ? typeStr : "") + "_" + time + "_" + (title + "|" + msg).hashCode();
 
-                                                                entities.add(new NotificationEntity(
-                                                                        entityId,
-                                                                        title,
-                                                                        msg,
-                                                                        time,
-                                                                        type.name(),
-                                                                        readIds.contains(entityId),
-                                                                        "EMPLOYEE"
-                                                                ));
-                                                            }
-                                                            return notificationDao.insertAll(entities);
-                                                        }
-                                                        return Completable.complete();
+                                                                            NotificationEntity entity = new NotificationEntity(
+                                                                                    entityId,
+                                                                                    title,
+                                                                                    msg,
+                                                                                    time,
+                                                                                    type.name(),
+                                                                                    readIds.contains(entityId),
+                                                                                    "EMPLOYEE"
+                                                                            );
+                                                                            entities.add(entity);
+
+                                                                            if (!existingIds.contains(entityId) && !readIds.contains(entityId)) {
+                                                                                newNotificationsToNotify.add(entity.toDomain());
+                                                                            }
+                                                                        }
+
+                                                                        if (!existingIds.isEmpty()) {
+                                                                            int count = 0;
+                                                                            for (Notification notif : newNotificationsToNotify) {
+                                                                                if (count++ >= 3) break;
+                                                                                SystemNotificationHelper.showNotification(context, notif);
+                                                                            }
+                                                                        }
+
+                                                                        return notificationDao.insertAll(entities);
+                                                                    }
+                                                                    return Completable.complete();
+                                                                });
                                                     });
                                         });
                             }))
