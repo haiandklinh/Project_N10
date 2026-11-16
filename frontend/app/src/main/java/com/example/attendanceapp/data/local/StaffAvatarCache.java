@@ -184,7 +184,7 @@ public final class StaffAvatarCache {
     public static String getAvatarById(Context context, @Nullable String id) {
         if (context == null || id == null || id.trim().isEmpty()) return null;
         String uri = getPrefs(context).getString(KEY_PREFIX_ID + id.trim(), null);
-        if (uri != null && isValidFile(uri)) {
+        if (uri != null && isValidFile(context, uri)) {
             return uri;
         }
         return null;
@@ -194,7 +194,7 @@ public final class StaffAvatarCache {
     public static String getAvatarByName(Context context, @Nullable String name) {
         if (context == null || name == null || name.trim().isEmpty()) return null;
         String uri = getPrefs(context).getString(KEY_PREFIX_NAME + name.trim().toLowerCase(), null);
-        if (uri != null && isValidFile(uri)) {
+        if (uri != null && isValidFile(context, uri)) {
             return uri;
         }
         return null;
@@ -204,7 +204,7 @@ public final class StaffAvatarCache {
     public static String getAvatarByPhone(Context context, @Nullable String phone) {
         if (context == null || phone == null || phone.trim().isEmpty()) return null;
         String uri = getPrefs(context).getString(KEY_PREFIX_PHONE + phone.trim(), null);
-        if (uri != null && isValidFile(uri)) {
+        if (uri != null && isValidFile(context, uri)) {
             return uri;
         }
         return null;
@@ -233,17 +233,25 @@ public final class StaffAvatarCache {
     public static String getLatestAvatar(Context context) {
         if (context == null) return null;
         String latest = getPrefs(context).getString(KEY_LATEST, null);
-        if (latest != null && !latest.trim().isEmpty() && isValidFile(latest)) {
+        if (latest != null && !latest.trim().isEmpty() && isValidFile(context, latest)) {
             return latest;
         }
         return null;
     }
 
-    private static boolean isValidFile(String pathOrUri) {
+    private static boolean isValidFile(@Nullable Context context, String pathOrUri) {
         if (pathOrUri == null || pathOrUri.isEmpty()) return false;
         if ("null".equalsIgnoreCase(pathOrUri) || "none".equalsIgnoreCase(pathOrUri) || "string".equalsIgnoreCase(pathOrUri)) return false;
         if (pathOrUri.startsWith("http://") || pathOrUri.startsWith("https://")) return true;
-        if (pathOrUri.startsWith("data:image") || pathOrUri.startsWith("content://") || pathOrUri.length() > 200) return true;
+        if (pathOrUri.startsWith("data:image") || pathOrUri.length() > 200) return true;
+        if (pathOrUri.startsWith("content://")) {
+            if (context == null) return false;
+            try (java.io.InputStream in = context.getContentResolver().openInputStream(android.net.Uri.parse(pathOrUri))) {
+                return in != null;
+            } catch (Exception e) {
+                return false;
+            }
+        }
         try {
             File file;
             if (pathOrUri.startsWith("file://")) {
@@ -251,7 +259,7 @@ public final class StaffAvatarCache {
             } else {
                 file = new File(pathOrUri);
             }
-            return file.exists();
+            return file.exists() && file.canRead();
         } catch (Exception ignored) {
             return false;
         }

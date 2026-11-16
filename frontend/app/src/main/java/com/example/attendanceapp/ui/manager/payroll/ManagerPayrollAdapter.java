@@ -68,7 +68,8 @@ public class ManagerPayrollAdapter extends RecyclerView.Adapter<ManagerPayrollAd
             Context context = binding.getRoot().getContext();
             binding.tvEmployeeName.setText(employee.getFullName());
             AvatarLoader.loadAvatar(context, employee.getAvatarUrl(), binding.ivAvatar);
-            binding.tvEmployeeRole.setText(employee.getPosition() + " • Mã: " + employee.getEmployeeCode());
+            String position = employee.getPosition();
+            binding.tvEmployeeRole.setText(position != null && !position.isEmpty() ? position : "Nhân viên");
 
             long estimatedSalary = employee.getEstimatedSalaryThisMonth();
             int shifts = employee.getShiftCountThisMonth();
@@ -81,29 +82,25 @@ public class ManagerPayrollAdapter extends RecyclerView.Adapter<ManagerPayrollAd
                 String statusLabel;
                 int statusColor;
                 if ("PAID".equalsIgnoreCase(payrollStatus) || "COMPLETED".equalsIgnoreCase(payrollStatus)) {
-                    statusLabel = "Đã thanh toán: " + df.format(estimatedSalary) + "đ";
+                    statusLabel = "Đã thanh toán";
                     statusColor = ColorUtil.getThemeColor(context, R.attr.colorAttendancePresent);
                 } else if ("APPROVED".equalsIgnoreCase(payrollStatus) || "CONFIRMED".equalsIgnoreCase(payrollStatus)) {
-                    statusLabel = "Đã chốt: " + df.format(estimatedSalary) + "đ";
+                    statusLabel = "Đã chốt";
                     statusColor = ColorUtil.getThemeColor(context, R.attr.colorPrimary);
                 } else {
-                    statusLabel = "Đã tính: " + df.format(estimatedSalary) + "đ";
+                    statusLabel = "Đã tính";
                     statusColor = ColorUtil.getThemeColor(context, R.attr.colorPrimary);
                 }
                 binding.tvSalaryStatus.setText(statusLabel);
                 binding.tvSalaryStatus.setTextColor(statusColor);
 
-                binding.tvEmployeeStats.setText(shifts + " ca làm • Thực nhận: " + df.format(estimatedSalary) + "đ");
-                binding.btnCalculateSalary.setText("Chi tiết");
+                binding.tvEmployeeStats.setText(shifts + " ca làm");
+                binding.btnCalculateSalary.setText(df.format(estimatedSalary) + " đ");
             } else {
                 binding.tvSalaryStatus.setText("Chưa tính lương");
                 binding.tvSalaryStatus.setTextColor(ColorUtil.getThemeColor(context, R.attr.colorAttendanceNotChecked));
 
-                if (shifts > 0) {
-                    binding.tvEmployeeStats.setText(shifts + " ca làm • Chưa chốt lương");
-                } else {
-                    binding.tvEmployeeStats.setText("Chưa có ca làm kỳ này");
-                }
+                binding.tvEmployeeStats.setText(shifts > 0 ? (shifts + " ca làm") : "Chưa có ca làm");
                 binding.btnCalculateSalary.setText("Tính lương");
             }
 

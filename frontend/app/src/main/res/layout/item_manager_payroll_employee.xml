@@ -11,7 +11,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="@dimen/spacing_l">
+        android:padding="@dimen/spacing_m">
 
         <!-- Avatar hoặc Chữ cái đầu của tên -->
         <com.google.android.material.imageview.ShapeableImageView
@@ -20,9 +20,8 @@
             android:layout_height="48dp"
             android:background="?attr/colorPrimaryContainer"
             android:scaleType="centerCrop"
-            android:src="@drawable/ic_profile"
-            app:tint="?attr/colorPrimary"
-            app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
+            android:src="@drawable/ic_avatar"
+            app:shapeAppearanceOverlay="@style/ImageCircleStyle"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"/>
@@ -42,7 +41,7 @@
 
             <TextView
                 android:id="@+id/tv_employee_name"
-                style="@style/TitleTextMediumStyle"
+                style="@style/TitleTextSmallStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textStyle="bold"
@@ -54,16 +53,15 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="?attr/colorOnSurfaceVariant"
-                tools:text="Nhân viên Thu ngân • Mã: NV001" />
+                tools:text="Nhân viên Thu ngân" />
 
             <TextView
                 android:id="@+id/tv_employee_stats"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textSize="12sp"
+                android:textSize="@dimen/text_size_body_small"
                 android:textColor="?attr/colorPrimary"
-                tools:text="24 ca làm • 1 nghỉ có phép" />
+                tools:text="24 ca làm" />
         </LinearLayout>
 
         <!-- Trạng thái hoặc Nút Hành động Tính lương -->
@@ -79,23 +77,21 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_calculate_salary"
-                style="@style/Widget.Material3.Button.TonalButton"
+                style="@style/ButtonFilledCompactStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Tính lương"
-                android:textSize="12sp"
-                android:paddingHorizontal="12dp"
-                android:paddingVertical="6dp" />
+                tools:text="14.820.000 đ" />
 
             <TextView
                 android:id="@+id/tv_salary_status"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textSize="11sp"
+                android:layout_marginTop="@dimen/spacing_3xs"
+                android:textSize="@dimen/text_size_body_small"
                 android:text="Chưa tính"
                 android:textColor="?attr/colorOnSurfaceVariant"
-                tools:text="Đã chốt: 7.200.000đ"
+                tools:text="Đã chốt"
                 android:visibility="gone"/>
         </LinearLayout>
 

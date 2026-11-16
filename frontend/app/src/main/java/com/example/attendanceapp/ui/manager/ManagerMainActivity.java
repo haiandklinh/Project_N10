@@ -202,6 +202,20 @@ public class ManagerMainActivity extends AppCompatActivity {
             return;
         }
 
+        // Home là start destination kiêm popUpTo target: navigate() + restoreState
+        // sẽ khôi phục lại màn con đã lưu trước đó thay vì về root Home.
+        // -> popBackStack trực tiếp và xóa saved state của Home.
+        if (destinationId == R.id.managerHomeFragment) {
+            navController.clearBackStack(R.id.managerHomeFragment);
+            if (!navController.popBackStack(R.id.managerHomeFragment, false)) {
+                NavOptions fallback = new NavOptions.Builder()
+                        .setPopUpTo(R.id.nav_manager, true)
+                        .build();
+                navController.navigate(R.id.managerHomeFragment, null, fallback);
+            }
+            return;
+        }
+
         // Cấu hình NavOptions chuẩn cho Bottom Navigation
         // Tối ưu: setSaveState(true) để giữ trạng thái các tab khi chuyển đổi
         NavOptions navOptions = new NavOptions.Builder()

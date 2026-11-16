@@ -312,7 +312,7 @@
             android:clipToPadding="false"
             android:paddingHorizontal="@dimen/spacing_m"
             android:paddingTop="@dimen/spacing_xs"
-            android:paddingBottom="80dp"
+            android:paddingBottom="@dimen/spacing_7xl"
             tools:listitem="@layout/item_manager_schedule_employee" />
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 

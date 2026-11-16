@@ -37,7 +37,7 @@
             android:layout_height="36dp"
             android:layout_gravity="end|center_vertical"
             app:cardBackgroundColor="?attr/colorSurfaceVariant"
-            app:cardCornerRadius="18dp"
+            app:cardCornerRadius="@dimen/radius_l"
             app:cardElevation="0dp"
             app:strokeWidth="0dp">
 
@@ -47,7 +47,7 @@
                 android:layout_height="match_parent"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Đóng"
-                android:padding="10dp"
+                android:padding="@dimen/spacing_m"
                 android:src="@drawable/ic_close"
                 app:tint="?attr/colorOnSurfaceVariant" />
         </com.google.android.material.card.MaterialCardView>
@@ -61,7 +61,7 @@
         android:layout_marginTop="@dimen/spacing_l"
         android:lineSpacingExtra="2dp"
         android:textColor="?attr/colorOnSurface"
-        android:textSize="20sp"
+        android:textSize="@dimen/text_size_title_large"
         android:textStyle="bold"
         tools:text="Yêu cầu tham gia công ty" />
 
@@ -71,7 +71,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/spacing_m"
         app:cardBackgroundColor="?attr/colorSurfaceVariant"
-        app:cardCornerRadius="16dp"
+        app:cardCornerRadius="@dimen/radius_l"
         app:cardElevation="0dp"
         app:strokeWidth="0dp">
 
@@ -115,13 +115,13 @@
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnActionButton"
         android:layout_width="match_parent"
-        android:layout_height="54dp"
+        android:layout_height="match_parent"
         android:layout_marginTop="@dimen/spacing_xl"
         android:text="Xem và phê duyệt"
         android:textAllCaps="false"
         android:textSize="@dimen/text_size_body_large"
         android:textStyle="bold"
-        app:cornerRadius="14dp"
+        app:cornerRadius="@dimen/radius_l"
         app:icon="@drawable/ic_approval"
         app:iconGravity="textStart"
         app:iconPadding="8dp" />

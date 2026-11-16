@@ -93,7 +93,7 @@
             style="@style/BodyTextSmallStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
+            android:layout_marginStart="@dimen/spacing_xs"
             android:layout_marginTop="@dimen/spacing_2xs"
             android:textColor="?attr/colorPrimary"
             android:textStyle="bold"

@@ -6,7 +6,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:paddingVertical="14dp">
+    android:paddingVertical="@dimen/spacing_l">
 
     <!-- Icon phía trước -->
     <ImageView
@@ -22,10 +22,10 @@
         android:id="@+id/tv_row_label"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
+        android:layout_marginStart="@dimen/spacing_m"
         android:layout_weight="1"
         android:textColor="?attr/colorOnSurfaceVariant"
-        android:textSize="15sp"
+        android:textSize="@dimen/text_size_body_medium"
         tools:text="Lương cơ bản / tháng" />
 
     <!-- Giá trị tiền -->
@@ -34,7 +34,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="?attr/colorOnSurface"
-        android:textSize="15sp"
+        android:textSize="@dimen/text_size_body_medium"
         android:textStyle="bold"
         tools:text="15.000.000 đ" />
 

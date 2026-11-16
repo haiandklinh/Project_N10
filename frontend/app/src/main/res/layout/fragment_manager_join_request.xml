@@ -79,7 +79,7 @@
                         android:layout_height="24dp"
                         android:background="?attr/selectableItemBackgroundBorderless"
                         android:contentDescription="Sao chép"
-                        android:padding="2dp"
+                        android:padding="@dimen/spacing_3xs"
                         android:src="@drawable/ic_copy"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"

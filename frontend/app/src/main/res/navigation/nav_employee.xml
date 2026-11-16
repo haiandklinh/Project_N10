@@ -160,7 +160,7 @@
         android:id="@+id/employeePayrollFragment"
         android:name="com.example.attendanceapp.ui.employee.home.payroll.EmployeePayrollFragment"
         android:label="Bảng lương"
-        tools:layout="@layout/fragment_payroll">
+        tools:layout="@layout/fragment_employee_payroll">
 
         <action
             android:id="@+id/action_employeePayrollFragment_to_employeePayrollDetailFragment"

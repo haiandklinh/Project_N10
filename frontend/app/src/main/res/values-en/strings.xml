@@ -214,6 +214,9 @@
     <string name="checkin_conditions_not_met">Conditions not met for check-in</string>
     <string name="checkin_btn_check_in">CHECK IN</string>
     <string name="checkin_btn_check_out">CHECK OUT</string>
+    <string name="checkout_dialog_title">Confirm Shift End</string>
+    <string name="checkout_dialog_btn_cancel">Continue working</string>
+    <string name="checkout_dialog_btn_confirm">End shift</string>
     <string name="checkin_completed_today">COMPLETED TODAY</string>
     <string name="checkin_today_summary">Today</string>
     <string name="checkin_check_in_time">Check-in Time</string>

@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -28,6 +29,7 @@ import com.example.attendanceapp.data.dto.request.manager.CreateDeductionRequest
 import com.example.attendanceapp.data.dto.response.BaseListResponse;
 import com.example.attendanceapp.data.dto.response.manager.CalculatePayrollResponse;
 import com.example.attendanceapp.data.dto.response.manager.StaffPayrollSummaryResponse;
+import com.example.attendanceapp.databinding.DialogAddSalaryAdjustmentBinding;
 import com.example.attendanceapp.databinding.FragmentManagerPayrollDetailBinding;
 import com.example.attendanceapp.databinding.ItemSalaryAdjustmentBinding;
 import com.example.attendanceapp.domain.model.AttendanceStatus;
@@ -70,6 +72,9 @@ public class ManagerPayrollDetailFragment extends Fragment {
     private String staffAvatar = "";
     private String staffPosition = "";
 
+    private int targetMonth = 0;
+    private int targetYear = 0;
+
     private double currentCalculatedBaseSalary = 0;
     private int lastShiftsCount = 0;
     private double lastTotalBonus = 0;
@@ -108,6 +113,14 @@ public class ManagerPayrollDetailFragment extends Fragment {
             staffCode = getArguments().getString("staff_code", "");
             staffAvatar = getArguments().getString("staff_avatar", "");
             staffPosition = getArguments().getString("staff_position", "");
+            targetMonth = getArguments().getInt("month", 0);
+            targetYear = getArguments().getInt("year", 0);
+        }
+
+        if (targetMonth <= 0 || targetYear <= 0) {
+            LocalDate now = LocalDate.now();
+            targetMonth = now.getMonthValue();
+            targetYear = now.getYear();
         }
 
         setupToolbar();
@@ -347,11 +360,10 @@ public class ManagerPayrollDetailFragment extends Fragment {
     private void buildCalendar(List<StaffPayrollSummaryResponse.ShiftItem> shifts) {
         shiftMap.clear();
         LocalDate now = LocalDate.now();
-        List<WeekDay> days = new ArrayList<>();
 
         if (shifts != null) {
             for (StaffPayrollSummaryResponse.ShiftItem shift : shifts) {
-                if (shift.getWorkDay() != null) {
+                if (shift.getWorkDay() != null && shift.getWorkDay().length() >= 10) {
                     try {
                         LocalDate date = LocalDate.parse(shift.getWorkDay().substring(0, 10));
                         List<StaffPayrollSummaryResponse.ShiftItem> list = shiftMap.computeIfAbsent(date, k -> new ArrayList<>());
@@ -361,28 +373,44 @@ public class ManagerPayrollDetailFragment extends Fragment {
             }
         }
 
-        // Tạo 30 ngày gần nhất
-        LocalDate startDate = now.minusDays(29);
-        for (int i = 0; i < 30; i++) {
-            LocalDate d = startDate.plusDays(i);
-            AttendanceStatus status = AttendanceStatus.NOT_CHECKED;
+        // Tạo lưới lịch đầy đủ thứ ngày trong tháng targetMonth / targetYear
+        LocalDate firstDayOfMonth = LocalDate.of(targetYear, targetMonth, 1);
+        int lengthOfMonth = firstDayOfMonth.lengthOfMonth();
 
-            if (shiftMap.containsKey(d)) {
-                List<StaffPayrollSummaryResponse.ShiftItem> dayShifts = shiftMap.get(d);
-                status = AttendanceStatus.PRESENT;
-                for (StaffPayrollSummaryResponse.ShiftItem s : dayShifts) {
-                    String st = s.getStatus();
-                    if ("LATE".equalsIgnoreCase(st) && status != AttendanceStatus.ABSENT) {
-                        status = AttendanceStatus.LATE;
-                    } else if ("ABSENT".equalsIgnoreCase(st)) {
-                        status = AttendanceStatus.ABSENT;
+        // Thứ của ngày đầu tháng: 1 (T2) -> 7 (CN)
+        int dayOfWeekOfFirst = firstDayOfMonth.getDayOfWeek().getValue();
+        LocalDate gridStartDate = firstDayOfMonth.minusDays(dayOfWeekOfFirst - 1);
+
+        LocalDate lastDayOfMonth = firstDayOfMonth.withDayOfMonth(lengthOfMonth);
+        int dayOfWeekOfLast = lastDayOfMonth.getDayOfWeek().getValue();
+        int trailingDays = (dayOfWeekOfLast == 7) ? 0 : (7 - dayOfWeekOfLast);
+
+        int totalGridDays = (dayOfWeekOfFirst - 1) + lengthOfMonth + trailingDays;
+
+        List<WeekDay> days = new ArrayList<>();
+        for (int i = 0; i < totalGridDays; i++) {
+            LocalDate d = gridStartDate.plusDays(i);
+            boolean inCurrentMonth = (d.getMonthValue() == targetMonth && d.getYear() == targetYear);
+
+            AttendanceStatus status = AttendanceStatus.NOT_CHECKED;
+            if (inCurrentMonth) {
+                if (shiftMap.containsKey(d)) {
+                    List<StaffPayrollSummaryResponse.ShiftItem> dayShifts = shiftMap.get(d);
+                    status = AttendanceStatus.PRESENT;
+                    for (StaffPayrollSummaryResponse.ShiftItem s : dayShifts) {
+                        String st = s.getStatus();
+                        if ("LATE".equalsIgnoreCase(st) && status != AttendanceStatus.ABSENT) {
+                            status = AttendanceStatus.LATE;
+                        } else if ("ABSENT".equalsIgnoreCase(st)) {
+                            status = AttendanceStatus.ABSENT;
+                        }
                     }
+                } else if (d.getDayOfWeek().getValue() == 7) {
+                    status = AttendanceStatus.WEEKEND;
                 }
-            } else if (d.getDayOfWeek().getValue() == 7) {
-                status = AttendanceStatus.WEEKEND;
             }
 
-            days.add(new WeekDay(d, status, d.equals(now)));
+            days.add(new WeekDay(d, status, d.equals(now), inCurrentMonth));
         }
 
         setupCalendar(days);
@@ -422,13 +450,17 @@ public class ManagerPayrollDetailFragment extends Fragment {
         if (shifts != null && !shifts.isEmpty()) {
             StringBuilder sb = new StringBuilder();
             for (StaffPayrollSummaryResponse.ShiftItem shift : shifts) {
-                String shiftName = shift.getShiftName() != null ? shift.getShiftName() : "Ca làm";
-                String checkIn = shift.getCheckInTime() != null ? shift.getCheckInTime() : "--:--";
-                String checkOut = shift.getCheckOutTime() != null ? shift.getCheckOutTime() : "--:--";
+                String shiftName = shift.getShiftName() != null && !shift.getShiftName().trim().isEmpty()
+                        ? shift.getShiftName().trim()
+                        : "Ca làm";
+                String displayName = shiftName.toLowerCase(Locale.ROOT).startsWith("ca") ? shiftName : ("Ca " + shiftName);
+                String inTime = formatTimeOnly(shift.getCheckInTime());
+                String outTime = formatTimeOnly(shift.getCheckOutTime());
+
                 if (sb.length() > 0) sb.append("\n");
-                sb.append("Ca: ").append(shiftName)
-                        .append(" (Check-in: ").append(checkIn)
-                        .append(" - Check-out: ").append(checkOut).append(")");
+                sb.append(displayName)
+                        .append(" (").append(inTime)
+                        .append(" - ").append(outTime).append(")");
             }
             binding.tvNoteShifts.setText(sb.toString());
             binding.tvNoteShifts.setTextColor(ContextCompat.getColor(requireContext(), R.color.attendance_present));
@@ -465,11 +497,33 @@ public class ManagerPayrollDetailFragment extends Fragment {
         binding.tvNoteShifts.setTextColor(ContextCompat.getColor(requireContext(), colorRes));
     }
 
+    private String formatTimeOnly(String rawTime) {
+        if (rawTime == null || rawTime.trim().isEmpty()) {
+            return "--:--";
+        }
+        try {
+            String timePart = rawTime.trim();
+            if (timePart.contains("T")) {
+                timePart = timePart.substring(timePart.indexOf("T") + 1);
+            } else if (timePart.contains(" ")) {
+                timePart = timePart.substring(timePart.indexOf(" ") + 1);
+            }
+            if (timePart.length() >= 5) {
+                return timePart.substring(0, 5);
+            }
+            return timePart;
+        } catch (Exception ignored) {
+            return rawTime;
+        }
+    }
+
     private void setupListeners() {
         binding.btnAddAdjustment.setOnClickListener(v -> showAddAdjustmentDialog());
 
         binding.rowBasicSalary.getRoot().setOnClickListener(v -> showEditBaseSalaryDialog());
         binding.rowPaidLeave.getRoot().setOnClickListener(v -> showEditShiftRateDialog());
+
+        binding.btnSharePayroll.setOnClickListener(v -> sharePayrollSummary());
 
         binding.btnConfirmSalary.setOnClickListener(v -> {
             if (staffId == null || staffId.isEmpty()) return;
@@ -510,6 +564,29 @@ public class ManagerPayrollDetailFragment extends Fragment {
                     .setNegativeButton("Hủy", null)
                     .show();
         });
+    }
+
+    private void sharePayrollSummary() {
+        String name = staffName.isEmpty() ? "Nhân viên" : staffName;
+        String monthStr = targetMonth > 0 ? ("Tháng " + String.format(Locale.getDefault(), "%02d/%d", targetMonth, targetYear)) : "Kỳ lương hiện tại";
+        String shareContent = "📋 PHIẾU TÍNH LƯƠNG NHÂN VIÊN\n"
+                + "• Họ và tên: " + name + "\n"
+                + "• Vị trí: " + (staffPosition.isEmpty() ? "Nhân sự" : staffPosition) + "\n"
+                + "• Kỳ lương: " + monthStr + "\n"
+                + "-----------------------------\n"
+                + "• Lương cơ bản: " + formatCurrency(currentCalculatedBaseSalary) + "\n"
+                + "• Số ca làm: " + lastShiftsCount + " ca\n"
+                + "• Tiền thưởng: +" + formatCurrency(lastTotalBonus) + "\n"
+                + "• Khấu trừ/phạt: -" + formatCurrency(lastTotalDeduction) + "\n"
+                + "-----------------------------\n"
+                + "💵 TỔNG THỰC NHẬN: " + binding.tvFinalSalary.getText().toString() + "\n"
+                + "• Trạng thái: " + (currentPayrollStatus != null && !currentPayrollStatus.isEmpty() ? formatPayrollStatus(currentPayrollStatus) : "Chưa chốt");
+
+        android.content.Intent sendIntent = new android.content.Intent();
+        sendIntent.setAction(android.content.Intent.ACTION_SEND);
+        sendIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareContent);
+        sendIntent.setType("text/plain");
+        startActivity(android.content.Intent.createChooser(sendIntent, "Chia sẻ bảng lương qua"));
     }
 
     private void showEditBaseSalaryDialog() {
@@ -608,67 +685,80 @@ public class ManagerPayrollDetailFragment extends Fragment {
     }
 
     private void showAddAdjustmentDialog() {
-        View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_add_salary_adjustment, null);
-        RadioGroup rgType = dialogView.findViewById(R.id.rg_adjustment_type);
-        EditText etAmount = dialogView.findViewById(R.id.et_adjustment_amount);
-        EditText etReason = dialogView.findViewById(R.id.et_adjustment_reason);
-        EditText etNote = dialogView.findViewById(R.id.et_adjustment_note);
+        DialogAddSalaryAdjustmentBinding dialogBinding = DialogAddSalaryAdjustmentBinding.inflate(
+                LayoutInflater.from(requireContext())
+        );
 
-        new MaterialAlertDialogBuilder(requireContext())
-                .setTitle("Thêm thưởng / khấu trừ")
-                .setView(dialogView)
-                .setPositiveButton("Lưu", (dialog, which) -> {
-                    String amountStr = etAmount.getText().toString().trim().replaceAll("[.,]", "");
-                    String reason = etReason.getText().toString().trim();
-                    String note = etNote.getText().toString().trim();
+        AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
+                .setView(dialogBinding.getRoot())
+                .create();
 
-                    if (amountStr.isEmpty() || reason.isEmpty()) {
-                        Toast.makeText(getContext(), "Vui lòng nhập số tiền và lý do", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
 
-                    double amount;
-                    try {
-                        amount = Double.parseDouble(amountStr);
-                    } catch (Exception e) {
-                        Toast.makeText(getContext(), "Số tiền không hợp lệ", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
+        dialogBinding.btnCancel.setOnClickListener(v -> dialog.dismiss());
 
-                    boolean isBonus = rgType.getCheckedRadioButtonId() == R.id.rb_bonus;
+        dialogBinding.btnSave.setOnClickListener(v -> {
+            String amountStr = dialogBinding.etAdjustmentAmount.getText() != null
+                    ? dialogBinding.etAdjustmentAmount.getText().toString().trim().replaceAll("[.,]", "")
+                    : "";
+            String reason = dialogBinding.etAdjustmentReason.getText() != null
+                    ? dialogBinding.etAdjustmentReason.getText().toString().trim()
+                    : "";
+            String note = dialogBinding.etAdjustmentNote.getText() != null
+                    ? dialogBinding.etAdjustmentNote.getText().toString().trim()
+                    : "";
 
-                    if (isBonus) {
-                        CreateBonusRequest req = new CreateBonusRequest(staffId, amount, reason, note);
-                        disposables.add(
-                                managerRepository.createBonus(req)
-                                        .subscribeOn(Schedulers.io())
-                                        .observeOn(AndroidSchedulers.mainThread())
-                                        .subscribe(
-                                                res -> {
-                                                    Toast.makeText(getContext(), "Đã thêm tiền thưởng thành công", Toast.LENGTH_SHORT).show();
-                                                    loadPayrollDetail();
-                                                },
-                                                err -> Toast.makeText(getContext(), "Thêm thưởng thất bại: " + err.getMessage(), Toast.LENGTH_SHORT).show()
-                                        )
-                        );
-                    } else {
-                        CreateDeductionRequest req = new CreateDeductionRequest(staffId, amount, "PENALTY", reason);
-                        disposables.add(
-                                managerRepository.createDeduction(req)
-                                        .subscribeOn(Schedulers.io())
-                                        .observeOn(AndroidSchedulers.mainThread())
-                                        .subscribe(
-                                                res -> {
-                                                    Toast.makeText(getContext(), "Đã thêm khoản khấu trừ thành công", Toast.LENGTH_SHORT).show();
-                                                    loadPayrollDetail();
-                                                },
-                                                err -> Toast.makeText(getContext(), "Thêm khấu trừ thất bại: " + err.getMessage(), Toast.LENGTH_SHORT).show()
-                                        )
-                        );
-                    }
-                })
-                .setNegativeButton("Hủy", null)
-                .show();
+            if (amountStr.isEmpty() || reason.isEmpty()) {
+                Toast.makeText(getContext(), "Vui lòng nhập số tiền và lý do", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            double amount;
+            try {
+                amount = Double.parseDouble(amountStr);
+            } catch (Exception e) {
+                Toast.makeText(getContext(), "Số tiền không hợp lệ", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            dialog.dismiss();
+
+            boolean isBonus = dialogBinding.rgAdjustmentType.getCheckedRadioButtonId() == R.id.rb_bonus;
+
+            if (isBonus) {
+                CreateBonusRequest req = new CreateBonusRequest(staffId, amount, reason, note);
+                disposables.add(
+                        managerRepository.createBonus(req)
+                                .subscribeOn(Schedulers.io())
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(
+                                        res -> {
+                                            Toast.makeText(getContext(), "Đã thêm tiền thưởng thành công", Toast.LENGTH_SHORT).show();
+                                            loadPayrollDetail();
+                                        },
+                                        err -> Toast.makeText(getContext(), "Thêm thưởng thất bại: " + err.getMessage(), Toast.LENGTH_SHORT).show()
+                                )
+                );
+            } else {
+                CreateDeductionRequest req = new CreateDeductionRequest(staffId, amount, "PENALTY", reason);
+                disposables.add(
+                        managerRepository.createDeduction(req)
+                                .subscribeOn(Schedulers.io())
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(
+                                        res -> {
+                                            Toast.makeText(getContext(), "Đã thêm khoản khấu trừ thành công", Toast.LENGTH_SHORT).show();
+                                            loadPayrollDetail();
+                                        },
+                                        err -> Toast.makeText(getContext(), "Thêm khấu trừ thất bại: " + err.getMessage(), Toast.LENGTH_SHORT).show()
+                                )
+                );
+            }
+        });
+
+        dialog.show();
     }
 
     @Override

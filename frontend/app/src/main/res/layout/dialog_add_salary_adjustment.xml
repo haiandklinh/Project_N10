@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="@dimen/spacing_l">
+    style="@style/DialogRootContainerStyle">
+
+    <!-- Tiêu đề Dialog -->
+    <TextView
+        android:id="@+id/tv_dialog_title"
+        style="@style/DialogTitleStyle"
+        android:text="Thêm thưởng / khấu trừ" />
 
     <RadioGroup
         android:id="@+id/rg_adjustment_type"
@@ -72,5 +75,27 @@
             android:layout_height="wrap_content"
             android:inputType="text" />
     </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Nút hành động -->
+    <LinearLayout
+        style="@style/DialogActionButtonsContainerStyle">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_cancel"
+            style="@style/ButtonOutlinedSmallStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Hủy" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_save"
+            style="@style/ButtonFilledSmallStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_m"
+            android:layout_weight="1"
+            android:text="Lưu" />
+    </LinearLayout>
 
 </LinearLayout>

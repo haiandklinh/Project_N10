@@ -17,6 +17,7 @@
     <dimen name="spacing_6xl">64dp</dimen>
     <dimen name="spacing_7xl">80dp</dimen>
     <dimen name="spacing_sxl">96dp</dimen>
+    <dimen name="bottom_nav_content_padding">100dp</dimen>
 
     <!-- Login Specific -->
     <dimen name="login_logo_size">88dp</dimen>

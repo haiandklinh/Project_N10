@@ -83,6 +83,20 @@
         <item name="android:foreground">?attr/selectableItemBackground</item>
     </style>
 
+    <!-- Card Icon vuông cho bộ lọc / cấu hình (Filter / Adjust Square Button) -->
+    <style name="SquareFilterCardStyle" parent="Widget.Material3.CardView.Filled">
+        <item name="android:layout_width">@dimen/icon_container_s</item>
+        <item name="android:layout_height">@dimen/icon_container_s</item>
+        <item name="cardCornerRadius">@dimen/radius_s</item>
+        <item name="cardElevation">@dimen/elevation_none</item>
+        <item name="cardBackgroundColor">?attr/colorSurface</item>
+        <item name="strokeColor">?attr/colorSecondary</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:foreground">?attr/selectableItemBackground</item>
+    </style>
+
 
 
     <!-- ==================== EDITTEXT / INPUT / SEARCH WITH STATES ==================== -->
@@ -112,10 +126,10 @@
 
     <style name="AppTextInputLayout" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
         <item name="boxBackgroundMode">outline</item>
-        <item name="boxCornerRadiusTopStart">16dp</item>
-        <item name="boxCornerRadiusTopEnd">16dp</item>
-        <item name="boxCornerRadiusBottomStart">16dp</item>
-        <item name="boxCornerRadiusBottomEnd">16dp</item>
+        <item name="boxCornerRadiusTopStart">@dimen/radius_l</item>
+        <item name="boxCornerRadiusTopEnd">@dimen/radius_l</item>
+        <item name="boxCornerRadiusBottomStart">@dimen/radius_l</item>
+        <item name="boxCornerRadiusBottomEnd">@dimen/radius_l</item>
         <item name="boxBackgroundColor">?attr/colorSurfaceVariant</item>
         <!-- Áp dụng Color State List -->
         <item name="boxStrokeColor">@color/sl_text_input_stroke</item>
@@ -131,7 +145,7 @@
     <style name="AppTextInputEditText">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:textSize">14sp</item>
+        <item name="android:textSize">@dimen/text_size_body_medium</item>
         <item name="android:textColor">?attr/colorPrimary</item>
     </style>
 
@@ -159,12 +173,12 @@
     <!-- 1. Style cho TextInputLayout (Khung bên ngoài) -->
     <style name="AppTextInputLayout.Otp">
         <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">56dp</item>
+        <item name="android:layout_height">@dimen/button_height_l</item>
         <item name="android:layout_weight">1</item>
-        <item name="boxCornerRadiusTopStart">12dp</item>
-        <item name="boxCornerRadiusTopEnd">12dp</item>
-        <item name="boxCornerRadiusBottomStart">12dp</item>
-        <item name="boxCornerRadiusBottomEnd">12dp</item>
+        <item name="boxCornerRadiusTopStart">@dimen/radius_m</item>
+        <item name="boxCornerRadiusTopEnd">@dimen/radius_m</item>
+        <item name="boxCornerRadiusBottomStart">@dimen/radius_m</item>
+        <item name="boxCornerRadiusBottomEnd">@dimen/radius_m</item>
 
         <!-- Tắt đẩy chữ -->
         <item name="hintEnabled">false</item>
@@ -184,7 +198,7 @@
         <item name="android:inputType">number</item>
         <item name="android:maxLength">1</item>
         <item name="android:padding">0dp</item> <!-- Căn giữa tuyệt đối -->
-        <item name="android:textSize">20sp</item>
+        <item name="android:textSize">@dimen/text_size_title_large</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
@@ -263,6 +277,26 @@
         <!-- Thuộc tính hỗ trợ tương tác -->
         <item name="android:clickable">true</item>
         <item name="android:focusable">true</item>
+    </style>
+
+    <!-- Nút Filled dạng nhỏ gọn dùng cho item danh sách / bảng -->
+    <style name="ButtonFilledCompactStyle" parent="ButtonFilledSmallStyle">
+        <item name="android:minHeight">@dimen/button_height_xs</item>
+        <item name="android:textSize">@dimen/text_size_label_small</item>
+        <item name="android:paddingStart">@dimen/spacing_m</item>
+        <item name="android:paddingEnd">@dimen/spacing_m</item>
+        <item name="android:paddingTop">@dimen/spacing_xs</item>
+        <item name="android:paddingBottom">@dimen/spacing_xs</item>
+    </style>
+
+    <!-- Nút Outlined dạng nhỏ gọn dùng cho item danh sách / bảng -->
+    <style name="ButtonOutlinedCompactStyle" parent="ButtonOutlinedSmallStyle">
+        <item name="android:minHeight">@dimen/button_height_xs</item>
+        <item name="android:textSize">@dimen/text_size_label_small</item>
+        <item name="android:paddingStart">@dimen/spacing_m</item>
+        <item name="android:paddingEnd">@dimen/spacing_m</item>
+        <item name="android:paddingTop">@dimen/spacing_xs</item>
+        <item name="android:paddingBottom">@dimen/spacing_xs</item>
     </style>
 
 
@@ -352,7 +386,7 @@
         <!-- 1. Giảm chiều cao tối thiểu của Chip -->
         <item name="chipMinHeight">22dp</item>
         <!-- 2. Giảm cỡ chữ (nhỏ hơn label_small) -->
-        <item name="android:textSize">10sp</item>
+        <item name="android:textSize">@dimen/text_size_body_small</item>
 
         <!-- 3. Bóp gọn Padding 2 bên lề trái/phải -->
         <item name="chipStartPadding">@dimen/spacing_s</item>
@@ -457,6 +491,107 @@
         <item name="android:textSize">@dimen/text_size_body_small</item>
         <item name="android:textStyle">normal</item>
         <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+    </style>
+
+    <!-- 6. Label Styles (Nhãn / Tag / Tiêu đề phụ) -->
+    <style name="LabelLargeStyle">
+        <item name="android:textSize">@dimen/text_size_label_large</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <style name="LabelMediumStyle">
+        <item name="android:textSize">@dimen/text_size_label_medium</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+    </style>
+
+    <style name="LabelSmallStyle">
+        <item name="android:textSize">@dimen/text_size_label_small</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+    </style>
+
+
+    <!-- ==================== DIALOG STYLES (CHUẨN HÓA DIALOG TOÀN APP) ==================== -->
+
+    <!-- Khung chứa gốc của Dialog tùy biến -->
+    <style name="DialogRootContainerStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:background">@drawable/bg_dialog</item>
+        <item name="android:padding">@dimen/spacing_l</item>
+    </style>
+
+    <!-- Tiêu đề Dialog -->
+    <style name="DialogTitleStyle" parent="TitleTextMediumStyle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_gravity">center_horizontal</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_marginBottom">@dimen/spacing_m</item>
+    </style>
+
+    <!-- Nội dung thông điệp Dialog -->
+    <style name="DialogMessageStyle" parent="BodyTextMediumStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_marginTop">@dimen/spacing_m</item>
+        <item name="android:lineSpacingExtra">@dimen/spacing_2xs</item>
+    </style>
+
+    <!-- Layout chứa hàng nút bấm dưới cùng của Dialog (Hủy / Xác nhận) -->
+    <style name="DialogActionButtonsContainerStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">@dimen/spacing_l</item>
+        <item name="android:orientation">horizontal</item>
+    </style>
+
+    <!-- Style tiêu đề Dialog kế thừa chuẩn từ Material3 để có đầy đủ layout_width, layout_height -->
+    <style name="MaterialAlertDialog.App.Title.Text" parent="MaterialAlertDialog.Material3.Title.Text">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">@dimen/text_size_title_medium</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <!-- Style nội dung Dialog kế thừa chuẩn từ Material3 -->
+    <style name="MaterialAlertDialog.App.Body.Text" parent="MaterialAlertDialog.Material3.Body.Text">
+        <item name="android:textSize">@dimen/text_size_body_medium</item>
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+    </style>
+
+    <!-- Theme áp dụng cho MaterialAlertDialogBuilder của hệ thống -->
+    <style name="ThemeOverlay.App.MaterialAlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="shapeAppearance">@style/ShapeAppearance.App.LargeComponent</item>
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.App.LargeComponent</item>
+        <item name="materialAlertDialogTitleTextStyle">@style/MaterialAlertDialog.App.Title.Text</item>
+        <item name="materialAlertDialogBodyTextStyle">@style/MaterialAlertDialog.App.Body.Text</item>
+        <item name="buttonBarPositiveButtonStyle">@style/ButtonFilledSmallStyle</item>
+        <item name="buttonBarNegativeButtonStyle">@style/ButtonOutlinedSmallStyle</item>
+    </style>
+
+
+    <!-- ==================== CALENDAR & SCHEDULE HEADER STYLES ==================== -->
+
+    <!-- Chữ thứ trong tuần của Header bảng lịch -->
+    <style name="CalendarDayHeaderTextStyle">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+        <item name="android:textSize">@dimen/text_size_label_medium</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- Chữ ngày cuối tuần (Chủ nhật) nổi bật -->
+    <style name="CalendarWeekendHeaderTextStyle" parent="CalendarDayHeaderTextStyle">
+        <item name="android:textColor">?attr/colorError</item>
     </style>
 
 </resources>

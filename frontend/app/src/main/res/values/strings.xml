@@ -214,6 +214,9 @@
     <string name="checkin_conditions_not_met">Chưa đủ điều kiện để chấm công</string>
     <string name="checkin_btn_check_in">CHECK IN</string>
     <string name="checkin_btn_check_out">CHECK OUT</string>
+    <string name="checkout_dialog_title">Xác nhận kết thúc ca làm việc</string>
+    <string name="checkout_dialog_btn_cancel">Tiếp tục làm</string>
+    <string name="checkout_dialog_btn_confirm">Kết thúc ca</string>
     <string name="checkin_completed_today">ĐÃ HOÀN TẤT HÔM NAY</string>
     <string name="checkin_today_summary">Hôm nay</string>
     <string name="checkin_check_in_time">Giờ vào</string>

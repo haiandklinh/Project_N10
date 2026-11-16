@@ -118,16 +118,24 @@ public class EmployeeLeaveHistoryFragment extends Fragment {
                                 response -> {
                                     if (binding == null) return;
                                     allRequests.clear();
-                                    List<LeaveRequest> remoteList = new ArrayList<>();
+                                    java.util.Map<String, LeaveRequest> dedupeMap = new java.util.LinkedHashMap<>();
 
                                     if (response != null && response.getData() != null) {
                                         for (NotificationItemResponse notif : response.getData()) {
                                             LeaveRequest req = parseNotificationToLeaveRequest(notif);
                                             if (req != null) {
-                                                remoteList.add(req);
+                                                String key = req.getType().name() + "_" + req.getTargetDate() + "_" + req.getShiftId();
+                                                LeaveRequest existing = dedupeMap.get(key);
+                                                if (existing == null) {
+                                                    dedupeMap.put(key, req);
+                                                } else if (existing.getStatus() == ApprovalStatus.PENDING && req.getStatus() != ApprovalStatus.PENDING) {
+                                                    dedupeMap.put(key, req);
+                                                }
                                             }
                                         }
                                     }
+
+                                    List<LeaveRequest> remoteList = new ArrayList<>(dedupeMap.values());
 
                                     List<LeaveRequest> merged = mergeWithLocalRequests(remoteList);
                                     allRequests.addAll(merged);
@@ -268,6 +276,16 @@ public class EmployeeLeaveHistoryFragment extends Fragment {
         boolean isEmergency = reason.contains("[ĐỘT XUẤT]") || reason.contains("[Khẩn cấp]") || (content != null && Boolean.TRUE.equals(content.get("is_emergency")));
         long createdAt = System.currentTimeMillis();
         String id = item.getId() != null ? item.getId() : UUID.randomUUID().toString();
+
+        // Đơn xin nghỉ có ngày trong quá khứ không thể là PENDING
+        if (status == ApprovalStatus.PENDING && !targetDate.isEmpty()) {
+            try {
+                LocalDate target = LocalDate.parse(targetDate);
+                if (target.isBefore(LocalDate.now())) {
+                    status = ApprovalStatus.APPROVED;
+                }
+            } catch (Exception ignored) {}
+        }
 
         return new LeaveRequest(id, "staff", requestType, targetDate, shiftId, reason, isEmergency, status, createdAt);
     }

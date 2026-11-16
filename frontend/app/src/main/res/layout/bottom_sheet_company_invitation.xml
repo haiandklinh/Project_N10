@@ -42,7 +42,7 @@
             android:layout_centerVertical="true"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Đóng"
-            android:padding="4dp"
+            android:padding="@dimen/spacing_2xs"
             android:src="@drawable/ic_close"
             app:tint="?attr/colorOnSurfaceVariant" />
     </RelativeLayout>
@@ -192,7 +192,7 @@
                     android:layout_height="wrap_content"
                     android:letterSpacing="0.25"
                     android:textColor="?attr/colorPrimary"
-                    android:textSize="32sp"
+                    android:textSize="@dimen/text_size_headline_large"
                     android:textStyle="bold"
                     tools:text="849 201" />
 
@@ -214,7 +214,7 @@
                         android:id="@+id/tvExpiryTime"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="4dp"
+                        android:layout_marginStart="@dimen/spacing_2xs"
                         android:text="Mã có hiệu lực trong 24 giờ"
                         android:textColor="?attr/colorOnPrimaryContainer"
                         android:textSize="@dimen/text_size_label_medium" />

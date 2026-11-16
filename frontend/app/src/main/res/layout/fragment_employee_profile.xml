@@ -9,7 +9,7 @@
     android:fillViewport="true"
     android:overScrollMode="never"
     android:clipToPadding="false"
-    android:paddingBottom="100dp"
+    android:paddingBottom="@dimen/bottom_nav_content_padding"
     tools:context=".ui.employee.profile.EmployeeProfileFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -68,7 +68,7 @@
                 android:id="@+id/tv_user_position"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
+                android:layout_marginTop="@dimen/spacing_3xs"
                 android:alpha="0.8"
                 android:text="@string/profile_user_position"
                 android:textColor="?attr/colorOnPrimary"
@@ -86,7 +86,7 @@
             android:layout_height="wrap_content"
             android:background="?android:attr/colorBackground"
             android:paddingStart="@dimen/spacing_l"
-            android:paddingTop="50dp"
+            android:paddingTop="@dimen/spacing_5xl"
             android:paddingEnd="@dimen/spacing_l"
             android:paddingBottom="@dimen/spacing_xl"
             app:layout_constraintEnd_toEndOf="parent"

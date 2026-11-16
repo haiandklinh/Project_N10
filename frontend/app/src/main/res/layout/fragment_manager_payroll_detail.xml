@@ -68,7 +68,7 @@
                             style="@style/BodyTextSmallStyle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
+                            android:layout_marginTop="@dimen/spacing_3xs"
                             tools:text="Mã NV: NV001" />
 
                         <TextView
@@ -76,7 +76,7 @@
                             style="@style/BodyTextSmallStyle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
+                            android:layout_marginTop="@dimen/spacing_3xs"
                             android:textColor="?attr/colorOnSurfaceVariant"
                             tools:text="Vị trí: Nhân viên" />
 
@@ -85,7 +85,7 @@
                             style="@style/BodyTextSmallStyle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
+                            android:layout_marginTop="@dimen/spacing_3xs"
                             android:textStyle="bold"
                             tools:text="Trạng thái: Chờ thanh toán" />
                     </LinearLayout>
@@ -111,6 +111,50 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:padding="@dimen/spacing_m">
+
+                    <!-- Header các thứ trong tuần (T2 -> CN) -->
+                    <LinearLayout
+                        android:id="@+id/layout_week_header"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingVertical="@dimen/spacing_xs">
+
+                        <TextView
+                            style="@style/CalendarDayHeaderTextStyle"
+                            android:text="T2" />
+
+                        <TextView
+                            style="@style/CalendarDayHeaderTextStyle"
+                            android:text="T3" />
+
+                        <TextView
+                            style="@style/CalendarDayHeaderTextStyle"
+                            android:text="T4" />
+
+                        <TextView
+                            style="@style/CalendarDayHeaderTextStyle"
+                            android:text="T5" />
+
+                        <TextView
+                            style="@style/CalendarDayHeaderTextStyle"
+                            android:text="T6" />
+
+                        <TextView
+                            style="@style/CalendarDayHeaderTextStyle"
+                            android:text="T7" />
+
+                        <TextView
+                            style="@style/CalendarWeekendHeaderTextStyle"
+                            android:text="CN" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginBottom="@dimen/spacing_xs"
+                        android:alpha="0.2"
+                        android:background="?attr/colorOutline" />
 
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/rv_payroll_calendar"
@@ -144,7 +188,7 @@
                             android:id="@+id/tv_note_shifts"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
+                            android:layout_marginTop="@dimen/spacing_3xs"
                             android:text="Ca làm: Chưa chọn ngày"
                             android:textColor="?attr/colorOnSurfaceVariant" />
                     </LinearLayout>
@@ -285,7 +329,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="THỰC NHẬN"
-                            android:textSize="16sp"
+                            android:textSize="@dimen/text_size_title_medium"
                             android:textStyle="bold" />
 
                         <TextView
@@ -294,7 +338,7 @@
                             android:layout_height="wrap_content"
                             android:layout_alignParentEnd="true"
                             android:textColor="?attr/colorPrimary"
-                            android:textSize="20sp"
+                            android:textSize="@dimen/text_size_title_large"
                             android:textStyle="bold"
                             tools:text="7.600.000đ" />
                     </RelativeLayout>
@@ -307,8 +351,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_xl"
-                android:layout_marginBottom="@dimen/spacing_l"
                 android:text="XÁC NHẬN &amp; LƯU" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_share_payroll"
+                style="@style/ButtonOutlinedSmallStyle"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/button_height_default"
+                android:layout_marginTop="@dimen/spacing_s"
+                android:layout_marginBottom="@dimen/spacing_2xl"
+                android:text="CHIA SẺ PHIẾU LƯƠNG"
+                app:icon="@drawable/ic_share"
+                app:iconGravity="textStart" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

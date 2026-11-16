@@ -8,7 +8,7 @@
     android:fillViewport="true"
     android:fitsSystemWindows="true"
     android:clipToPadding="false"
-    android:paddingBottom="100dp">
+    android:paddingBottom="@dimen/bottom_nav_content_padding">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"

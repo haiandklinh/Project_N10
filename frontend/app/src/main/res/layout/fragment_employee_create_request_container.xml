@@ -124,7 +124,7 @@
             android:paddingHorizontal="@dimen/spacing_m"
             android:paddingTop="@dimen/spacing_xs"
             android:clipToPadding="false"
-            android:paddingBottom="100dp"
+            android:paddingBottom="@dimen/bottom_nav_content_padding"
             tools:listitem="@layout/item_leave_request" />
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

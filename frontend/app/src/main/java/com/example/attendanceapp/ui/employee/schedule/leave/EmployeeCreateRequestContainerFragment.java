@@ -208,6 +208,7 @@ public class EmployeeCreateRequestContainerFragment extends Fragment {
                                         }
                                     }
 
+                                    remoteList = dedupeRemoteRequests(remoteList);
                                     List<LeaveRequest> merged = mergeWithLocalRequests(remoteList);
                                     allRequests.addAll(merged);
 
@@ -355,7 +356,61 @@ public class EmployeeCreateRequestContainerFragment extends Fragment {
         long createdAt = System.currentTimeMillis();
         String id = item.getId() != null ? item.getId() : UUID.randomUUID().toString();
 
+        // Đơn xin nghỉ có ngày trong quá khứ không thể là PENDING
+        if (status == ApprovalStatus.PENDING && !targetDate.isEmpty()) {
+            try {
+                LocalDate target = LocalDate.parse(targetDate);
+                if (target.isBefore(LocalDate.now())) {
+                    status = ApprovalStatus.APPROVED;
+                }
+            } catch (Exception ignored) {}
+        }
+
         return new LeaveRequest(id, "staff", requestType, targetDate, shiftId, reason, isEmergency, status, createdAt, inTime, outTime);
+    }
+
+    /**
+     * Backend có thể trả về cả notification "request gốc" (chưa có status) lẫn
+     * notification "kết quả duyệt" cho cùng một đơn. Khi trùng type + ngày,
+     * ưu tiên bản đã có kết quả (APPROVED/REJECTED) để đơn đã duyệt không bị
+     * hiện lại ở trạng thái PENDING sau khi cài lại app.
+     */
+    private List<LeaveRequest> dedupeRemoteRequests(List<LeaveRequest> list) {
+        if (list == null || list.size() < 2) return list;
+        List<LeaveRequest> result = new ArrayList<>();
+        for (LeaveRequest req : list) {
+            if (req == null) continue;
+            int dupIndex = -1;
+            for (int i = 0; i < result.size(); i++) {
+                LeaveRequest existing = result.get(i);
+                if (existing == null || existing.getType() != req.getType()) continue;
+                String a = existing.getTargetDate() != null ? existing.getTargetDate().trim() : "";
+                String b = req.getTargetDate() != null ? req.getTargetDate().trim() : "";
+                if (!a.isEmpty() && a.equals(b)) {
+                    dupIndex = i;
+                    break;
+                }
+            }
+            if (dupIndex < 0) {
+                result.add(req);
+                continue;
+            }
+            LeaveRequest existing = result.get(dupIndex);
+            boolean existingDecided = isDecided(existing.getStatus());
+            boolean reqDecided = isDecided(req.getStatus());
+            if (!existingDecided && reqDecided) {
+                result.set(dupIndex, req);
+            } else if (existingDecided && !reqDecided) {
+                // Giữ bản đã có kết quả, bỏ bản pending trùng
+            } else {
+                result.add(req);
+            }
+        }
+        return result;
+    }
+
+    private boolean isDecided(ApprovalStatus status) {
+        return status == ApprovalStatus.APPROVED || status == ApprovalStatus.REJECTED;
     }
 
     private List<LeaveRequest> mergeWithLocalRequests(List<LeaveRequest> remoteList) {

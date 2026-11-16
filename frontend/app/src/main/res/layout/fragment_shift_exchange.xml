@@ -45,21 +45,21 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="12dp">
+                        android:padding="@dimen/spacing_m">
 
                         <TextView
                             android:id="@+id/tv_quota_status"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textColor="?attr/colorOnSurfaceVariant"
-                            android:textSize="13sp"
+                            android:textSize="@dimen/text_size_body_medium"
                             tools:text="Hạn mức tháng này: Bạn còn 2/4 lần xin đổi ca." />
 
                         <com.google.android.material.progressindicator.LinearProgressIndicator
                             android:id="@+id/progress_quota"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
+                            android:layout_marginTop="@dimen/spacing_s"
                             app:trackCornerRadius="4dp"
                             app:trackThickness="6dp" />
                     </LinearLayout>
@@ -99,10 +99,10 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/spacing_s"
                     android:background="?attr/colorSurfaceContainerLow"
-                    android:padding="16dp"
+                    android:padding="@dimen/spacing_l"
                     android:text="Bạn hiện không có ca làm việc sắp tới nào để đổi."
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="13sp"
+                    android:textSize="@dimen/text_size_body_medium"
                     android:visibility="gone" />
 
                 <!-- 2. BƯỚC 2: CHỌN CA TRỐNG MUỐN ĐỔI SANG -->
@@ -142,10 +142,10 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/spacing_s"
                     android:background="?attr/colorSurfaceContainerLow"
-                    android:padding="16dp"
+                    android:padding="@dimen/spacing_l"
                     android:text="Vui lòng chọn ca của bạn ở trên để xem các ca trống khả dụng."
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="13sp" />
+                    android:textSize="@dimen/text_size_body_medium" />
 
                 <!-- 3. LÝ DO ĐỔI CA -->
                 <TextView

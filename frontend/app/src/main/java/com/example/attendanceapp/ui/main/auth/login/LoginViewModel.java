@@ -54,6 +54,10 @@ public class LoginViewModel extends ViewModel {
     public LiveData<Boolean> getIsLoading() { return isLoading; }
     public LiveData<RoleSetupEvent> getRoleSetupEvent() { return roleSetupEvent; }
 
+    public void resetLoginState() {
+        loginState.setValue(LoginState.Idle.INSTANCE);
+    }
+
     public void login(String phone, String password) {
         isLoading.setValue(true);
         disposables.add(loginUseCase.execute(phone, password)

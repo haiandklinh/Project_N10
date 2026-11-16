@@ -26,7 +26,7 @@
             android:layout_width="100dp"
             android:layout_height="100dp"
             app:cardBackgroundColor="?attr/colorPrimaryContainer"
-            app:cardCornerRadius="50dp"
+            app:cardCornerRadius="@dimen/radius_full"
             app:cardElevation="0dp"
             app:strokeWidth="0dp">
 

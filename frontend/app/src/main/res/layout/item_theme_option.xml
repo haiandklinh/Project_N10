@@ -26,7 +26,7 @@
             android:id="@+id/iv_theme_icon"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:padding="14dp"
+            android:padding="@dimen/spacing_l"
             android:scaleType="centerInside"
             android:importantForAccessibility="no"
             tools:src="@drawable/ic_watermelon" />

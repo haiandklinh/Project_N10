@@ -16,7 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.attendanceapp.R;
 import com.example.attendanceapp.data.dto.response.staff.StaffPayrollResponse;
-import com.example.attendanceapp.databinding.FragmentPayrollBinding;
+import com.example.attendanceapp.databinding.FragmentEmployeePayrollBinding;
 import com.example.attendanceapp.domain.repository.StaffRepository;
 
 import java.text.DecimalFormat;
@@ -33,7 +33,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 @AndroidEntryPoint
 public class EmployeePayrollFragment extends Fragment {
 
-    private FragmentPayrollBinding binding;
+    private FragmentEmployeePayrollBinding binding;
     private EmployeePayrollAdapter adapter;
     private final CompositeDisposable disposables = new CompositeDisposable();
 
@@ -43,7 +43,7 @@ public class EmployeePayrollFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        binding = FragmentPayrollBinding.inflate(inflater, container, false);
+        binding = FragmentEmployeePayrollBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
@@ -81,6 +81,7 @@ public class EmployeePayrollFragment extends Fragment {
 
     private void loadPayrollHistory() {
         if (staffRepository == null) return;
+        showLoading();
         disposables.add(
                 staffRepository.getPayrollHistory()
                         .subscribeOn(Schedulers.io())
@@ -88,7 +89,7 @@ public class EmployeePayrollFragment extends Fragment {
                         .subscribe(
                                 response -> {
                                     if (response != null && response.getData() != null && !response.getData().isEmpty()) {
-                                        bindPayrollData(response.getData());
+                                        showContent(response.getData());
                                     } else {
                                         showEmptyState();
                                     }
@@ -101,7 +102,40 @@ public class EmployeePayrollFragment extends Fragment {
         );
     }
 
+    private void showLoading() {
+        if (binding == null) return;
+        binding.progressBar.setVisibility(View.VISIBLE);
+        binding.rvPayrollHistory.setVisibility(View.GONE);
+        binding.layoutEmptyState.getRoot().setVisibility(View.GONE);
+    }
+
+    private void showContent(List<StaffPayrollResponse> list) {
+        if (binding == null) return;
+        binding.progressBar.setVisibility(View.GONE);
+        binding.layoutEmptyState.getRoot().setVisibility(View.GONE);
+        binding.rvPayrollHistory.setVisibility(View.VISIBLE);
+        bindPayrollData(list);
+    }
+
+    private void showEmptyState() {
+        if (binding == null) return;
+        binding.progressBar.setVisibility(View.GONE);
+        binding.rvPayrollHistory.setVisibility(View.GONE);
+        binding.layoutEmptyState.getRoot().setVisibility(View.VISIBLE);
+
+        binding.layoutEmptyState.tvEmptyTitle.setText("Chưa có lịch sử lương");
+        binding.layoutEmptyState.tvEmptySubtitle.setText("Hiện tại chưa có thông tin phiếu lương nào.");
+
+        if (adapter != null) {
+            adapter.updateData(new ArrayList<>());
+        }
+        binding.includeHeader.tvStatBasic.setText("0đ");
+        binding.includeHeader.tvStatMax.setText("0đ");
+        binding.includeHeader.tvStatAvg.setText("0đ");
+    }
+
     private void bindPayrollData(List<StaffPayrollResponse> list) {
+        if (binding == null) return;
         List<EmployeePayrollAdapter.PayrollItem> items = new ArrayList<>();
         DecimalFormat currencyDf = new DecimalFormat("#,###");
 
@@ -143,15 +177,6 @@ public class EmployeePayrollFragment extends Fragment {
         binding.includeHeader.tvStatBasic.setText(formatShortAmount(latestBase));
         binding.includeHeader.tvStatMax.setText(formatShortAmount(maxSalary));
         binding.includeHeader.tvStatAvg.setText(formatShortAmount(avgSalary));
-    }
-
-    private void showEmptyState() {
-        if (adapter != null) {
-            adapter.updateData(new ArrayList<>());
-        }
-        binding.includeHeader.tvStatBasic.setText("0đ");
-        binding.includeHeader.tvStatMax.setText("0đ");
-        binding.includeHeader.tvStatAvg.setText("0đ");
     }
 
     private String formatMonth(String timeCreate) {

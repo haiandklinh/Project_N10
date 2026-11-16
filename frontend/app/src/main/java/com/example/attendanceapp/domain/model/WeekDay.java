@@ -10,11 +10,17 @@ public class WeekDay {
     private final LocalDate date;
     private final AttendanceStatus status;
     private final boolean today;
+    private final boolean inCurrentMonth;
 
-    public WeekDay(LocalDate date, AttendanceStatus status, boolean today) {
+    public WeekDay(LocalDate date, AttendanceStatus status, boolean today, boolean inCurrentMonth) {
         this.date = date;
         this.status = status;
         this.today = today;
+        this.inCurrentMonth = inCurrentMonth;
+    }
+
+    public WeekDay(LocalDate date, AttendanceStatus status, boolean today) {
+        this(date, status, today, true);
     }
 
     public LocalDate getDate() {
@@ -27,6 +33,10 @@ public class WeekDay {
 
     public boolean isToday() {
         return today;
+    }
+
+    public boolean isInCurrentMonth() {
+        return inCurrentMonth;
     }
 
 

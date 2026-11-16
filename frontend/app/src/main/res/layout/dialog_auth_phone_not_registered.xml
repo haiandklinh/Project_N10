@@ -30,27 +30,16 @@
     <!-- Tiêu đề -->
     <TextView
         android:id="@+id/tvDialogTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Số điện thoại chưa được đăng ký"
-        android:textAlignment="center"
-        android:textSize="@dimen/text_size_title_medium"
-        android:textStyle="bold" />
+        style="@style/DialogTitleStyle"
+        android:text="Số điện thoại chưa được đăng ký" />
 
     <TextView
         android:id="@+id/tvDialogMessage"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/spacing_m"
-        android:textColor="?attr/colorOnSurfaceVariant"
-        android:textSize="@dimen/text_size_body_medium" />
+        style="@style/DialogMessageStyle" />
 
     <!-- Nút bấm -->
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/spacing_xl"
-        android:orientation="horizontal">
+        style="@style/DialogActionButtonsContainerStyle">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnCancel"

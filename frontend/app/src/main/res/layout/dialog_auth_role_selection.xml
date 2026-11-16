@@ -46,7 +46,7 @@
                 style="@style/IconViewCard"
                 android:layout_marginEnd="@dimen/spacing_m"
                 app:cardBackgroundColor="?attr/colorPrimaryContainer"
-                app:cardCornerRadius="100dp"
+                app:cardCornerRadius="@dimen/radius_full"
                 app:cardElevation="0dp"
                 app:strokeWidth="0dp">
 
@@ -110,7 +110,7 @@
                 style="@style/IconViewCard"
                 android:layout_marginEnd="@dimen/spacing_m"
                 app:cardBackgroundColor="?attr/colorPrimaryContainer"
-                app:cardCornerRadius="100dp"
+                app:cardCornerRadius="@dimen/radius_full"
                 app:cardElevation="0dp"
                 app:strokeWidth="0dp">
 

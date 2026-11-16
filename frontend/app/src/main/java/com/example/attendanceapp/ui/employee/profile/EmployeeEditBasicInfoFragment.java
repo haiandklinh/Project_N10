@@ -22,6 +22,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 
+import com.bumptech.glide.Glide;
 import com.example.attendanceapp.R;
 import com.example.attendanceapp.core.utils.AvatarLoader;
 import com.example.attendanceapp.databinding.FragmentEditBasicInfoBinding;
@@ -101,6 +102,18 @@ public class EmployeeEditBasicInfoFragment extends Fragment {
         setupObservers();
         setupEditableFields();
         setupListeners();
+
+        if (savedInstanceState != null) {
+            selectedAvatarUri = savedInstanceState.getParcelable("selected_avatar_uri");
+            if (selectedAvatarUri != null && binding != null && isAdded()) {
+                Glide.with(this)
+                        .load(selectedAvatarUri)
+                        .circleCrop()
+                        .placeholder(R.drawable.ic_avatar)
+                        .error(R.drawable.ic_avatar)
+                        .into(binding.ivEditAvatar);
+            }
+        }
     }
 
     private void setupToolbar() {
@@ -138,7 +151,9 @@ public class EmployeeEditBasicInfoFragment extends Fragment {
         binding.etGender.setText(genderLabel(user.getGender()));
         binding.etEmail.setText(""); // Email is not in UserAccount flat getters, would need to fetch from another source or update model
         binding.etPhone.setText(user.getPhoneNumber());
-        AvatarLoader.loadAvatar(requireContext(), user.getAvatarUrl(), user.getFullName(), binding.ivEditAvatar);
+        if (selectedAvatarUri == null && isAdded()) {
+            AvatarLoader.loadAvatar(requireContext(), user.getAvatarUrl(), user.getFullName(), binding.ivEditAvatar);
+        }
         
         // Employee specifics (from profile/entity if available)
         // binding.etEmployeeId.setText(...);
@@ -303,11 +318,51 @@ public class EmployeeEditBasicInfoFragment extends Fragment {
     }
 
     private void onAvatarSelected(Uri uri) {
-        selectedAvatarUri = uri;
-        if (binding != null) {
-            binding.ivEditAvatar.setImageURI(uri);
+        Uri savedUri = saveImageToInternalStorage(uri);
+        selectedAvatarUri = (savedUri != null) ? savedUri : uri;
+        if (binding != null && isAdded()) {
+            Glide.with(this)
+                    .load(selectedAvatarUri)
+                    .circleCrop()
+                    .placeholder(R.drawable.ic_avatar)
+                    .error(R.drawable.ic_avatar)
+                    .into(binding.ivEditAvatar);
         }
         Toast.makeText(requireContext(), "Ảnh đại diện sẽ được lưu khi nhấn Lưu", Toast.LENGTH_SHORT).show();
+    }
+
+    private Uri saveImageToInternalStorage(Uri sourceUri) {
+        if (sourceUri == null || getContext() == null) return null;
+        try {
+            java.io.File avatarDir = new java.io.File(requireContext().getFilesDir(), "avatars");
+            if (!avatarDir.exists()) {
+                avatarDir.mkdirs();
+            }
+            java.io.File destFile = new java.io.File(avatarDir, "avatar_" + System.currentTimeMillis() + ".jpg");
+
+            try (java.io.InputStream in = requireContext().getContentResolver().openInputStream(sourceUri);
+                 java.io.OutputStream out = new java.io.FileOutputStream(destFile)) {
+                if (in == null) return null;
+                byte[] buffer = new byte[8192];
+                int read;
+                while ((read = in.read(buffer)) != -1) {
+                    out.write(buffer, 0, read);
+                }
+                out.flush();
+            }
+
+            return Uri.fromFile(destFile);
+        } catch (Exception e) {
+            return sourceUri;
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (selectedAvatarUri != null) {
+            outState.putParcelable("selected_avatar_uri", selectedAvatarUri);
+        }
     }
 
     @Override

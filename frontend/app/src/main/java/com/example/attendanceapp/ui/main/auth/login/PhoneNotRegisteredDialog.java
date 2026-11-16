@@ -99,12 +99,12 @@ public class PhoneNotRegisteredDialog extends DialogFragment {
 
         binding.tvDialogMessage.setText(spannable);
 
-        binding.btnCancel.setOnClickListener(v -> dismiss());
+        binding.btnCancel.setOnClickListener(v -> dismissAllowingStateLoss());
         binding.btnContinue.setOnClickListener(v -> {
+            dismissAllowingStateLoss();
             if (listener != null) {
                 listener.onContinue(phone);
             }
-            dismiss();
         });
     }
 

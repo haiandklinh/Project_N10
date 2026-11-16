@@ -62,6 +62,33 @@ public class EmployeePayrollDetailFragment extends Fragment {
         binding.toolbarApp.setOnBackClickListener(() -> {
             requireActivity().getOnBackPressedDispatcher().onBackPressed();
         });
+        binding.btnSharePayroll.setOnClickListener(v -> sharePayroll());
+    }
+
+    private void sharePayroll() {
+        if (payrollData == null) {
+            android.widget.Toast.makeText(getContext(), "Không có dữ liệu phiếu lương để chia sẻ", android.widget.Toast.LENGTH_SHORT).show();
+            return;
+        }
+        DecimalFormat df = new DecimalFormat("#,###");
+        String shareContent = "📋 THÔNG TIN PHIẾU LƯƠNG\n"
+                + "• Nhân viên: " + binding.tvEmployeeName.getText().toString() + "\n"
+                + "• Kỳ lương: " + month + "\n"
+                + "• Đơn vị: " + binding.tvDepartment.getText().toString() + "\n"
+                + "-----------------------------\n"
+                + "• Lương cơ bản: " + df.format((long) payrollData.getBaseSalary()) + " đ\n"
+                + "• Số ca làm thực tế: " + payrollData.getNumberOfWorkShifts() + " ca\n"
+                + "• Thưởng & phụ cấp: " + binding.rowBonus.tvRowValue.getText().toString() + "\n"
+                + "• Khấu trừ & phạt: " + binding.rowDeductions.tvRowValue.getText().toString() + "\n"
+                + "-----------------------------\n"
+                + "💵 TỔNG THỰC LĨNH: " + df.format((long) payrollData.getTotalSalary()) + " đ\n"
+                + "• Trạng thái: " + (isPaid ? "Đã thanh toán" : "Đang xử lý");
+
+        android.content.Intent sendIntent = new android.content.Intent();
+        sendIntent.setAction(android.content.Intent.ACTION_SEND);
+        sendIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareContent);
+        sendIntent.setType("text/plain");
+        startActivity(android.content.Intent.createChooser(sendIntent, "Chia sẻ phiếu lương qua"));
     }
 
     private void loadEmployeeProfile() {

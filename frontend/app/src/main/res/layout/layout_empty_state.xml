@@ -17,21 +17,19 @@
 
     <TextView
         android:id="@+id/tvEmptyTitle"
+        style="@style/TitleTextMediumStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/spacing_l"
-        android:text="Chưa có dữ liệu"
-        android:textSize="@dimen/text_size_title_medium"
-        android:textStyle="bold" />
+        android:text="Chưa có dữ liệu" />
 
     <TextView
         android:id="@+id/tvEmptySubtitle"
+        style="@style/BodyTextMediumStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/spacing_2xs"
         android:gravity="center"
-        android:text="Hiện tại chưa có thông tin hiển thị tại đây."
-        android:textColor="?attr/colorOnSurfaceVariant"
-        android:textSize="@dimen/text_size_body_medium" />
+        android:text="Hiện tại chưa có thông tin hiển thị tại đây." />
 
 </LinearLayout>

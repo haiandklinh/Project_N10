@@ -210,7 +210,7 @@
                             style="@style/BodyTextSmallStyle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
+                            android:layout_marginTop="@dimen/spacing_2xs"
                             android:text="Bấm nút phía dưới để tạo ca làm việc mới"
                             android:textColor="?attr/colorOnSurfaceVariant" />
                     </LinearLayout>

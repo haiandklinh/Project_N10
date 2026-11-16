@@ -57,7 +57,7 @@
                 android:id="@+id/tv_user_position"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
+                android:layout_marginTop="@dimen/spacing_3xs"
                 android:alpha="0.8"
                 android:text="@string/manager_profile_default_pos"
                 android:textColor="?attr/colorOnPrimary"
@@ -75,7 +75,7 @@
             android:layout_height="wrap_content"
             android:background="?android:attr/colorBackground"
             android:paddingStart="@dimen/spacing_l"
-            android:paddingTop="50dp"
+            android:paddingTop="@dimen/spacing_5xl"
             android:paddingEnd="@dimen/spacing_l"
             android:paddingBottom="@dimen/spacing_xl"
             app:layout_constraintEnd_toEndOf="parent"
@@ -125,7 +125,7 @@
                         android:layout_width="1dp"
                         android:layout_height="match_parent"
                         android:background="?attr/colorOutlineVariant"
-                        android:layout_marginVertical="4dp" />
+                        android:layout_marginVertical="@dimen/spacing_2xs" />
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -297,7 +297,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_l"
                 android:text="@string/profile_version"
-                android:layout_marginBottom="100dp"
+                android:layout_marginBottom="@dimen/bottom_nav_content_padding"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="@dimen/text_size_label_small"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -376,7 +376,7 @@
                         android:layout_marginStart="@dimen/spacing_s"
                         android:background="?attr/selectableItemBackgroundBorderless"
                         android:contentDescription="Sao chép mã"
-                        android:padding="2dp"
+                        android:padding="@dimen/spacing_3xs"
                         android:src="@drawable/ic_copy"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"

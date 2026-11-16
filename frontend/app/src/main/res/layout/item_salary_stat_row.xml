@@ -11,16 +11,16 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="?attr/colorOnSurfaceVariant"
-        android:textSize="12sp"
+        android:textSize="@dimen/text_size_title_small"
         android:text="Tiêu đề" />
 
     <TextView
         android:id="@+id/tv_stat_value"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
+        android:layout_marginTop="@dimen/spacing_3xs"
         android:textColor="?attr/colorOnSurface"
-        android:textSize="15sp"
+        android:textSize="@dimen/text_size_body_medium"
         android:textStyle="bold"
         android:text="0" />
 </LinearLayout>

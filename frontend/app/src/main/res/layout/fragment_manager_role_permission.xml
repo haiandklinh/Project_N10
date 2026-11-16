@@ -29,7 +29,7 @@
         android:clipToPadding="false"
         android:fillViewport="true"
         android:overScrollMode="never"
-        android:paddingBottom="100dp"
+        android:paddingBottom="@dimen/bottom_nav_content_padding"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
@@ -79,7 +79,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
+                            android:layout_marginTop="@dimen/spacing_3xs"
                             android:text="Thiết lập các quyền hạn cho từng cấp bậc nhân sự. Quản trị viên luôn có đầy đủ quyền cao nhất."
                             android:textColor="?attr/colorOnPrimaryContainer"
                             android:textSize="@dimen/text_size_body_small" />

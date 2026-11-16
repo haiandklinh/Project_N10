@@ -42,7 +42,7 @@
                 android:layout_marginTop="@dimen/spacing_l"
                 android:text="Xếp ca thành công!"
                 android:textColor="?attr/colorOnSurface"
-                android:textSize="22sp"
+                android:textSize="@dimen/text_size_title_large"
                 android:textStyle="bold" />
 
             <!-- 3. MÔ TẢ THÔNG TIN CA VỪA XẾP -->
@@ -129,7 +129,7 @@
             android:layout_marginEnd="@dimen/spacing_xs"
             android:layout_weight="1"
             android:text="Quay lại lịch"
-            android:textSize="14sp"
+            android:textSize="@dimen/text_size_body_medium"
             android:textStyle="bold" />
 
         <!-- Nút 2: Xếp ca khác -->

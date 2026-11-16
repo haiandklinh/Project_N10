@@ -109,17 +109,17 @@
                     android:layout_marginTop="@dimen/spacing_m"
                     android:text="Bạn chưa tham gia công ty nào"
                     android:textColor="?android:attr/textColorPrimary"
-                    android:textSize="18sp"
+                    android:textSize="@dimen/text_size_title_medium"
                     android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="@dimen/spacing_s"
                     android:gravity="center"
                     android:text="Nhập mã mời từ quản lý của bạn để gửi yêu cầu gia nhập vào công ty."
                     android:textColor="?android:attr/textColorSecondary"
-                    android:textSize="14sp" />
+                    android:textSize="@dimen/text_size_body_medium" />
 
             </LinearLayout>
 
@@ -141,7 +141,7 @@
             android:id="@+id/btnJoinAnotherCompany"
             android:layout_width="match_parent"
             android:layout_height="@dimen/button_height_m"
-            android:paddingVertical="12dp"
+            android:paddingVertical="@dimen/spacing_m"
             android:text="Tham gia công ty khác"
             style="@style/ButtonMaxWidthStyle"
             app:icon="@drawable/ic_add"

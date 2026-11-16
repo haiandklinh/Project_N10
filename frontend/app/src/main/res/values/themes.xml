@@ -43,6 +43,20 @@
         <item name="colorAttendanceNotCheckedCard">@color/attendance_not_checked_card</item>
         <item name="colorAttendanceWeekendCard">@color/attendance_weekend_card</item>
         <item name="colorAttendanceEarlyLeaveCard">@color/attendance_early_leave_card</item>
+
+        <!-- ==================== GLOBAL WIDGET & DIALOG THEME ==================== -->
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.App.MaterialAlertDialog</item>
+
+        <!-- Typography Defaults (Tự động đồng bộ toàn bộ app) -->
+        <item name="textAppearanceTitleLarge">@style/TitleTextLargeStyle</item>
+        <item name="textAppearanceTitleMedium">@style/TitleTextMediumStyle</item>
+        <item name="textAppearanceTitleSmall">@style/TitleTextSmallStyle</item>
+        <item name="textAppearanceBodyLarge">@style/BodyTextLargeStyle</item>
+        <item name="textAppearanceBodyMedium">@style/BodyTextMediumStyle</item>
+        <item name="textAppearanceBodySmall">@style/BodyTextSmallStyle</item>
+        <item name="textAppearanceLabelLarge">@style/LabelLargeStyle</item>
+        <item name="textAppearanceLabelMedium">@style/LabelMediumStyle</item>
+        <item name="textAppearanceLabelSmall">@style/LabelSmallStyle</item>
     </style>
 
     <!-- ==================== 1. THEME MÀU BƠ (AVOCADO) ==================== -->

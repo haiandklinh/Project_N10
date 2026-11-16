@@ -56,6 +56,7 @@ public final class AvatarLoader {
             return;
         }
 
+        android.util.Log.d("AvatarLoader", "loadAvatar called with url: " + avatarUrl + ", staff: " + staffName);
         if (isInvalidAvatar(avatarUrl)) {
             // Tra cứu từ StaffAvatarCache theo Tên nhân viên hoặc avatar mới nhất
             String cached = StaffAvatarCache.getEffectiveAvatar(context, null, staffName, null);
@@ -87,6 +88,7 @@ public final class AvatarLoader {
                     Glide.with(context)
                             .asBitmap()
                             .load(decodedBytes)
+                            .circleCrop()
                             .placeholder(placeholderResId)
                             .error(placeholderResId)
                             .diskCacheStrategy(DiskCacheStrategy.ALL)
@@ -99,8 +101,16 @@ public final class AvatarLoader {
         // 2. HTTP / HTTPS URL (nếu tải lỗi 404/mạng thì fallback sang ảnh cục bộ đã lưu)
         if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
             final Context appContext = context.getApplicationContext();
+            com.bumptech.glide.load.model.GlideUrl glideUrl = new com.bumptech.glide.load.model.GlideUrl(
+                    trimmed,
+                    new com.bumptech.glide.load.model.LazyHeaders.Builder()
+                            .addHeader("User-Agent", "Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36")
+                            .build()
+            );
+
             Glide.with(context)
-                    .load(trimmed)
+                    .load(glideUrl)
+                    .circleCrop()
                     .placeholder(placeholderResId)
                     .error(placeholderResId)
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
@@ -112,6 +122,12 @@ public final class AvatarLoader {
                                 Target<Drawable> target,
                                 boolean isFirstResource
                         ) {
+                            android.util.Log.e("AvatarLoader", "HTTP Glide onLoadFailed for model: " + model);
+                            if (e != null) {
+                                for (Throwable t : e.getRootCauses()) {
+                                    android.util.Log.e("AvatarLoader", "Root cause: " + t.getClass().getName() + " -> " + t.getMessage(), t);
+                                }
+                            }
                             String localFallback = StaffAvatarCache.getEffectiveAvatar(appContext, null, staffName, null);
                             if (!isInvalidAvatar(localFallback)
                                     && !localFallback.startsWith("http://")
@@ -130,6 +146,7 @@ public final class AvatarLoader {
                                 DataSource dataSource,
                                 boolean isFirstResource
                         ) {
+                            android.util.Log.d("AvatarLoader", "HTTP Glide onResourceReady for model: " + model);
                             if (staffName != null && !staffName.trim().isEmpty()) {
                                 StaffAvatarCache.saveAvatar(appContext, staffName, null, trimmed);
                             }
@@ -146,11 +163,40 @@ public final class AvatarLoader {
 
         // 3. Content Uri
         if (trimmed.startsWith("content://")) {
+            final Context appContext = context.getApplicationContext();
             try {
                 Glide.with(context)
                         .load(Uri.parse(trimmed))
+                        .circleCrop()
                         .placeholder(placeholderResId)
                         .error(placeholderResId)
+                        .listener(new RequestListener<Drawable>() {
+                            @Override
+                            public boolean onLoadFailed(
+                                    @Nullable GlideException e,
+                                    Object model,
+                                    Target<Drawable> target,
+                                    boolean isFirstResource
+                            ) {
+                                String localFallback = StaffAvatarCache.getEffectiveAvatar(appContext, null, staffName, null);
+                                if (!isInvalidAvatar(localFallback) && !localFallback.equals(trimmed)) {
+                                    imageView.post(() -> loadAvatar(appContext, localFallback, staffName, imageView, placeholderResId));
+                                    return true;
+                                }
+                                return false;
+                            }
+
+                            @Override
+                            public boolean onResourceReady(
+                                    Drawable resource,
+                                    Object model,
+                                    Target<Drawable> target,
+                                    DataSource dataSource,
+                                    boolean isFirstResource
+                            ) {
+                                return false;
+                            }
+                        })
                         .into(imageView);
                 return;
             } catch (Exception ignored) {}
@@ -169,6 +215,7 @@ public final class AvatarLoader {
         if (targetFile != null && targetFile.exists() && targetFile.canRead()) {
             Glide.with(context)
                     .load(targetFile)
+                    .circleCrop()
                     .placeholder(placeholderResId)
                     .error(placeholderResId)
                     .into(imageView);
@@ -192,6 +239,7 @@ public final class AvatarLoader {
             if (localAvatarFile.exists() && localAvatarFile.canRead()) {
                 Glide.with(context)
                         .load(localAvatarFile)
+                        .circleCrop()
                         .placeholder(placeholderResId)
                         .error(placeholderResId)
                         .into(imageView);
@@ -203,6 +251,7 @@ public final class AvatarLoader {
             if (rootFile.exists() && rootFile.canRead()) {
                 Glide.with(context)
                         .load(rootFile)
+                        .circleCrop()
                         .placeholder(placeholderResId)
                         .error(placeholderResId)
                         .into(imageView);
@@ -214,6 +263,7 @@ public final class AvatarLoader {
             if (cacheAvatarFile.exists() && cacheAvatarFile.canRead()) {
                 Glide.with(context)
                         .load(cacheAvatarFile)
+                        .circleCrop()
                         .placeholder(placeholderResId)
                         .error(placeholderResId)
                         .into(imageView);
@@ -225,6 +275,7 @@ public final class AvatarLoader {
         try {
             Glide.with(context)
                     .load(trimmed)
+                    .circleCrop()
                     .placeholder(placeholderResId)
                     .error(placeholderResId)
                     .into(imageView);

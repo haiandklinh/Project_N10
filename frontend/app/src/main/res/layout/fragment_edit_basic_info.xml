@@ -54,7 +54,7 @@
                     android:id="@+id/btn_change_photo"
                     android:layout_width="32dp"
                     android:layout_height="32dp"
-                    app:cardCornerRadius="16dp"
+                    app:cardCornerRadius="@dimen/radius_l"
                     app:cardBackgroundColor="?attr/colorPrimary"
                     app:cardElevation="2dp"
                     app:layout_constraintBottom_toBottomOf="@id/iv_edit_avatar"
@@ -63,7 +63,7 @@
                     <ImageView
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:padding="8dp"
+                        android:padding="@dimen/spacing_s"
                         android:src="@drawable/ic_camera"
                         app:tint="?attr/colorOnPrimary" />
                 </com.google.android.material.card.MaterialCardView>

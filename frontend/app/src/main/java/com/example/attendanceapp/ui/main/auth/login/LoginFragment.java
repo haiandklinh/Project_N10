@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavBackStackEntry;
@@ -56,6 +57,11 @@ public class LoginFragment extends Fragment {
     }
 
     private void observeRegisteredPhone() {
+        dismissPhoneNotRegisteredDialog();
+        if (loginviewModel != null) {
+            loginviewModel.resetLoginState();
+        }
+
         if (getArguments() != null && getArguments().containsKey("registered_phone")) {
             String phone = getArguments().getString("registered_phone");
             if (!TextUtils.isEmpty(phone)) {
@@ -73,6 +79,10 @@ public class LoginFragment extends Fragment {
                     .<String>getLiveData("auto_login_phone")
                     .observe(getViewLifecycleOwner(), autoPhone -> {
                         if (!TextUtils.isEmpty(autoPhone)) {
+                            dismissPhoneNotRegisteredDialog();
+                            if (loginviewModel != null) {
+                                loginviewModel.resetLoginState();
+                            }
                             String autoPassword = currentEntry.getSavedStateHandle().get("auto_login_password");
                             currentEntry.getSavedStateHandle().remove("auto_login_phone");
                             currentEntry.getSavedStateHandle().remove("auto_login_password");
@@ -90,6 +100,10 @@ public class LoginFragment extends Fragment {
                     .<String>getLiveData("registered_phone")
                     .observe(getViewLifecycleOwner(), phone -> {
                         if (!TextUtils.isEmpty(phone)) {
+                            dismissPhoneNotRegisteredDialog();
+                            if (loginviewModel != null) {
+                                loginviewModel.resetLoginState();
+                            }
                             binding.edtPhone.setText(phone);
                             binding.tilPhone.setError(null);
                             binding.edtPassword.requestFocus();
@@ -137,6 +151,7 @@ public class LoginFragment extends Fragment {
                 showErrorOnInput(errorMsg);
             } else if (state instanceof LoginState.PhoneNotRegistered) {
                 String phone = ((LoginState.PhoneNotRegistered) state).phone;
+                loginviewModel.resetLoginState();
                 showPhoneNotRegisteredDialog(phone);
             }
         });
@@ -183,8 +198,15 @@ public class LoginFragment extends Fragment {
     private void showPhoneNotRegisteredDialog(String phone) {
         if (!isAdded() || getContext() == null) return;
 
+        dismissPhoneNotRegisteredDialog();
+
         PhoneNotRegisteredDialog dialog = PhoneNotRegisteredDialog.newInstance(phone);
         dialog.setOnActionListener(phoneToRegister -> {
+            dismissPhoneNotRegisteredDialog();
+            if (loginviewModel != null) {
+                loginviewModel.resetLoginState();
+            }
+
             // Chuyển sang màn hình Đăng ký và truyền số điện thoại đã nhập sang
             Bundle bundle = new Bundle();
             bundle.putString("phone_number", phoneToRegister);
@@ -194,6 +216,15 @@ public class LoginFragment extends Fragment {
         });
 
         dialog.show(getChildFragmentManager(), PhoneNotRegisteredDialog.TAG);
+    }
+
+    private void dismissPhoneNotRegisteredDialog() {
+        try {
+            Fragment prev = getChildFragmentManager().findFragmentByTag(PhoneNotRegisteredDialog.TAG);
+            if (prev instanceof DialogFragment) {
+                ((DialogFragment) prev).dismissAllowingStateLoss();
+            }
+        } catch (Exception ignored) {}
     }
 
     //Hàm setupDialogListeners() này dùng để lắng nghe dữ liệu trả về từ các Popup / Dialog / BottomSheet
@@ -288,9 +319,13 @@ public class LoginFragment extends Fragment {
         binding.tvForgotPassword.setOnClickListener(v ->
                 Navigation.findNavController(v).navigate(R.id.action_loginFragment_to_forgotPasswordFragment)
         );
-        binding.tvSignUp.setOnClickListener(v ->
-                Navigation.findNavController(v).navigate(R.id.action_loginFragment_to_registerFragment)
-        );
+        binding.tvSignUp.setOnClickListener(v -> {
+            dismissPhoneNotRegisteredDialog();
+            if (loginviewModel != null) {
+                loginviewModel.resetLoginState();
+            }
+            Navigation.findNavController(v).navigate(R.id.action_loginFragment_to_registerFragment);
+        });
     }
 
     private void setupTextChangeListeners() {
@@ -372,6 +407,7 @@ public class LoginFragment extends Fragment {
 
     @Override
     public void onDestroyView() {
+        dismissPhoneNotRegisteredDialog();
         super.onDestroyView();
         binding = null;
     }

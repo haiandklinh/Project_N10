@@ -18,8 +18,8 @@
         android:id="@+id/layout_day_item"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingVertical="5dp"
-        android:paddingHorizontal="3dp">
+        android:paddingVertical="@dimen/spacing_xs"
+        android:paddingHorizontal="@dimen/spacing_2xs">
 
         <!-- Tên Thứ - Căn giữa phía trên -->
         <TextView

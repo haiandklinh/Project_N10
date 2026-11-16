@@ -70,6 +70,7 @@ import com.mapbox.maps.plugin.annotation.generated.PointAnnotationManager;
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions;
 import com.mapbox.maps.plugin.compass.CompassUtils;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -1349,7 +1350,7 @@ public class EmployeeCheckInFragment extends Fragment {
                 performCheckIn();
                 break;
             case CHECKED_IN:
-                performCheckOut();
+                showCheckOutConfirmDialog();
                 break;
             case CHECKED_OUT:
                 break;
@@ -1391,6 +1392,51 @@ public class EmployeeCheckInFragment extends Fragment {
                             Toast.makeText(getContext(), "Check-in thất bại: " + err.getMessage(), Toast.LENGTH_LONG).show();
                         }
                 ));
+    }
+
+    private LocalTime getEffectiveCheckInTime() {
+        if (binding != null && binding.tvSummaryCheckInTime != null) {
+            String text = binding.tvSummaryCheckInTime.getText().toString().trim();
+            if (!text.isEmpty() && !text.equals("--:--")) {
+                LocalTime parsed = parseTimeObject(text);
+                if (parsed != null) return parsed;
+            }
+        }
+
+        if (sharedPreferenceApp != null && currentWorkScheduleId != null && currentShiftName != null) {
+            String todayStr = LocalDate.now().toString();
+            String savedTime = sharedPreferenceApp.getShiftCheckInTime(currentWorkScheduleId, todayStr, currentShiftName);
+            if (savedTime != null && !savedTime.isEmpty() && !savedTime.equals("--:--")) {
+                LocalTime parsed = parseTimeObject(savedTime);
+                if (parsed != null) return parsed;
+            }
+        }
+
+        return null;
+    }
+
+    private void showCheckOutConfirmDialog() {
+        if (!isAdded() || getContext() == null) return;
+        if (getChildFragmentManager().findFragmentByTag(ConfirmCheckOutDialog.TAG) != null) return;
+
+        LocalTime inTime = getEffectiveCheckInTime();
+        LocalTime now = LocalTime.now();
+
+        long hours = 0;
+        long minutes = 0;
+
+        if (inTime != null) {
+            long totalMinutes = Duration.between(inTime, now).toMinutes();
+            if (totalMinutes < 0) {
+                totalMinutes += 24 * 60; // Phòng trường hợp ca làm việc qua đêm
+            }
+            hours = totalMinutes / 60;
+            minutes = totalMinutes % 60;
+        }
+
+        ConfirmCheckOutDialog dialog = ConfirmCheckOutDialog.newInstance(hours, minutes);
+        dialog.setOnConfirmListener(this::performCheckOut);
+        dialog.show(getChildFragmentManager(), ConfirmCheckOutDialog.TAG);
     }
 
     private void performCheckOut() {

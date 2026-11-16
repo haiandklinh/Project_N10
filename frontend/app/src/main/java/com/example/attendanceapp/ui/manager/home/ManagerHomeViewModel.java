@@ -350,7 +350,18 @@ public class ManagerHomeViewModel extends ViewModel {
                                             ApprovalStatus savedStatus = handledRequestManager != null
                                                     ? handledRequestManager.getApprovalStatusFlexible(typeName, staffId, workDay, curShift)
                                                     : null;
-                                            if (savedStatus == null) {
+
+                                            boolean isPastDate = false;
+                                            try {
+                                                if (!workDay.isEmpty()) {
+                                                    java.time.LocalDate target = java.time.LocalDate.parse(workDay);
+                                                    if (target.isBefore(java.time.LocalDate.now())) {
+                                                        isPastDate = true;
+                                                    }
+                                                }
+                                            } catch (Exception ignored) {}
+
+                                            if (savedStatus == null && !isPastDate) {
                                                 approvalCount++;
                                             }
                                         }

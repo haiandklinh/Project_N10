@@ -42,7 +42,7 @@
             android:layout_centerVertical="true"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Đóng"
-            android:padding="4dp"
+            android:padding="@dimen/spacing_2xs"
             android:src="@drawable/ic_close"
             app:tint="?attr/colorOnSurfaceVariant" />
     </RelativeLayout>
@@ -54,7 +54,7 @@
         style="@style/MainCard"
         app:cardBackgroundColor="?attr/colorSurfaceVariant"
         android:layout_marginBottom="@dimen/spacing_m"
-        app:cardCornerRadius="16dp"
+        app:cardCornerRadius="@dimen/radius_l"
         app:cardElevation="0dp"
         app:strokeWidth="0dp">
 
@@ -92,7 +92,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
+                    android:layout_marginTop="@dimen/spacing_3xs"
                     android:text="Ứng viên xin gia nhập công ty"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:textSize="@dimen/text_size_body_small" />
@@ -205,7 +205,7 @@
             android:textAllCaps="false"
             android:textSize="@dimen/text_size_body_large"
             android:textStyle="bold"
-            app:cornerRadius="12dp"
+            app:cornerRadius="@dimen/radius_m"
             app:icon="@drawable/ic_check"
             app:iconGravity="textStart" />
 

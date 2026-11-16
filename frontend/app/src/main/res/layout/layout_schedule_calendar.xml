@@ -240,7 +240,7 @@
                 style="@style/BodyTextSmallStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
+                android:layout_marginStart="@dimen/spacing_xs"
                 android:text="Đã xếp lịch"
                 android:textColor="?attr/colorSurfaceVariant" />
         </LinearLayout>
@@ -261,7 +261,7 @@
                 style="@style/BodyTextSmallStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
+                android:layout_marginStart="@dimen/spacing_xs"
                 android:text="Bản nháp"
                 android:textColor="?attr/colorSurfaceVariant" />
         </LinearLayout>
@@ -282,7 +282,7 @@
                 style="@style/BodyTextSmallStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
+                android:layout_marginStart="@dimen/spacing_xs"
                 android:text="Chưa xếp lịch"
                 android:textColor="?attr/colorSurfaceVariant" />
         </LinearLayout>

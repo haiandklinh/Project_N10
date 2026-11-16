@@ -42,7 +42,7 @@
         android:scaleX="0.3"
         android:scaleY="0.3"
         app:cardBackgroundColor="?attr/colorPrimary"
-        app:cardCornerRadius="44dp"
+        app:cardCornerRadius="@dimen/radius_full"
         app:cardElevation="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

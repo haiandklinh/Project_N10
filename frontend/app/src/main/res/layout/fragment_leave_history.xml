@@ -64,7 +64,7 @@
             android:layout_height="match_parent"
             android:padding="@dimen/spacing_m"
             android:clipToPadding="false"
-            android:paddingBottom="100dp"
+            android:paddingBottom="@dimen/bottom_nav_content_padding"
             tools:listitem="@layout/item_leave_request" />
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

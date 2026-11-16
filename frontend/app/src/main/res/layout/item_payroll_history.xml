@@ -52,8 +52,8 @@
             android:id="@+id/layout_left_info"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:layout_marginEnd="8dp"
+            android:layout_marginTop="@dimen/spacing_m"
+            android:layout_marginEnd="@dimen/spacing_s"
             android:orientation="vertical"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/layout_salary_right"
@@ -65,7 +65,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="?attr/colorOnSurfaceVariant"
-                android:textSize="13sp"
+                android:textSize="@dimen/text_size_body_medium"
                 tools:text="22/22 ngày công" />
 
             <TextView
@@ -73,7 +73,7 @@
                 style="@style/BodyTextSmallStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="@dimen/spacing_2xs"
                 android:textColor="?attr/colorPrimary"
                 android:textStyle="bold"
                 tools:text="+0.5M thưởng" />
@@ -95,14 +95,14 @@
                 android:layout_height="wrap_content"
                 android:text="Thực nhận"
                 android:textColor="?attr/colorOnSurfaceVariant"
-                android:textSize="11sp" />
+                android:textSize="@dimen/text_size_body_small" />
 
             <TextView
                 android:id="@+id/tv_salary_amount"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="?attr/colorPrimary"
-                android:textSize="18sp"
+                android:textSize="@dimen/text_size_title_medium"
                 android:textStyle="bold"
                 tools:text="14.820.000 đ" />
         </LinearLayout>

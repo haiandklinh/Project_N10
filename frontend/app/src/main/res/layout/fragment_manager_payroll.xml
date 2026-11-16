@@ -9,22 +9,25 @@
     <!-- Header Toolbar chuẩn ứng dụng -->
     <com.example.attendanceapp.core.utils.ToolbarApp
         android:id="@+id/toolbar_app"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <!-- Filter/Search dạng EditText chọn tháng dùng style app -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/layout_filter"
         style="@style/AppTextInputLayout"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/spacing_l"
+        android:layout_marginHorizontal="@dimen/spacing_l"
+        android:layout_marginTop="@dimen/spacing_l"
         android:hint="Chọn tháng"
         app:endIconDrawable="@drawable/ic_calendar"
         app:endIconMode="custom"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/toolbar_app">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -32,32 +35,224 @@
             style="@style/AppTextInputEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:clickable="true"
             android:cursorVisible="false"
             android:focusable="false"
-            android:clickable="true"
             android:longClickable="false"
             android:text="Tháng 09/2026" />
     </com.google.android.material.textfield.TextInputLayout>
 
+    <!-- Thẻ Thống kê nhanh kỳ lương -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_payroll_summary"
+        style="@style/ItemCard"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/spacing_l"
+        android:layout_marginTop="@dimen/spacing_m"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/layout_filter">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="@dimen/spacing_m">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1.2"
+                android:orientation="vertical">
+
+                <TextView
+                    style="@style/BodyTextSmallStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tổng quỹ lương kỳ này"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
+
+                <TextView
+                    android:id="@+id/tv_total_fund"
+                    style="@style/TitleTextMediumStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_3xs"
+                    android:textColor="?attr/colorPrimary"
+                    android:textStyle="bold"
+                    tools:text="45.200.000 đ" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:layout_marginHorizontal="@dimen/spacing_s"
+                android:alpha="0.3"
+                android:background="?attr/colorOutlineVariant" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.8"
+                android:orientation="vertical">
+
+                <TextView
+                    style="@style/BodyTextSmallStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tiến độ chốt"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
+
+                <TextView
+                    android:id="@+id/tv_calculated_progress"
+                    style="@style/TitleTextMediumStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_3xs"
+                    android:textColor="?attr/colorAttendancePresent"
+                    android:textStyle="bold"
+                    tools:text="4/5 đã tính" />
+            </LinearLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Header Danh sách -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layout_header_list"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/spacing_l"
+        android:layout_marginTop="@dimen/spacing_m"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/card_payroll_summary">
+
+        <TextView
+            android:id="@+id/tv_human_list"
+            style="@style/TitleTextMediumStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Danh sách nhân sự"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Nút Cấu hình lương (Filter icon vuông bên trái chip) -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/btn_salary_config"
+        style="@style/SquareFilterCardStyle"
+        android:layout_marginStart="@dimen/spacing_l"
+        android:contentDescription="Cấu hình lương"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/scroll_view_chips"
+        app:layout_constraintBottom_toBottomOf="@id/scroll_view_chips">
+
+        <ImageView
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_adjust"
+            app:tint="?attr/colorPrimary" />
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Filter Chips Scrollable -->
+    <HorizontalScrollView
+        android:id="@+id/scroll_view_chips"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/spacing_s"
+        android:layout_marginTop="@dimen/spacing_xs"
+        android:clipToPadding="false"
+        android:paddingEnd="@dimen/spacing_l"
+        android:scrollbars="none"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/btn_salary_config"
+        app:layout_constraintTop_toBottomOf="@id/layout_header_list">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chip_group_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:singleLine="true"
+            app:singleSelection="true"
+            app:selectionRequired="true">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_filter_all"
+                style="@style/ChipFilterStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="Tất cả" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_filter_uncalculated"
+                style="@style/ChipFilterStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Chưa tính lương" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_filter_calculated"
+                style="@style/ChipFilterStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Đã tính" />
+        </com.google.android.material.chip.ChipGroup>
+    </HorizontalScrollView>
+
     <!-- List Payroll -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_payroll_list"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="0dp"
-        android:paddingHorizontal="@dimen/spacing_l"
+        android:layout_marginTop="@dimen/spacing_xs"
         android:clipToPadding="false"
-        app:layout_constraintTop_toBottomOf="@id/layout_filter"
+        android:paddingHorizontal="@dimen/spacing_s"
+        android:paddingBottom="@dimen/spacing_l"
         app:layout_constraintBottom_toTopOf="@id/btn_confirm_all"
-        tools:listitem="@layout/item_payroll_history"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/scroll_view_chips"
+        tools:listitem="@layout/item_manager_payroll_employee" />
+
+    <!-- Layout Empty State -->
+    <include
+        android:id="@+id/layout_empty_state"
+        layout="@layout/layout_empty_state"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/btn_confirm_all"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/scroll_view_chips"
+        tools:visibility="visible" />
+
+    <!-- Loading ProgressBar -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/btn_confirm_all"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/scroll_view_chips"
+        tools:visibility="gone" />
 
     <!-- Action Button chuẩn style app -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_confirm_all"
         style="@style/ButtonMaxWidthStyle"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/spacing_l"
         android:text="XÁC NHẬN CHỐT LƯƠNG"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

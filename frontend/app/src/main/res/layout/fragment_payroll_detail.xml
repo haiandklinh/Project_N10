@@ -62,7 +62,7 @@
                         android:textColor="?attr/colorSurface"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="12dp"
+                        android:layout_marginStart="@dimen/spacing_m"
                         app:layout_constraintStart_toEndOf="@id/iv_avatar"
                         app:layout_constraintTop_toTopOf="@id/iv_avatar"
                         tools:text="Nguyễn Văn An" />
@@ -96,7 +96,7 @@
                     <TextView
                         android:id="@+id/tv_net_salary_amount"
                         style="@style/TitleTextLargeStyle"
-                        android:textSize="32sp"
+                        android:textSize="@dimen/text_size_headline_large"
                         android:textColor="?attr/colorSurface"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -253,7 +253,7 @@
                         android:layout_height="wrap_content"
                         android:gravity="center"
                         android:orientation="vertical"
-                        android:padding="16dp">
+                        android:padding="@dimen/spacing_l">
 
                         <ImageView
                             android:layout_width="@dimen/icon_size_m"
@@ -292,7 +292,7 @@
                         android:layout_height="wrap_content"
                         android:gravity="center"
                         android:orientation="vertical"
-                        android:padding="16dp">
+                        android:padding="@dimen/spacing_l">
 
                         <ImageView
                             android:layout_width="@dimen/icon_size_m"
@@ -319,6 +319,18 @@
                 </com.google.android.material.card.MaterialCardView>
 
             </LinearLayout>
+
+            <!-- Nút Chia sẻ phiếu lương -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_share_payroll"
+                style="@style/ButtonMaxWidthStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_xl"
+                android:layout_marginBottom="@dimen/spacing_2xl"
+                android:text="CHIA SẺ PHIẾU LƯƠNG"
+                app:icon="@drawable/ic_share"
+                app:iconGravity="textStart" />
 
         </LinearLayout>
 

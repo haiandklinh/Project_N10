@@ -91,7 +91,7 @@
                 android:minHeight="0dp"
                 android:padding="0dp"
                 android:text="@string/human_invite_employee"
-                android:textSize="12sp"
+                android:textSize="@dimen/text_size_title_small"
                 android:visibility="gone"
                 app:icon="@drawable/ic_add"
                 app:iconSize="16dp"
@@ -111,7 +111,7 @@
                 android:layout_height="match_parent"
                 android:clipToPadding="false"
                 android:paddingHorizontal="@dimen/spacing_l"
-                android:paddingBottom="80dp"
+                android:paddingBottom="@dimen/spacing_7xl"
                 tools:listitem="@layout/item_manager_employee"/>
 
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

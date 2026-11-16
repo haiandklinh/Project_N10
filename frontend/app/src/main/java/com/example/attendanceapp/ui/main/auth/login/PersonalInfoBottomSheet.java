@@ -22,6 +22,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
+import com.bumptech.glide.Glide;
 import com.example.attendanceapp.R;
 import com.example.attendanceapp.databinding.BottomSheetAuthPersonalInfoBinding;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
@@ -60,8 +61,13 @@ public class PersonalInfoBottomSheet extends BottomSheetDialogFragment {
                     Uri selected = result.getData().getData();
                     if (selected != null) {
                         imageUri = saveImageToInternalStorage(selected);
-                        if (imageUri != null) {
-                            binding.ivEditAvatar.setImageURI(imageUri);
+                        if (imageUri != null && binding != null && isAdded()) {
+                            Glide.with(this)
+                                    .load(imageUri)
+                                    .circleCrop()
+                                    .placeholder(R.drawable.ic_avatar)
+                                    .error(R.drawable.ic_avatar)
+                                    .into(binding.ivEditAvatar);
                         }
                     }
                 }
@@ -72,8 +78,13 @@ public class PersonalInfoBottomSheet extends BottomSheetDialogFragment {
             result -> {
                 if (result.getResultCode() == Activity.RESULT_OK && tempCameraUri != null) {
                     imageUri = saveImageToInternalStorage(tempCameraUri);
-                    if (imageUri != null) {
-                        binding.ivEditAvatar.setImageURI(imageUri);
+                    if (imageUri != null && binding != null && isAdded()) {
+                        Glide.with(this)
+                                .load(imageUri)
+                                .circleCrop()
+                                .placeholder(R.drawable.ic_avatar)
+                                .error(R.drawable.ic_avatar)
+                                .into(binding.ivEditAvatar);
                     }
                 }
             });

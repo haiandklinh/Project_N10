@@ -45,6 +45,7 @@ public class ManagerPayrollCalendarAdapter extends RecyclerView.Adapter<ManagerP
         holder.bind(day, position == selectedPosition);
         
         holder.itemView.setOnClickListener(v -> {
+            if (!day.isInCurrentMonth()) return;
             int newPos = holder.getBindingAdapterPosition();
             if (newPos != RecyclerView.NO_POSITION) {
                 int oldPos = selectedPosition;
@@ -73,7 +74,25 @@ public class ManagerPayrollCalendarAdapter extends RecyclerView.Adapter<ManagerP
 
         public void bind(WeekDay day, boolean isSelected) {
             binding.tvDayNumber.setText(String.valueOf(day.getDate().getDayOfMonth()));
-            
+
+            // Nếu ngày không thuộc tháng đang xem -> Làm mờ ô và ẩn trạng thái
+            if (!day.isInCurrentMonth()) {
+                binding.cardCalendarDay.setAlpha(0.25f);
+                binding.cardCalendarDay.setStrokeWidth(0);
+                binding.ivDayStatus.setVisibility(android.view.View.INVISIBLE);
+                binding.cardCalendarDay.setCardBackgroundColor(
+                        ColorUtil.getThemeColor(itemView.getContext(), R.attr.colorSurfaceVariant)
+                );
+                binding.tvDayNumber.setTextSize(13);
+                binding.tvDayNumber.setTextColor(
+                        ColorUtil.getThemeColor(itemView.getContext(), R.attr.colorOnSurfaceVariant)
+                );
+                return;
+            }
+
+            binding.cardCalendarDay.setAlpha(1.0f);
+            binding.ivDayStatus.setVisibility(android.view.View.VISIBLE);
+
             // Lấy màu sắc từ Theme dựa trên AttendanceStatus
             // Lưu ý: Các attr này được định nghĩa trong attrs.xml của project
             int statusColor = ColorUtil.getThemeColor(itemView.getContext(), day.getStatus().getColorAttr());

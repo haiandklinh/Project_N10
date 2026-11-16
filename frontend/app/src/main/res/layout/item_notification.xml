@@ -86,7 +86,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/spacing_m"
-            android:layout_marginTop="2dp"
+            android:layout_marginTop="@dimen/spacing_3xs"
             android:ellipsize="end"
             android:maxLines="2"
             android:text="Lương tháng 8/2026 của bạn đã được duyệt và sẽ chuyển khoản vào ngày 05/09."
