@@ -6,10 +6,14 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
+import com.example.attendanceapp.BuildConfig;
 import com.example.attendanceapp.data.local.StaffAvatarCache;
 
 import org.json.JSONObject;
@@ -29,35 +33,26 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 /**
- * Tiện ích tải ảnh đại diện lên Cloud Storage để nhận URL công khai ngắn (< 50 ký tự),
+ * Tiện ích tải ảnh đại diện lên Backend Cloudinary API (/upload) để nhận URL công khai ngắn,
  * hoàn toàn vừa vặn với cột VARCHAR(255) trong CSDL Backend.
  */
 public final class CloudImageUploader {
 
     private static final String TAG = "CloudImageUploader";
-    private static final String CATBOX_API_URL = "https://catbox.moe/user/api.php";
-    private static final String TMPFILES_API_URL = "https://tmpfiles.org/api/v1/upload";
 
     private static final OkHttpClient HTTP_CLIENT = new OkHttpClient.Builder()
-            .connectTimeout(10, TimeUnit.SECONDS)
-            .writeTimeout(15, TimeUnit.SECONDS)
-            .readTimeout(15, TimeUnit.SECONDS)
+            .connectTimeout(20, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
             .build();
 
     private CloudImageUploader() {}
 
-    /**
-     * Bất đồng bộ RxJava Single
-     */
     public static Single<String> uploadAvatarSingle(Context context, @Nullable String uriOrPath) {
         return Single.fromCallable(() -> uploadAvatarSync(context, uriOrPath))
                 .subscribeOn(Schedulers.io());
     }
 
-    /**
-     * Chuẩn hóa đường dẫn ảnh đại diện (Đồng bộ).
-     * Đảm bảo chuỗi trả về luôn <= 255 ký tự để không làm sập Database Backend (VARCHAR(255)).
-     */
     @Nullable
     public static String uploadAvatarSync(Context context, @Nullable String uriOrPath) {
         if (uriOrPath == null) {
@@ -71,7 +66,7 @@ public final class CloudImageUploader {
             return "";
         }
 
-        // 1. Nếu đã là URL online (Cloudinary / Catbox / CDN) và <= 255 ký tự thì giữ nguyên
+        // 1. Nếu đã là URL online (Cloudinary / CDN) và <= 255 ký tự thì giữ nguyên
         if (clean.startsWith("http://") || clean.startsWith("https://")) {
             return clean.length() <= 255 ? clean : "";
         }
@@ -80,31 +75,24 @@ public final class CloudImageUploader {
         File compressedFile = compressImageToTempFile(context, clean);
         if (compressedFile == null || !compressedFile.exists()) {
             Log.w(TAG, "Không thể đọc và nén ảnh, trả về rỗng để tránh vượt 255 ký tự");
+            showToast(context, "Không thể đọc hoặc nén ảnh được chọn.");
             return "";
         }
 
         try {
-            // 3. Ưu tiên Upload lên Catbox (trả về https://files.catbox.moe/xxxxxx.jpg ~35 ký tự)
-            String catboxUrl = uploadToCatbox(compressedFile);
-            if (catboxUrl != null && !catboxUrl.isEmpty() && catboxUrl.length() <= 255) {
-                Log.i(TAG, "Upload avatar thành công lên Catbox: " + catboxUrl);
+            // 3. Upload lên Backend /upload API (Backend xử lý upload Cloudinary bảo mật)
+            String backendUrl = uploadToBackend(context, compressedFile);
+            if (backendUrl != null && !backendUrl.isEmpty() && backendUrl.length() <= 255) {
+                Log.i(TAG, "Upload avatar thành công qua Backend: " + backendUrl);
                 if (context != null) {
-                    StaffAvatarCache.saveAvatar(context, null, null, catboxUrl);
+                    StaffAvatarCache.saveAvatar(context, null, null, backendUrl);
                 }
-                return catboxUrl;
+                return backendUrl;
             }
 
-            // 4. Fallback: Upload lên TmpFiles (trả về direct link https://tmpfiles.org/dl/...)
-            String tmpUrl = uploadToTmpFiles(compressedFile);
-            if (tmpUrl != null && !tmpUrl.isEmpty() && tmpUrl.length() <= 255) {
-                Log.i(TAG, "Upload avatar thành công lên TmpFiles: " + tmpUrl);
-                if (context != null) {
-                    StaffAvatarCache.saveAvatar(context, null, null, tmpUrl);
-                }
-                return tmpUrl;
-            }
         } catch (Exception e) {
-            Log.w(TAG, "Lỗi upload ảnh lên cloud: " + e.getMessage());
+            Log.w(TAG, "Lỗi upload ảnh qua Backend: " + e.getMessage());
+            showToast(context, "Lỗi upload ảnh: " + e.getMessage());
         } finally {
             try {
                 if (compressedFile.exists()) {
@@ -113,53 +101,24 @@ public final class CloudImageUploader {
             } catch (Exception ignored) {}
         }
 
-        // 5. Nếu không có kết nối mạng ra ngoài, trả về rỗng để Backend không bị lỗi VARCHAR(255)
-        Log.w(TAG, "Upload cloud không thành công, trả về rỗng cho server để bảo vệ DB");
+        Log.w(TAG, "Upload qua Backend không thành công, trả về rỗng cho server để bảo vệ DB");
         return "";
     }
 
     @Nullable
-    private static String uploadToCatbox(File file) {
+    private static String uploadToBackend(Context context, File file) {
         try {
             RequestBody fileBody = RequestBody.create(file, MediaType.parse("image/jpeg"));
-            RequestBody requestBody = new MultipartBody.Builder()
+            MultipartBody.Builder builder = new MultipartBody.Builder()
                     .setType(MultipartBody.FORM)
-                    .addFormDataPart("reqtype", "fileupload")
-                    .addFormDataPart("fileToUpload", file.getName(), fileBody)
-                    .build();
+                    .addFormDataPart("file", file.getName(), fileBody);
+
+            RequestBody requestBody = builder.build();
+
+            String uploadUrl = BuildConfig.BASE_URL + "upload";
 
             Request request = new Request.Builder()
-                    .url(CATBOX_API_URL)
-                    .header("User-Agent", "Mozilla/5.0 (Linux; Android 10; Mobile)")
-                    .post(requestBody)
-                    .build();
-
-            try (Response response = HTTP_CLIENT.newCall(request).execute()) {
-                if (response.isSuccessful() && response.body() != null) {
-                    String publicUrl = response.body().string().trim();
-                    if (publicUrl.startsWith("http://") || publicUrl.startsWith("https://")) {
-                        return publicUrl;
-                    }
-                }
-            }
-        } catch (Exception e) {
-            Log.w(TAG, "Lỗi Catbox upload: " + e.getMessage());
-        }
-        return null;
-    }
-
-    @Nullable
-    private static String uploadToTmpFiles(File file) {
-        try {
-            RequestBody fileBody = RequestBody.create(file, MediaType.parse("image/jpeg"));
-            RequestBody requestBody = new MultipartBody.Builder()
-                    .setType(MultipartBody.FORM)
-                    .addFormDataPart("file", file.getName(), fileBody)
-                    .build();
-
-            Request request = new Request.Builder()
-                    .url(TMPFILES_API_URL)
-                    .header("User-Agent", "Mozilla/5.0 (Linux; Android 10; Mobile)")
+                    .url(uploadUrl)
                     .post(requestBody)
                     .build();
 
@@ -167,22 +126,31 @@ public final class CloudImageUploader {
                 if (response.isSuccessful() && response.body() != null) {
                     String bodyStr = response.body().string().trim();
                     JSONObject json = new JSONObject(bodyStr);
-                    if ("success".equalsIgnoreCase(json.optString("status"))) {
-                        JSONObject data = json.optJSONObject("data");
-                        if (data != null) {
-                            String url = data.optString("url");
-                            if (url.contains("tmpfiles.org/")) {
-                                return url.replace("tmpfiles.org/", "tmpfiles.org/dl/");
-                            }
-                            return url;
-                        }
+                    // Lấy url từ JSON response của backend (/upload)
+                    String secureUrl = json.optString("url", "");
+                    if (secureUrl.startsWith("http://") || secureUrl.startsWith("https://")) {
+                        return secureUrl;
                     }
+                } else {
+                    String errorBody = response.body() != null ? response.body().string() : "unknown";
+                    Log.e(TAG, "Backend upload failed: code=" + response.code() + ", error=" + errorBody);
+                    showToast(context, "Lỗi server (" + response.code() + "): " + errorBody);
                 }
             }
         } catch (Exception e) {
-            Log.w(TAG, "Lỗi TmpFiles upload: " + e.getMessage());
+            Log.w(TAG, "Lỗi kết nối upload server: " + e.getMessage());
+            showToast(context, "Lỗi kết nối server: " + e.getMessage());
         }
         return null;
+    }
+
+    private static void showToast(Context context, String message) {
+        if (context == null) return;
+        try {
+            new Handler(Looper.getMainLooper()).post(() ->
+                Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+            );
+        } catch (Exception ignored) {}
     }
 
     /**

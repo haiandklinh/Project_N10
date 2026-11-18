@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.attendanceapp.R;
+import com.example.attendanceapp.core.utils.NavigationHelper;
 import com.example.attendanceapp.databinding.FragmentManagerHomeBinding;
 import com.example.attendanceapp.domain.model.RecentCheckInItem;
 
@@ -111,7 +112,7 @@ public class ManagerHomeFragment extends Fragment {
                         R.drawable.ic_approval,
                         R.attr.colorPrimary,
                         R.attr.colorAttendanceAbsentContainer,
-                        () -> navigateTo(R.id.action_managerHomeFragment_to_managerApprovalFragment)
+                        () -> navigateToTab(R.id.managerApprovalFragment)
                 ));
             }
 
@@ -122,16 +123,16 @@ public class ManagerHomeFragment extends Fragment {
             binding.includeActionRequired.cardEmptyActionRequired.setVisibility(View.VISIBLE);
             binding.includeActionRequired.rvActionRequired.setVisibility(View.GONE);
             binding.includeActionRequired.cardEmptyActionRequired.setOnClickListener(v ->
-                    navigateTo(R.id.action_managerHomeFragment_to_managerApprovalFragment));
+                    navigateToTab(R.id.managerApprovalFragment));
         }
     }
 
     private void setupQuickActions() {
         List<ManagerQuickAction> actions = Arrays.asList(
                 new ManagerQuickAction("Xếp ca", R.drawable.ic_calendar,
-                        () -> navigateTo(R.id.action_managerHomeFragment_to_managerScheduleFragment)),
+                        () -> navigateToTab(R.id.managerScheduleFragment)),
                 new ManagerQuickAction("Duyệt đơn", R.drawable.ic_approval,
-                        () -> navigateTo(R.id.action_managerHomeFragment_to_managerApprovalFragment)),
+                        () -> navigateToTab(R.id.managerApprovalFragment)),
                 new ManagerQuickAction("Mã mời", R.drawable.ic_add_user,
                         () -> navigateTo(R.id.action_managerHomeFragment_to_managerJoinRequestFragment)),
                 new ManagerQuickAction("Bảng lương", R.drawable.ic_payroll,
@@ -255,7 +256,15 @@ public class ManagerHomeFragment extends Fragment {
 
     private void navigateTo(int destinationId) {
         if (getView() == null) return;
-        Navigation.findNavController(requireView()).navigate(destinationId);
+        Navigation.findNavController(requireView()).navigate(destinationId, null, NavigationHelper.slideNavOptions());
+    }
+
+    private void navigateToTab(int destinationId) {
+        if (requireActivity() instanceof com.example.attendanceapp.ui.manager.ManagerMainActivity) {
+            ((com.example.attendanceapp.ui.manager.ManagerMainActivity) requireActivity()).navigateToTab(destinationId);
+        } else {
+            navigateTo(destinationId);
+        }
     }
 
     @Override

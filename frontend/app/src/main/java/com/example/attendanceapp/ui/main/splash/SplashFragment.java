@@ -16,6 +16,7 @@ import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.attendanceapp.R;
+import com.example.attendanceapp.core.utils.NavigationHelper;
 import com.example.attendanceapp.databinding.FragmentAuthSplashBinding;
 import com.example.attendanceapp.domain.model.SplashDestination;
 import com.example.attendanceapp.domain.model.UserRole;
@@ -66,15 +67,15 @@ public class SplashFragment extends Fragment {
 
         switch (destination) {
             case ONBOARDING:
-                navController.navigate(R.id.action_splashFragment_to_onboardingFragment);
+                navController.navigate(R.id.action_splashFragment_to_onboardingFragment, null, NavigationHelper.slideNavOptions());
                 break;
 
             case LOGIN_SAVED_ACCOUNT:
-                navController.navigate(R.id.action_splashFragment_to_loginSavedAccountFragment);
+                navController.navigate(R.id.action_splashFragment_to_loginSavedAccountFragment, null, NavigationHelper.slideNavOptions());
                 break;
 
             case PENDING_APPROVAL:
-                navController.navigate(R.id.action_splashFragment_to_pendingApprovalFragment);
+                navController.navigate(R.id.action_splashFragment_to_pendingApprovalFragment, null, NavigationHelper.slideNavOptions());
                 break;
 
             case HOME:
@@ -84,7 +85,7 @@ public class SplashFragment extends Fragment {
 
             case LOGIN:
             default:
-                navController.navigate(R.id.action_splashFragment_to_loginFragment);
+                navController.navigate(R.id.action_splashFragment_to_loginFragment, null, NavigationHelper.slideNavOptions());
                 break;
         }
     }
@@ -100,7 +101,7 @@ public class SplashFragment extends Fragment {
             requireActivity().finish();
         } else {
             NavController navController = NavHostFragment.findNavController(this);
-            navController.navigate(R.id.action_splashFragment_to_staffCompanySelectionFragment);
+            navController.navigate(R.id.action_splashFragment_to_staffCompanySelectionFragment, null, NavigationHelper.slideNavOptions());
         }
     }
 

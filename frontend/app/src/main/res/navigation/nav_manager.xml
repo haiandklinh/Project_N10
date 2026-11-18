@@ -18,30 +18,62 @@
 
         <action
             android:id="@+id/action_managerHomeFragment_to_notificationFragment"
-            app:destination="@id/notificationFragment" />
+            app:destination="@id/notificationFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
 
         <action
             android:id="@+id/action_managerHomeFragment_to_managerProfileFragment"
-            app:destination="@id/managerProfileFragment" />
+            app:destination="@id/managerProfileFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
 
         <action
             android:id="@+id/action_managerHomeFragment_to_managerScheduleFragment"
-            app:destination="@id/managerScheduleFragment" />
+            app:destination="@id/managerScheduleFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
         <action
             android:id="@+id/action_managerHomeFragment_to_managerApprovalFragment"
-            app:destination="@id/managerApprovalFragment" />
+            app:destination="@id/managerApprovalFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
         <action
             android:id="@+id/action_managerHomeFragment_to_managerPayrollFragment"
-            app:destination="@id/managerPayrollFragment" />
+            app:destination="@id/managerPayrollFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
         <action
             android:id="@+id/action_managerHomeFragment_to_managerRewardPunishFragment"
-            app:destination="@id/managerRewardPunishFragment" />
+            app:destination="@id/managerRewardPunishFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
         <action
             android:id="@+id/action_managerHomeFragment_to_managerJoinRequestFragment"
-            app:destination="@id/managerJoinRequestFragment" />
+            app:destination="@id/managerJoinRequestFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
         <action
             android:id="@+id/action_managerHomeFragment_to_managerStatisticFragment"
-            app:destination="@id/managerStatisticFragment" />
+            app:destination="@id/managerStatisticFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
     <fragment
@@ -51,10 +83,18 @@
         tools:layout="@layout/fragment_notification">
         <action
             android:id="@+id/action_notificationFragment_to_managerApprovalFragment"
-            app:destination="@id/managerApprovalFragment" />
+            app:destination="@id/managerApprovalFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
         <action
             android:id="@+id/action_notificationFragment_to_managerJoinRequestFragment"
-            app:destination="@id/managerJoinRequestFragment" />
+            app:destination="@id/managerJoinRequestFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
     <!-- Tab 2: Phê duyệt (Approvals) -->
@@ -73,7 +113,11 @@
 
         <action
             android:id="@+id/action_managerScheduleFragment_to_selectEmployee"
-            app:destination="@id/selectEmployeeFragment" />
+            app:destination="@id/selectEmployeeFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
 
     </fragment>
 
@@ -85,7 +129,11 @@
 
         <action
             android:id="@+id/action_selectEmployeeFragment_to_assignShiftFragment"
-            app:destination="@id/assignShiftFragment" />
+            app:destination="@id/assignShiftFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
     <fragment
@@ -96,7 +144,11 @@
 
         <action
             android:id="@+id/action_assignShiftFragment_to_assignShiftSuccessFragment"
-            app:destination="@id/assignShiftSuccessFragment" />
+            app:destination="@id/assignShiftSuccessFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
     <fragment
@@ -116,7 +168,11 @@
 
         <action
             android:id="@+id/action_managerHumanFragment_to_managerJoinRequestFragment"
-            app:destination="@id/managerJoinRequestFragment" />
+            app:destination="@id/managerJoinRequestFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
 
     </fragment>
 
@@ -139,28 +195,60 @@
         
         <action
             android:id="@+id/action_managerProfileFragment_to_managerStatisticFragment"
-            app:destination="@id/managerStatisticFragment" />
+            app:destination="@id/managerStatisticFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
         <action
             android:id="@+id/action_managerProfileFragment_to_managerEditProfileFragment"
-            app:destination="@id/managerEditProfileFragment" />
+            app:destination="@id/managerEditProfileFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
         <action
             android:id="@+id/action_managerProfileFragment_to_managerChangePasswordFragment"
-            app:destination="@id/managerChangePasswordFragment" />
+            app:destination="@id/managerChangePasswordFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
         <action
             android:id="@+id/action_managerProfileFragment_to_managerHelpCenterFragment"
-            app:destination="@id/managerHelpCenterFragment" />
+            app:destination="@id/managerHelpCenterFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
         <action
             android:id="@+id/action_managerProfileFragment_to_managerAboutFragment"
-            app:destination="@id/managerAboutFragment" />
+            app:destination="@id/managerAboutFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
         <action
             android:id="@+id/action_managerProfileFragment_to_managerSalaryConfigFragment"
-            app:destination="@id/managerSalaryConfigFragment" />
+            app:destination="@id/managerSalaryConfigFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
         <action
             android:id="@+id/action_managerProfileFragment_to_managerRolePermissionFragment"
-            app:destination="@id/managerRolePermissionFragment" />
+            app:destination="@id/managerRolePermissionFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
         <action
             android:id="@+id/action_managerProfileFragment_to_managerBusinessSettingsFragment"
-            app:destination="@id/managerCompanySettingsFragment" />
+            app:destination="@id/managerCompanySettingsFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
 
@@ -176,7 +264,11 @@
         tools:layout="@layout/fragment_manager_payroll">
         <action
             android:id="@+id/action_managerPayrollFragment_to_managerPayrollDetailFragment"
-            app:destination="@id/managerPayrollDetailFragment" />
+            app:destination="@id/managerPayrollDetailFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
     <!-- Thiết lập đơn giá ca -->
@@ -229,7 +321,11 @@
         tools:layout="@layout/fragment_edit_profile">
         <action
             android:id="@+id/action_managerEditProfileFragment_to_managerEditBasicInfoFragment"
-            app:destination="@id/managerEditBasicInfoFragment" />
+            app:destination="@id/managerEditBasicInfoFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
     <fragment
@@ -260,7 +356,11 @@
         tools:layout="@layout/fragment_about">
         <action
             android:id="@+id/action_managerAboutFragment_to_managerPolicyFragment"
-            app:destination="@id/managerPolicyFragment" />
+            app:destination="@id/managerPolicyFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
     <!-- Chính sách bảo mật & Điều khoản sử dụng -->

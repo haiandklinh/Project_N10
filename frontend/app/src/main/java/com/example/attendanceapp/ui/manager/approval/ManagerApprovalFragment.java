@@ -93,6 +93,9 @@ public class ManagerApprovalFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        postponeEnterTransition();
+        view.post(this::startPostponedEnterTransition);
+
         viewModel = new ViewModelProvider(requireActivity()).get(ManagerApprovalViewModel.class);
 
         applyWindowInsets();

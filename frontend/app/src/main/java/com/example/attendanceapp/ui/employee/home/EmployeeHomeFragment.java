@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.attendanceapp.R;
+import com.example.attendanceapp.core.utils.NavigationHelper;
 import com.example.attendanceapp.core.notification.ShiftAlarmScheduler;
 import com.example.attendanceapp.core.utils.ColorUtil;
 import com.example.attendanceapp.core.utils.DateTimeFormatUtils;
@@ -359,9 +360,9 @@ public class EmployeeHomeFragment extends Fragment {
         if (navController.getCurrentDestination() != null
                 && navController.getCurrentDestination().getId() == R.id.employeeHomeFragment) {
             if (args != null) {
-                navController.navigate(actionId, args);
+                navController.navigate(actionId, args, NavigationHelper.slideNavOptions());
             } else {
-                navController.navigate(actionId);
+                navController.navigate(actionId, null, NavigationHelper.slideNavOptions());
             }
         }
     }

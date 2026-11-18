@@ -11,6 +11,7 @@ import androidx.navigation.NavOptions;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.attendanceapp.R;
+import com.example.attendanceapp.core.utils.NavigationHelper;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -105,7 +106,7 @@ public class ManagerMainActivity extends AppCompatActivity {
                     try {
                         if (navController.getCurrentDestination() == null ||
                                 navController.getCurrentDestination().getId() != R.id.notificationFragment) {
-                            navController.navigate(R.id.notificationFragment);
+                            navController.navigate(R.id.notificationFragment, null, NavigationHelper.slideNavOptions());
                         }
                     } catch (Exception ignored) {}
                 });
@@ -210,23 +211,18 @@ public class ManagerMainActivity extends AppCompatActivity {
             if (!navController.popBackStack(R.id.managerHomeFragment, false)) {
                 NavOptions fallback = new NavOptions.Builder()
                         .setPopUpTo(R.id.nav_manager, true)
+                        .setEnterAnim(R.anim.slide_in_right)
+                        .setExitAnim(R.anim.slide_out_left)
+                        .setPopEnterAnim(R.anim.slide_in_left)
+                        .setPopExitAnim(R.anim.slide_out_right)
                         .build();
                 navController.navigate(R.id.managerHomeFragment, null, fallback);
             }
             return;
         }
 
-        // Cấu hình NavOptions chuẩn cho Bottom Navigation
-        // Tối ưu: setSaveState(true) để giữ trạng thái các tab khi chuyển đổi
-        NavOptions navOptions = new NavOptions.Builder()
-                .setLaunchSingleTop(true)
-                .setRestoreState(true)
-                .setPopUpTo(
-                        R.id.managerHomeFragment,
-                        false,
-                        true // quan trọng: saveState = true
-                )
-                .build();
+        // Cấu hình NavOptions chuẩn cho Bottom Navigation kèm slide transition
+        NavOptions navOptions = NavigationHelper.bottomNavOptions(R.id.managerHomeFragment);
 
         navController.navigate(destinationId, null, navOptions);
     }

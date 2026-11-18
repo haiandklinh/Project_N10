@@ -206,6 +206,8 @@ public class EmployeeCheckInFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        postponeEnterTransition();
+        view.post(this::startPostponedEnterTransition);
 
         setupViews();
         setupListeners();

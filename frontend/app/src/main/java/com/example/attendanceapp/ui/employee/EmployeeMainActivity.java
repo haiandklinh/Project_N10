@@ -10,10 +10,12 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
+import androidx.navigation.NavOptions;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
 
 import com.example.attendanceapp.R;
+import com.example.attendanceapp.core.utils.NavigationHelper;
 import com.example.attendanceapp.databinding.ActivityEmployeeMainBinding;
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -141,7 +143,7 @@ public class EmployeeMainActivity extends AppCompatActivity {
                     try {
                         if (navController.getCurrentDestination() == null ||
                                 navController.getCurrentDestination().getId() != R.id.notificationFragment) {
-                            navController.navigate(R.id.notificationFragment);
+                            navController.navigate(R.id.notificationFragment, null, NavigationHelper.slideNavOptions());
                         }
                     } catch (Exception ignored) {}
                 });
@@ -204,13 +206,23 @@ public class EmployeeMainActivity extends AppCompatActivity {
 
         // Xử lý chuyển tab an toàn khi đang ở CheckIn nhằm tránh lỗi chồng tầng điều hướng
         binding.bottomNavigation.setOnItemSelectedListener(item -> {
-            if (navController != null && navController.getCurrentDestination() != null
+            if (navController == null) return false;
+
+            NavOptions navOptions = NavigationHelper.bottomNavOptions(R.id.employeeHomeFragment);
+
+            if (navController.getCurrentDestination() != null
                     && navController.getCurrentDestination().getId() == R.id.employeeCheckInFragment) {
                 navController.popBackStack(R.id.employeeHomeFragment, false);
-                navController.navigate(item.getItemId());
+                navController.navigate(item.getItemId(), null, navOptions);
                 return true;
             }
-            return navController != null && NavigationUI.onNavDestinationSelected(item, navController);
+
+            try {
+                navController.navigate(item.getItemId(), null, navOptions);
+                return true;
+            } catch (Exception e) {
+                return false;
+            }
         });
     }
 
@@ -237,7 +249,7 @@ public class EmployeeMainActivity extends AppCompatActivity {
                 return;
             }
 
-            navController.navigate(R.id.employeeCheckInFragment);
+            navController.navigate(R.id.employeeCheckInFragment, null, NavigationHelper.slideNavOptions());
         });
     }
 
